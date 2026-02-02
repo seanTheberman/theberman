@@ -3,8 +3,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate, Link } from 'react-router-dom';
-import { Loader2, User, HardHat, Check, ArrowLeft } from 'lucide-react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { Loader2, User, HardHat, Check } from 'lucide-react';
+import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 const signupSchema = z.object({
@@ -21,8 +22,20 @@ const signupSchema = z.object({
 type SignUpFormData = z.infer<typeof signupSchema>;
 
 const SignUp = () => {
-    const { signUp } = useAuth();
+    const { signUp, user, role, loading } = useAuth();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const roleParam = searchParams.get('role');
+    const defaultRole = (roleParam === 'contractor' || roleParam === 'user') ? roleParam : 'user';
+
+    // Redirect if already authenticated
+    useEffect(() => {
+        if (!loading && user && role) {
+            if (role === 'admin') navigate('/admin', { replace: true });
+            else if (role === 'contractor') navigate('/dashboard/contractor', { replace: true });
+            else navigate('/dashboard/user', { replace: true });
+        }
+    }, [user, role, loading, navigate]);
 
     const {
         register,
@@ -33,7 +46,7 @@ const SignUp = () => {
     } = useForm<SignUpFormData>({
         resolver: zodResolver(signupSchema),
         defaultValues: {
-            role: 'user', // Default to user
+            role: defaultRole,
         }
     });
 
@@ -45,17 +58,22 @@ const SignUp = () => {
             if (error) throw error;
 
             if (authData?.user) {
-                // If there's no session, it usually means email confirmation is required
                 const isConfirmationRequired = !authData.session;
 
                 if (isConfirmationRequired) {
                     toast.success('Account created! Please check your email to confirm your account before logging in.', {
                         duration: 6000
                     });
+                    navigate('/login');
                 } else {
                     toast.success('Account created successfully!');
+                    // If signed in immediately, redirect to appropriate destination
+                    if (data.role === 'contractor') {
+                        navigate('/contractor-onboarding');
+                    } else {
+                        navigate('/dashboard/user');
+                    }
                 }
-                navigate('/login');
             }
         } catch (err: any) {
             toast.error(err.message || 'Failed to create account');
@@ -63,51 +81,9 @@ const SignUp = () => {
     };
 
     return (
-        <div className="min-h-screen flex font-sans bg-white">
-            {/* Left Side - Branding (Hidden on mobile) */}
-            <div className="hidden lg:flex w-1/2 bg-[#007F00] flex-col justify-between p-12 relative overflow-hidden">
-                {/* Decorative Background Elements */}
-                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-white/10 blur-3xl"></div>
-                <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-white/10 blur-3xl"></div>
-
-                <div className="relative z-10">
-                    <Link to="/" className="flex items-center gap-3 group w-fit">
-                        <div className="relative">
-                            <img src="/logo.svg" alt="The Berman Logo" className="h-12 w-auto brightness-0 invert" />
-                        </div>
-                        <span className="text-2xl font-serif font-bold text-white">The Berman</span>
-                    </Link>
-
-                    <div className="mt-20">
-                        <h1 className="text-5xl font-serif font-bold text-white leading-tight mb-6">
-                            Join the <br />
-                            <span className="text-[#9ACD32]">Green Revolution.</span>
-                        </h1>
-                        <p className="text-green-100 text-lg max-w-md leading-relaxed">
-                            Create your account to start managing your energy ratings efficiently. Whether you're a homeowner or a contractor, we have the tools you need.
-                        </p>
-                    </div>
-                </div>
-
-                <div className="relative z-10 flex gap-6 text-green-200 text-sm font-medium">
-                    <span>Privacy Policy</span>
-                    <span>Terms of Service</span>
-                </div>
-            </div>
-
-            {/* Right Side - Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-12 relative">
-                {/* Mobile Logo (Visible only on mobile) */}
-                <div className="absolute top-8 left-8 lg:hidden">
-                    <Link to="/" className="flex items-center gap-2">
-                        <img src="/logo.svg" alt="Logo" className="h-10" />
-                    </Link>
-                </div>
-
-                <div className="max-w-md w-full">
-                    <Link to="/" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#007F00] transition-colors mb-8 font-medium">
-                        <ArrowLeft size={16} /> Back to Home
-                    </Link>
+        <div className="min-h-screen bg-white pt-24 pb-12 flex items-center justify-center">
+            <div className="container mx-auto px-6 max-w-lg">
+                <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-xl overflow-hidden p-8 md:p-12">
 
                     <div className="mb-6">
                         <h2 className="text-3xl font-serif font-bold text-gray-900 mb-3">Create Account</h2>
@@ -117,7 +93,7 @@ const SignUp = () => {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
                         {/* Role Selection */}
-                        <div className="grid grid-cols-2 gap-4 mb-6">
+                        <div className="grid grid-cols-2 gap-4 mb-6 relative">
                             <div
                                 onClick={() => setValue('role', 'user')}
                                 className={`cursor-pointer rounded-xl border-2 p-4 flex flex-col items-center justify-center gap-2 transition-all ${selectedRole === 'user'
@@ -129,7 +105,7 @@ const SignUp = () => {
                                     <User size={20} />
                                 </div>
                                 <span className="font-bold text-sm">Homeowner</span>
-                                {selectedRole === 'user' && <div className="absolute top-2 right-2"><Check size={16} /></div>}
+                                {selectedRole === 'user' && <div className="absolute top-2 right-2 text-[#007F00]"><Check size={16} /></div>}
                             </div>
 
                             <div
@@ -143,58 +119,59 @@ const SignUp = () => {
                                     <HardHat size={20} />
                                 </div>
                                 <span className="font-bold text-sm">Contractor</span>
+                                {selectedRole === 'contractor' && <div className="absolute top-2 right-2 text-[#007F00]"><Check size={16} /></div>}
                             </div>
                         </div>
 
-                        <div className="space-y-1">
-                            <label className="text-sm font-bold text-gray-700">Full Name</label>
+                        <div className="space-y-1 text-left">
+                            <label className="text-sm font-bold text-gray-700 ml-1">Full Name</label>
                             <input
                                 {...register('fullName')}
                                 type="text"
                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
                                 placeholder="John Doe"
                             />
-                            {errors.fullName && <p className="text-red-500 text-xs mt-1 font-medium">{errors.fullName.message}</p>}
+                            {errors.fullName && <p className="text-red-500 text-xs mt-1 font-medium ml-1">{errors.fullName.message}</p>}
                         </div>
 
-                        <div className="space-y-1">
-                            <label className="text-sm font-bold text-gray-700">Email</label>
+                        <div className="space-y-1 text-left">
+                            <label className="text-sm font-bold text-gray-700 ml-1">Email</label>
                             <input
                                 {...register('email')}
                                 type="email"
                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
                                 placeholder="name@company.com"
                             />
-                            {errors.email && <p className="text-red-500 text-xs mt-1 font-medium">{errors.email.message}</p>}
+                            {errors.email && <p className="text-red-500 text-xs mt-1 font-medium ml-1">{errors.email.message}</p>}
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                                <label className="text-sm font-bold text-gray-700">Password</label>
+                            <div className="space-y-1 text-left">
+                                <label className="text-sm font-bold text-gray-700 ml-1">Password</label>
                                 <input
                                     {...register('password')}
                                     type="password"
                                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
                                     placeholder="••••••••"
                                 />
-                                {errors.password && <p className="text-red-500 text-xs mt-1 font-medium">{errors.password.message}</p>}
+                                {errors.password && <p className="text-red-500 text-xs mt-1 font-medium ml-1">{errors.password.message}</p>}
                             </div>
-                            <div className="space-y-1">
-                                <label className="text-sm font-bold text-gray-700">Confirm</label>
+                            <div className="space-y-1 text-left">
+                                <label className="text-sm font-bold text-gray-700 ml-1">Confirm</label>
                                 <input
                                     {...register('confirmPassword')}
                                     type="password"
                                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
                                     placeholder="••••••••"
                                 />
-                                {errors.confirmPassword && <p className="text-red-500 text-xs mt-1 font-medium">{errors.confirmPassword.message}</p>}
+                                {errors.confirmPassword && <p className="text-red-500 text-xs mt-1 font-medium ml-1">{errors.confirmPassword.message}</p>}
                             </div>
                         </div>
 
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full bg-[#007F00] text-white font-bold py-3.5 rounded-xl hover:bg-green-800 transition-all shadow-lg hover:shadow-green-900/20 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-6"
+                            className="w-full bg-[#007F00] text-white font-black py-4 rounded-xl hover:bg-green-800 transition-all shadow-lg hover:shadow-green-900/20 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-6 cursor-pointer"
                         >
                             {isSubmitting ? (
                                 <>
@@ -207,9 +184,9 @@ const SignUp = () => {
                         </button>
 
                         <div className="text-center mt-6">
-                            <p className="text-gray-500">
+                            <p className="text-gray-500 font-medium">
                                 Already have an account?{' '}
-                                <Link to="/login" className="text-[#007F00] font-bold hover:underline">
+                                <Link to="/login" className="text-[#007F00] font-black hover:underline">
                                     Log in
                                 </Link>
                             </p>

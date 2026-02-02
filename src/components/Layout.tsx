@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, ArrowRight, Home, Smartphone, Mail, User as UserIcon, LayoutDashboard, Shield, LogOut, ChevronDown, Plus } from 'lucide-react';
+import { Menu, X, ArrowRight, Home, Smartphone, Mail, User as UserIcon, LayoutDashboard, Shield, LogOut, ChevronDown, Facebook, Instagram, Linkedin } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import QuoteModal from './QuoteModal';
 
@@ -11,7 +11,7 @@ const NAV_LINKS = [
     { label: 'Services', path: '/services' },
     { label: 'Pricing', path: '/pricing' },
     { label: 'Contact', path: '/contact' },
-    { label: 'Catalogue ⭐', path: '/catalogue' },
+    { label: 'Catalogue', path: '/catalogue' },
 ];
 
 const Layout = () => {
@@ -61,9 +61,9 @@ const Layout = () => {
                         <div className="relative">
                             <img src="/logo.svg" alt="The Berman Logo" className="h-18 w-auto relative z-10 brightness-0 invert" />
                         </div>
-                        <span className="text-2xl font-serif font-bold text-white group-hover:text-green-200 transition-colors">
+                        {/* <span className="text-2xl font-serif font-bold text-white group-hover:text-green-200 transition-colors">
                             The Berman
-                        </span>
+                        </span> */}
                     </Link>
 
                     {/* Desktop Navigation */}
@@ -74,7 +74,7 @@ const Layout = () => {
                                 to={link.path}
                                 className={`text-sm font-bold tracking-wide transition-colors ${location.pathname === link.path
                                     ? 'text-white border-b-2 border-white'
-                                    : 'text-green-100 hover:text-white'
+                                    : 'text-white/80 hover:text-white'
                                     }`}
                             >
                                 {link.label.toUpperCase()}
@@ -84,15 +84,15 @@ const Layout = () => {
                         {/* Auth Buttons / Dropdown */}
                         {!user ? (
                             <div className="flex items-center gap-4 ml-4">
-                                <Link to="/login" className="text-green-100 hover:text-white font-bold text-sm tracking-wide transition-colors">
+                                <Link to="/login" className="text-white/80 hover:text-white font-bold text-sm tracking-wide transition-colors">
                                     LOGIN
                                 </Link>
-                                <button
-                                    onClick={() => setIsQuoteModalOpen(true)}
-                                    className="bg-white hover:bg-green-50 text-[#007F00] text-xs font-bold uppercase tracking-wider px-6 py-3 rounded-full transition shadow-md flex items-center gap-2"
+                                <Link
+                                    to="/signup"
+                                    className="bg-white hover:bg-green-50 text-[#007F00] text-xs font-bold uppercase tracking-wider px-6 py-3 rounded-full transition shadow-md flex items-center gap-2 cursor-pointer"
                                 >
                                     Sign Up <ArrowRight size={14} />
-                                </button>
+                                </Link>
                             </div>
                         ) : (
                             <div className="relative group ml-4">
@@ -208,13 +208,6 @@ const Layout = () => {
                         </div>
                     </nav>
                 )}
-                {/* Floating Quote Trigger (Mobile) */}
-                <button
-                    onClick={() => setIsQuoteModalOpen(true)}
-                    className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-[#007F00] text-white rounded-full shadow-2xl flex items-center justify-center z-40 animate-bounce"
-                >
-                    <Plus size={28} />
-                </button>
 
                 <QuoteModal isOpen={isQuoteModalOpen} onClose={() => setIsQuoteModalOpen(false)} />
             </header>
@@ -228,41 +221,66 @@ const Layout = () => {
             <footer className="bg-gray-900 text-white border-t border-green-900 pt-16 pb-8">
                 <div className="container mx-auto px-6">
                     <div className="grid md:grid-cols-4 gap-12 mb-12">
-
-                        {/* Brand Column */}
-                        <div className="col-span-1 md:col-span-1">
+                        {/* Column 1: Brand */}
+                        <div className="col-span-1">
                             <div className="flex items-center gap-2 mb-6">
-                                <img src="logo.svg" alt="The Berman" className="h-16" />
+                                <img src="/logo.svg" alt="The Berman" className="h-16" />
                                 <span className="text-xl font-serif font-bold">The Berman</span>
                             </div>
                             <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                                Ireland's trusted partner for BER assessments and energy consulting. We make sustainability simple and profitable.
+                                Ireland's trusted partner for BER assessments and energy consultancy.
                             </p>
                             <div className="flex gap-4">
-                                {/* Social Placeholders */}
-                                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#9ACD32] hover:text-green-900 transition cursor-pointer"><Smartphone size={16} /></div>
-                                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#9ACD32] hover:text-green-900 transition cursor-pointer"><Mail size={16} /></div>
-                                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#9ACD32] hover:text-green-900 transition cursor-pointer"><Home size={16} /></div>
+                                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#1877F2] hover:text-white transition cursor-pointer"><Facebook size={16} /></a>
+                                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#E4405F] hover:text-white transition cursor-pointer"><Instagram size={16} /></a>
+                                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#0A66C2] hover:text-white transition cursor-pointer"><Linkedin size={16} /></a>
+                                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#000000] hover:text-white transition cursor-pointer">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932L18.901 1.153zM17.61 20.644h2.039L6.486 3.24H4.298L17.61 20.644z" />
+                                    </svg>
+                                </a>
                             </div>
                         </div>
 
-                        {/* Quick Links */}
+                        {/* Column 2: Quick Links */}
                         <div>
                             <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">Quick Links</h4>
                             <ul className="space-y-3">
-                                {NAV_LINKS.map(link => (
+                                {NAV_LINKS.slice(0, 4).map(link => (
                                     <li key={link.path}>
                                         <Link to={link.path} className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
-                                            <div className="w-1 h-1 bg-[#9ACD32] rounded-full"></div> {link.label}
+                                            {link.label}
                                         </Link>
                                     </li>
                                 ))}
                             </ul>
                         </div>
 
+                        {/* Column 3: Resources & Account */}
+                        <div>
+                            <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">Account</h4>
+                            <ul className="space-y-3">
+                                {NAV_LINKS.slice(4).map(link => (
+                                    <li key={link.path}>
+                                        <Link to={link.path} className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
+                                            {link.label}
+                                        </Link>
+                                    </li>
+                                ))}
+                                <li>
+                                    <Link to="/login" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
+                                        Login
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link to="/signup" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
+                                        Sign Up
+                                    </Link>
+                                </li>
+                            </ul>
+                        </div>
 
-
-                        {/* Contact */}
+                        {/* Column 4: Contact */}
                         <div>
                             <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">Get in Touch</h4>
                             <ul className="space-y-4">
@@ -285,9 +303,8 @@ const Layout = () => {
                     <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
                         <p>&copy; {new Date().getFullYear()} The Berman. All rights reserved.</p>
                         <div className="flex gap-6 mt-4 md:mt-0">
-                            <span className="hover:text-white cursor-pointer transition">Privacy Policy</span>
-                            <span className="hover:text-white cursor-pointer transition">Terms of Service</span>
-                            <Link to="/admin" className="hover:text-white cursor-pointer transition">Admin Login</Link>
+                            <Link to="/privacy" className="hover:text-white cursor-pointer transition">Privacy Policy</Link>
+                            <Link to="/terms" className="hover:text-white cursor-pointer transition">Terms of Service</Link>
                         </div>
                     </div>
                 </div>

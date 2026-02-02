@@ -18,9 +18,12 @@ const EmailVerification = ({ email, assessmentId, onVerified, onBack }: EmailVer
     const [countdown, setCountdown] = useState(60);
     const [canResend, setCanResend] = useState(false);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+    const hasSentInitialOtp = useRef(false);
 
-    // Send initial OTP on mount
+    // Send initial OTP on mount (with guard for React StrictMode double-execution)
     useEffect(() => {
+        if (hasSentInitialOtp.current) return;
+        hasSentInitialOtp.current = true;
         sendOtp();
     }, []);
 

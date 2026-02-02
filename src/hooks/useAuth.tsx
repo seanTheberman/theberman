@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 interface AuthContextType {
     user: User | null;
     session: Session | null;
+    profile: any | null;
     loading: boolean;
     role: 'admin' | 'contractor' | 'user' | 'homeowner' | null;
     signIn: (email: string, password: string) => Promise<{ data: { user: User | null, session: Session | null }, error: any }>;
@@ -24,22 +25,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(true);
     const [isInitialCheckDone, setIsInitialCheckDone] = useState(false);
 
+    const [profile, setProfile] = useState<any | null>(null);
+
     const fetchProfile = async (userId: string) => {
         try {
             const { data } = await supabase
                 .from('profiles')
-                .select('role')
+                .select('*')
                 .eq('id', userId)
                 .maybeSingle();
 
             if (data) {
                 setRole(data.role);
+                setProfile(data);
             } else {
                 setRole('user');
+                setProfile(null);
             }
         } catch (err) {
             console.error('Error fetching profile:', err);
             setRole('user');
+            setProfile(null);
         }
     };
 
@@ -127,7 +133,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, session, loading, role, signIn, signUp, resetPassword, updateUserPassword, signOut }}>
+        <AuthContext.Provider value={{ user, session, profile, loading, role, signIn, signUp, resetPassword, updateUserPassword, signOut }}>
             {isInitialCheckDone ? children : (
                 <div className="min-h-screen flex items-center justify-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007F00]"></div>

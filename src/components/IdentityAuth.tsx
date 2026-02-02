@@ -76,7 +76,21 @@ const IdentityAuth = ({ email, fullName, onAuthenticated, onBack }: IdentityAuth
     }
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-8 animate-in fade-in duration-500 relative">
+            {/* Full-screen loader overlay when submitting */}
+            {isSubmitting && (
+                <div className="fixed inset-0 bg-white/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
+                    <div className="relative">
+                        <div className="w-20 h-20 border-4 border-green-100 rounded-full"></div>
+                        <div className="w-20 h-20 border-4 border-green-500 border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
+                    </div>
+                    <p className="mt-6 text-xl font-semibold text-gray-800">
+                        {isExistingUser ? 'Signing you in...' : 'Creating your account...'}
+                    </p>
+                    <p className="mt-2 text-gray-500">Please wait a moment</p>
+                </div>
+            )}
+
             <div className="text-center">
                 <div className={`inline-flex items-center justify-center w-20 h-20 rounded-full mb-6 ${isExistingUser ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'}`}>
                     {isExistingUser ? <LogIn size={36} /> : <UserPlus size={36} />}
@@ -119,10 +133,10 @@ const IdentityAuth = ({ email, fullName, onAuthenticated, onBack }: IdentityAuth
                         type="submit"
                         disabled={isSubmitting || !password}
                         className={`w-full py-5 rounded-2xl font-black text-lg transition-all shadow-xl flex items-center justify-center gap-3 ${isSubmitting || !password
-                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                : isExistingUser
-                                    ? 'bg-[#007EA7] hover:bg-[#005F7E] text-white'
-                                    : 'bg-[#007F00] hover:bg-[#006600] text-white'
+                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                            : isExistingUser
+                                ? 'bg-[#007EA7] hover:bg-[#005F7E] text-white'
+                                : 'bg-[#007F00] hover:bg-[#006600] text-white'
                             }`}
                     >
                         {isSubmitting ? (

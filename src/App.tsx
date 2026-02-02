@@ -15,9 +15,12 @@ import Login from './pages/Login';
 import UserDashboard from './pages/UserDashboard';
 import ContractorDashboard from './pages/ContractorDashboard';
 import SignUp from './pages/SignUp';
+import ContractorOnboarding from './pages/ContractorOnboarding';
 import ForgotPassword from './pages/ForgotPassword';
 import UpdatePassword from './pages/UpdatePassword';
 import QuoteForm from './pages/QuoteForm';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 
 import ScrollToTop from './components/ScrollToTop';
 
@@ -35,13 +38,15 @@ function App() {
                         <Route path="pricing" element={<Pricing />} />
                         <Route path="contact" element={<Contact />} />
                         <Route path="catalogue" element={<Catalogue />} />
+                        <Route path="privacy" element={<PrivacyPolicy />} />
+                        <Route path="terms" element={<TermsOfService />} />
+                        <Route path="login" element={<Login />} />
+                        <Route path="signup" element={<SignUp />} />
                     </Route>
 
                     {/* Quote Form - No Layout wrapper for cleaner UX */}
                     <Route path="/get-quote" element={<QuoteForm />} />
 
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<SignUp />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/update-password" element={<UpdatePassword />} />
 
@@ -56,6 +61,15 @@ function App() {
                     />
 
                     {/* Contractor Dashboard */}
+                    <Route
+                        path="/contractor-onboarding"
+                        element={
+                            <ProtectedRoute allowedRoles={['contractor']}>
+                                <ContractorOnboarding />
+                            </ProtectedRoute>
+                        }
+                    />
+
                     <Route
                         path="/dashboard/contractor"
                         element={

@@ -336,7 +336,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                         <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Property type?</h2>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
                             {PROPERTY_TYPES.map((type) => (
-                                <button key={type} onClick={() => updateField('propertyType', type)}
+                                <button key={type} onClick={() => { updateField('propertyType', type); handleNext(); }}
                                     className={`p-4 rounded-lg border-2 transition-all text-center ${formData.propertyType === type ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                                 >{type}</button>
                             ))}
@@ -349,7 +349,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                         <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Property size?</h2>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
                             {PROPERTY_SIZES.map((size) => (
-                                <button key={size} onClick={() => updateField('propertySize', size)}
+                                <button key={size} onClick={() => { updateField('propertySize', size); handleNext(); }}
                                     className={`p-4 rounded-lg border-2 transition-all text-center ${formData.propertySize === size ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                                 >{size}</button>
                             ))}
@@ -362,7 +362,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                         <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Bedrooms?</h2>
                         <div className="flex justify-center gap-4 flex-wrap max-w-xl mx-auto">
                             {['1', '2', '3', '4', '5', '6'].map((num) => (
-                                <button key={num} onClick={() => updateField('bedrooms', num)}
+                                <button key={num} onClick={() => { updateField('bedrooms', num); handleNext(); }}
                                     className={`w-16 h-16 rounded-full border-2 transition-all text-xl font-medium ${formData.bedrooms === num ? 'border-green-500 bg-green-500 text-white' : 'border-gray-200 hover:border-green-300 bg-white text-gray-700'}`}
                                 >{num}</button>
                             ))}
@@ -391,7 +391,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                         <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Heat pump?</h2>
                         <div className="flex justify-center gap-4 flex-wrap max-w-xl mx-auto">
                             {HEAT_PUMP_OPTIONS.map((option) => (
-                                <button key={option} onClick={() => updateField('heatPump', option)}
+                                <button key={option} onClick={() => { updateField('heatPump', option); handleNext(); }}
                                     className={`px-8 py-4 rounded-lg border-2 transition-all ${formData.heatPump === option ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                                 >{option}</button>
                             ))}
@@ -402,28 +402,36 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 return (
                     <div className="space-y-6">
                         <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">County?</h2>
-                        <div className="max-w-md mx-auto">
-                            <select value={formData.county} onChange={(e) => { updateField('county', e.target.value); updateField('town', ''); }}
-                                className="w-full p-4 border-2 border-gray-200 rounded-lg text-lg focus:border-green-500 focus:outline-none"
-                            >
-                                <option value="">Select a county...</option>
-                                {COUNTIES.map((county) => <option key={county} value={county}>{county}</option>)}
-                            </select>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-w-4xl mx-auto max-h-[60vh] overflow-y-auto p-2 custom-scrollbar">
+                            {COUNTIES.map((county) => (
+                                <button
+                                    key={county}
+                                    onClick={() => { updateField('county', county); updateField('town', ''); handleNext(); }}
+                                    className={`p-4 rounded-xl border-2 transition-all font-bold text-lg ${formData.county === county ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white text-gray-600'}`}
+                                >
+                                    {county}
+                                </button>
+                            ))}
                         </div>
+                        <p className="text-center text-gray-400 text-sm mt-4">Scroll to see more counties</p>
                     </div>
                 );
             case 9:
                 return (
                     <div className="space-y-6">
                         <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Town?</h2>
-                        <div className="max-w-md mx-auto">
-                            <select value={formData.town} onChange={(e) => updateField('town', e.target.value)}
-                                className="w-full p-4 border-2 border-gray-200 rounded-lg text-lg focus:border-green-500 focus:outline-none"
-                            >
-                                <option value="">Select a town...</option>
-                                {(TOWNS_BY_COUNTY[formData.county] || []).map((town) => <option key={town} value={town}>{town}</option>)}
-                            </select>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-w-4xl mx-auto max-h-[60vh] overflow-y-auto p-2 custom-scrollbar">
+                            {(TOWNS_BY_COUNTY[formData.county] || []).map((town) => (
+                                <button
+                                    key={town}
+                                    onClick={() => { updateField('town', town); handleNext(); }}
+                                    className={`p-4 rounded-xl border-2 transition-all font-bold text-lg ${formData.town === town ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white text-gray-600'}`}
+                                >
+                                    {town}
+                                </button>
+                            ))}
                         </div>
+                        <p className="text-center text-gray-400 text-sm mt-4">Scroll to see more towns</p>
                     </div>
                 );
             case 10:
@@ -432,7 +440,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                         <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">BER Purpose?</h2>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
                             {BER_PURPOSES.map((purpose) => (
-                                <button key={purpose} onClick={() => updateField('berPurpose', purpose)}
+                                <button key={purpose} onClick={() => { updateField('berPurpose', purpose); handleNext(); }}
                                     className={`p-4 rounded-lg border-2 transition-all text-center ${formData.berPurpose === purpose ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                                 >{purpose}</button>
                             ))}

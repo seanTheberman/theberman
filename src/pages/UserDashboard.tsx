@@ -16,6 +16,11 @@ interface Quote {
     status: 'pending' | 'accepted' | 'rejected';
     created_at: string;
     assessment_id: string;
+    contractor?: {
+        full_name: string;
+        seai_number: string;
+        assessor_type?: string;
+    };
 }
 
 interface Assessment {
@@ -82,7 +87,14 @@ const UserDashboard = () => {
                 .from('assessments')
                 .select(`
                     *,
-                    quotes (*)
+                    quotes (
+                        *,
+                        contractor:profiles(
+                            full_name,
+                            seai_number,
+                            assessor_type
+                        )
+                    )
                 `)
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false });
@@ -419,10 +431,19 @@ const UserDashboard = () => {
                                                                         quote.status === 'rejected' ? 'bg-red-50 text-red-700 border-red-100' :
                                                                             'bg-green-50 text-[#007F00] border-green-100'
                                                                         }`}>
-                                                                        {quote.status || 'pending'} Quote
                                                                     </span>
                                                                 </div>
                                                                 <p className="text-xs font-bold text-gray-400">Received {new Date(quote.created_at).toLocaleDateString()}</p>
+                                                                {quote.contractor && (
+                                                                    <div className="mt-2 text-xs text-gray-500">
+                                                                        <span className="font-bold text-gray-700">{quote.contractor.full_name}</span>
+                                                                        {quote.contractor.seai_number && (
+                                                                            <span className="ml-2 bg-gray-100 px-2 py-0.5 rounded text-[10px] text-gray-600 border border-gray-200">
+                                                                                SEAI: {quote.contractor.seai_number}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                )}
                                                             </div>
 
                                                             {/* Property Details */}

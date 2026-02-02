@@ -22,9 +22,18 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     }
 
     if (allowedRoles && role && !allowedRoles.includes(role)) {
-        // Logged in but wrong role -> Go to home (or their respective dashboard if we implemented a smart redirect)
-        // For now, redirecting to home prevents access.
-        return <Navigate to="/" replace />;
+        // Logged in but wrong role -> Go to their respective dashboard
+        if (role === 'admin') return <Navigate to="/admin" replace />;
+        if (role === 'contractor') return <Navigate to="/dashboard/contractor" replace />;
+        return <Navigate to="/dashboard/user" replace />;
+    }
+
+    const isContractor = role === 'contractor';
+    const { profile } = useAuth();
+
+    // If contractor and missing SEAI number, and NOT already on onboarding page, redirect
+    if (isContractor && (!profile?.seai_number || profile?.seai_number.trim() === '') && location.pathname !== '/contractor-onboarding') {
+        return <Navigate to="/contractor-onboarding" replace />;
     }
 
     return <>{children}</>;

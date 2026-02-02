@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 const contactSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
     email: z.string().email('Please enter a valid email address'),
-    phone: z.string().regex(/^\+?[0-9\s-]{9,15}$/, 'Please enter a valid phone number (e.g. 087 123 4567)'),
+    phone: z.string().regex(/^\+?[0-9\s-]{9,15}$/, 'Please enter a valid phone number'),
     county: z.string().min(1, 'Please select a county'),
     town: z.string().min(2, 'Town/City is required'),
     property_type: z.string().min(1, 'Please select a property type'),
@@ -31,8 +31,6 @@ const Contact = () => {
     });
 
     const onSubmit = async (data: ContactFormData) => {
-        // Honeypot Check: If the hidden field has a value, it's a bot.
-        // Return success instantly to trick the bot, but do nothing.
         if (data.bot_check) {
             toast.success('Message sent successfully!');
             reset();
@@ -56,15 +54,9 @@ const Contact = () => {
             if (error) throw error;
 
             // Trigger Supabase Edge Function for Email Notification
-            const { error: functionError } = await supabase.functions.invoke('send-email', {
+            await supabase.functions.invoke('send-email', {
                 body: { record: data }
             });
-
-            if (functionError) {
-                console.error('Email notification failed:', functionError);
-                // We don't block the UI success state even if email fails,
-                // but we should log it.
-            }
 
             toast.success('Message sent successfully! We will be in touch shortly.');
             reset();
@@ -75,104 +67,106 @@ const Contact = () => {
     };
 
     return (
-        <div className="font-sans text-gray-900 bg-white">
-            <title>Contact Us | Get a Quote for Your BER</title>
-            <meta name="description" content="Contact The Berman for a quick quote or to schedule your BER assessment. Serving Dublin, Meath, Kildare, and Wicklow." />
-            {/* 1. HERO SECTION */}
-            <section className="pt-32 pb-20 bg-gradient-to-b from-green-50 to-white">
+        <div className="font-sans text-gray-900 bg-white min-h-screen">
+            <title>Contact Us | The Berman</title>
+
+            {/* 1. COMPACT HERO */}
+            <section className="pt-16 pb-8 bg-white">
                 <div className="container mx-auto px-6 text-center max-w-4xl">
-                    <div className="inline-block mb-4 px-4 py-1.5 rounded-full bg-green-100 text-[#007F00] text-xs font-bold tracking-wide uppercase">
-                        Contact Us
-                    </div>
-                    <h1 className="text-5xl md:text-6xl font-serif font-bold text-gray-900 mb-6 leading-tight">
-                        Get in <span className="text-[#007F00]">Touch.</span>
+                    <span className="inline-block mb-3 px-4 py-1.5 rounded-full bg-green-50 text-[#007F00] text-xs font-black tracking-widest uppercase">
+                        Get In Touch
+                    </span>
+                    <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-4 leading-tight">
+                        How can we <span className="text-[#007F00]">help?</span>
                     </h1>
-                    <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-                        Have a question or need a quote? We're here to help you Mon-Fri, 9am - 5pm.
+                    <p className="text-base md:text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
+                        Have a question about BER assessments? Our team is here to provide the support you need.
                     </p>
                 </div>
             </section>
 
             {/* 2. CONTACT CONTENT */}
-            <section className="pb-24">
-                <div className="container mx-auto px-6 max-w-6xl">
-                    <div className="bg-white rounded-3xl shadow-2xl overflow-hidden grid md:grid-cols-2">
+            <section className="pb-12">
+                <div className="container mx-auto px-6 max-w-7xl">
+                    <div className="flex flex-col lg:flex-row gap-8 items-stretch">
 
-                        {/* INFO COLUMN */}
-                        <div className="bg-[#007F00] p-12 text-white flex flex-col justify-between relative overflow-hidden">
-                            {/* Background Pattern */}
-                            <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white/5 blur-3xl"></div>
-                            <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 rounded-full bg-white/5 blur-3xl"></div>
+                        {/* UNIFIED CONTACT INFO CARD */}
+                        <div className="lg:w-1/3 w-full bg-white rounded-[2.5rem] p-8 md:p-10 border border-gray-100 shadow-sm group hover:border-green-100 transition-all h-full">
+                            <h3 className="text-xl font-black text-gray-900 mb-8 uppercase tracking-tight">Our details</h3>
 
-                            <div className="relative z-10">
-                                <h3 className="text-2xl font-serif font-bold mb-6">Contact Information</h3>
-                                <div className="space-y-8">
-                                    <ContactItem
-                                        icon={<Phone className="text-[#9ACD32]" />}
-                                        label="Phone"
-                                        value="087 442 1653"
+                            <div className="space-y-6">
+                                <InfoItem
+                                    icon={<Phone size={20} />}
+                                    title="Call Us"
+                                    value="087 442 1653"
+                                    href="tel:0874421653"
+                                />
+                                <InfoItem
+                                    icon={<Mail size={20} />}
+                                    title="Email Us"
+                                    value="info@theberman.eu"
+                                    href="mailto:info@theberman.eu"
+                                />
+                                <div className="space-y-3">
+                                    <InfoItem
+                                        icon={<MapPin size={20} />}
+                                        title="Visit Us"
+                                        value="Dublin, Ireland - D04 W7K5"
+                                        onClick={() => {
+                                            window.open('https://www.google.com/maps/search/?api=1&query=13+Upper+Baggot+Street,+Dublin+4+D04+W7K5', '_blank');
+                                        }}
                                     />
-                                    <ContactItem
-                                        icon={<Mail className="text-[#9ACD32]" />}
-                                        label="Email"
-                                        value="info@theberman.eu"
-                                    />
-                                    <ContactItem
-                                        icon={<MapPin className="text-[#9ACD32]" />}
-                                        label="Office"
-                                        value="Dublin 4, Ireland"
-                                    />
-                                    <ContactItem
-                                        icon={<Clock className="text-[#9ACD32]" />}
-                                        label="Hours"
-                                        value="Mon-Fri: 9am - 6pm"
+                                    <button
+                                        onClick={() => window.open('https://www.google.com/maps/search/?api=1&query=13+Upper+Baggot+Street,+Dublin+4+D04+W7K5', '_blank')}
+                                        className="ml-15 px-4 py-1.5 bg-green-50 text-[#007F00] text-[10px] font-black rounded-lg hover:bg-[#007F00] hover:text-white transition-all flex items-center gap-2 border border-green-100 cursor-pointer"
+                                    >
+                                        View in Map <MapPin size={10} />
+                                    </button>
+                                </div>
+
+                                <div className="pt-6 border-t border-gray-50">
+                                    <InfoItem
+                                        icon={<Clock size={20} />}
+                                        title="Office Hours"
+                                        value="Mon - Fri: 9:00 AM - 5:30 PM"
                                     />
                                 </div>
-                            </div>
-
-                            <div className="mt-12 relative z-10">
-                                <div className="w-16 h-1 bg-[#9ACD32] mb-6"></div>
-                                <p className="text-green-100 font-serif italic text-lg">
-                                    "Quick, professional, and very helpful. Highly recommend for any BER needs."
-                                </p>
-                                <p className="text-[#9ACD32] font-bold text-sm mt-4 uppercase tracking-wide">
-                                    - Sarah O'Connor, Homeowner
-                                </p>
                             </div>
                         </div>
 
                         {/* FORM COLUMN */}
-                        <div className="p-12 relative">
-                            <h3 className="text-2xl font-serif font-bold text-gray-900 mb-6">Send us a Message</h3>
+                        <div className="lg:w-2/3 w-full bg-gray-50 rounded-[2.5rem] p-6 md:p-10 border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                            <h3 className="text-xl font-black text-gray-900 mb-6 text-center uppercase tracking-tight">Send us a detailed message</h3>
 
-                            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                                <div className="grid md:grid-cols-2 gap-5">
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide">Name</label>
-                                        <input
-                                            {...register('name')}
-                                            className={`w-full bg-gray-50 border rounded-lg p-3 outline-none focus:border-[#007F00] transition ${errors.name ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}
-                                            placeholder="Your Name"
-                                        />
-                                        {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide">Phone</label>
-                                        <input
-                                            {...register('phone')}
-                                            className={`w-full bg-gray-50 border rounded-lg p-3 outline-none focus:border-[#007F00] transition ${errors.phone ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}
-                                            placeholder="087..."
-                                        />
-                                        {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
-                                    </div>
+                            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <FormInput
+                                        label="Full Name"
+                                        register={register('name')}
+                                        error={errors.name}
+                                        placeholder="Enter your name"
+                                    />
+                                    <FormInput
+                                        label="Phone Number"
+                                        register={register('phone')}
+                                        error={errors.phone}
+                                        placeholder="087 123 4567"
+                                    />
                                 </div>
 
-                                <div className="grid md:grid-cols-2 gap-5">
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide">County</label>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <FormInput
+                                        label="Email Address"
+                                        type="email"
+                                        register={register('email')}
+                                        error={errors.email}
+                                        placeholder="your@email.com"
+                                    />
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">County</label>
                                         <select
                                             {...register('county')}
-                                            className={`w-full bg-gray-50 border rounded-lg p-3 outline-none focus:border-[#007F00] transition ${errors.county ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}
+                                            className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer ${errors.county ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'}`}
                                         >
                                             <option value="">Select County</option>
                                             <option value="Dublin">Dublin</option>
@@ -182,25 +176,22 @@ const Contact = () => {
                                             <option value="Louth">Louth</option>
                                             <option value="Other">Other</option>
                                         </select>
-                                        {errors.county && <p className="text-red-500 text-xs mt-1">{errors.county.message}</p>}
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide">Town</label>
-                                        <input
-                                            {...register('town')}
-                                            className={`w-full bg-gray-50 border rounded-lg p-3 outline-none focus:border-[#007F00] transition ${errors.town ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}
-                                            placeholder="e.g. Rathgar"
-                                        />
-                                        {errors.town && <p className="text-red-500 text-xs mt-1">{errors.town.message}</p>}
+                                        {errors.county && <p className="text-red-500 text-xs font-bold mt-1 ml-1">{errors.county.message}</p>}
                                     </div>
                                 </div>
 
-                                <div className="grid md:grid-cols-2 gap-5">
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide">Property Type</label>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <FormInput
+                                        label="Town / City"
+                                        register={register('town')}
+                                        error={errors.town}
+                                        placeholder="e.g. Rathgar"
+                                    />
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Property Type</label>
                                         <select
                                             {...register('property_type')}
-                                            className={`w-full bg-gray-50 border rounded-lg p-3 outline-none focus:border-[#007F00] transition ${errors.property_type ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}
+                                            className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer ${errors.property_type ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'}`}
                                         >
                                             <option value="">Select Type</option>
                                             <option value="Apartment">Apartment</option>
@@ -210,63 +201,58 @@ const Contact = () => {
                                             <option value="Detached">Detached</option>
                                             <option value="Bungalow">Bungalow</option>
                                         </select>
-                                        {errors.property_type && <p className="text-red-500 text-xs mt-1">{errors.property_type.message}</p>}
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide">Purpose</label>
-                                        <select
-                                            {...register('purpose')}
-                                            className={`w-full bg-gray-50 border rounded-lg p-3 outline-none focus:border-[#007F00] transition ${errors.purpose ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}
-                                        >
-                                            <option value="">Select Purpose</option>
-                                            <option value="Mortgage/Bank">Mortgage/Bank</option>
-                                            <option value="Selling">Selling</option>
-                                            <option value="Renting">Renting</option>
-                                            <option value="Govt Grant">Govt Grant</option>
-                                            <option value="Other">Other</option>
-                                        </select>
-                                        {errors.purpose && <p className="text-red-500 text-xs mt-1">{errors.purpose.message}</p>}
+                                        {errors.property_type && <p className="text-red-500 text-xs font-bold mt-1 ml-1">{errors.property_type.message}</p>}
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide">Email</label>
-                                    <input
-                                        {...register('email')}
-                                        className={`w-full bg-gray-50 border rounded-lg p-3 outline-none focus:border-[#007F00] transition ${errors.email ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}
-                                        placeholder="your@email.com"
-                                    />
-                                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+                                <div className="space-y-1">
+                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Purpose of BER</label>
+                                    <select
+                                        {...register('purpose')}
+                                        className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer ${errors.purpose ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'}`}
+                                    >
+                                        <option value="">Select Purpose</option>
+                                        <option value="Mortgage/Bank">Mortgage/Bank</option>
+                                        <option value="Selling">Selling</option>
+                                        <option value="Renting">Renting</option>
+                                        <option value="Govt Grant">Govt Grant</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    {errors.purpose && <p className="text-red-500 text-xs font-bold mt-1 ml-1">{errors.purpose.message}</p>}
                                 </div>
 
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide">Message</label>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Message</label>
                                     <textarea
                                         {...register('message')}
-                                        rows={4}
-                                        className={`w-full bg-gray-50 border rounded-lg p-3 outline-none focus:border-[#007F00] transition ${errors.message ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}
-                                        placeholder="How can we help?"
+                                        rows={3}
+                                        className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all resize-none ${errors.message ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'}`}
+                                        placeholder="Tell us more about your request..."
                                     ></textarea>
-                                    {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message.message}</p>}
+                                    {errors.message && <p className="text-red-500 text-xs font-bold mt-1 ml-1">{errors.message.message}</p>}
                                 </div>
 
-                                {/* Honeypot Field for Spam Protection */}
+                                {/* Honeypot */}
                                 <div className="hidden">
-                                    <input
-                                        type="text"
-                                        tabIndex={-1}
-                                        autoComplete="off"
-                                        {...register('bot_check')}
-                                    />
+                                    <input type="text" tabIndex={-1} autoComplete="off" {...register('bot_check')} />
                                 </div>
 
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="w-full bg-[#9ACD32] hover:bg-lime-400 text-green-900 font-bold py-4 rounded-lg transition shadow-lg flex items-center justify-center gap-2 disabled:opacity-70"
+                                    className="w-full bg-[#007F00] hover:bg-[#006400] text-white font-black py-4 rounded-2xl transition-all shadow-xl shadow-green-100 flex items-center justify-center gap-3 disabled:opacity-70 transform hover:-translate-y-1 active:translate-y-0 cursor-pointer"
                                 >
-                                    {isSubmitting ? <Loader2 className="animate-spin" /> : <Send size={20} />}
-                                    Send Message
+                                    {isSubmitting ? (
+                                        <>
+                                            <Loader2 className="animate-spin" size={20} />
+                                            Sending...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Send size={20} />
+                                            Send Message
+                                        </>
+                                    )}
                                 </button>
                             </form>
                         </div>
@@ -277,16 +263,35 @@ const Contact = () => {
     );
 };
 
-const ContactItem = ({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) => (
-    <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
-            {icon}
-        </div>
-        <div>
-            <p className="text-xs text-green-200 uppercase tracking-wider mb-0.5">{label}</p>
-            <p className="font-bold text-lg">{value}</p>
-        </div>
+const FormInput = ({ label, register, error, placeholder, type = "text" }: { label: string, register: any, error: any, placeholder: string, type?: string }) => (
+    <div className="space-y-1 text-left">
+        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">{label}</label>
+        <input
+            {...register}
+            type={type}
+            className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all ${error ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'}`}
+            placeholder={placeholder}
+        />
+        {error && <p className="text-red-500 text-xs font-bold mt-1 ml-1">{error.message}</p>}
     </div>
 );
+
+const InfoItem = ({ icon, title, value, href, onClick }: { icon: React.ReactNode, title: string, value: string, href?: string, onClick?: () => void }) => {
+    const content = (
+        <div className="flex items-center gap-4 group/item cursor-pointer">
+            <div className="w-11 h-11 rounded-xl bg-green-50 text-[#007F00] flex items-center justify-center group-hover/item:bg-[#007F00] group-hover/item:text-white transition-all transform group-hover/item:scale-110">
+                {icon}
+            </div>
+            <div>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{title}</p>
+                <p className="text-base font-black text-gray-900 group-hover/item:text-[#007F00] transition-colors">{value}</p>
+            </div>
+        </div>
+    );
+
+    if (href) return <a href={href} className="block">{content}</a>;
+    if (onClick) return <div onClick={onClick} className="block">{content}</div>;
+    return content;
+};
 
 export default Contact;

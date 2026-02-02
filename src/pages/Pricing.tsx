@@ -1,47 +1,44 @@
 
-import { Check, ArrowRight, X, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, X, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import FaqItem from '../components/FaqItem';
 
 const Pricing = () => {
     return (
-        <div className="font-sans text-gray-900 bg-white">
-            <title>Pricing | Transparent BER Rating Costs</title>
-            <meta name="description" content="Clear, upfront pricing for Building Energy Ratings. Plans for apartments, houses, and new builds starting from €150. No hidden fees." />
-            {/* 1. HERO SECTION */}
-            <section className="pt-32 pb-20 bg-gradient-to-b from-green-50 to-white">
+        <div className="font-sans text-gray-900 bg-white min-h-screen">
+            <title>Pricing | The Berman - Transparent BER Rating Costs</title>
+            <meta name="description" content="Clear, upfront pricing for Building Energy Ratings. Plans for apartments, houses, and commercial units." />
+
+            {/* 1. COMPACT HERO SECTION */}
+            <section className="pt-24 pb-16 bg-white">
                 <div className="container mx-auto px-6 text-center max-w-4xl">
-                    <div className="inline-block mb-4 px-4 py-1.5 rounded-full bg-green-100 text-[#007F00] text-xs font-bold tracking-wide uppercase">
+                    <span className="inline-block mb-4 px-4 py-1.5 rounded-full bg-green-50 text-[#007F00] text-xs font-black tracking-widest uppercase border border-green-100">
                         Pricing
-                    </div>
-                    <h1 className="text-5xl md:text-6xl font-serif font-bold text-gray-900 mb-6 leading-tight">
-                        Transparent <span className="text-[#007F00]">Rates.</span>
+                    </span>
+                    <h1 className="text-4xl md:text-6xl font-black text-gray-900 mb-6 leading-tight">
+                        Transparent <br />
+                        <span className="text-[#007F00]">Rates.</span>
                     </h1>
-                    <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-                        Choose the plan that fits your property type. No hidden fees, VAT included where applicable.
+                    <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
+                        Choose the plan that fits your property type. No hidden fees, all assessments handled by registered experts.
                     </p>
                 </div>
             </section>
 
-            {/* 2. PRICING CARDS */}
-            <section className="pb-24">
-                <div className="container mx-auto px-6">
-                    <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto items-start">
-
-                        {/* Apartment Plan */}
+            {/* 2. PRICING GRID */}
+            <section className="pb-24 bg-white">
+                <div className="container mx-auto px-6 max-w-7xl">
+                    <div className="grid md:grid-cols-3 gap-8">
                         <PricingCard
                             title="Apartment / Flat"
                             price="€180"
-                            description="Ideal for 1-2 bed apartments or duplex units."
+                            description="Ideal for 1-2 bed self-contained units or duplexes."
                             features={[
                                 "Full SEAI Registered assessment",
                                 "Advisory Report included",
-                                "Cert published within 24h",
+                                "Cert published within 48h",
                                 "VAT Included"
                             ]}
                         />
-
-                        {/* House Plan (Popular) */}
                         <PricingCard
                             title="Standard House"
                             price="€250"
@@ -50,23 +47,21 @@ const Pricing = () => {
                             features={[
                                 "Full SEAI Registered assessment",
                                 "Advisory Report included",
-                                "Cert published within 24h",
+                                "Cert published within 48h",
                                 "Grant eligibility check",
                                 "VAT Included"
                             ]}
                         />
-
-                        {/* Commercial/Custom */}
                         <PricingCard
                             title="Commercial"
                             price="Custom"
                             description="For offices, retail units, and industrial buildings."
                             features={[
-                                "Non-Domestic Building Assessment",
-                                "Detailed Energy Audit",
+                                "Non-Domestic Assessment (NDBER)",
+                                "Detailed technical survey",
                                 "Compliance Certification",
-                                "Retrofit ROI Analysis",
-                                "Invoiced to Business"
+                                "Portfolio management",
+                                "VAT Included"
                             ]}
                             ctaText="Request Quote"
                             ctaLink="/contact"
@@ -75,24 +70,24 @@ const Pricing = () => {
                 </div>
             </section>
 
-            {/* 3. COMPARISON TABLE (New) */}
+            {/* 3. COMPARISON TABLE */}
             <section className="py-24 bg-gray-50 border-y border-gray-100">
-                <div className="container mx-auto px-6 max-w-5xl">
+                <div className="container mx-auto px-6 max-w-4xl">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl font-serif font-bold text-gray-900 mb-4">Compare Features</h2>
-                        <p className="text-gray-500">See exactly what you get with each service level.</p>
+                        <h2 className="text-3xl font-black text-gray-900 mb-2 uppercase tracking-tight">Compare Features</h2>
+                        <p className="text-gray-400 text-xs font-black uppercase tracking-widest">Detail-oriented services</p>
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                         <table className="w-full text-left">
-                            <thead className="bg-gray-50 text-gray-900 font-bold">
+                            <thead className="bg-gray-50 text-gray-900 border-b border-gray-100">
                                 <tr>
-                                    <th className="p-6">Feature</th>
-                                    <th className="p-6 text-center">Standard BER</th>
-                                    <th className="p-6 text-center text-[#007F00]">Premium Audit</th>
+                                    <th className="p-6 text-xs font-black uppercase tracking-widest">Feature</th>
+                                    <th className="p-6 text-center text-xs font-black uppercase tracking-widest">Standard</th>
+                                    <th className="p-6 text-center text-xs font-black uppercase tracking-widest text-[#007F00]">Premium</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100">
+                            <tbody className="divide-y divide-gray-100 font-bold text-sm">
                                 <TableRow label="Official SEAI Cert" standard={true} premium={true} />
                                 <TableRow label="Advisory Report" standard={true} premium={true} />
                                 <TableRow label="Grant Advice" standard={true} premium={true} />
@@ -105,45 +100,24 @@ const Pricing = () => {
                 </div>
             </section>
 
-            {/* 4. FAQ SECTION */}
-            <section className="py-24 bg-white">
-                <div className="container mx-auto px-6 max-w-3xl">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl font-serif font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
-                    </div>
-                    <div className="space-y-6">
-                        <FaqItem
-                            question="How long does a BER assessment take?"
-                            answer="Typically, a domestic assessment takes about 45 minutes to an hour on-site, depending on the size and complexity of the property."
-                        />
-                        <FaqItem
-                            question="How long is a BER certificate valid for?"
-                            answer="A BER certificate is valid for 10 years, provided no structural changes or upgrades are made to the property."
-                        />
-                        <FaqItem
-                            question="Do I need a BER to sell my house?"
-                            answer="Yes, it is a legal requirement to provide a BER certificate to prospective buyers or tenants."
-                        />
-                        <FaqItem
-                            question="What happens if I get a bad rating?"
-                            answer="A bad rating does not prevent you from selling. It simply informs the buyer. Our advisory report will suggest ways to improve it."
-                        />
+            {/* 4. FINISH CTA SECTION */}
+            <section className="py-2">
+                <div className="container max-w-full">
+                    <div className="bg-gray-50 p-12 md:p-20 text-center relative overflow-hidden border border-gray-100">
+                        <div className="relative z-10">
+                            <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 uppercase tracking-tight">Need a custom <br />quote?</h2>
+                            <p className="text-gray-500 text-lg mb-10 max-w-xl mx-auto font-medium">
+                                For large portfolios or specialized industrial units, our team can provide a tailored proposal.
+                            </p>
+                            <Link to="/contact">
+                                <button className="bg-[#007F00] text-white font-black px-12 py-5 rounded-2xl hover:bg-[#006400] transition-all shadow-xl flex items-center gap-3 mx-auto transform hover:-translate-y-1 active:translate-y-0 cursor-pointer">
+                                    Contact Sales <ArrowRight size={20} />
+                                </button>
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </section>
-
-            {/* 5. CTA */}
-            <section className="py-20 bg-[#007F00] text-center text-white">
-                <div className="container mx-auto px-6">
-                    <h2 className="text-3xl font-serif font-bold mb-6">Need a custom quote for a portfolio?</h2>
-                    <Link to="/contact">
-                        <button className="bg-white text-[#007F00] font-bold px-10 py-4 rounded-full hover:bg-gray-100 transition shadow-lg">
-                            Contact Sales Team
-                        </button>
-                    </Link>
-                </div>
-            </section>
-
         </div>
     );
 };
@@ -167,56 +141,48 @@ const PricingCard = ({
     ctaText?: string,
     ctaLink?: string
 }) => (
-    <div className={`relative bg-white rounded-2xl flex flex-col transition-all duration-300 ${isPopular ? 'border-2 border-[#9ACD32] shadow-xl scale-105 z-10' : 'border border-gray-100 hover:shadow-lg'}`}>
+    <div className={`p-10 bg-white rounded-[2.5rem] border transition-all hover:shadow-lg flex flex-col cursor-pointer ${isPopular ? 'border-[#007F00] ring-1 ring-[#007F00]/10' : 'border-gray-100'}`}>
         {isPopular && (
-            <div className="absolute top-0 transform -translate-y-1/2 left-1/2 -translate-x-1/2 bg-[#9ACD32] text-green-900 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
+            <div className="mb-6 self-start px-3 py-1 bg-green-50 text-[#007F00] rounded-full text-[10px] font-black uppercase tracking-widest border border-green-100">
                 Most Popular
             </div>
         )}
-        <div className="p-8 flex-grow">
-            <h3 className="text-lg font-bold text-gray-500 mb-2 uppercase tracking-wide">{title}</h3>
-            <div className="flex items-baseline mb-4">
-                <span className="text-5xl font-bold font-serif text-gray-900">{price}</span>
-                {price !== "Custom" && <span className="text-gray-500 ml-1 text-lg">/unit</span>}
-            </div>
-            <p className="text-gray-600 mb-8 leading-relaxed">{description}</p>
-
-            <ul className="space-y-4 mb-8">
-                {features.map((feature, index) => (
-                    <li key={index} className="flex items-start">
-                        <Check className="w-5 h-5 text-[#007F00] mr-3 flex-shrink-0 mt-0.5" />
-                        <span className="text-gray-700 font-medium text-sm">{feature}</span>
-                    </li>
-                ))}
-            </ul>
+        <h3 className="text-lg font-black text-gray-900 mb-1 uppercase tracking-tight">{title}</h3>
+        <div className="flex items-baseline mb-6">
+            <span className="text-4xl font-black text-gray-900">{price}</span>
+            {price !== "Custom" && <span className="text-gray-400 ml-1 text-sm font-bold">/unit</span>}
         </div>
+        <p className="text-gray-500 font-bold text-sm leading-relaxed mb-8 flex-grow">
+            {description}
+        </p>
 
-        <div className="p-8 pt-0 mt-auto">
-            <Link to={ctaLink}>
-                <button
-                    className={`w-full py-4 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 ${isPopular
-                        ? 'bg-[#007F00] text-white hover:bg-green-800'
-                        : 'bg-green-50 text-[#007F00] hover:bg-green-100'
-                        }`}
-                >
-                    {ctaText} <ArrowRight size={18} />
-                </button>
-            </Link>
-        </div>
+        <ul className="space-y-4 mb-10">
+            {features.map((feature, index) => (
+                <li key={index} className="flex items-start text-sm font-bold text-gray-700">
+                    <CheckCircle2 size={18} className="text-[#007F00] mr-3 flex-shrink-0 mt-0.5" />
+                    {feature}
+                </li>
+            ))}
+        </ul>
+
+        <Link to={ctaLink}>
+            <button className={`w-full py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all cursor-pointer ${isPopular ? 'bg-[#007F00] text-white hover:bg-[#006400] shadow-lg shadow-green-100' : 'bg-gray-50 text-gray-900 hover:bg-gray-100 border border-gray-100'}`}>
+                {ctaText}
+            </button>
+        </Link>
     </div>
 );
 
 const TableRow = ({ label, standard, premium }: { label: string, standard: boolean, premium: boolean }) => (
-    <tr className="hover:bg-gray-50 transition">
-        <td className="p-6 font-medium text-gray-800">{label}</td>
-        <td className="p-6 text-center bg-gray-50/50">
-            {standard ? <CheckCircle2 className="mx-auto text-gray-400" size={20} /> : <X className="mx-auto text-gray-300" size={20} />}
+    <tr className="hover:bg-gray-50/50 transition-colors">
+        <td className="p-6 font-bold text-gray-700">{label}</td>
+        <td className="p-6 text-center">
+            {standard ? <CheckCircle2 className="mx-auto text-green-200" size={20} /> : <X className="mx-auto text-gray-200" size={20} />}
         </td>
-        <td className="p-6 text-center bg-green-50/30">
-            {premium ? <CheckCircle2 className="mx-auto text-[#007F00]" size={20} /> : <X className="mx-auto text-gray-300" size={20} />}
+        <td className="p-6 text-center">
+            {premium ? <CheckCircle2 className="mx-auto text-[#007F00]" size={20} /> : <X className="mx-auto text-gray-200" size={20} />}
         </td>
     </tr>
-)
-
+);
 
 export default Pricing;

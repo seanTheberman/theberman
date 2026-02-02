@@ -6,31 +6,35 @@ const CATEGORIES = [
     {
         title: 'Insulation',
         description: 'Keep your home warm and reduce heat loss with attic, wall, and floor insulation.',
-        icon: <Thermometer size={32} className="text-[#007F00]" />,
-        items: ['Attic Insulation', 'External Wall Insulation', 'Internal Dry Lining', 'Cavity Wall Insulation']
+        icon: <Thermometer size={24} />,
+        items: ['Premium Attic Insulation', 'External Wall Systems', 'Internal Dry Lining', 'Cavity Wall Solutions']
     },
     {
         title: 'Heat Pumps',
-        description: 'Transition to sustainable heating with Air-to-Water or Ground Source heat pumps.',
-        icon: <Zap size={32} className="text-[#007F00]" />,
-        items: ['Air to Water Pumps', 'Ground Source Pumps', 'Heat Pump Servicing', 'Underfloor Heating']
+        subtitle: 'Sustainable Heating',
+        description: 'Transition away from fossil fuels with high-efficiency air-to-water systems.',
+        icon: <Zap size={24} />,
+        items: ['Air to Water Systems', 'Ground Source Pumps', 'Heat Pump Maintenance', 'Underfloor Heating']
     },
     {
         title: 'Solar Energy',
-        description: 'Generate your own electricity and hot water with solar PV and thermal panels.',
-        icon: <Sun size={32} className="text-[#007F00]" />,
-        items: ['Solar PV Panels', 'Battery Storage', 'Solar Thermal', 'Smart EV Charging']
+        subtitle: 'Renewable Power',
+        description: 'Harness the sun to power your home with complete PV and battery solutions.',
+        icon: <Sun size={24} />,
+        items: ['Solar PV Installations', 'Battery Storage', 'Solar Thermal', 'Smart EV Charging']
     },
     {
         title: 'Ventilation',
-        description: 'Improve air quality and prevent damp with modern ventilation systems.',
-        icon: <Wind size={32} className="text-[#007F00]" />,
-        items: ['Mechanical Ventilation', 'Extract Fans', 'Air Filtration', 'Humidity Control']
+        subtitle: 'Air Quality',
+        description: 'Ensure a healthy living environment with modern fresh air ventilation systems.',
+        icon: <Wind size={24} />,
+        items: ['Mechanical Ventilation', 'Extract Systems', 'Air Filtration', 'Humidity Control']
     },
     {
         title: 'Windows & Doors',
-        description: 'High-performance glazing to eliminate draughts and improve security.',
-        icon: <Droplets size={32} className="text-[#007F00]" />, // Using droplets for seal/weather theme
+        subtitle: 'The Draught Check',
+        description: 'Eliminate cold spots with A-rated triple and double glazing solutions.',
+        icon: <Droplets size={24} />,
         items: ['Triple Glazing', 'Double Glazing', 'Composite Doors', 'A-Rated Frames']
     }
 ];
@@ -38,67 +42,69 @@ const CATEGORIES = [
 const Catalogue = () => {
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen">
-            <title>Home Energy Upgrade Catalogue ⭐ | The Berman</title>
+            <title>Energy Upgrade Catalogue | The Berman</title>
+            <meta name="description" content="Explore our curated collection of home energy upgrades. Professional solutions for thermal comfort and efficiency." />
 
-            {/* HERO SECTION */}
-            <section className="pt-32 pb-20 bg-gradient-to-b from-green-50 to-white">
+            {/* 1. SIMPLE CENTERED HERO */}
+            <section className="pt-24 pb-16 bg-white">
                 <div className="container mx-auto px-6 text-center max-w-4xl">
-                    <div className="inline-flex items-center gap-2 mb-4 px-4 py-1.5 rounded-full bg-[#9ACD32] text-green-900 text-xs font-bold tracking-wide uppercase">
-                        The Berman ⭐
-                    </div>
-                    <h1 className="text-5xl md:text-6xl font-serif font-bold text-gray-900 mb-6 leading-tight">
-                        Home Energy Upgrade <br /> <span className="text-[#007F00]">Catalogue.</span>
+                    <span className="inline-block mb-4 px-4 py-1.5 rounded-full bg-green-50 text-[#007F00] text-xs font-black tracking-widest uppercase border border-green-100">
+                        The Catalogue
+                    </span>
+                    <h1 className="text-4xl md:text-6xl font-black text-gray-900 mb-6 leading-tight">
+                        Home Energy <br />
+                        <span className="text-[#007F00]">Upgrades.</span>
                     </h1>
-                    <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-                        Explore the best solutions for a warmer, more efficient home. We help you navigate grants, installers, and the latest technology.
+                    <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
+                        Explore the best solutions for a warmer home. We help you navigate grants, installers, and the latest technology.
                     </p>
                 </div>
             </section>
 
-            {/* CATALOGUE GRID */}
-            <section className="pb-24">
-                <div className="container mx-auto px-6">
+            {/* 2. SIMPLE CATEGORY GRID */}
+            <section className="pb-24 bg-white">
+                <div className="container mx-auto px-6 max-w-7xl">
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {CATEGORIES.map((category, idx) => (
-                            <div key={idx} className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 hover:border-[#9ACD32] transition-all group flex flex-col">
-                                <div className="bg-green-50 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-[#9ACD32]/20 transition-colors">
+                            <div key={idx} className="p-10 bg-white rounded-[2.5rem] border border-gray-100 hover:border-green-100 transition-all hover:shadow-lg group flex flex-col cursor-pointer">
+                                <div className="w-14 h-14 rounded-2xl bg-green-50 text-[#007F00] flex items-center justify-center group-hover:bg-[#007F00] group-hover:text-white transition-all transform group-hover:scale-110 mb-8 shadow-sm">
                                     {category.icon}
                                 </div>
-                                <h3 className="text-2xl font-serif font-bold mb-4">{category.title}</h3>
-                                <p className="text-gray-600 mb-6 text-sm flex-grow leading-relaxed">
+                                <h3 className="text-xl font-black text-gray-900 mb-4 uppercase tracking-tight">{category.title}</h3>
+                                <p className="text-gray-500 font-bold text-sm leading-relaxed mb-6 flex-grow">
                                     {category.description}
                                 </p>
-                                <ul className="space-y-2 mb-8">
+                                <ul className="space-y-3 mb-8">
                                     {category.items.map((item, i) => (
-                                        <li key={i} className="flex items-center gap-2 text-sm text-gray-500 font-medium">
-                                            <div className="w-1.5 h-1.5 bg-[#9ACD32] rounded-full"></div>
+                                        <li key={i} className="flex items-center gap-3 text-xs font-black text-gray-400 uppercase tracking-widest">
+                                            <div className="w-1.5 h-1.5 bg-[#007F00] rounded-full"></div>
                                             {item}
                                         </li>
                                     ))}
                                 </ul>
                                 <Link to="/contact">
-                                    <button className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-gray-50 group-hover:bg-[#007F00] group-hover:text-white transition-all font-bold text-sm">
+                                    <button className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-gray-50 text-gray-900 group-hover:bg-[#007F00] group-hover:text-white transition-all font-black text-xs uppercase tracking-widest border border-gray-100 group-hover:border-[#007F00] cursor-pointer">
                                         Enquire Now <ArrowRight size={16} />
                                     </button>
                                 </Link>
                             </div>
                         ))}
 
-                        {/* Special "Can't find what you need?" Card */}
-                        <div className="bg-[#007F00] rounded-3xl p-8 shadow-xl text-white md:col-span-2 lg:col-span-1 flex flex-col justify-between">
+                        {/* Special Custom Consultation Card */}
+                        <div className="p-10 bg-[#007F00] rounded-[2.5rem] shadow-xl text-white flex flex-col justify-between relative overflow-hidden group cursor-pointer">
                             <div>
-                                <h3 className="text-3xl font-serif font-bold mb-6">Need a Custom Consultation?</h3>
-                                <p className="text-green-100 mb-8 leading-relaxed">
-                                    Our experts can help you design a complete energy upgrade plan tailored to your specific budget and property goals.
+                                <h3 className="text-2xl font-black mb-6 uppercase tracking-tight leading-tight">Need a Custom <br />Consultation?</h3>
+                                <p className="text-green-50 font-medium text-sm leading-relaxed mb-8">
+                                    Our experts can help you design a complete energy upgrade plan tailored to your budget and property.
                                 </p>
                             </div>
                             <div className="space-y-4">
-                                <div className="border-t border-green-700 pt-6">
-                                    <p className="text-xs font-bold uppercase tracking-widest text-[#9ACD32] mb-1">Call Our Advisory Team</p>
-                                    <p className="text-2xl font-bold">087 442 1653</p>
+                                <div className="bg-white/10 p-4 rounded-2xl border border-white/20">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-[#9ACD32] mb-1">Direct Advisory</p>
+                                    <p className="text-2xl font-black">087 442 1653</p>
                                 </div>
                                 <Link to="/contact">
-                                    <button className="w-full bg-white text-[#007F00] py-4 rounded-xl font-bold transition shadow-lg hover:bg-green-50">
+                                    <button className="w-full bg-white text-[#007F00] py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all hover:bg-green-50 shadow-lg cursor-pointer">
                                         Book Assessment
                                     </button>
                                 </Link>
@@ -108,24 +114,21 @@ const Catalogue = () => {
                 </div>
             </section>
 
-            {/* CTA SECTION */}
-            <section className="py-20 bg-gray-50 border-t border-gray-100">
-                <div className="container mx-auto px-6 text-center">
-                    <h2 className="text-3xl font-serif font-bold mb-4">Ready to start your upgrade?</h2>
-                    <p className="text-gray-600 mb-10 max-w-xl mx-auto">
-                        Join thousands of homeowners who have significantly reduced their energy bills with our help.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Link to="/contact">
-                            <button className="bg-[#007F00] text-white px-8 py-4 rounded-xl font-bold shadow-lg hover:bg-green-800 transition">
-                                Get Free Quote
-                            </button>
-                        </Link>
-                        <Link to="/pricing">
-                            <button className="bg-white border border-gray-200 text-gray-700 px-8 py-4 rounded-xl font-bold hover:border-gray-400 transition">
-                                View Pricing
-                            </button>
-                        </Link>
+            {/* 3. FINISH CTA SECTION (MATCHING ABOUT/SERVICES) */}
+            <section className="py-2">
+                <div className="container max-w-full">
+                    <div className="bg-gray-50 p-12 md:p-20 text-center relative overflow-hidden border border-gray-100">
+                        <div className="relative z-10">
+                            <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 uppercase tracking-tight">Ready to start <br />your upgrade?</h2>
+                            <p className="text-gray-500 text-lg mb-10 max-w-xl mx-auto font-medium">
+                                Join thousands of homeowners who have significantly reduced their energy bills with our help.
+                            </p>
+                            <Link to="/contact">
+                                <button className="bg-[#007F00] text-white font-black px-12 py-5 rounded-2xl hover:bg-[#006400] transition-all shadow-xl flex items-center gap-3 mx-auto transform hover:-translate-y-1 active:translate-y-0 text-xs uppercase tracking-widest cursor-pointer">
+                                    Enquire Today
+                                </button>
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </section>

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown } from 'lucide-react';
+import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, TrendingUp, Briefcase } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -20,11 +20,20 @@ interface Lead {
     purpose?: string;
 }
 
+interface Profile {
+    id: string;
+    created_at: string;
+    full_name: string;
+    email: string;
+    role: 'admin' | 'contractor' | 'user' | 'homeowner';
+    is_active?: boolean;
+}
+
 interface Assessment {
     id: string;
     created_at: string;
     property_address: string;
-    status: 'draft' | 'submitted' | 'pending_quote' | 'quote_accepted' | 'scheduled' | 'completed';
+    status: 'draft' | 'submitted' | 'pending' | 'pending_quote' | 'quote_accepted' | 'scheduled' | 'completed' | 'assigned';
     scheduled_date: string | null;
     certificate_url: string | null;
     eircode?: string;
@@ -32,6 +41,8 @@ interface Assessment {
     county?: string;
     property_type?: string;
     user_id: string;
+    contractor_id?: string | null;
+    payment_status?: 'unpaid' | 'paid' | 'refunded';
     profiles?: {
         full_name: string;
         email: string;
@@ -48,18 +59,50 @@ interface Sponsor {
     is_active: boolean;
 }
 
+interface Payment {
+    id: string;
+    created_at: string;
+    amount: number;
+    currency: string;
+    status: 'pending' | 'completed' | 'failed' | 'refunded';
+    assessment_id: string;
+    user_id: string;
+    metadata?: any;
+    profiles?: {
+        full_name: string;
+        email: string;
+    };
+}
+
+interface AppSettings {
+    id: string;
+    default_quote_price: number;
+    vat_rate: number;
+    company_name: string;
+    support_email: string;
+}
+
 const Admin = () => {
     const [leads, setLeads] = useState<Lead[]>([]);
     const [assessments, setAssessments] = useState<Assessment[]>([]);
-    const [sponsors, setSponsors] = useState<Sponsor[]>([]); // New state
-    const [view, setView] = useState<'leads' | 'assessments'>('leads');
+    const [users_list, setUsersList] = useState<Profile[]>([]);
+    const [payments, setPayments] = useState<Payment[]>([]);
+    const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+    const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
+    const [view, setView] = useState<'stats' | 'leads' | 'assessments' | 'users' | 'payments' | 'settings'>('stats');
     const [loading, setLoading] = useState(true);
     const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
     const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
+    const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
     const [showQuoteModal, setShowQuoteModal] = useState(false);
+    const [showAssignModal, setShowAssignModal] = useState(false);
+    const [selectedAssessmentForAssignment, setSelectedAssessmentForAssignment] = useState<Assessment | null>(null);
     const [showMessageModal, setShowMessageModal] = useState(false);
     const [showScheduleModal, setShowScheduleModal] = useState(false);
     const [showCompleteModal, setShowCompleteModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<{ id: string, type: 'lead' | 'sponsor' } | null>(null);
 
     // Sponsor Modal State
     const [showSponsorModal, setShowSponsorModal] = useState(false);
@@ -98,6 +141,24 @@ const Admin = () => {
         }
     };
 
+    const fetchUsers = async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setUsersList(data || []);
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            toast.error('Failed to load users');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const fetchAssessments = async () => {
         setLoading(true);
         try {
@@ -116,6 +177,41 @@ const Admin = () => {
             toast.error('Failed to load assessments');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchPayments = async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('payments')
+                .select(`
+                    *,
+                    profiles (full_name, email)
+                `)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setPayments(data || []);
+        } catch (error) {
+            console.error('Error fetching payments:', error);
+            toast.error('Failed to load payments');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchAppSettings = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('app_settings')
+                .select('*')
+                .single();
+
+            if (error) throw error;
+            setAppSettings(data);
+        } catch (error) {
+            console.error('Error fetching settings:', error);
         }
     };
 
@@ -151,19 +247,38 @@ const Admin = () => {
         }
     };
 
-    const deleteLead = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this lead?')) return;
+    const handleDeleteClick = (id: string, type: 'lead' | 'sponsor') => {
+        setItemToDelete({ id, type });
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!itemToDelete) return;
+        setIsDeleting(true);
         try {
+            const table = itemToDelete.type === 'lead' ? 'leads' : 'sponsors';
             const { error } = await supabase
-                .from('leads')
+                .from(table)
                 .delete()
-                .eq('id', id);
+                .eq('id', itemToDelete.id);
 
             if (error) throw error;
-            setLeads(leads.filter(lead => lead.id !== id));
-            if (selectedLead?.id === id) setSelectedLead(null);
-        } catch (error) {
-            console.error('Error deleting lead:', error);
+
+            if (itemToDelete.type === 'lead') {
+                setLeads(leads.filter(lead => lead.id !== itemToDelete.id));
+                if (selectedLead?.id === itemToDelete.id) setSelectedLead(null);
+                toast.success('Lead deleted successfully');
+            } else {
+                setSponsors(sponsors.filter(s => s.id !== itemToDelete.id));
+                toast.success('Sponsor deleted successfully');
+            }
+            setShowDeleteModal(false);
+        } catch (error: any) {
+            console.error(`Error deleting ${itemToDelete.type}:`, error);
+            toast.error(`Failed to delete ${itemToDelete.type}`);
+        } finally {
+            setIsDeleting(false);
+            setItemToDelete(null);
         }
     };
 
@@ -235,20 +350,7 @@ const Admin = () => {
     };
 
     const handleDeleteSponsor = async (id: string) => {
-        if (!confirm('Are you sure?')) return;
-        try {
-            const { error } = await supabase
-                .from('sponsors')
-                .delete()
-                .eq('id', id);
-
-            if (error) throw error;
-            setSponsors(sponsors.filter(s => s.id !== id));
-            toast.success('Sponsor deleted');
-        } catch (error: any) {
-            console.error('Error deleting sponsor:', error);
-            toast.error('Failed to delete sponsor');
-        }
+        handleDeleteClick(id, 'sponsor');
     };
 
     const [showPromoModal, setShowPromoModal] = useState(false);
@@ -313,24 +415,81 @@ const Admin = () => {
     };
 
     useEffect(() => {
-        if (view === 'leads') {
-            fetchLeads();
-        } else {
-            fetchAssessments();
-        }
-        fetchPromoSettings();
+        const fetchViewData = async () => {
+            if (view === 'leads') await fetchLeads();
+            else if (view === 'assessments') await fetchAssessments();
+            else if (view === 'users') await fetchUsers();
+            else if (view === 'payments') await fetchPayments();
+            else if (view === 'settings') {
+                await fetchAppSettings();
+                await fetchPromoSettings();
+                await fetchSponsors();
+            }
+            else if (view === 'stats') {
+                // Fetch everything for stats
+                await Promise.all([fetchLeads(), fetchAssessments(), fetchUsers(), fetchPayments()]);
+            }
+        };
+
+        fetchViewData();
+        fetchPromoSettings(); // Always fetch this for initial state if needed
 
         // Real-time
         const channel = supabase
             .channel('admin-changes')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, () => fetchLeads())
             .on('postgres_changes', { event: '*', schema: 'public', table: 'assessments' }, () => fetchAssessments())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchUsers())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, () => fetchPayments())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'app_settings' }, () => fetchAppSettings())
             .subscribe();
 
         return () => {
             supabase.removeChannel(channel);
         };
     }, [view]);
+
+    // Stats Calculation
+    const stats = {
+        totalUsers: users_list.length,
+        homeowners: users_list.filter(u => u.role === 'homeowner' || u.role === 'user').length,
+        contractors: users_list.filter(u => u.role === 'contractor').length,
+        totalLeads: leads.length,
+        totalRevenue: payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0),
+        activeAssessments: assessments.filter(a => a.status !== 'completed').length,
+        completedAssessments: assessments.filter(a => a.status === 'completed').length,
+        pendingQuotes: assessments.filter(a => a.status === 'submitted' || a.status === 'pending_quote').length,
+        acceptedQuotes: assessments.filter(a => a.status === 'quote_accepted' || a.status === 'scheduled' || a.status === 'completed').length,
+    };
+
+    const handleAssignContractor = async (contractorId: string) => {
+        if (!selectedAssessmentForAssignment) return;
+
+        try {
+            const { error } = await supabase
+                .from('assessments')
+                .update({
+                    contractor_id: contractorId,
+                    status: 'assigned'
+                })
+                .eq('id', selectedAssessmentForAssignment.id);
+
+            if (error) throw error;
+
+            await logAudit('assign_contractor', 'assessment', selectedAssessmentForAssignment.id, {
+                contractor_id: contractorId,
+                previous_status: selectedAssessmentForAssignment.status
+            });
+
+            toast.success('Contractor assigned successfully');
+            setShowAssignModal(false);
+            setSelectedAssessmentForAssignment(null);
+            fetchAssessments(); // Refresh list
+        } catch (error) {
+            console.error('Error assigning contractor:', error);
+            toast.error('Failed to assign contractor');
+        }
+    };
 
     const handleGenerateQuote = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -532,17 +691,23 @@ const Admin = () => {
                             </span>
                         </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-6">
+                        <nav className="hidden lg:flex items-center gap-4">
+                            <button onClick={() => setView('stats')} className={`text-sm font-medium transition-colors ${view === 'stats' ? 'text-[#007F00]' : 'text-gray-500 hover:text-gray-900'}`}>Overview</button>
+                            <button onClick={() => setView('leads')} className={`text-sm font-medium transition-colors ${view === 'leads' ? 'text-[#007F00]' : 'text-gray-500 hover:text-gray-900'}`}>Leads</button>
+                            <button onClick={() => setView('assessments')} className={`text-sm font-medium transition-colors ${view === 'assessments' ? 'text-[#007F00]' : 'text-gray-500 hover:text-gray-900'}`}>Assessments</button>
+                            <button onClick={() => setView('users')} className={`text-sm font-medium transition-colors ${view === 'users' ? 'text-[#007F00]' : 'text-gray-500 hover:text-gray-900'}`}>Users</button>
+                            <button onClick={() => setView('payments')} className={`text-sm font-medium transition-colors ${view === 'payments' ? 'text-[#007F00]' : 'text-gray-500 hover:text-gray-900'}`}>Payments</button>
+                            <button onClick={() => setView('settings')} className={`text-sm font-medium transition-colors ${view === 'settings' ? 'text-[#007F00]' : 'text-gray-500 hover:text-gray-900'}`}>Settings</button>
+                        </nav>
+                        <span className="w-px h-6 bg-gray-200 hidden lg:block"></span>
                         <button
                             onClick={() => { setShowSponsorModal(true); fetchSponsors(); }}
                             className="text-sm text-gray-600 hover:text-[#007F00] font-medium transition-colors"
                         >
-                            Manage Sponsors
+                            Partners
                         </button>
                         <span className="w-px h-4 bg-gray-300 hidden md:block"></span>
-                        <span className="text-sm font-medium text-gray-600 hidden md:block">
-                            {user?.email}
-                        </span>
                         <button
                             onClick={handleSignOut}
                             className="flex items-center gap-2 text-sm text-gray-600 hover:text-red-600 transition-colors border px-3 py-1.5 rounded-lg hover:bg-gray-50"
@@ -558,7 +723,13 @@ const Admin = () => {
             <main className="container mx-auto px-4 py-8">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <div className="flex flex-col gap-4 w-full md:w-auto">
-                        <div className="flex bg-white p-1 rounded-xl shadow-sm border border-gray-200">
+                        <div className="flex bg-white p-1 rounded-xl shadow-sm border border-gray-200 overflow-x-auto whitespace-nowrap">
+                            <button
+                                onClick={() => setView('stats')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${view === 'stats' ? 'bg-[#007F00] text-white' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                                Overview
+                            </button>
                             <button
                                 onClick={() => setView('leads')}
                                 className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${view === 'leads' ? 'bg-[#007F00] text-white' : 'text-gray-500 hover:text-gray-700'}`}
@@ -571,11 +742,41 @@ const Admin = () => {
                             >
                                 Assessments
                             </button>
+                            <button
+                                onClick={() => setView('users')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${view === 'users' ? 'bg-[#007F00] text-white' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                                Users
+                            </button>
+                            <button
+                                onClick={() => setView('payments')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${view === 'payments' ? 'bg-[#007F00] text-white' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                                Payments
+                            </button>
+                            <button
+                                onClick={() => setView('settings')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${view === 'settings' ? 'bg-[#007F00] text-white' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                                Settings
+                            </button>
                         </div>
                         <div>
-                            <h2 className="text-2xl font-bold text-gray-800">{view === 'leads' ? 'Leads & Inquiries' : 'BER Assessments'}</h2>
+                            <h2 className="text-2xl font-bold text-gray-800">
+                                {view === 'stats' ? 'System Overview' :
+                                    view === 'leads' ? 'Leads & Inquiries' :
+                                        view === 'assessments' ? 'BER Assessments' :
+                                            view === 'users' ? 'User Management' :
+                                                view === 'payments' ? 'Financials' :
+                                                    view === 'settings' ? 'System Settings' : 'Admin'}
+                            </h2>
                             <p className="text-gray-500 text-sm mt-1">
-                                {view === 'leads' ? 'Manage your website submissions.' : 'Manage homeowner assessment requests.'}
+                                {view === 'stats' ? 'Key metrics and business performance.' :
+                                    view === 'leads' ? 'Manage your website submissions.' :
+                                        view === 'assessments' ? 'Manage homeowner assessment requests.' :
+                                            view === 'users' ? 'Manage homeowners and contractors.' :
+                                                view === 'payments' ? 'View and export payment records.' :
+                                                    view === 'settings' ? 'Configure global platform settings.' : ''}
                             </p>
                         </div>
                     </div>
@@ -593,13 +794,165 @@ const Admin = () => {
                         <RefreshCw className="animate-spin text-[#007F00] mb-4" size={32} />
                         <p className="text-gray-500 font-medium">Loading {view}...</p>
                     </div>
-                ) : (view === 'leads' ? leads : assessments).length === 0 ? (
+                ) : view === 'stats' ? (
+                    <div className="space-y-8">
+                        {/* Stats Cards Row 1 */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total Users</p>
+                                <div className="flex items-end justify-between">
+                                    <h3 className="text-3xl font-bold text-gray-900">{stats.totalUsers}</h3>
+                                    <div className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded">
+                                        {stats.homeowners} Users / {stats.contractors} Pro
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total Revenue</p>
+                                <div className="flex items-end justify-between">
+                                    <h3 className="text-3xl font-bold text-gray-900">
+                                        {new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' }).format(stats.totalRevenue)}
+                                    </h3>
+                                    <div className="bg-green-100 p-2 rounded-lg text-green-700">
+                                        <span className="font-bold text-xs">EUR</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Active Jobs</p>
+                                <div className="flex items-end justify-between">
+                                    <h3 className="text-3xl font-bold text-gray-900">{stats.activeAssessments}</h3>
+                                    <div className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                                        Pending Complete
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Conversion</p>
+                                <div className="flex items-end justify-between">
+                                    <h3 className="text-3xl font-bold text-gray-900">
+                                        {stats.totalLeads > 0 ? Math.round((stats.acceptedQuotes / stats.totalLeads) * 100) : 0}%
+                                    </h3>
+                                    <TrendingUp size={20} className="text-green-600 mb-1" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Recent Activity / Secondary Stats */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                                <h3 className="text-sm font-bold text-gray-900 mb-4">Assessment Pipeline</h3>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-gray-500">Unquoted Requests</span>
+                                        <span className="text-sm font-bold text-yellow-600 bg-yellow-50 px-2 py-1 rounded">{stats.pendingQuotes}</span>
+                                    </div>
+                                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                        <div
+                                            className="bg-yellow-400 h-full"
+                                            style={{ width: `${stats.totalLeads > 0 ? (stats.pendingQuotes / stats.totalLeads) * 100 : 0}%` }}
+                                        ></div>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-gray-500">Completed Projects</span>
+                                        <span className="text-sm font-bold text-green-600 bg-green-50 px-2 py-1 rounded">{stats.completedAssessments}</span>
+                                    </div>
+                                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                        <div
+                                            className="bg-green-500 h-full"
+                                            style={{ width: `${assessments.length > 0 ? (stats.completedAssessments / assessments.length) * 100 : 0}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-[#007F00] rounded-2xl shadow-lg shadow-green-900/10 p-6 text-white flex flex-col justify-between">
+                                <div>
+                                    <h3 className="text-sm font-bold opacity-80 uppercase tracking-widest mb-4">Quick View</h3>
+                                    <p className="text-2xl font-bold leading-tight mb-2">Manage your contractors and homeowners from one place.</p>
+                                    <p className="text-sm opacity-70">Expand your system by adding new partners and tracking every step of the certification.</p>
+                                </div>
+                                <button
+                                    onClick={() => setView('users')}
+                                    className="mt-6 w-full bg-white text-[#007F00] font-bold py-3 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
+                                >
+                                    Manage Users
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ) : (view === 'leads' ? leads : view === 'assessments' ? assessments : users_list).length === 0 ? (
                     <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
                         <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
-                            {view === 'leads' ? <MessageSquare size={32} /> : <Home size={32} />}
+                            {view === 'leads' ? <MessageSquare size={32} /> : view === 'users' ? <Briefcase size={32} /> : <Home size={32} />}
                         </div>
                         <h3 className="text-lg font-bold text-gray-900">No {view} yet</h3>
-                        <p className="text-gray-500">{view === 'leads' ? 'New form submissions will appear here.' : 'Homeowner requests will appear here.'}</p>
+                        <p className="text-gray-500">{view === 'leads' ? 'New form submissions will appear here.' : 'New records will appear here.'}</p>
+                    </div>
+                ) : view === 'users' ? (
+                    /* USERS VIEW */
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm text-gray-600">
+                                <thead className="bg-gray-50/50 text-gray-900 font-bold uppercase tracking-wider text-xs border-b border-gray-100">
+                                    <tr>
+                                        <th className="px-6 py-4">Status</th>
+                                        <th className="px-6 py-4">User Details</th>
+                                        <th className="px-6 py-4">Role</th>
+                                        <th className="px-6 py-4">Activity</th>
+                                        <th className="px-6 py-4 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-50">
+                                    {users_list.map((u) => (
+                                        <tr key={u.id} className="hover:bg-green-50/30 transition-colors group">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className={`w-2 h-2 rounded-full ${u.is_active !== false ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                                                    <span className="text-xs font-bold uppercase tracking-tight text-gray-500">
+                                                        {u.is_active !== false ? 'Active' : 'Suspended'}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 font-medium text-gray-900">
+                                                {u.full_name}
+                                                <div className="text-xs text-gray-400 font-normal">{u.email}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${u.role === 'admin' ? 'bg-red-50 text-red-700' :
+                                                    u.role === 'contractor' ? 'bg-blue-50 text-blue-700' :
+                                                        'bg-gray-50 text-gray-700'
+                                                    }`}>
+                                                    {u.role}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-500 font-medium">
+                                                {u.role === 'contractor' ? (
+                                                    <div className="flex items-center gap-1 text-blue-600">
+                                                        <Briefcase size={14} />
+                                                        <span>{assessments.filter(a => a.contractor_id === u.id).length} Jobs</span>
+                                                    </div>
+                                                ) : u.role === 'homeowner' || u.role === 'user' ? (
+                                                    <div className="flex items-center gap-1 text-green-600">
+                                                        <Home size={14} />
+                                                        <span>{assessments.filter(a => a.user_id === u.id).length} Requests</span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-xs text-gray-400">N/A</span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <button
+                                                    onClick={() => setSelectedUser(u)}
+                                                    className="text-gray-400 hover:text-gray-900 p-2"
+                                                >
+                                                    <Eye size={16} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 ) : view === 'leads' ? (
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -626,6 +979,12 @@ const Admin = () => {
                                             className="text-xs bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg font-bold text-gray-700"
                                         >
                                             View Details
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteClick(lead.id, 'lead')}
+                                            className="text-xs bg-red-50 border border-red-100 px-3 py-2 rounded-lg font-bold text-red-600 hover:bg-red-100 transition-colors"
+                                        >
+                                            Delete
                                         </button>
                                     </div>
                                 </div>
@@ -676,7 +1035,7 @@ const Admin = () => {
                                                         View More
                                                     </button>
                                                     <button
-                                                        onClick={() => deleteLead(lead.id)}
+                                                        onClick={() => handleDeleteClick(lead.id, 'lead')}
                                                         className="text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
                                                         title="Delete Lead"
                                                     >
@@ -690,7 +1049,7 @@ const Admin = () => {
                             </table>
                         </div>
                     </div>
-                ) : (
+                ) : view === 'assessments' ? (
                     /* ASSESSMENTS VIEW */
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                         <div className="overflow-x-auto">
@@ -700,7 +1059,9 @@ const Admin = () => {
                                         <th className="px-6 py-4">Status</th>
                                         <th className="px-6 py-4">Address</th>
                                         <th className="px-6 py-4">Client</th>
+                                        <th className="px-6 py-4">Contractor</th>
                                         <th className="px-6 py-4">Scheduled</th>
+                                        <th className="px-6 py-4">Payment</th>
                                         <th className="px-6 py-4 text-right">Actions</th>
                                     </tr>
                                 </thead>
@@ -719,11 +1080,39 @@ const Admin = () => {
                                                 <div className="font-medium text-gray-900">{assessment.profiles?.full_name || 'Generic User'}</div>
                                                 <div className="text-xs text-gray-400">{assessment.profiles?.email}</div>
                                             </td>
+                                            <td className="px-6 py-4">
+                                                {assessment.contractor_id ? (
+                                                    <span className="text-xs font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded-md">
+                                                        {users_list.find(u => u.id === assessment.contractor_id)?.full_name || 'Unknown'}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-xs text-gray-400 italic">Unassigned</span>
+                                                )}
+                                            </td>
                                             <td className="px-6 py-4 text-gray-500">
                                                 {assessment.scheduled_date ? new Date(assessment.scheduled_date).toLocaleDateString() : 'TBC'}
                                             </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`text-xs font-bold px-2 py-1 rounded-md ${assessment.payment_status === 'paid' ? 'bg-green-100 text-green-700' :
+                                                    assessment.payment_status === 'refunded' ? 'bg-red-100 text-red-700' :
+                                                        'bg-gray-100 text-gray-500'
+                                                    }`}>
+                                                    {assessment.payment_status ? assessment.payment_status.toUpperCase() : 'UNPAID'}
+                                                </span>
+                                            </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex items-center justify-end gap-2">
+                                                    {!assessment.contractor_id && assessment.status !== 'completed' && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedAssessmentForAssignment(assessment);
+                                                                setShowAssignModal(true);
+                                                            }}
+                                                            className="text-white bg-[#007F00] hover:bg-green-800 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all"
+                                                        >
+                                                            Assign
+                                                        </button>
+                                                    )}
                                                     {assessment.status === 'submitted' && (
                                                         <button
                                                             onClick={() => {
@@ -774,8 +1163,222 @@ const Admin = () => {
                             </table>
                         </div>
                     </div>
-                )}
+                ) : view === 'payments' ? (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900">Recent Payments</h3>
+                                <p className="text-sm text-gray-500">Track all financial transactions.</p>
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => toast('Exporting CSV...', { icon: '📄' })}
+                                    className="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg text-sm font-bold hover:bg-gray-50 transition-colors shadow-sm"
+                                >
+                                    Export Report
+                                </button>
+                            </div>
+                        </div>
+
+                        {payments.length === 0 ? (
+                            <div className="text-center py-20">
+                                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
+                                    <div className="font-bold text-2xl">€</div>
+                                </div>
+                                <h3 className="text-lg font-bold text-gray-900">No payments found</h3>
+                                <p className="text-gray-500">Once payments are received, they will appear here.</p>
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-sm text-gray-600">
+                                    <thead className="bg-gray-50/50 text-gray-900 font-bold uppercase tracking-wider text-xs border-b border-gray-100">
+                                        <tr>
+                                            <th className="px-6 py-4">Status</th>
+                                            <th className="px-6 py-4">Amount</th>
+                                            <th className="px-6 py-4">User</th>
+                                            <th className="px-6 py-4">Date</th>
+                                            <th className="px-6 py-4 text-right">Reference</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50">
+                                        {payments.map((payment) => (
+                                            <tr key={payment.id} className="hover:bg-green-50/30 transition-colors group">
+                                                <td className="px-6 py-4">
+                                                    <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${payment.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                                        payment.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                                            payment.status === 'failed' ? 'bg-red-100 text-red-700' :
+                                                                'bg-gray-100 text-gray-700'
+                                                        }`}>
+                                                        {payment.status}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 font-bold text-gray-900">
+                                                    {new Intl.NumberFormat('en-IE', { style: 'currency', currency: payment.currency }).format(payment.amount)}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="font-medium text-gray-900">{payment.profiles?.full_name || 'Unknown User'}</div>
+                                                    <div className="text-xs text-gray-400">{payment.profiles?.email}</div>
+                                                </td>
+                                                <td className="px-6 py-4 text-gray-500">
+                                                    {new Date(payment.created_at).toLocaleDateString()}
+                                                </td>
+                                                <td className="px-6 py-4 text-right font-mono text-xs text-gray-400">
+                                                    {payment.id.substring(0, 8)}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                ) : view === 'settings' ? (
+                    /* SETTINGS VIEW */
+                    <div className="space-y-6">
+                        {/* Global Settings */}
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <TrendingUp size={20} className="text-[#007F00]" />
+                                Global Pricing & Config
+                            </h3>
+                            <form
+                                onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    const formData = new FormData(e.target as HTMLFormElement);
+                                    try {
+                                        const { error } = await supabase.from('app_settings').update({
+                                            default_quote_price: parseFloat(formData.get('default_quote_price') as string),
+                                            vat_rate: parseFloat(formData.get('vat_rate') as string),
+                                            company_name: formData.get('company_name') as string,
+                                            support_email: formData.get('support_email') as string
+                                        }).eq('id', appSettings?.id);
+                                        if (error) throw error;
+                                        toast.success('Settings updated!');
+                                        fetchAppSettings();
+                                    } catch (err: any) {
+                                        toast.error(err.message);
+                                    }
+                                }}
+                                className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                            >
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Company Name</label>
+                                    <input name="company_name" defaultValue={appSettings?.company_name} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Support Email</label>
+                                    <input name="support_email" defaultValue={appSettings?.support_email} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Default Quote Price (€)</label>
+                                    <input name="default_quote_price" type="number" step="0.01" defaultValue={appSettings?.default_quote_price} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">VAT Rate (%)</label>
+                                    <input name="vat_rate" type="number" step="0.1" defaultValue={appSettings?.vat_rate} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div className="md:col-span-2 flex justify-end">
+                                    <button type="submit" className="bg-[#007F00] text-white px-4 py-2 rounded-lg font-bold">Save Configuration</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        {/* Promo Settings (Previously Modal) */}
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <h3 className="text-lg font-bold text-gray-900 mb-4">Homepage Promo Banner</h3>
+                            <form onSubmit={savePromoSettings} className="space-y-4">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <input
+                                        type="checkbox"
+                                        checked={promoSettings.is_enabled}
+                                        onChange={(e) => setPromoSettings({ ...promoSettings, is_enabled: e.target.checked })}
+                                        className="w-5 h-5 text-[#007F00] rounded focus:ring-[#007F00]"
+                                    />
+                                    <span className="text-sm font-medium text-gray-700">Enable Promo Banner</span>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-1">Headline</label>
+                                        <input
+                                            value={promoSettings.headline}
+                                            onChange={(e) => setPromoSettings({ ...promoSettings, headline: e.target.value })}
+                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-1">Sub Text</label>
+                                        <input
+                                            value={promoSettings.sub_text}
+                                            onChange={(e) => setPromoSettings({ ...promoSettings, sub_text: e.target.value })}
+                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-bold text-gray-700 mb-1">Destination URL</label>
+                                        <input
+                                            value={promoSettings.destination_url}
+                                            onChange={(e) => setPromoSettings({ ...promoSettings, destination_url: e.target.value })}
+                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex justify-end">
+                                    <button type="submit" className="bg-[#007F00] text-white px-4 py-2 rounded-lg font-bold">Update Banner</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                ) : null}
             </main>
+
+            {/* ASSIGN CONTRACTOR MODAL */}
+            {showAssignModal && selectedAssessmentForAssignment && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-gray-900">Assign Contractor</h3>
+                            <button onClick={() => setShowAssignModal(false)} className="text-gray-400 hover:text-gray-600">
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <div className="mb-4">
+                            <p className="text-sm text-gray-500 mb-2">Select a certified contractor for:</p>
+                            <p className="font-bold text-gray-800 text-sm bg-gray-50 p-2 rounded border border-gray-100">
+                                {selectedAssessmentForAssignment.property_address}
+                            </p>
+                        </div>
+                        <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                            {users_list.filter(u => u.role === 'contractor').length === 0 ? (
+                                <p className="text-center text-gray-400 text-sm py-4">No contractors found.</p>
+                            ) : (
+                                users_list.filter(u => u.role === 'contractor').map(contractor => (
+                                    <button
+                                        key={contractor.id}
+                                        onClick={() => handleAssignContractor(contractor.id)}
+                                        className="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:border-[#007F00] hover:bg-green-50 transition-all text-left group"
+                                    >
+                                        <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0 group-hover:bg-white">
+                                            {contractor.full_name.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-gray-900 text-sm">{contractor.full_name}</p>
+                                            <p className="text-xs text-gray-500">{contractor.email}</p>
+                                        </div>
+                                    </button>
+                                ))
+                            )}
+                        </div>
+                        <div className="pt-4 mt-2 border-t border-gray-100 flex justify-end">
+                            <button
+                                onClick={() => setShowAssignModal(false)}
+                                className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* PROMO SETTINGS MODAL */}
             {showPromoModal && (
@@ -1283,6 +1886,107 @@ const Admin = () => {
                                 Maximum of 3 sponsors allowed. Delete one to add a new one.
                             </div>
                         )}
+                    </div>
+                </div>
+            )}
+            {/* DELETE CONFIRMATION MODAL */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 animate-in zoom-in-95 duration-200 text-center">
+                        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-100">
+                            <AlertTriangle size={32} />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Are you sure?</h3>
+                        <p className="text-gray-500 text-sm mb-8">
+                            This action cannot be undone. This {itemToDelete?.type} will be permanently removed from our records.
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => { setShowDeleteModal(false); setItemToDelete(null); }}
+                                disabled={isDeleting}
+                                className="flex-1 px-4 py-3 text-sm font-bold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                disabled={isDeleting}
+                                className="flex-1 px-4 py-3 text-sm font-bold text-white bg-red-500 rounded-xl hover:bg-red-600 transition-all shadow-lg shadow-red-500/20 disabled:opacity-70 flex items-center justify-center gap-2"
+                            >
+                                {isDeleting ? (
+                                    <>
+                                        <Loader2 size={18} className="animate-spin" />
+                                        Deleting...
+                                    </>
+                                ) : (
+                                    'Delete'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* USER DETAILS MODAL */}
+            {selectedUser && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-8">
+                            <div className="flex justify-between items-start mb-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 rounded-full bg-green-50 text-[#007F00] flex items-center justify-center font-bold text-2xl border border-green-100">
+                                        {selectedUser.full_name.charAt(0)}
+                                    </div>
+                                    <div>
+                                        <h3 className="text-2xl font-bold text-gray-900">{selectedUser.full_name}</h3>
+                                        <p className="text-sm text-gray-500">{selectedUser.email}</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setSelectedUser(null)} className="text-gray-400 hover:text-gray-600">
+                                    <X size={24} />
+                                </button>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Account Role</p>
+                                        <p className="text-sm font-bold text-gray-900 capitalize">{selectedUser.role}</p>
+                                    </div>
+                                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Status</p>
+                                        <p className={`text-sm font-bold capitalize ${selectedUser.is_active !== false ? 'text-green-600' : 'text-red-600'}`}>
+                                            {selectedUser.is_active !== false ? 'Active Account' : 'Suspended'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">User ID</p>
+                                    <p className="text-xs font-mono text-gray-600 break-all">{selectedUser.id}</p>
+                                </div>
+                                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Member Since</p>
+                                    <p className="text-sm font-bold text-gray-900">{new Date(selectedUser.created_at).toLocaleDateString()}</p>
+                                </div>
+                            </div>
+
+                            <div className="mt-8 flex gap-3">
+                                <button
+                                    className="flex-1 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors text-sm"
+                                    onClick={() => setSelectedUser(null)}
+                                >
+                                    Close
+                                </button>
+                                <button
+                                    className="flex-1 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-colors text-sm border border-red-100"
+                                    onClick={() => {
+                                        toast.error('Privileged action: Use Supabase dashboard to suspend users.');
+                                    }}
+                                >
+                                    Toggle Suspension
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
