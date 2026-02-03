@@ -1,29 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import EmailVerification from '../components/EmailVerification';
-import {
-    LogOut,
-    HardHat,
-    ClipboardList,
-    CheckCircle2,
-    Clock,
-    AlertCircle,
-    X,
-    MessageSquare,
-    TrendingUp,
-    DollarSign,
-    Briefcase,
-    Calendar,
-    MapPin,
-    ArrowRight,
-    ArrowLeft,
-    AlertTriangle,
-    CheckCircle,
-    Phone,
-    Mail,
-    ExternalLink
-} from 'lucide-react';
+import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, DollarSign, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, Phone, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -34,6 +12,22 @@ interface Quote {
     status: 'pending' | 'accepted' | 'rejected';
     created_at: string;
     assessment_id: string;
+    lowestPrice?: number;
+    assessment?: {
+        id: string;
+        town: string;
+        county: string;
+        property_type: string;
+        property_size: string;
+        bedrooms: number;
+        heat_pump: string;
+        ber_purpose: string;
+        additional_features: string[];
+        preferred_date: string;
+        preferred_time?: string;
+        created_at: string;
+        property_address?: string;
+    };
 }
 
 interface Assessment {
@@ -85,9 +79,12 @@ const ContractorDashboard = () => {
     const [certUrl, setCertUrl] = useState('');
 
     // Multi-step Quoting & Rejection States
-    const [quoteStep, setQuoteStep] = useState<1 | 2 | 3>(1); // 1: Details, 2: Price, 3: Confirmation/OTP
+    const [quoteStep, setQuoteStep] = useState<1 | 2 | 3 | 4>(1); // 1: Date picker, 2: Quote form, 3: Review, 4: OTP
     const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
     const [rejectionReason, setRejectionReason] = useState('');
+    const [expandedContactId, setExpandedContactId] = useState<string | null>(null);
+    const [selectedAvailabilityDate, setSelectedAvailabilityDate] = useState<string | null>(null);
+    const [termsAgreed, setTermsAgreed] = useState(false);
 
 
 
@@ -125,17 +122,59 @@ const ContractorDashboard = () => {
 
             if (jobsError) throw jobsError;
 
-            // 2. Fetch My Quotes
+            // 2. Fetch My Quotes with assessment details
             const { data: quotes, error: quotesError } = await supabase
                 .from('quotes')
-                .select('*')
+                .select(`
+                    *,
+                    assessment:assessment_id (
+                        id,
+                        town,
+                        county,
+                        property_type,
+                        property_size,
+                        bedrooms,
+                        heat_pump,
+                        ber_purpose,
+                        additional_features,
+                        preferred_date,
+                        preferred_time,
+                        created_at,
+                        property_address
+                    )
+                `)
                 .eq('created_by', user?.id)
                 .order('created_at', { ascending: false });
 
             if (quotesError) throw quotesError;
 
-            // 3. Filter data
-            setMyQuotes(quotes || []);
+            // 3. Fetch lowest quotes for these assessments
+            const assessmentIds = quotes?.map(q => q.assessment_id) || [];
+            let enrichedQuotes = quotes || [];
+
+            if (assessmentIds.length > 0) {
+                const { data: allQuotes, error: allQuotesError } = await supabase
+                    .from('quotes')
+                    .select('assessment_id, price')
+                    .in('assessment_id', assessmentIds);
+
+                if (!allQuotesError && allQuotes) {
+                    const minPrices: Record<string, number> = {};
+                    allQuotes.forEach(q => {
+                        if (!minPrices[q.assessment_id] || q.price < minPrices[q.assessment_id]) {
+                            minPrices[q.assessment_id] = q.price;
+                        }
+                    });
+
+                    enrichedQuotes = (quotes || []).map(q => ({
+                        ...q,
+                        lowestPrice: minPrices[q.assessment_id] || q.price
+                    }));
+                }
+            }
+
+            // 4. Update states
+            setMyQuotes(enrichedQuotes);
 
             // Available jobs are those without a quote from this contractor
             const quotedIds = new Set(quotes?.map(q => q.assessment_id) || []);
@@ -175,6 +214,42 @@ const ContractorDashboard = () => {
         setJobDetailsModalOpen(false);
         setQuoteModalOpen(true);
         setQuoteStep(1);
+        setSelectedAvailabilityDate(null);
+        setTermsAgreed(false);
+        setQuotePrice('');
+        setQuoteNotes('');
+    };
+
+    const handleReQuote = (quote: Quote) => {
+        if (!quote.assessment) return;
+
+        // Map Quote assessment data back to Assessment interface
+        const jobData: Assessment = {
+            id: quote.assessment_id,
+            property_address: quote.assessment.property_address || '',
+            town: quote.assessment.town,
+            county: quote.assessment.county,
+            property_type: quote.assessment.property_type,
+            property_size: quote.assessment.property_size,
+            bedrooms: quote.assessment.bedrooms,
+            heat_pump: quote.assessment.heat_pump,
+            ber_purpose: quote.assessment.ber_purpose,
+            additional_features: quote.assessment.additional_features,
+            created_at: quote.assessment.created_at,
+            preferred_date: quote.assessment.preferred_date,
+            preferred_time: quote.assessment.preferred_time || '',
+            status: 'pending_quote', // Default status for quoting
+            scheduled_date: null,
+            user_id: '' // Not strictly needed for the modal
+        };
+
+        setSelectedJob(jobData);
+        setQuoteModalOpen(true);
+        setQuoteStep(1);
+        setSelectedAvailabilityDate(null);
+        setTermsAgreed(false);
+        setQuotePrice('');
+        setQuoteNotes('');
     };
 
 
@@ -284,14 +359,14 @@ const ContractorDashboard = () => {
         <div className="min-h-screen bg-[#F8FAFC] font-sans">
             {/* Nav */}
             <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
-                <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+                <div className="w-full px-6 py-4 flex justify-between items-center">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-[#007EA7] rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-100">
                             <HardHat size={24} />
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold text-gray-900 leading-tight">Partner Portal</h1>
-                            <span className="text-[10px] font-bold text-[#007EA7] uppercase tracking-widest">Licensed Contractor</span>
+                            <h1 className="text-xl font-bold text-gray-900 leading-tight">Assessor Portal</h1>
+                            <span className="text-[10px] font-bold text-[#007EA7] uppercase tracking-widest">Licensed BER Assessor</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
@@ -309,7 +384,7 @@ const ContractorDashboard = () => {
                 </div>
             </header>
 
-            <main className="container mx-auto px-4 py-8 max-w-7xl">
+            <main className="w-full px-6 py-8">
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                     <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
@@ -395,44 +470,116 @@ const ContractorDashboard = () => {
                                     <p className="text-gray-500 max-w-sm">We'll notify you when new assessment requests are submitted by homeowners in your area.</p>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {availableJobs.map(job => (
-                                        <div key={job.id} className="group bg-white border border-gray-200 rounded-2xl p-6 hover:border-[#007EA7] hover:shadow-xl hover:shadow-blue-900/5 transition-all">
-                                            <div className="flex justify-between items-start mb-6">
-                                                <div className="p-3 bg-blue-50 text-[#007EA7] rounded-xl">
-                                                    <MapPin size={24} />
+                                <div className="overflow-x-auto">
+                                    {/* Desktop Table View */}
+                                    <table className="w-full text-sm hidden md:table">
+                                        <thead>
+                                            <tr className="bg-gray-50 border-b border-gray-200">
+                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Posted</th>
+                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Town</th>
+                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">County</th>
+                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Type</th>
+                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Sq. Mt.</th>
+                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Beds</th>
+                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Heat Pump</th>
+                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Purpose</th>
+                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Addition</th>
+                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Preferred Date</th>
+                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {availableJobs.map((job, index) => (
+                                                <tr
+                                                    key={job.id}
+                                                    className={`border-b border-gray-100 hover:bg-amber-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}
+                                                >
+                                                    <td className="py-3 px-4 text-gray-600 font-medium">
+                                                        {new Date(job.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
+                                                    </td>
+                                                    <td className="py-3 px-4 text-gray-900 font-bold">{job.town}</td>
+                                                    <td className="py-3 px-4 text-gray-600">{job.county}</td>
+                                                    <td className="py-3 px-4 text-gray-600">{job.property_type}</td>
+                                                    <td className="py-3 px-4 text-gray-600">{job.property_size}</td>
+                                                    <td className="py-3 px-4 text-gray-600">{job.bedrooms}</td>
+                                                    <td className="py-3 px-4 text-gray-600">{job.heat_pump}</td>
+                                                    <td className="py-3 px-4">
+                                                        <span className={`px-2 py-1 rounded text-xs font-bold ${job.ber_purpose?.toLowerCase().includes('mortgage') ? 'bg-blue-100 text-blue-700' :
+                                                            job.ber_purpose?.toLowerCase().includes('grant') ? 'bg-green-100 text-green-700' :
+                                                                job.ber_purpose?.toLowerCase().includes('letting') ? 'bg-amber-100 text-amber-700' :
+                                                                    job.ber_purpose?.toLowerCase().includes('selling') ? 'bg-purple-100 text-purple-700' :
+                                                                        'bg-gray-100 text-gray-600'
+                                                            }`}>
+                                                            {job.ber_purpose}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-3 px-4 text-gray-600">
+                                                        {job.additional_features?.length > 0 ? job.additional_features.join(', ') : 'None'}
+                                                    </td>
+                                                    <td className="py-3 px-4 text-gray-600">{job.preferred_date || 'Flexible'}</td>
+                                                    <td className="py-3 px-4">
+                                                        {(() => {
+                                                            const daysSincePosted = Math.floor((Date.now() - new Date(job.created_at).getTime()) / (1000 * 60 * 60 * 24));
+                                                            const isRecent = daysSincePosted <= 2;
+                                                            return (
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setSelectedJob(job);
+                                                                        setJobDetailsModalOpen(true);
+                                                                    }}
+                                                                    className={`px-4 py-2 text-white rounded-lg text-xs font-bold transition-all shadow-sm ${isRecent
+                                                                        ? 'bg-yellow-500 hover:bg-yellow-600'
+                                                                        : 'bg-green-600 hover:bg-green-700'
+                                                                        }`}
+                                                                >
+                                                                    Quote
+                                                                </button>
+                                                            );
+                                                        })()}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+
+                                    {/* Mobile Card View */}
+                                    <div className="md:hidden space-y-4">
+                                        {availableJobs.map(job => (
+                                            <div key={job.id} className="bg-white border border-gray-200 rounded-2xl p-4">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div>
+                                                        <p className="font-bold text-gray-900">{job.town}, {job.county}</p>
+                                                        <p className="text-xs text-gray-500">{job.property_type} • {job.bedrooms} beds</p>
+                                                    </div>
+                                                    <span className="text-xs text-gray-400">
+                                                        {new Date(job.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
+                                                    </span>
                                                 </div>
-                                                <span className="text-[10px] font-black uppercase bg-gray-100 text-gray-500 px-2 py-1 rounded-md">
-                                                    New Request
-                                                </span>
+                                                <div className="flex flex-wrap gap-2 mb-4">
+                                                    <span className="text-[10px] font-bold bg-gray-100 text-gray-600 px-2 py-1 rounded">{job.ber_purpose}</span>
+                                                    <span className="text-[10px] font-bold bg-gray-100 text-gray-600 px-2 py-1 rounded">{job.heat_pump}</span>
+                                                </div>
+                                                {(() => {
+                                                    const daysSincePosted = Math.floor((Date.now() - new Date(job.created_at).getTime()) / (1000 * 60 * 60 * 24));
+                                                    const isRecent = daysSincePosted <= 2;
+                                                    return (
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedJob(job);
+                                                                setJobDetailsModalOpen(true);
+                                                            }}
+                                                            className={`w-full py-3 text-white rounded-xl font-bold transition-all ${isRecent
+                                                                ? 'bg-yellow-500 hover:bg-yellow-600'
+                                                                : 'bg-green-600 hover:bg-green-700'
+                                                                }`}
+                                                        >
+                                                            Quote
+                                                        </button>
+                                                    );
+                                                })()}
                                             </div>
-                                            <h4 className="text-lg font-bold text-gray-900 mb-2 line-clamp-1">{job.property_address}</h4>
-                                            <div className="flex flex-wrap gap-2 mb-6">
-                                                <div className="text-[10px] font-bold bg-blue-50 text-[#007EA7] px-2 py-1 rounded-md flex items-center gap-1">
-                                                    <MapPin size={10} />
-                                                    {job.county}
-                                                </div>
-                                                <div className="text-[10px] font-bold bg-green-50 text-green-700 px-2 py-1 rounded-md flex items-center gap-1">
-                                                    <HardHat size={10} />
-                                                    {job.property_type}
-                                                </div>
-                                                <div className="text-[10px] font-bold bg-gray-50 text-gray-500 px-2 py-1 rounded-md flex items-center gap-1">
-                                                    <Calendar size={10} />
-                                                    {new Date(job.created_at).toLocaleDateString()}
-                                                </div>
-                                            </div>
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedJob(job);
-                                                    setJobDetailsModalOpen(true);
-                                                }}
-                                                className="w-full flex items-center justify-center gap-2 py-3 bg-[#007EA7] text-white rounded-xl font-bold hover:bg-[#005F7E] transition-all shadow-lg shadow-blue-100"
-                                            >
-                                                View Details
-                                                <ArrowRight size={18} />
-                                            </button>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
                             )
                         ) : view === 'my_quotes' ? (
@@ -445,25 +592,110 @@ const ContractorDashboard = () => {
                                     <p className="text-gray-500 max-w-sm">Tap on "Available Jobs" to find homeowners looking for BER assessments.</p>
                                 </div>
                             ) : (
-                                <div className="space-y-3">
-                                    {myQuotes.map(quote => (
-                                        <div key={quote.id} className="bg-white border border-gray-100 rounded-2xl p-4 flex items-center gap-4 hover:shadow-md transition-shadow">
-                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${quote.status === 'accepted' ? 'bg-green-50 text-green-600' : quote.status === 'rejected' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
-                                                {quote.status === 'accepted' ? <CheckCircle2 size={24} /> : quote.status === 'rejected' ? <AlertCircle size={24} /> : <Clock size={24} />}
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex justify-between items-start">
-                                                    <div>
-                                                        <h4 className="font-bold text-gray-900">€{quote.price.toLocaleString()}</h4>
-                                                        <p className="text-xs text-gray-400 font-medium">Sent on {new Date(quote.created_at).toLocaleDateString()}</p>
+                                <div className="space-y-6">
+                                    {/* Header
+                                    <div className="bg-[#007EA7] text-white p-6 rounded-xl text-center">
+                                        <h2 className="text-xl font-bold mb-1">My Quotes</h2>
+                                        <p className="text-sm text-white/80">Here's your live pending quotes.</p>
+                                    </div> */}
+
+                                    {/* Desktop Table View */}
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm hidden md:table">
+                                            <thead>
+                                                <tr className="bg-gray-50 border-b border-gray-200">
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Posted</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Town</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">County</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Type</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Sq. Mt.</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Beds</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Heat Pump</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Purpose</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Addition</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Survey Date</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-[#8B0000] uppercase tracking-wider">Lowest Quote</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-green-700 uppercase tracking-wider">My Quote</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {myQuotes.map((quote, index) => (
+                                                    <tr
+                                                        key={quote.id}
+                                                        className={`border-b border-gray-100 hover:bg-amber-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}
+                                                    >
+                                                        <td className="py-3 px-3 text-gray-600 font-medium">
+                                                            {new Date(quote.assessment?.created_at || quote.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
+                                                        </td>
+                                                        <td className="py-3 px-3 text-gray-900 font-bold">{quote.assessment?.town || '-'}</td>
+                                                        <td className="py-3 px-3 text-gray-600">{quote.assessment?.county || '-'}</td>
+                                                        <td className="py-3 px-3 text-gray-600">{quote.assessment?.property_type || '-'}</td>
+                                                        <td className="py-3 px-3 text-gray-600">{quote.assessment?.property_size || '-'}</td>
+                                                        <td className="py-3 px-3 text-gray-600">{quote.assessment?.bedrooms || '-'}</td>
+                                                        <td className="py-3 px-3 text-gray-600">{quote.assessment?.heat_pump || 'None'}</td>
+                                                        <td className="py-3 px-3">
+                                                            <span className={`px-2 py-1 rounded text-xs font-bold ${quote.assessment?.ber_purpose?.toLowerCase().includes('mortgage') ? 'bg-blue-100 text-blue-700' :
+                                                                quote.assessment?.ber_purpose?.toLowerCase().includes('grant') ? 'bg-green-100 text-green-700' :
+                                                                    quote.assessment?.ber_purpose?.toLowerCase().includes('letting') ? 'bg-amber-100 text-amber-700' :
+                                                                        quote.assessment?.ber_purpose?.toLowerCase().includes('selling') ? 'bg-purple-100 text-purple-700' :
+                                                                            'bg-gray-100 text-gray-600'
+                                                                }`}>
+                                                                {quote.assessment?.ber_purpose || '-'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-3 px-3 text-gray-600">
+                                                            {quote.assessment?.additional_features?.length ? quote.assessment.additional_features.join(', ') : 'None'}
+                                                        </td>
+                                                        <td className="py-3 px-3 text-gray-600">{quote.assessment?.preferred_date || 'Flexible'}</td>
+                                                        <td className="py-3 px-3 text-[#8B0000] font-bold">€ {quote.lowestPrice?.toLocaleString() || '-'}</td>
+                                                        <td className="py-3 px-3 text-green-700 font-bold">€{quote.price.toLocaleString()}</td>
+                                                        <td className="py-3 px-3">
+                                                            <button
+                                                                onClick={() => handleReQuote(quote)}
+                                                                className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-bold transition-all"
+                                                            >
+                                                                Re-Quote
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+
+                                        {/* Mobile Card View */}
+                                        <div className="md:hidden space-y-4">
+                                            {myQuotes.map(quote => (
+                                                <div key={quote.id} className="bg-white border border-gray-200 rounded-2xl p-4">
+                                                    <div className="flex justify-between items-start mb-3">
+                                                        <div>
+                                                            <p className="font-bold text-gray-900">{quote.assessment?.town || '-'}, {quote.assessment?.county || '-'}</p>
+                                                            <p className="text-xs text-gray-500">{quote.assessment?.property_type || '-'} • {quote.assessment?.bedrooms || 0} beds</p>
+                                                        </div>
+                                                        <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md ${quote.status === 'accepted' ? 'bg-green-100 text-green-700' : quote.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                            {quote.status}
+                                                        </span>
                                                     </div>
-                                                    <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md ${quote.status === 'accepted' ? 'bg-green-100 text-green-700' : quote.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
-                                                        {quote.status}
-                                                    </span>
+                                                    <div className="grid grid-cols-2 gap-4 mb-4">
+                                                        <div>
+                                                            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Lowest Quote</p>
+                                                            <p className="text-lg font-bold text-[#8B0000]">€ {quote.lowestPrice?.toLocaleString() || '-'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">My Quote</p>
+                                                            <p className="text-lg font-bold text-green-700">€{quote.price.toLocaleString()}</p>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleReQuote(quote)}
+                                                        className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all"
+                                                    >
+                                                        Re-Quote
+                                                    </button>
                                                 </div>
-                                            </div>
+                                            ))}
                                         </div>
-                                    ))}
+                                    </div>
                                 </div>
                             )
                         ) : (
@@ -476,140 +708,144 @@ const ContractorDashboard = () => {
                                     <p className="text-gray-500 max-w-sm">When a homeowner accepts your quote, the job will appear here for you to manage.</p>
                                 </div>
                             ) : (
-                                <div className="space-y-4">
-                                    {activeJobs.map(job => (
-                                        <div key={job.id} className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all">
-                                            <div className="flex justify-between items-start mb-6">
-                                                <div>
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${job.status === 'completed' ? 'bg-gray-100 text-gray-500' : 'bg-green-100 text-green-700'}`}>
-                                                            {job.status.replace('_', ' ')}
-                                                        </span>
-                                                        <span className="text-[10px] font-bold text-gray-400">ID: {job.id.slice(0, 8)}</span>
-                                                    </div>
-                                                    <h4 className="text-lg font-bold text-gray-900">{job.property_address}</h4>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <button className="p-2 bg-blue-50 text-[#007EA7] rounded-xl hover:bg-blue-100 transition-colors">
-                                                        <MessageSquare size={20} />
-                                                    </button>
-                                                </div>
-                                            </div>
+                                <div className="space-y-6">
+                                    {/* Header */}
+                                    {/* <div className="bg-[#007EA7] text-white p-6 rounded-xl text-center">
+                                        <h2 className="text-xl font-bold mb-1">My Clients</h2>
+                                        <p className="text-sm text-white/80">Here's your successful quotes on BerCert.com. Please contact <span className="text-yellow-300">your clients</span> within one business day.</p>
+                                    </div> */}
 
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4 border-t border-gray-50 mb-6">
-                                                <div>
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase">Customer</span>
-                                                    <p className="text-sm font-bold text-gray-700">{job.profiles?.full_name || 'Homeowner'}</p>
-                                                </div>
-                                                <div>
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase">Type</span>
-                                                    <p className="text-sm font-bold text-gray-700">{job.property_type}</p>
-                                                </div>
-                                                <div>
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase">Town</span>
-                                                    <p className="text-sm font-bold text-gray-700">{job.town}</p>
-                                                </div>
-                                                <div>
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase">Bedrooms</span>
-                                                    <p className="text-sm font-bold text-gray-700">{job.bedrooms}</p>
-                                                </div>
-                                            </div>
+                                    {/* Desktop Table View */}
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm hidden md:table">
+                                            <thead>
+                                                <tr className="bg-gray-50 border-b border-gray-200">
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Date Accepted</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Town</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">County</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-blue-600 uppercase tracking-wider">Eircode</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Type</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Sq. Mt.</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Beds</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Heat Pump</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Purpose</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Addition</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Survey Date</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Contact</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Balance</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {activeJobs.map((job, index) => (
+                                                    <>
+                                                        <tr
+                                                            key={job.id}
+                                                            className={`border-b border-gray-100 hover:bg-amber-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}
+                                                        >
+                                                            <td className="py-3 px-3 text-gray-600 font-medium">
+                                                                {new Date(job.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
+                                                            </td>
+                                                            <td className="py-3 px-3 text-gray-900 font-bold">{job.town}</td>
+                                                            <td className="py-3 px-3 text-gray-600">{job.county}</td>
+                                                            <td className="py-3 px-3">
+                                                                <a href="#" className="text-blue-600 underline font-medium hover:text-blue-800">
+                                                                    {job.property_address?.slice(0, 7) || 'N/A'}
+                                                                </a>
+                                                            </td>
+                                                            <td className="py-3 px-3 text-gray-600">{job.property_type}</td>
+                                                            <td className="py-3 px-3 text-gray-600">{job.property_size}</td>
+                                                            <td className="py-3 px-3 text-gray-600">{job.bedrooms}</td>
+                                                            <td className="py-3 px-3 text-gray-600">{job.heat_pump || 'None'}</td>
+                                                            <td className="py-3 px-3">
+                                                                <span className={`px-2 py-1 rounded text-xs font-bold ${job.ber_purpose?.toLowerCase().includes('mortgage') ? 'bg-blue-100 text-blue-700' :
+                                                                    job.ber_purpose?.toLowerCase().includes('grant') ? 'bg-green-100 text-green-700' :
+                                                                        job.ber_purpose?.toLowerCase().includes('letting') ? 'bg-amber-100 text-amber-700' :
+                                                                            job.ber_purpose?.toLowerCase().includes('selling') ? 'bg-purple-100 text-purple-700' :
+                                                                                'bg-gray-100 text-gray-600'
+                                                                    }`}>
+                                                                    {job.ber_purpose || '-'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="py-3 px-3 text-gray-600">
+                                                                {job.additional_features?.length ? job.additional_features.join(', ') : 'None'}
+                                                            </td>
+                                                            <td className="py-3 px-3 text-gray-600">
+                                                                {job.scheduled_date
+                                                                    ? new Date(job.scheduled_date).toLocaleDateString('en-IE', { weekday: 'short', day: '2-digit', month: 'short' })
+                                                                    : job.preferred_date || 'TBD'
+                                                                }
+                                                            </td>
+                                                            <td className="py-3 px-3">
+                                                                <button
+                                                                    onClick={() => setExpandedContactId(expandedContactId === job.id ? null : job.id)}
+                                                                    className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-bold transition-all"
+                                                                >
+                                                                    Contact Details
+                                                                </button>
+                                                            </td>
+                                                            <td className="py-3 px-3 text-green-700 font-bold">
+                                                                €{job.quotes?.[0]?.price?.toLocaleString() || '200'}
+                                                            </td>
+                                                        </tr>
+                                                        {/* Expandable Contact Details Row */}
+                                                        {expandedContactId === job.id && (
+                                                            <tr key={`${job.id}-contact`} className="bg-white border-b border-gray-100">
+                                                                <td colSpan={13} className="py-3 px-6">
+                                                                    <div className="flex items-center gap-6 text-sm">
+                                                                        <span className="text-gray-400">↳</span>
+                                                                        <span><strong>Name:</strong> {job.contact_name || job.profiles?.full_name || 'N/A'}</span>
+                                                                        <span><strong>Email:</strong> <a href={`mailto:${job.contact_email}`} className="text-blue-600 hover:underline">{job.contact_email || 'N/A'}</a></span>
+                                                                        <span><strong>Phone:</strong> <a href={`tel:${job.contact_phone}`} className="text-blue-600 hover:underline">{job.contact_phone || 'N/A'}</a></span>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        )}
+                                                    </>
+                                                ))}
+                                            </tbody>
+                                        </table>
 
-                                            {job.scheduled_date && (
-                                                <div className="bg-blue-50/50 border border-blue-100/50 rounded-2xl p-4 mb-6 flex items-center justify-between">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="p-2 bg-white rounded-lg text-[#007EA7] shadow-sm">
-                                                            <Calendar size={18} />
-                                                        </div>
+                                        {/* Mobile Card View */}
+                                        <div className="md:hidden space-y-4">
+                                            {activeJobs.map(job => (
+                                                <div key={job.id} className="bg-white border border-gray-200 rounded-2xl p-4">
+                                                    <div className="flex justify-between items-start mb-3">
                                                         <div>
-                                                            <p className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest">Inspection Date</p>
-                                                            <p className="text-sm font-bold text-gray-900">
-                                                                {new Date(job.scheduled_date).toLocaleDateString('en-IE', {
-                                                                    weekday: 'short',
-                                                                    day: 'numeric',
-                                                                    month: 'short',
-                                                                    year: 'numeric'
-                                                                })}
-                                                            </p>
+                                                            <p className="font-bold text-gray-900">{job.town}, {job.county}</p>
+                                                            <p className="text-xs text-gray-500">{job.property_type} • {job.bedrooms} beds</p>
                                                         </div>
+                                                        <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md ${job.status === 'completed' ? 'bg-gray-100 text-gray-500' : 'bg-green-100 text-green-700'}`}>
+                                                            {job.status?.replace('_', ' ')}
+                                                        </span>
                                                     </div>
+                                                    <div className="flex justify-between items-center mb-4">
+                                                        <div>
+                                                            <p className="text-xs text-gray-400">Balance</p>
+                                                            <p className="text-lg font-bold text-green-700">€{job.quotes?.[0]?.price?.toLocaleString() || '200'}</p>
+                                                        </div>
+                                                        <p className="text-xs text-gray-400">
+                                                            {new Date(job.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
+                                                        </p>
+                                                    </div>
+                                                    {job.contact_phone && (
+                                                        <div className="flex flex-wrap gap-2 mb-4 text-xs">
+                                                            <a href={`tel:${job.contact_phone}`} className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                                                                <Phone size={12} /> {job.contact_phone}
+                                                            </a>
+                                                            <a href={`mailto:${job.contact_email}`} className="flex items-center gap-1 text-gray-600 bg-gray-50 px-2 py-1 rounded">
+                                                                <Mail size={12} /> Email
+                                                            </a>
+                                                        </div>
+                                                    )}
                                                     <button
-                                                        onClick={() => {
-                                                            setSchedulingJob(job);
-                                                            setScheduledDate(new Date(job.scheduled_date!).toISOString().split('T')[0]);
-                                                        }}
-                                                        className="text-[10px] font-black text-[#007EA7] uppercase hover:underline"
+                                                        className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all"
                                                     >
-                                                        Reschedule
+                                                        Contact Details
                                                     </button>
                                                 </div>
-                                            )}
-
-                                            {job.status !== 'completed' && (
-                                                <div className="flex gap-3">
-                                                    {job.status === 'quote_accepted' && (
-                                                        <button
-                                                            onClick={() => {
-                                                                setSchedulingJob(job);
-                                                                setScheduledDate(new Date().toISOString().split('T')[0]);
-                                                            }}
-                                                            disabled={isSubmitting}
-                                                            className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
-                                                        >
-                                                            <Calendar size={18} />
-                                                            Schedule Inspection
-                                                        </button>
-                                                    )}
-                                                    {job.status === 'scheduled' && (
-                                                        <button
-                                                            onClick={() => {
-                                                                setCompletingJob(job);
-                                                                setCertUrl('');
-                                                            }}
-                                                            disabled={isSubmitting}
-                                                            className="flex-1 py-3 bg-[#007F00] text-white rounded-xl font-bold hover:bg-green-800 transition-all shadow-lg shadow-green-100 flex items-center justify-center gap-2"
-                                                        >
-                                                            <CheckCircle size={18} />
-                                                            Complete Job
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            )}
-
-                                            {job.status !== 'completed' && job.contact_phone && (
-                                                <div className="mt-6 pt-6 border-t border-gray-50 flex flex-wrap gap-4">
-                                                    <a href={`tel:${job.contact_phone}`} className="flex items-center gap-2 text-xs font-bold text-[#007EA7] bg-blue-50 px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors">
-                                                        <Phone size={14} />
-                                                        {job.contact_phone}
-                                                    </a>
-                                                    <a href={`mailto:${job.contact_email}`} className="flex items-center gap-2 text-xs font-bold text-gray-600 bg-gray-50 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
-                                                        <Mail size={14} />
-                                                        Email Customer
-                                                    </a>
-                                                </div>
-                                            )}
-
-                                            {job.status === 'completed' && (
-                                                <div className="space-y-3">
-                                                    <div className="flex items-center gap-2 text-green-600 font-bold text-sm bg-green-50 p-4 rounded-2xl">
-                                                        <CheckCircle size={18} />
-                                                        Job successfully completed and certified.
-                                                    </div>
-                                                    {job.certificate_url && (
-                                                        <a
-                                                            href={job.certificate_url}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="flex items-center justify-center gap-2 w-full py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all text-sm"
-                                                        >
-                                                            <ExternalLink size={16} />
-                                                            View Certificate
-                                                        </a>
-                                                    )}
-                                                </div>
-                                            )}
+                                            ))}
                                         </div>
-                                    ))}
+                                    </div>
                                 </div>
                             )
                         )}
@@ -730,113 +966,201 @@ const ContractorDashboard = () => {
                 </div>
             )}
 
-            {/* Quote Modal - STEPS 2 & 3 */}
+            {/* Quote Modal - DATE PICKER + QUOTE FORM */}
             {quoteModalOpen && selectedJob && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
-                        {/* Modal Header */}
-                        <div className="bg-[#007EA7] p-8 text-white relative">
-                            <button
-                                onClick={() => setQuoteModalOpen(false)}
-                                className="absolute top-6 right-6 text-white/60 hover:text-white transition-colors"
-                            >
-                                <X size={24} />
-                            </button>
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="px-3 py-1 bg-white/20 rounded-full text-[10px] font-black uppercase tracking-widest">
-                                    Step {quoteStep} of 3
-                                </div>
-                                {quoteStep > 1 && (
-                                    <button
-                                        onClick={() => setQuoteStep(prev => (prev - 1) as 1 | 2 | 3)}
-                                        className="text-xs font-bold text-white/80 hover:text-white flex items-center gap-1"
-                                    >
-                                        <ArrowLeft size={14} /> Back
-                                    </button>
-                                )}
-                            </div>
-                            <h3 className="text-2xl font-black">
-                                {quoteStep === 1 ? 'Quoting Details' : quoteStep === 2 ? 'Review Quote' : 'Email Verification'}
-                            </h3>
-                        </div>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300 overflow-y-auto">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden animate-in zoom-in-95 duration-200 my-8 relative">
 
-                        {/* Modal Body */}
-                        <div className="p-8">
-                            {quoteStep === 1 && (
-                                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Proposed Price (€)</label>
-                                        <div className="relative">
-                                            <span className="absolute left-5 top-1/2 -translate-y-1/2 text-xl font-bold text-gray-400">€</span>
-                                            <input
-                                                type="number"
-                                                value={quotePrice}
-                                                onChange={(e) => setQuotePrice(e.target.value)}
-                                                className="w-full bg-gray-50 border-2 border-transparent focus:border-[#007EA7] rounded-2xl pl-12 pr-6 py-4 text-2xl font-black outline-none transition-all"
-                                                placeholder="0.00"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Notes for Client</label>
-                                        <textarea
-                                            value={quoteNotes}
-                                            onChange={(e) => setQuoteNotes(e.target.value)}
-                                            className="w-full bg-gray-50 border-2 border-transparent focus:border-[#007EA7] rounded-2xl px-6 py-4 text-sm font-medium outline-none transition-all min-h-[120px]"
-                                            placeholder="Timeline, service details..."
-                                        />
-                                    </div>
+                        {/* Step 1: Date Picker */}
+                        {quoteStep === 1 && (
+                            <div className="p-8">
+                                <button
+                                    onClick={() => setQuoteModalOpen(false)}
+                                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                                >
+                                    <X size={24} />
+                                </button>
+
+                                <div className="text-center mb-8">
+                                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Earliest date you can do the survey.</h2>
+                                    <p className="text-sm text-gray-600">
+                                        The <span className="text-amber-600 underline">highlighted date</span> is the customer's preferred date & time.
+                                        Select the earliest date that you are available, even if it's before the customer's preferred date.
+                                    </p>
+                                </div>
+
+                                {/* Calendar Grid - 30 days */}
+                                <div className="grid grid-cols-5 gap-3 max-h-[400px] overflow-y-auto p-2">
+                                    {Array.from({ length: 30 }, (_, i) => {
+                                        const date = new Date();
+                                        date.setDate(date.getDate() + i);
+                                        const dateStr = date.toISOString().split('T')[0];
+                                        const isPreferred = selectedJob.preferred_date === dateStr ||
+                                            new Date(selectedJob.preferred_date).toDateString() === date.toDateString();
+                                        const isSelected = selectedAvailabilityDate === dateStr;
+
+                                        return (
+                                            <button
+                                                key={dateStr}
+                                                onClick={() => setSelectedAvailabilityDate(dateStr)}
+                                                className={`p-4 rounded-lg border-2 text-center transition-all ${isSelected
+                                                    ? 'border-green-500 bg-green-50'
+                                                    : isPreferred
+                                                        ? 'border-amber-400 bg-amber-50'
+                                                        : 'border-gray-200 hover:border-green-300 hover:bg-green-50/50'
+                                                    }`}
+                                            >
+                                                <p className="text-sm font-medium text-gray-600">
+                                                    {date.toLocaleDateString('en-IE', { weekday: 'long' })}
+                                                </p>
+                                                <p className={`text-lg font-bold ${isSelected ? 'text-green-700' : isPreferred ? 'text-amber-700' : 'text-gray-800'}`}>
+                                                    {date.toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
+                                                </p>
+                                                {isPreferred && (
+                                                    <p className="text-[10px] text-amber-600 font-medium mt-1">
+                                                        ({selectedJob.preferred_time || '8am - 10am'})
+                                                    </p>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                <div className="flex gap-4 mt-8">
+                                    <button
+                                        onClick={() => setQuoteModalOpen(false)}
+                                        className="flex-1 py-4 text-gray-500 font-bold bg-gray-100 rounded-xl hover:bg-gray-200 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
                                     <button
                                         onClick={() => setQuoteStep(2)}
-                                        className="w-full py-5 bg-[#007EA7] text-white rounded-2xl font-black text-lg hover:bg-[#005F7E] transition-all shadow-xl shadow-blue-100 flex items-center justify-center gap-3"
+                                        disabled={!selectedAvailabilityDate}
+                                        className="flex-[2] py-4 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
-                                        Preview Quote
+                                        Continue
                                         <ArrowRight size={20} />
                                     </button>
                                 </div>
-                            )}
+                            </div>
+                        )}
 
-                            {quoteStep === 2 && (
-                                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-                                    <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100 space-y-4">
-                                        <div className="flex justify-between items-center border-b border-gray-200 pb-4">
-                                            <span className="text-xs font-bold text-gray-400 uppercase">Grand Total</span>
-                                            <span className="text-3xl font-black text-[#007EA7]">€{parseFloat(quotePrice).toLocaleString()}</span>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <span className="text-[10px] font-black text-gray-400 uppercase">Your Notes</span>
-                                            <p className="text-sm font-medium text-gray-600 italic">"{quoteNotes || 'No notes provided'}"</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3 p-4 bg-amber-50 text-amber-700 rounded-2xl border border-amber-100">
-                                        <Mail size={20} />
-                                        <p className="text-xs font-bold">A verification code will be sent to your email to confirm this quote.</p>
-                                    </div>
+                        {/* Step 2: Quote Form with Job Details */}
+                        {quoteStep === 2 && (
+                            <div>
+                                {/* Header */}
+                                <div className="bg-green-100 p-6 text-center border-b border-green-200 relative">
                                     <button
-                                        onClick={() => setQuoteStep(3)}
-                                        className="w-full py-5 bg-[#007EA7] text-white rounded-2xl font-black text-lg hover:bg-[#005F7E] transition-all shadow-xl shadow-blue-100 flex items-center justify-center gap-3"
+                                        onClick={() => setQuoteModalOpen(false)}
+                                        className="absolute top-4 right-4 text-green-700 hover:text-green-900 transition-colors"
                                     >
-                                        Proceed to Verification
-                                        <ArrowRight size={20} />
+                                        <X size={24} />
                                     </button>
+                                    <h2 className="text-xl font-bold text-green-800">Quote for this job in {selectedJob.town}, Co. {selectedJob.county}</h2>
+                                    <p className="text-sm text-green-600">Submit your quote below.</p>
                                 </div>
-                            )}
 
-                            {quoteStep === 3 && (
-                                <div className="animate-in slide-in-from-right-4 duration-300">
-                                    <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                                        <EmailVerification
-                                            email={user?.email || ''}
-                                            assessmentId={selectedJob?.id}
-                                            onVerified={() => {
-                                                handleSubmitQuote();
-                                            }}
-                                            onBack={() => setQuoteStep(2)}
-                                        />
+                                <div className="p-6 grid md:grid-cols-2 gap-6">
+                                    {/* Left: Job Details */}
+                                    <div className="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
+                                        <div className="bg-gray-200 px-4 py-3 border-b border-gray-300">
+                                            <h3 className="font-bold text-gray-700 text-center">Job Details</h3>
+                                        </div>
+                                        <div className="divide-y divide-gray-200">
+                                            <div className="flex justify-between px-4 py-3">
+                                                <span className="text-gray-600">Location:</span>
+                                                <span className="font-medium text-gray-800">{selectedJob.town}, Co. {selectedJob.county}</span>
+                                            </div>
+                                            <div className="flex justify-between px-4 py-3">
+                                                <span className="text-gray-600">Eircode:</span>
+                                                <a href="#" className="font-medium text-blue-600 underline">{selectedJob.property_address?.slice(0, 7) || 'N/A'}</a>
+                                            </div>
+                                            <div className="flex justify-between px-4 py-3">
+                                                <span className="text-gray-600">Property Type:</span>
+                                                <span className="font-medium text-gray-800">{selectedJob.property_type}</span>
+                                            </div>
+                                            <div className="flex justify-between px-4 py-3">
+                                                <span className="text-gray-600">Size:</span>
+                                                <span className="font-medium text-gray-800">{selectedJob.property_size}</span>
+                                            </div>
+                                            <div className="flex justify-between px-4 py-3">
+                                                <span className="text-gray-600">Beds:</span>
+                                                <span className="font-medium text-gray-800">{selectedJob.bedrooms}</span>
+                                            </div>
+                                            <div className="flex justify-between px-4 py-3">
+                                                <span className="text-gray-600">Heat Pump:</span>
+                                                <span className="font-medium text-gray-800">{selectedJob.heat_pump || 'None'}</span>
+                                            </div>
+                                            <div className="flex justify-between px-4 py-3">
+                                                <span className="text-gray-600">Additions:</span>
+                                                <span className="font-medium text-gray-800">{selectedJob.additional_features?.length ? selectedJob.additional_features.join(', ') : 'None'}</span>
+                                            </div>
+                                            <div className="flex justify-between px-4 py-3">
+                                                <span className="text-gray-600">Purpose:</span>
+                                                <span className="font-medium text-gray-800">{selectedJob.ber_purpose}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Right: Your Quote */}
+                                    <div className="bg-green-50 rounded-xl border border-green-200 overflow-hidden">
+                                        <div className="bg-green-200 px-4 py-3 border-b border-green-300">
+                                            <h3 className="font-bold text-green-800 text-center">Your Quote</h3>
+                                        </div>
+                                        <div className="p-6 space-y-4">
+                                            <p className="text-sm text-green-700 text-center italic">Include SEAI fees.</p>
+                                            <p className="text-sm text-green-700 text-center italic">Include VAT (if registered).</p>
+                                            <p className="text-sm text-green-700 text-center italic">Include €30 BerCert.com fee.</p>
+
+                                            <div className="relative mt-4">
+                                                <input
+                                                    type="number"
+                                                    value={quotePrice}
+                                                    onChange={(e) => setQuotePrice(e.target.value)}
+                                                    className="w-full bg-white border-2 border-gray-200 focus:border-green-500 rounded-lg px-4 py-3 text-center text-xl font-bold outline-none transition-all"
+                                                    placeholder="170"
+                                                />
+                                            </div>
+                                            <p className="text-xs text-gray-400 text-center">Eg. 170, no euro sign or cents.</p>
+
+                                            <div className="flex items-start gap-2 mt-4">
+                                                <input
+                                                    type="checkbox"
+                                                    id="termsCheck"
+                                                    checked={termsAgreed}
+                                                    onChange={(e) => setTermsAgreed(e.target.checked)}
+                                                    className="mt-1 w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500"
+                                                />
+                                                <label htmlFor="termsCheck" className="text-sm text-gray-600">
+                                                    I agree to the <a href="#" className="text-blue-600 underline">terms of use</a>
+                                                </label>
+                                            </div>
+                                            <p className="text-sm text-gray-500 text-center">
+                                                and I am available from {selectedAvailabilityDate ? new Date(selectedAvailabilityDate).toLocaleDateString('en-IE', { weekday: 'short', day: '2-digit', month: 'short' }) : 'selected date'}.
+                                            </p>
+
+                                            <button
+                                                onClick={handleSubmitQuote}
+                                                disabled={!quotePrice || !termsAgreed || isSubmitting}
+                                                className="w-full py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                {isSubmitting ? 'Submitting...' : 'Submit Quote'}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            )}
-                        </div>
+
+                                {/* Back button */}
+                                <div className="px-6 pb-6 flex justify-start">
+                                    <button
+                                        onClick={() => setQuoteStep(1)}
+                                        className="text-sm font-bold text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                                    >
+                                        <ArrowLeft size={14} /> Back to date selection
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

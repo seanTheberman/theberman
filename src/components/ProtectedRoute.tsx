@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-    const { user, role, loading } = useAuth();
+    const { user, role, profile, loading } = useAuth();
     const location = useLocation();
 
     if (loading) {
@@ -24,16 +24,15 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     if (allowedRoles && role && !allowedRoles.includes(role)) {
         // Logged in but wrong role -> Go to their respective dashboard
         if (role === 'admin') return <Navigate to="/admin" replace />;
-        if (role === 'contractor') return <Navigate to="/dashboard/contractor" replace />;
+        if (role === 'contractor') return <Navigate to="/dashboard/ber-assessor" replace />;
         return <Navigate to="/dashboard/user" replace />;
     }
 
     const isContractor = role === 'contractor';
-    const { profile } = useAuth();
 
     // If contractor and missing SEAI number, and NOT already on onboarding page, redirect
-    if (isContractor && (!profile?.seai_number || profile?.seai_number.trim() === '') && location.pathname !== '/contractor-onboarding') {
-        return <Navigate to="/contractor-onboarding" replace />;
+    if (isContractor && (!profile?.seai_number || profile?.seai_number.trim() === '') && location.pathname !== '/assessor-onboarding') {
+        return <Navigate to="/assessor-onboarding" replace />;
     }
 
     return <>{children}</>;

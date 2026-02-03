@@ -11,7 +11,7 @@ const NAV_LINKS = [
     { label: 'Services', path: '/services' },
     { label: 'Pricing', path: '/pricing' },
     { label: 'Contact', path: '/contact' },
-    { label: 'Catalogue', path: '/catalogue' },
+    { label: 'Hire an Agent', path: '/catalogue' },
 ];
 
 const Layout = () => {
@@ -31,15 +31,15 @@ const Layout = () => {
     };
 
     const getDashboardLink = () => {
-        if (!user) return '/contact'; // Should not happen if logged in
+        if (!user) return '/contact';
         if (role === 'admin') return '/admin';
-        if (role === 'contractor') return '/dashboard/contractor';
+        if (role === 'contractor') return '/dashboard/ber-assessor';
         return '/dashboard/user';
     };
 
     const getDashboardLabel = () => {
         if (role === 'admin') return 'Admin Panel';
-        if (role === 'contractor') return 'Partner Portal';
+        if (role === 'contractor') return 'Assessor Portal';
         return 'My Dashboard';
     };
 
@@ -52,18 +52,15 @@ const Layout = () => {
     return (
         <div className="flex flex-col min-h-screen font-sans">
             {/* HEADER */}
-            <header className="fixed w-full top-0 z-50 bg-[#007F00] backdrop-blur-md border-b border-green-700 shadow-sm transition-all duration-300">
-                <div className="absolute top-full left-0 right-0 h-1 bg-gradient-to-r from-green-400 via-yellow-300 to-green-400 opacity-20 pointer-events-none"></div>
+            <header className="fixed w-full top-0 z-50 bg-[#0c121d] backdrop-blur-md border-b border-white/5 shadow-lg transition-all duration-300">
+                <div className="absolute top-full left-0 right-0 h-px bg-white/5 pointer-events-none"></div>
                 <div className="container mx-auto px-6 h-20 flex justify-between items-center">
 
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-2 group  " onClick={closeMenu}>
                         <div className="relative">
-                            <img src="/logo.svg" alt="The Berman Logo" className="h-18 w-auto relative z-10 brightness-0 invert" />
+                            <img src="/logo.svg" alt="The Berman Logo" className="h-18 w-auto relative z-10" />
                         </div>
-                        {/* <span className="text-2xl font-serif font-bold text-white group-hover:text-green-200 transition-colors">
-                            The Berman
-                        </span> */}
                     </Link>
 
                     {/* Desktop Navigation */}
@@ -96,15 +93,15 @@ const Layout = () => {
                             </div>
                         ) : (
                             <div className="relative group ml-4">
-                                <button className="flex items-center gap-3 text-white hover:text-green-100 transition focus:outline-none">
-                                    <div className="w-9 h-9 rounded-full bg-green-800 border-2 border-green-600 flex items-center justify-center text-green-100">
+                                <button className="flex items-center gap-3 text-white hover:text-green-400 transition focus:outline-none">
+                                    <div className="w-9 h-9 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center text-green-400">
                                         <UserIcon size={18} />
                                     </div>
                                     <div className="text-left hidden lg:block">
-                                        <p className="text-xs font-bold text-green-200 uppercase tracking-wider leading-none mb-0.5">{role}</p>
+                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider leading-none mb-0.5">{role}</p>
                                         <p className="text-sm font-bold leading-none">{user.user_metadata?.full_name?.split(' ')[0] || 'User'}</p>
                                     </div>
-                                    <ChevronDown size={14} className="text-green-200 group-hover:rotate-180 transition-transform duration-200" />
+                                    <ChevronDown size={14} className="text-gray-500 group-hover:rotate-180 transition-transform duration-200" />
                                 </button>
 
                                 {/* Dropdown Menu */}
@@ -150,15 +147,15 @@ const Layout = () => {
 
                 {/* Mobile Navigation Dropdown */}
                 {isMenuOpen && (
-                    <nav className="md:hidden bg-[#007F00] border-t border-green-700 flex flex-col p-6 shadow-lg absolute w-full min-h-screen animate-fade-in-up pb-32">
+                    <nav className="md:hidden bg-[#0c121d] border-t border-white/5 flex flex-col p-6 shadow-lg absolute w-full min-h-screen animate-fade-in-up pb-32">
                         {user && (
-                            <div className="flex items-center gap-4 mb-4 pb-8 border-b border-green-800">
-                                <div className="w-12 h-12 rounded-full bg-green-800 border-2 border-green-600 flex items-center justify-center text-white">
+                            <div className="flex items-center gap-4 mb-4 pb-8 border-b border-white/5">
+                                <div className="w-12 h-12 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center text-white">
                                     <UserIcon size={24} />
                                 </div>
                                 <div>
                                     <p className="text-white font-bold text-lg">{user.user_metadata?.full_name || 'User'}</p>
-                                    <p className="text-green-200 text-sm">{user.email}</p>
+                                    <p className="text-gray-400 text-sm">{user.email}</p>
                                 </div>
                             </div>
                         )}
@@ -180,26 +177,26 @@ const Layout = () => {
                             {!user ? (
                                 <div className="flex flex-col gap-4 mt-6">
                                     <Link to="/login" onClick={closeMenu}>
-                                        <button className="w-full bg-green-800 border border-green-700 text-white font-bold py-4 rounded-xl">
+                                        <button className="w-full bg-slate-800 border border-slate-700 text-white font-bold py-4 rounded-xl">
                                             Log In
                                         </button>
                                     </Link>
                                     <Link to="/signup" onClick={closeMenu}>
-                                        <button className="w-full bg-white text-[#007F00] font-bold py-4 rounded-xl">
+                                        <button className="w-full bg-[#007F00] text-white font-bold py-4 rounded-xl shadow-lg shadow-green-900/40">
                                             Sign Up Free
                                         </button>
                                     </Link>
                                 </div>
                             ) : (
-                                <div className="flex flex-col gap-4 mt-4 pt-4 border-t border-green-800">
+                                <div className="flex flex-col gap-4 mt-4 pt-4 border-t border-white/5">
                                     <Link to={getDashboardLink()} onClick={closeMenu}>
-                                        <button className="w-full bg-white text-[#007F00] font-bold py-4 rounded-xl flex items-center justify-center gap-2">
+                                        <button className="w-full bg-[#007F00] text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-green-900/40">
                                             {getDashboardIcon()} {getDashboardLabel()}
                                         </button>
                                     </Link>
                                     <button
                                         onClick={handleLogout}
-                                        className="w-full bg-green-900/50 text-red-300 hover:bg-red-900/20 font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors border border-green-800"
+                                        className="w-full bg-slate-900 text-red-400 hover:bg-red-900/20 font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors border border-white/5"
                                     >
                                         <LogOut size={18} /> Sign Out
                                     </button>

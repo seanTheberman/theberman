@@ -5,7 +5,7 @@ import * as z from 'zod';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Loader2, Eye, EyeOff, LogIn } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 
@@ -17,10 +17,10 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 const Login = () => {
-    const [showPassword, setShowPassword] = useState(false);
-    const { signIn, user, role, loading } = useAuth();
+    const { signIn, signOut, user, role, loading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const [activeTab, setActiveTab] = useState<'homeowner' | 'assessor'>('homeowner');
 
     // Default redirect to /admin if no previous path
     const from = location.state?.from?.pathname;
@@ -32,7 +32,7 @@ const Login = () => {
                 navigate(from, { replace: true });
             } else {
                 if (role === 'admin') navigate('/admin', { replace: true });
-                else if (role === 'contractor') navigate('/dashboard/contractor', { replace: true });
+                else if (role === 'contractor') navigate('/dashboard/ber-assessor', { replace: true });
                 else navigate('/dashboard/user', { replace: true });
             }
         }
@@ -64,8 +64,6 @@ const Login = () => {
 
             // Redirection logic
             if (authData.user) {
-                // The profile fetch is handled by useAuth state update, 
-                // but we can do a quick check here to speed up redirection
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('role')
@@ -74,13 +72,25 @@ const Login = () => {
 
                 const userRole = profile?.role || 'user';
 
+                // Role validation based on active tab
+                if (activeTab === 'homeowner') {
+                    if (userRole === 'contractor') {
+                        await signOut();
+                        throw new Error('This account is registered as a BER Assessor. Please use the "BER Assessor" tab to log in.');
+                    }
+                } else if (activeTab === 'assessor') {
+                    if (userRole === 'user' || userRole === 'homeowner') {
+                        await signOut();
+                        throw new Error('This account is registered as a Homeowner. Please use the "Homeowner" tab to log in.');
+                    }
+                }
+
                 if (from) {
                     navigate(from, { replace: true });
                 } else {
                     if (userRole === 'admin') navigate('/admin', { replace: true });
                     else if (userRole === 'contractor') {
-                        // ProtectedRoute will handle onboarding check
-                        navigate('/dashboard/contractor', { replace: true });
+                        navigate('/dashboard/ber-assessor', { replace: true });
                     } else {
                         navigate('/dashboard/user', { replace: true });
                     }
@@ -92,80 +102,84 @@ const Login = () => {
         }
     };
 
-
     return (
         <div className="min-h-screen bg-white pt-24 pb-12 flex items-center justify-center">
-            <div className="container mx-auto px-6 max-w-lg">
-                <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-xl overflow-hidden p-8 md:p-12">
+            <div className="w-full max-w-md px-6">
+                {/* Header */}
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
+                    <p className="text-gray-500">Sign in to continue.</p>
+                </div>
 
-                    <div className="mb-10">
-                        <h2 className="text-3xl font-serif font-bold text-gray-900 mb-2">Welcome back</h2>
-                        <p className="text-gray-500">Sign in to manage your sustainable projects.</p>
+                {/* Simple Tab Switcher */}
+                <div className="flex border-b border-gray-200 mb-8">
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('homeowner')}
+                        className={`py-3 px-6 text-sm font-medium transition-all border-b-2 -mb-px ${activeTab === 'homeowner'
+                            ? 'border-gray-400 text-gray-700'
+                            : 'border-transparent text-gray-400 hover:text-gray-600'
+                            }`}
+                    >
+                        Homeowner
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('assessor')}
+                        className={`py-3 px-6 text-sm font-medium transition-all border-b-2 -mb-px ${activeTab === 'assessor'
+                            ? 'border-gray-400 text-gray-700'
+                            : 'border-transparent text-gray-400 hover:text-gray-600'
+                            }`}
+                    >
+                        BER Assessor
+                    </button>
+                </div>
+
+                {/* Form */}
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">Email</label>
+                        <input
+                            {...register('email')}
+                            type="email"
+                            placeholder="name@company.com"
+                            className="w-full px-4 py-3 bg-[#e8f0fe] border-none rounded-lg focus:ring-2 focus:ring-[#007F00]/30 outline-none"
+                        />
+                        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
                     </div>
 
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                        <div className="space-y-1">
-                            <label className="text-sm font-bold text-gray-700">Email</label>
-                            <input
-                                {...register('email')}
-                                type="email"
-                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                placeholder="name@company.com"
-                            />
-                            {errors.email && <p className="text-red-500 text-xs mt-1 font-medium">{errors.email.message}</p>}
-                        </div>
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">Password</label>
+                        <input
+                            {...register('password')}
+                            type="password"
+                            placeholder="••••••••"
+                            className="w-full px-4 py-3 bg-[#e8f0fe] border-none rounded-lg focus:ring-2 focus:ring-[#007F00]/30 outline-none"
+                        />
+                        {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+                    </div>
 
-                        <div className="space-y-1">
-                            <div className="flex justify-between items-center">
-                                <label className="text-sm font-bold text-gray-700">Password</label>
-                                <Link to="/forgot-password" className="text-xs font-bold text-[#007F00] hover:underline">Forgot password?</Link>
-                            </div>
-                            <div className="relative">
-                                <input
-                                    {...register('password')}
-                                    type={showPassword ? 'text' : 'password'}
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                    placeholder="••••••••"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                                >
-                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                </button>
-                            </div>
-                            {errors.password && <p className="text-red-500 text-xs mt-1 font-medium">{errors.password.message}</p>}
-                        </div>
+                    <div className="text-right">
+                        <Link to="/forgot-password" className="text-sm font-bold text-[#007F00] hover:underline">
+                            Forgot Password?
+                        </Link>
+                    </div>
 
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="w-full bg-[#007F00] text-white font-black py-4 rounded-xl hover:bg-green-800 transition-all shadow-lg hover:shadow-green-900/20 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-4 cursor-pointer"
-                        >
-                            {isSubmitting ? (
-                                <>
-                                    <Loader2 className="animate-spin" size={20} />
-                                    Logging in...
-                                </>
-                            ) : (
-                                <>
-                                    Login
-                                    <LogIn size={18} />
-                                </>
-                            )}
-                        </button>
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full py-4 bg-[#007F00] text-white rounded-full font-bold text-lg hover:bg-green-800 transition-all flex items-center justify-center gap-2 shadow-lg"
+                    >
+                        {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : 'Log In'}
+                    </button>
 
-                        <div className="text-center mt-8">
-                            <p className="text-gray-500 font-medium">
-                                Don't have an account?{' '}
-                                <Link to="/signup" className="text-[#007F00] font-black hover:underline">
-                                    Sign up for free
-                                </Link>
-                            </p>
-                        </div>
-                    </form>
-                </div>
+                    <p className="text-center text-gray-500 mt-6">
+                        Don't have an account?{' '}
+                        <Link to="/signup" className="text-[#007F00] font-bold hover:underline">
+                            Sign up
+                        </Link>
+                    </p>
+                </form>
             </div>
         </div>
     );

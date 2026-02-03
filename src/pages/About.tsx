@@ -10,13 +10,13 @@ const About = () => {
             <meta name="description" content="Learn about The Berman, Ireland's leading energy consultancy. Fast, accurate, and professional energy ratings." />
 
             {/* 1. SIMPLE CENTERED HERO */}
-            <section className="pt-24 pb-16 bg-white">
+            <section className="pt-32 pb-16 bg-white">
                 <div className="container mx-auto px-6 text-center max-w-4xl">
                     <span className="inline-block mb-4 px-4 py-1.5 rounded-full bg-green-50 text-[#007F00] text-xs font-black tracking-widest uppercase border border-green-100">
                         Our Mission
                     </span>
                     <h1 className="text-4xl md:text-6xl font-black text-gray-900 mb-6 leading-tight">
-                        Precision in every <br />
+                        Precision in every <br className="hidden md:block" />
                         <span className="text-[#007F00]">Assessment.</span>
                     </h1>
                     <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
@@ -30,7 +30,7 @@ const About = () => {
                 <div className="container mx-auto px-6 max-w-6xl">
                     <div className="grid lg:grid-cols-12 gap-16 items-start">
                         {/* Left Side: Story Text */}
-                        <div className="lg:col-span-8 space-y-8 text-gray-600 leading-relaxed font-shans text-lg text-left">
+                        <div className="lg:col-span-8 space-y-8 text-gray-600 leading-relaxed font-sans text-lg text-left">
                             <div className="mb-8">
                                 <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight">Our Story</h2>
                             </div>
@@ -50,18 +50,18 @@ const About = () => {
 
                         {/* Right Side: Stats / Impact */}
                         <div className="lg:col-span-4 lg:pl-12 lg:border-l border-gray-200">
-                            <div className="sticky top-12 space-y-12">
+                            <div className="sticky top-12 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-8 lg:space-y-12">
                                 <div>
-                                    <p className="text-5xl font-black text-[#007F00] mb-2">10k+</p>
-                                    <p className="text-sm font-black text-gray-400 uppercase tracking-widest leading-tight">Completed <br />BER Assessments</p>
+                                    <p className="text-4xl md:text-5xl font-black text-[#007F00] mb-2">10k+</p>
+                                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-tight">Completed <br className="hidden lg:block" />BER Assessments</p>
                                 </div>
                                 <div>
-                                    <p className="text-5xl font-black text-[#007F00] mb-2">300+</p>
-                                    <p className="text-sm font-black text-gray-400 uppercase tracking-widest leading-tight">Nationwide <br />Network Assessors</p>
+                                    <p className="text-4xl md:text-5xl font-black text-[#007F00] mb-2">300+</p>
+                                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-tight">Nationwide <br className="hidden lg:block" />Network Assessors</p>
                                 </div>
                                 <div>
-                                    <p className="text-5xl font-black text-[#007F00] mb-2">SEAI</p>
-                                    <p className="text-sm font-black text-gray-400 uppercase tracking-widest leading-tight">Fully Registered <br />Energy Experts</p>
+                                    <p className="text-4xl md:text-5xl font-black text-[#007F00] mb-2">SEAI</p>
+                                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-tight">Fully Registered <br className="hidden lg:block" />Energy Experts</p>
                                 </div>
                             </div>
                         </div>
@@ -98,11 +98,11 @@ const About = () => {
             </section>
 
             {/* 4. FAQ SECTION */}
-            <section id="faq" className="py-24 bg-white">
-                <div className="container mx-auto px-6 max-w-3xl">
+            <section id="faq" className="py-24 bg-[#007F00]">
+                <div className="container mx-auto px-6 max-w-4xl">
                     <div className="text-center mb-12">
-                        <h2 className="text-3xl font-black text-gray-900 mb-4 uppercase tracking-tight">Frequently Asked Questions</h2>
-                        <p className="text-gray-400 text-xs font-black uppercase tracking-widest">Everything you need to know</p>
+                        <h2 className="text-3xl font-black text-white mb-4 uppercase tracking-tight">Frequently Asked Questions</h2>
+                        <p className="text-green-50 text-xs font-black uppercase tracking-widest">Everything you need to know</p>
                     </div>
                     <div className="space-y-6">
                         <FaqItem

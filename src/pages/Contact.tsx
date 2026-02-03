@@ -71,13 +71,13 @@ const Contact = () => {
             <title>Contact Us | The Berman</title>
 
             {/* 1. COMPACT HERO */}
-            <section className="pt-16 pb-8 bg-white">
+            <section className="pt-32 pb-8 bg-white">
                 <div className="container mx-auto px-6 text-center max-w-4xl">
-                    <span className="inline-block mb-3 px-4 py-1.5 rounded-full bg-green-50 text-[#007F00] text-xs font-black tracking-widest uppercase">
+                    <span className="inline-block mb-4 px-4 py-1.5 rounded-full bg-green-50 text-[#007F00] text-xs font-black tracking-widest uppercase border border-green-100">
                         Get In Touch
                     </span>
-                    <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-4 leading-tight">
-                        How can we <span className="text-[#007F00]">help?</span>
+                    <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 leading-tight">
+                        How can we <br className="md:hidden" /> <span className="text-[#007F00]">help?</span>
                     </h1>
                     <p className="text-base md:text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
                         Have a question about BER assessments? Our team is here to provide the support you need.
@@ -91,7 +91,7 @@ const Contact = () => {
                     <div className="flex flex-col lg:flex-row gap-8 items-stretch">
 
                         {/* UNIFIED CONTACT INFO CARD */}
-                        <div className="lg:w-1/3 w-full bg-white rounded-[2.5rem] p-8 md:p-10 border border-gray-100 shadow-sm group hover:border-green-100 transition-all h-full">
+                        <div className="lg:w-1/3 w-full bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 border border-gray-100 shadow-sm group hover:border-green-100 transition-all h-full">
                             <h3 className="text-xl font-black text-gray-900 mb-8 uppercase tracking-tight">Our details</h3>
 
                             <div className="space-y-6">
@@ -118,7 +118,7 @@ const Contact = () => {
                                     />
                                     <button
                                         onClick={() => window.open('https://www.google.com/maps/search/?api=1&query=13+Upper+Baggot+Street,+Dublin+4+D04+W7K5', '_blank')}
-                                        className="ml-15 px-4 py-1.5 bg-green-50 text-[#007F00] text-[10px] font-black rounded-lg hover:bg-[#007F00] hover:text-white transition-all flex items-center gap-2 border border-green-100 cursor-pointer"
+                                        className="ml-0 md:ml-15 px-4 py-1.5 bg-green-50 text-[#007F00] text-[10px] font-black rounded-lg hover:bg-[#007F00] hover:text-white transition-all flex items-center justify-center md:justify-start gap-2 border border-green-100 cursor-pointer w-full md:w-auto"
                                     >
                                         View in Map <MapPin size={10} />
                                     </button>
@@ -135,8 +135,8 @@ const Contact = () => {
                         </div>
 
                         {/* FORM COLUMN */}
-                        <div className="lg:w-2/3 w-full bg-gray-50 rounded-[2.5rem] p-6 md:p-10 border border-gray-100 shadow-sm transition-all hover:shadow-md">
-                            <h3 className="text-xl font-black text-gray-900 mb-6 text-center uppercase tracking-tight">Send us a detailed message</h3>
+                        <div className="lg:w-2/3 w-full bg-gray-50 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 border border-gray-100 shadow-sm transition-all hover:shadow-md">
+                            <h3 className="text-lg md:text-xl font-black text-gray-900 mb-6 text-center uppercase tracking-tight px-4">Send us a detailed message</h3>
 
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                                 <div className="grid md:grid-cols-2 gap-4">

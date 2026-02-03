@@ -50,11 +50,11 @@ const HomePage = () => {
                             <span className="text-sm font-bold text-green-700">Ireland's Largest BER Website</span>
                         </div>
 
-                        <h1 className="text-6xl md:text-7xl lg:text-8xl font-black text-gray-900 mb-8 leading-[1.1] tracking-tight">
+                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-gray-900 mb-6 md:mb-8 leading-[1.1] tracking-tight">
                             Need a <span className="text-[#007F00]">BER Cert?</span>
                         </h1>
 
-                        <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
+                        <p className="text-lg md:text-2xl text-gray-600 mb-10 md:mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
                             The fastest, most reliable way to get your Building Energy Rating. Guaranteed lowest prices from 300+ assessors nationwide.
                         </p>
 
@@ -124,15 +124,15 @@ const HomePage = () => {
                                 desc: "Choose your favorite quote and confirm instantly."
                             }
                         ].map((item, i) => (
-                            <div key={i} className="relative z-10 bg-white p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all group overflow-hidden cursor-pointer">
-                                <div className="absolute top-0 right-0 -mr-4 -mt-4 text-7xl font-black text-gray-50 group-hover:text-green-50 transition-colors -z-0">
+                            <div key={i} className="relative z-10 bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all group overflow-hidden cursor-pointer">
+                                <div className="absolute top-0 right-0 -mr-4 -mt-4 text-6xl md:text-7xl font-black text-gray-50 group-hover:text-green-50 transition-colors -z-0">
                                     {item.step}
                                 </div>
-                                <div className="w-16 h-16 bg-green-50 text-[#007F00] rounded-2xl flex items-center justify-center mb-6 shadow-sm group-hover:bg-[#007F00] group-hover:text-white transition-all relative z-10">
+                                <div className="w-14 h-14 md:w-16 md:h-16 bg-green-50 text-[#007F00] rounded-2xl flex items-center justify-center mb-6 shadow-sm group-hover:bg-[#007F00] group-hover:text-white transition-all relative z-10">
                                     {item.icon}
                                 </div>
-                                <h3 className="text-xl font-black text-gray-900 mb-3 relative z-10">{item.title}</h3>
-                                <p className="text-gray-500 font-medium leading-relaxed relative z-10">{item.desc}</p>
+                                <h3 className="text-lg md:text-xl font-black text-gray-900 mb-3 relative z-10">{item.title}</h3>
+                                <p className="text-sm md:text-base text-gray-500 font-medium leading-relaxed relative z-10">{item.desc}</p>
                             </div>
                         ))}
                     </div>
@@ -255,7 +255,7 @@ const HomePage = () => {
                 <div className="container mx-auto px-6 text-center">
                     <h2 className="text-3xl md:text-4xl font-black text-[#007F00] mb-4">Are You a BER Assessor?</h2>
                     <p className="text-gray-600 font-medium mb-8 max-w-2xl mx-auto">
-                        Register with TheBerMan.com and receive local job leads, straight to your phone.
+                        Register with theberman.eu and receive local job leads, straight to your phone.
                     </p>
                     <Link to="/signup?role=contractor">
                         <button className="px-12 py-4 border-2 border-[#007F00] text-[#007F00] hover:bg-[#007F00] hover:text-white font-black rounded-xl transition-all shadow-sm hover:shadow-lg transform hover:-translate-y-0.5 cursor-pointer">
@@ -370,7 +370,7 @@ const HomePage = () => {
                                     Instant Download
                                 </div>
                                 <Link to="/catalogue" className="text-[#007F00] hover:text-[#006400] transition-colors flex items-center gap-2">
-                                    View Guide Online <ArrowRight size={14} />
+                                    Hire an Agent <ArrowRight size={14} />
                                 </Link>
                             </div>
                         </div>

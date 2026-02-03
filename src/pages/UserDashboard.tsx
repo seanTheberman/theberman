@@ -279,7 +279,7 @@ const UserDashboard = () => {
                                     {view === 'assessments' ? 'Your BER Assessments' : 'Received Quotes'}
                                 </h2>
                                 <p className="text-gray-500">
-                                    {view === 'assessments' ? 'Track the progress of your property certification' : 'Review and manage quotes from our verified contractors'}
+                                    {view === 'assessments' ? 'Track the progress of your property certification' : 'Review and manage quotes from our verified BER Assessors'}
                                 </p>
                             </div>
                             <div className="flex bg-gray-100 p-1 rounded-xl">
@@ -413,7 +413,7 @@ const UserDashboard = () => {
                                             <FileText size={32} />
                                         </div>
                                         <h3 className="text-xl font-bold text-gray-900 mb-2">No quotes received yet</h3>
-                                        <p className="text-gray-500 max-w-sm mx-auto">Once contractors review your submitted assessments, their quotes will appear here.</p>
+                                        <p className="text-gray-500 max-w-sm mx-auto">Once BER Assessors review your submitted assessments, their quotes will appear here.</p>
                                     </div>
                                 ) : (
                                     <div className="flex flex-col gap-6">
@@ -426,11 +426,12 @@ const UserDashboard = () => {
                                                             {/* Main Quote Info */}
                                                             <div className="flex-1 min-w-[200px]">
                                                                 <div className="flex items-center gap-4 mb-2">
-                                                                    <h4 className="text-4xl font-black text-gray-900">€{quote.price}</h4>
+                                                                    <h4 className="text-4xl font-black text-gray-900">€{quote.price + 10}</h4>
                                                                     <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${quote.status === 'accepted' ? 'bg-green-50 text-green-700 border-green-100' :
                                                                         quote.status === 'rejected' ? 'bg-red-50 text-red-700 border-red-100' :
                                                                             'bg-green-50 text-[#007F00] border-green-100'
                                                                         }`}>
+                                                                        {quote.status}
                                                                     </span>
                                                                 </div>
                                                                 <p className="text-xs font-bold text-gray-400">Received {new Date(quote.created_at).toLocaleDateString()}</p>
@@ -571,7 +572,7 @@ const UserDashboard = () => {
                                             <div key={quote.id} className="bg-green-50/50 border border-green-100 rounded-2xl p-5">
                                                 <div className="flex justify-between items-start mb-4">
                                                     <div>
-                                                        <p className="text-2xl font-bold text-gray-900">€{quote.price}</p>
+                                                        <p className="text-2xl font-bold text-gray-900">€{quote.price + 10}</p>
                                                         <p className="text-xs text-gray-400 mt-1">Received {new Date(quote.created_at).toLocaleDateString()}</p>
                                                     </div>
                                                     <div className={`px-3 py-1 rounded-full border text-[10px] font-bold uppercase ${quote.status === 'accepted' ? 'bg-green-100 text-green-700 border-green-200' :
@@ -735,7 +736,7 @@ const UserDashboard = () => {
                                 <AlertCircle size={48} />
                             </div>
                             <h3 className="text-2xl font-black text-gray-900 mb-2">Reject Quote?</h3>
-                            <p className="text-gray-500 font-medium mb-8">This action cannot be undone. You will need to wait for other contractors to provide new quotes.</p>
+                            <p className="text-gray-500 font-medium mb-8">This action cannot be undone. You will need to wait for other BER Assessors to provide new quotes.</p>
 
                             <div className="space-y-4">
                                 <button

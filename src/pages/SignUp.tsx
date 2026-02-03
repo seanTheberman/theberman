@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { Loader2, User, HardHat, Check } from 'lucide-react';
+import { Loader2, User, HardHat } from 'lucide-react';
 import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 
@@ -32,7 +32,7 @@ const SignUp = () => {
     useEffect(() => {
         if (!loading && user && role) {
             if (role === 'admin') navigate('/admin', { replace: true });
-            else if (role === 'contractor') navigate('/dashboard/contractor', { replace: true });
+            else if (role === 'contractor') navigate('/dashboard/ber-assessor', { replace: true });
             else navigate('/dashboard/user', { replace: true });
         }
     }, [user, role, loading, navigate]);
@@ -69,7 +69,7 @@ const SignUp = () => {
                     toast.success('Account created successfully!');
                     // If signed in immediately, redirect to appropriate destination
                     if (data.role === 'contractor') {
-                        navigate('/contractor-onboarding');
+                        navigate('/assessor-onboarding');
                     } else {
                         navigate('/dashboard/user');
                     }
@@ -105,7 +105,6 @@ const SignUp = () => {
                                     <User size={20} />
                                 </div>
                                 <span className="font-bold text-sm">Homeowner</span>
-                                {selectedRole === 'user' && <div className="absolute top-2 right-2 text-[#007F00]"><Check size={16} /></div>}
                             </div>
 
                             <div
@@ -118,8 +117,7 @@ const SignUp = () => {
                                 <div className={`p-2 rounded-full ${selectedRole === 'contractor' ? 'bg-[#007F00] text-white' : 'bg-gray-100'}`}>
                                     <HardHat size={20} />
                                 </div>
-                                <span className="font-bold text-sm">Contractor</span>
-                                {selectedRole === 'contractor' && <div className="absolute top-2 right-2 text-[#007F00]"><Check size={16} /></div>}
+                                <span className="font-bold text-sm">BER Assessor</span>
                             </div>
                         </div>
 

@@ -43,6 +43,16 @@ interface Assessment {
     user_id: string;
     contractor_id?: string | null;
     payment_status?: 'unpaid' | 'paid' | 'refunded';
+    property_size?: string;
+    bedrooms?: number;
+    additional_features?: string[];
+    heat_pump?: string;
+    ber_purpose?: string;
+    preferred_date?: string;
+    preferred_time?: string;
+    contact_name?: string;
+    contact_email?: string;
+    contact_phone?: string;
     profiles?: {
         full_name: string;
         email: string;
@@ -101,8 +111,14 @@ const Admin = () => {
     const [showScheduleModal, setShowScheduleModal] = useState(false);
     const [showCompleteModal, setShowCompleteModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showAssessmentDetailModal, setShowAssessmentDetailModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [itemToDelete, setItemToDelete] = useState<{ id: string, type: 'lead' | 'sponsor' } | null>(null);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [isSavingSettings, setIsSavingSettings] = useState(false);
+    const [isUpdatingBanner, setIsUpdatingBanner] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<{ id: string, type: 'lead' | 'sponsor' | 'assessment' } | null>(null);
+    const [itemToSuspend, setItemToSuspend] = useState<{ id: string, name: string, currentStatus: boolean } | null>(null);
+    const [showSuspendModal, setShowSuspendModal] = useState(false);
 
     // Sponsor Modal State
     const [showSponsorModal, setShowSponsorModal] = useState(false);
@@ -230,6 +246,7 @@ const Admin = () => {
     };
 
     const updateStatus = async (id: string, newStatus: string) => {
+        setIsUpdating(true);
         try {
             const { error } = await supabase
                 .from('leads')
@@ -242,12 +259,16 @@ const Admin = () => {
             if (selectedLead?.id === id) {
                 setSelectedLead({ ...selectedLead, status: newStatus });
             }
-        } catch (error) {
+            toast.success('Status updated');
+        } catch (error: any) {
             console.error('Error updating status:', error);
+            toast.error(error.message || 'Failed to update status');
+        } finally {
+            setIsUpdating(false);
         }
     };
 
-    const handleDeleteClick = (id: string, type: 'lead' | 'sponsor') => {
+    const handleDeleteClick = (id: string, type: 'lead' | 'sponsor' | 'assessment') => {
         setItemToDelete({ id, type });
         setShowDeleteModal(true);
     };
@@ -256,7 +277,11 @@ const Admin = () => {
         if (!itemToDelete) return;
         setIsDeleting(true);
         try {
-            const table = itemToDelete.type === 'lead' ? 'leads' : 'sponsors';
+            let table: 'leads' | 'sponsors' | 'assessments' = 'leads';
+            if (itemToDelete.type === 'lead') table = 'leads';
+            else if (itemToDelete.type === 'sponsor') table = 'sponsors';
+            else if (itemToDelete.type === 'assessment') table = 'assessments';
+
             const { error } = await supabase
                 .from(table)
                 .delete()
@@ -268,9 +293,13 @@ const Admin = () => {
                 setLeads(leads.filter(lead => lead.id !== itemToDelete.id));
                 if (selectedLead?.id === itemToDelete.id) setSelectedLead(null);
                 toast.success('Lead deleted successfully');
-            } else {
+            } else if (itemToDelete.type === 'sponsor') {
                 setSponsors(sponsors.filter(s => s.id !== itemToDelete.id));
                 toast.success('Sponsor deleted successfully');
+            } else if (itemToDelete.type === 'assessment') {
+                setAssessments(assessments.filter(a => a.id !== itemToDelete.id));
+                if (selectedAssessment?.id === itemToDelete.id) setSelectedAssessment(null);
+                toast.success('Assessment deleted successfully');
             }
             setShowDeleteModal(false);
         } catch (error: any) {
@@ -310,6 +339,7 @@ const Admin = () => {
             updated_at: new Date().toISOString()
         };
 
+        setIsUpdating(true);
         try {
             let data, error;
 
@@ -346,6 +376,8 @@ const Admin = () => {
         } catch (error: any) {
             console.error('Error saving sponsor:', error);
             toast.error(`Failed to save sponsor: ${error.message}`);
+        } finally {
+            setIsUpdating(false);
         }
     };
 
@@ -355,6 +387,7 @@ const Admin = () => {
 
     const [showPromoModal, setShowPromoModal] = useState(false);
     const [promoSettings, setPromoSettings] = useState({
+        id: 1,
         is_enabled: false,
         headline: '',
         sub_text: '',
@@ -384,50 +417,51 @@ const Admin = () => {
 
     const savePromoSettings = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsUpdatingBanner(true);
         try {
-            const updates = {
-                id: 1,
-                is_enabled: promoSettings.is_enabled,
-                headline: promoSettings.headline,
-                sub_text: promoSettings.sub_text,
-                image_url: promoSettings.image_url,
-                destination_url: promoSettings.destination_url,
-                updated_at: new Date().toISOString()
-            };
-
-            const { data, error } = await supabase
+            const { error } = await supabase
                 .from('promo_settings')
-                .upsert(updates)
-                .select()
-                .single();
+                .update({
+                    headline: promoSettings.headline,
+                    sub_text: promoSettings.sub_text,
+                    image_url: promoSettings.image_url,
+                    destination_url: promoSettings.destination_url,
+                    is_enabled: promoSettings.is_enabled,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', promoSettings.id);
 
             if (error) throw error;
-
-            if (data) {
-                setPromoSettings(data);
-            }
+            toast.success('Promo settings updated!');
+            fetchPromoSettings();
             setShowPromoModal(false);
-            toast.success('Promo settings updated successfully!');
         } catch (error: any) {
             console.error('Error saving promo settings:', error);
             toast.error(`Failed to update settings: ${error.message || 'Unknown error'}`);
+        } finally {
+            setIsUpdatingBanner(false);
         }
     };
 
     useEffect(() => {
         const fetchViewData = async () => {
-            if (view === 'leads') await fetchLeads();
-            else if (view === 'assessments') await fetchAssessments();
-            else if (view === 'users') await fetchUsers();
-            else if (view === 'payments') await fetchPayments();
-            else if (view === 'settings') {
-                await fetchAppSettings();
-                await fetchPromoSettings();
-                await fetchSponsors();
-            }
-            else if (view === 'stats') {
-                // Fetch everything for stats
-                await Promise.all([fetchLeads(), fetchAssessments(), fetchUsers(), fetchPayments()]);
+            setIsUpdating(true);
+            try {
+                if (view === 'leads') await fetchLeads();
+                else if (view === 'assessments') await fetchAssessments();
+                else if (view === 'users') await fetchUsers();
+                else if (view === 'payments') await fetchPayments();
+                else if (view === 'settings') {
+                    await fetchAppSettings();
+                    await fetchPromoSettings();
+                    await fetchSponsors();
+                }
+                else if (view === 'stats') {
+                    // Fetch everything for stats
+                    await Promise.all([fetchLeads(), fetchAssessments(), fetchUsers(), fetchPayments()]);
+                }
+            } finally {
+                setIsUpdating(false);
             }
         };
 
@@ -465,6 +499,7 @@ const Admin = () => {
     const handleAssignContractor = async (contractorId: string) => {
         if (!selectedAssessmentForAssignment) return;
 
+        setIsUpdating(true);
         try {
             const { error } = await supabase
                 .from('assessments')
@@ -481,13 +516,15 @@ const Admin = () => {
                 previous_status: selectedAssessmentForAssignment.status
             });
 
-            toast.success('Contractor assigned successfully');
+            toast.success('Assessor assigned successfully');
             setShowAssignModal(false);
             setSelectedAssessmentForAssignment(null);
             fetchAssessments(); // Refresh list
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error assigning contractor:', error);
-            toast.error('Failed to assign contractor');
+            toast.error('Failed to assign assessor');
+        } finally {
+            setIsUpdating(false);
         }
     };
 
@@ -495,6 +532,7 @@ const Admin = () => {
         e.preventDefault();
         if (!selectedAssessment) return;
 
+        setIsUpdating(true);
         try {
             // 1. Create Quote
             const { data: quote, error: quoteError } = await supabase.from('quotes').insert({
@@ -528,6 +566,8 @@ const Admin = () => {
         } catch (error: any) {
             console.error('Error generating quote:', error);
             toast.error(error.message || 'Failed to generate quote');
+        } finally {
+            setIsUpdating(false);
         }
     };
 
@@ -535,6 +575,7 @@ const Admin = () => {
         e.preventDefault();
         if (!selectedAssessment || !selectedDate) return;
 
+        setIsUpdating(true);
         try {
             const { error } = await supabase
                 .from('assessments')
@@ -553,6 +594,8 @@ const Admin = () => {
             fetchAssessments();
         } catch (error: any) {
             toast.error(error.message || 'Failed to schedule');
+        } finally {
+            setIsUpdating(false);
         }
     };
 
@@ -560,6 +603,7 @@ const Admin = () => {
         e.preventDefault();
         if (!selectedAssessment) return;
 
+        setIsUpdating(true);
         try {
             const { error } = await supabase
                 .from('assessments')
@@ -579,6 +623,8 @@ const Admin = () => {
             fetchAssessments();
         } catch (error: any) {
             toast.error(error.message || 'Failed to complete');
+        } finally {
+            setIsUpdating(false);
         }
     };
 
@@ -586,32 +632,43 @@ const Admin = () => {
         e.preventDefault();
         if (!selectedAssessment || !messageContent.trim()) return;
 
+        setIsUpdating(true);
         try {
-            const { data: message, error: messageError } = await supabase.from('assessment_messages').insert({
-                assessment_id: selectedAssessment.id,
-                sender_id: user?.id,
-                content: messageContent
-            }).select().single();
+            const clientEmail = selectedAssessment.profiles?.email;
+            const propertyAddress = selectedAssessment.property_address;
 
-            if (messageError) throw messageError;
+            if (!clientEmail) {
+                toast.error('Client email not found');
+                return;
+            }
 
-            // Log Audit
-            await logAudit('send_message', 'assessment', selectedAssessment.id, {
-                message_id: message.id
-            });
+            const subject = encodeURIComponent(`Update regarding your BER Assessment - ${propertyAddress}`);
+            const body = encodeURIComponent(messageContent);
 
-            toast.success('Message sent to client!');
+            const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${clientEmail}&su=${subject}&body=${body}`;
+
+            window.open(gmailUrl, '_blank');
+
+            toast.success('Opening Gmail...');
             setShowMessageModal(false);
             setMessageContent('');
+
+            await logAudit('open_gmail_compose', 'assessment', selectedAssessment.id, {
+                recipient: clientEmail
+            });
+
         } catch (error: any) {
-            console.error('Error sending message:', error);
-            toast.error(error.message || 'Failed to send message');
+            console.error('Error opening Gmail:', error);
+            toast.error('Failed to open Gmail');
+        } finally {
+            setIsUpdating(false);
         }
     };
 
     const handleConvertLead = async (): Promise<string | null> => {
         if (!selectedLead) return null;
 
+        setIsUpdating(true);
         try {
             const { data: profile, error: profileError } = await supabase
                 .from('profiles')
@@ -641,25 +698,56 @@ const Admin = () => {
 
             if (assessmentError) throw assessmentError;
 
-            await updateStatus(selectedLead.id, 'contacted');
+            const { error: leadUpdateError } = await supabase
+                .from('leads')
+                .update({ status: 'contacted' })
+                .eq('id', selectedLead.id);
 
-            await logAudit('convert_lead', 'assessment', assessment.id, {
-                lead_id: selectedLead.id,
-                client_email: selectedLead.email
-            });
+            if (leadUpdateError) throw leadUpdateError;
 
-            toast.success('Lead converted to official assessment!');
+            toast.success('Lead converted successfully!');
+            fetchLeads();
+            fetchAssessments();
+            logAudit('convert_lead', 'lead', selectedLead.id, { assessmentId: assessment.id });
+
             return assessment.id;
         } catch (error: any) {
-            console.error('Error converting lead:', error);
             toast.error(error.message || 'Failed to convert lead');
             return null;
+        } finally {
+            setIsUpdating(false);
         }
     };
 
     const handleSignOut = async () => {
         await signOut();
         navigate('/login');
+    };
+
+    const toggleUserStatus = async () => {
+        if (!itemToSuspend) return;
+        setIsUpdating(true);
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({ is_active: !itemToSuspend.currentStatus })
+                .eq('id', itemToSuspend.id);
+
+            if (error) throw error;
+
+            setUsersList(users_list.map(u =>
+                u.id === itemToSuspend.id ? { ...u, is_active: !itemToSuspend.currentStatus } : u
+            ));
+
+            toast.success(`User ${!itemToSuspend.currentStatus ? 'activated' : 'suspended'} successfully`);
+            setShowSuspendModal(false);
+        } catch (error: any) {
+            console.error('Error toggling user status:', error);
+            toast.error('Failed to update user status');
+        } finally {
+            setIsUpdating(false);
+            setItemToSuspend(null);
+        }
     };
 
     const getStatusColor = (status: string) => {
@@ -774,7 +862,7 @@ const Admin = () => {
                                 {view === 'stats' ? 'Key metrics and business performance.' :
                                     view === 'leads' ? 'Manage your website submissions.' :
                                         view === 'assessments' ? 'Manage homeowner assessment requests.' :
-                                            view === 'users' ? 'Manage homeowners and contractors.' :
+                                            view === 'users' ? 'Manage homeowners and BER Assessors.' :
                                                 view === 'payments' ? 'View and export payment records.' :
                                                     view === 'settings' ? 'Configure global platform settings.' : ''}
                             </p>
@@ -803,7 +891,7 @@ const Admin = () => {
                                 <div className="flex items-end justify-between">
                                     <h3 className="text-3xl font-bold text-gray-900">{stats.totalUsers}</h3>
                                     <div className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded">
-                                        {stats.homeowners} Users / {stats.contractors} Pro
+                                        {stats.homeowners} Users / {stats.contractors} Assessors
                                     </div>
                                 </div>
                             </div>
@@ -868,7 +956,7 @@ const Admin = () => {
                             <div className="bg-[#007F00] rounded-2xl shadow-lg shadow-green-900/10 p-6 text-white flex flex-col justify-between">
                                 <div>
                                     <h3 className="text-sm font-bold opacity-80 uppercase tracking-widest mb-4">Quick View</h3>
-                                    <p className="text-2xl font-bold leading-tight mb-2">Manage your contractors and homeowners from one place.</p>
+                                    <p className="text-2xl font-bold leading-tight mb-2">Manage your BER Assessors and homeowners from one place.</p>
                                     <p className="text-sm opacity-70">Expand your system by adding new partners and tracking every step of the certification.</p>
                                 </div>
                                 <button
@@ -922,7 +1010,7 @@ const Admin = () => {
                                                     u.role === 'contractor' ? 'bg-blue-50 text-blue-700' :
                                                         'bg-gray-50 text-gray-700'
                                                     }`}>
-                                                    {u.role}
+                                                    {u.role === 'contractor' ? 'BER Assessor' : u.role}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-gray-500 font-medium">
@@ -941,12 +1029,32 @@ const Admin = () => {
                                                 )}
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                <button
-                                                    onClick={() => setSelectedUser(u)}
-                                                    className="text-gray-400 hover:text-gray-900 p-2"
-                                                >
-                                                    <Eye size={16} />
-                                                </button>
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button
+                                                        onClick={() => setSelectedUser(u)}
+                                                        className="text-gray-400 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition-all"
+                                                        title="View User Details"
+                                                    >
+                                                        <Eye size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            setItemToSuspend({
+                                                                id: u.id,
+                                                                name: u.full_name,
+                                                                currentStatus: u.is_active !== false
+                                                            });
+                                                            setShowSuspendModal(true);
+                                                        }}
+                                                        className={`p-2 rounded-lg transition-all ${u.is_active !== false
+                                                            ? 'text-red-400 hover:text-red-600 hover:bg-red-50'
+                                                            : 'text-green-400 hover:text-green-600 hover:bg-green-50'
+                                                            }`}
+                                                        title={u.is_active !== false ? 'Suspend User' : 'Activate User'}
+                                                    >
+                                                        <AlertTriangle size={16} />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
@@ -1059,7 +1167,7 @@ const Admin = () => {
                                         <th className="px-6 py-4">Status</th>
                                         <th className="px-6 py-4">Address</th>
                                         <th className="px-6 py-4">Client</th>
-                                        <th className="px-6 py-4">Contractor</th>
+                                        <th className="px-6 py-4">Assessor</th>
                                         <th className="px-6 py-4">Scheduled</th>
                                         <th className="px-6 py-4">Payment</th>
                                         <th className="px-6 py-4 text-right">Actions</th>
@@ -1102,58 +1210,22 @@ const Admin = () => {
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex items-center justify-end gap-2">
-                                                    {!assessment.contractor_id && assessment.status !== 'completed' && (
-                                                        <button
-                                                            onClick={() => {
-                                                                setSelectedAssessmentForAssignment(assessment);
-                                                                setShowAssignModal(true);
-                                                            }}
-                                                            className="text-white bg-[#007F00] hover:bg-green-800 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all"
-                                                        >
-                                                            Assign
-                                                        </button>
-                                                    )}
-                                                    {assessment.status === 'submitted' && (
-                                                        <button
-                                                            onClick={() => {
-                                                                setSelectedAssessment(assessment);
-                                                                setShowQuoteModal(true);
-                                                            }}
-                                                            className="bg-[#007F00] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:bg-green-700 shadow-sm"
-                                                        >
-                                                            Quote
-                                                        </button>
-                                                    )}
-                                                    {assessment.status === 'quote_accepted' && (
-                                                        <button
-                                                            onClick={() => {
-                                                                setSelectedAssessment(assessment);
-                                                                setShowScheduleModal(true);
-                                                            }}
-                                                            className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:bg-indigo-700 shadow-sm"
-                                                        >
-                                                            Schedule
-                                                        </button>
-                                                    )}
-                                                    {assessment.status === 'scheduled' && (
-                                                        <button
-                                                            onClick={() => {
-                                                                setSelectedAssessment(assessment);
-                                                                setShowCompleteModal(true);
-                                                            }}
-                                                            className="bg-purple-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:bg-purple-700 shadow-sm"
-                                                        >
-                                                            Complete
-                                                        </button>
-                                                    )}
                                                     <button
                                                         onClick={() => {
                                                             setSelectedAssessment(assessment);
-                                                            setShowMessageModal(true);
+                                                            setShowAssessmentDetailModal(true);
                                                         }}
-                                                        className="bg-white border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                                                        className="bg-white border border-gray-200 text-gray-600 hover:text-[#007F00] hover:border-[#007F00] px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1"
                                                     >
-                                                        Message
+                                                        <Eye size={14} />
+                                                        View Details
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteClick(assessment.id, 'assessment')}
+                                                        className="text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
+                                                        title="Delete Assessment"
+                                                    >
+                                                        <Trash2 size={16} />
                                                     </button>
                                                 </div>
                                             </td>
@@ -1246,6 +1318,7 @@ const Admin = () => {
                                     e.preventDefault();
                                     const formData = new FormData(e.target as HTMLFormElement);
                                     try {
+                                        setIsSavingSettings(true);
                                         const { error } = await supabase.from('app_settings').update({
                                             default_quote_price: parseFloat(formData.get('default_quote_price') as string),
                                             vat_rate: parseFloat(formData.get('vat_rate') as string),
@@ -1257,6 +1330,8 @@ const Admin = () => {
                                         fetchAppSettings();
                                     } catch (err: any) {
                                         toast.error(err.message);
+                                    } finally {
+                                        setIsSavingSettings(false);
                                     }
                                 }}
                                 className="grid grid-cols-1 md:grid-cols-2 gap-4"
@@ -1278,7 +1353,14 @@ const Admin = () => {
                                     <input name="vat_rate" type="number" step="0.1" defaultValue={appSettings?.vat_rate} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                                 </div>
                                 <div className="md:col-span-2 flex justify-end">
-                                    <button type="submit" className="bg-[#007F00] text-white px-4 py-2 rounded-lg font-bold">Save Configuration</button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSavingSettings}
+                                        className="bg-[#007F00] text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    >
+                                        {isSavingSettings ? <Loader2 className="animate-spin" size={18} /> : null}
+                                        {isSavingSettings ? 'Saving...' : 'Save Configuration'}
+                                    </button>
                                 </div>
                             </form>
                         </div>
@@ -1323,7 +1405,14 @@ const Admin = () => {
                                     </div>
                                 </div>
                                 <div className="flex justify-end">
-                                    <button type="submit" className="bg-[#007F00] text-white px-4 py-2 rounded-lg font-bold">Update Banner</button>
+                                    <button
+                                        type="submit"
+                                        disabled={isUpdatingBanner}
+                                        className="bg-[#007F00] text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    >
+                                        {isUpdatingBanner ? <Loader2 className="animate-spin" size={18} /> : null}
+                                        {isUpdatingBanner ? 'Updating...' : 'Update Banner'}
+                                    </button>
                                 </div>
                             </form>
                         </div>
@@ -1331,25 +1420,25 @@ const Admin = () => {
                 ) : null}
             </main>
 
-            {/* ASSIGN CONTRACTOR MODAL */}
+            {/* ASSIGN ASSESSOR MODAL */}
             {showAssignModal && selectedAssessmentForAssignment && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-gray-900">Assign Contractor</h3>
+                            <h3 className="text-xl font-bold text-gray-900">Assign BER Assessor</h3>
                             <button onClick={() => setShowAssignModal(false)} className="text-gray-400 hover:text-gray-600">
                                 <X size={24} />
                             </button>
                         </div>
                         <div className="mb-4">
-                            <p className="text-sm text-gray-500 mb-2">Select a certified contractor for:</p>
+                            <p className="text-sm text-gray-500 mb-2">Select a certified BER Assessor for:</p>
                             <p className="font-bold text-gray-800 text-sm bg-gray-50 p-2 rounded border border-gray-100">
                                 {selectedAssessmentForAssignment.property_address}
                             </p>
                         </div>
                         <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                             {users_list.filter(u => u.role === 'contractor').length === 0 ? (
-                                <p className="text-center text-gray-400 text-sm py-4">No contractors found.</p>
+                                <p className="text-center text-gray-400 text-sm py-4">No Assessors found.</p>
                             ) : (
                                 users_list.filter(u => u.role === 'contractor').map(contractor => (
                                     <button
@@ -1360,10 +1449,13 @@ const Admin = () => {
                                         <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0 group-hover:bg-white">
                                             {contractor.full_name.charAt(0)}
                                         </div>
-                                        <div>
+                                        <div className="flex-grow">
                                             <p className="font-bold text-gray-900 text-sm">{contractor.full_name}</p>
                                             <p className="text-xs text-gray-500">{contractor.email}</p>
                                         </div>
+                                        {isUpdating && selectedAssessmentForAssignment?.id && (
+                                            <Loader2 size={16} className="animate-spin text-[#007F00]" />
+                                        )}
                                     </button>
                                 ))
                             )}
@@ -1464,9 +1556,11 @@ const Admin = () => {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-4 py-2 text-sm font-bold text-white bg-[#007F00] rounded-lg hover:bg-green-800"
+                                    disabled={isUpdating}
+                                    className="px-6 py-2 text-sm font-bold text-white bg-[#007F00] rounded-lg hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all"
                                 >
-                                    Save Changes
+                                    {isUpdating ? <Loader2 className="animate-spin" size={16} /> : null}
+                                    {isUpdating ? 'Saving...' : 'Save Changes'}
                                 </button>
                             </div>
                         </form>
@@ -1491,18 +1585,23 @@ const Admin = () => {
                                 <div className="relative group">
                                     <select
                                         value={selectedLead.status || 'new'}
+                                        disabled={isUpdating}
                                         onChange={(e) => updateStatus(selectedLead.id, e.target.value)}
-                                        className={`appearance-none cursor-pointer pl-4 pr-9 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border-0 ring-1 ring-inset focus:ring-2 outline-none transition-all shadow-sm ${getStatusColor(selectedLead.status || 'new')} ring-black/5 hover:ring-black/10`}
+                                        className={`appearance-none cursor-pointer pl-4 pr-9 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border-0 ring-1 ring-inset focus:ring-2 outline-none transition-all shadow-sm ${getStatusColor(selectedLead.status || 'new')} ring-black/5 hover:ring-black/10 disabled:opacity-50 disabled:cursor-wait`}
                                     >
                                         <option value="new">New</option>
                                         <option value="contacted">Contacted</option>
                                         <option value="completed">Completed</option>
                                     </select>
-                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500/80 pointer-events-none group-hover:text-gray-700 transition-colors" size={14} />
+                                    {isUpdating ? (
+                                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 animate-spin" size={14} />
+                                    ) : (
+                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500/80 pointer-events-none group-hover:text-gray-700 transition-colors" size={14} />
+                                    )}
                                 </div>
                                 <button
                                     onClick={() => setSelectedLead(null)}
-                                    className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                                    className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors"
                                 >
                                     <X size={24} />
                                 </button>
@@ -1596,9 +1695,11 @@ const Admin = () => {
                                 </div>
                                 <button
                                     onClick={handleConvertLead}
-                                    className="bg-[#007EA7] text-white px-6 py-2 rounded-xl text-sm font-bold shadow-sm hover:shadow-md transition-all whitespace-nowrap active:scale-95"
+                                    disabled={isUpdating}
+                                    className="bg-[#007EA7] text-white px-6 py-2 rounded-xl text-sm font-bold shadow-sm hover:shadow-md transition-all whitespace-nowrap active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    Convert to Assessment
+                                    {isUpdating ? <Loader2 className="animate-spin" size={16} /> : null}
+                                    {isUpdating ? 'Converting...' : 'Convert to Assessment'}
                                 </button>
                             </div>
 
@@ -1618,10 +1719,11 @@ const Admin = () => {
                                                 }, 500);
                                             }
                                         }}
-                                        className="w-full bg-[#007F00] text-white font-bold text-sm py-4 rounded-2xl hover:bg-green-800 transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-lg active:scale-[0.98]"
+                                        disabled={isUpdating}
+                                        className="w-full bg-[#007F00] text-white font-bold text-sm py-4 rounded-2xl hover:bg-green-800 transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        <MessageSquare size={18} />
-                                        Formal Quote (Portal)
+                                        {isUpdating ? <Loader2 className="animate-spin" size={18} /> : <MessageSquare size={18} />}
+                                        {isUpdating ? 'Wait...' : 'Formal Quote (Portal)'}
                                     </button>
                                     <a
                                         target="_blank"
@@ -1650,7 +1752,40 @@ const Admin = () => {
                                 <X size={24} />
                             </button>
                         </div>
-                        <p className="text-sm text-gray-500 mb-6">Property: {selectedAssessment.property_address}</p>
+                        <div className="mb-6 space-y-4">
+                            <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100/50">
+                                <h4 className="text-[10px] font-bold text-blue-900 uppercase tracking-widest mb-3">Target Property</h4>
+                                <div className="space-y-2">
+                                    <div className="flex items-start gap-2">
+                                        <MapPin className="text-blue-500 mt-0.5" size={14} />
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-900 leading-tight">{selectedAssessment.property_address}</p>
+                                            <p className="text-[11px] text-gray-500 font-medium">{selectedAssessment.town}, {selectedAssessment.county}</p>
+                                            {selectedAssessment.eircode && (
+                                                <p className="text-[11px] font-mono text-blue-600 mt-1">{selectedAssessment.eircode}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 pt-1">
+                                        <Home className="text-blue-400" size={14} />
+                                        <p className="text-xs font-bold text-gray-700">{selectedAssessment.property_type || 'N/A'}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-green-50/50 p-4 rounded-xl border border-green-100/50">
+                                <h4 className="text-[10px] font-bold text-[#007F00] uppercase tracking-widest mb-2">Client Information</h4>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-green-100 text-[#007F00] flex items-center justify-center font-bold text-xs">
+                                        {selectedAssessment.profiles?.full_name.charAt(0)}
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-bold text-gray-900">{selectedAssessment.profiles?.full_name}</p>
+                                        <p className="text-[10px] text-gray-500">{selectedAssessment.profiles?.email}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <form onSubmit={handleGenerateQuote} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">Quote Price (€)</label>
@@ -1663,6 +1798,9 @@ const Admin = () => {
                                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#007F00]"
                                     placeholder="e.g. 250.00"
                                 />
+                                <p className="text-[10px] text-gray-400 font-medium italic mt-2">
+                                    * Quote must include Berman's €30 service fee.
+                                </p>
                             </div>
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">Estimated Date</label>
@@ -1693,9 +1831,11 @@ const Admin = () => {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-4 py-2 text-sm font-bold text-white bg-[#007F00] rounded-lg hover:bg-green-800"
+                                    disabled={isUpdating}
+                                    className="px-6 py-2 text-sm font-bold text-white bg-[#007F00] rounded-lg hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
                                 >
-                                    Generate & Notify
+                                    {isUpdating ? <Loader2 className="animate-spin" size={16} /> : null}
+                                    {isUpdating ? 'Generating...' : 'Generate & Notify'}
                                 </button>
                             </div>
                         </form>
@@ -1726,7 +1866,14 @@ const Admin = () => {
                             </div>
                             <div className="pt-4 flex justify-end gap-3">
                                 <button type="button" onClick={() => setShowMessageModal(false)} className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg">Cancel</button>
-                                <button type="submit" className="px-4 py-2 text-sm font-bold text-white bg-[#007F00] rounded-lg">Send Message</button>
+                                <button
+                                    type="submit"
+                                    disabled={isUpdating}
+                                    className="px-6 py-2 text-sm font-bold text-white bg-[#007F00] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                >
+                                    {isUpdating ? <Loader2 className="animate-spin" size={16} /> : null}
+                                    {isUpdating ? 'Sending...' : 'Send Message'}
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -1756,7 +1903,14 @@ const Admin = () => {
                             </div>
                             <div className="pt-4 flex justify-end gap-3">
                                 <button type="button" onClick={() => setShowScheduleModal(false)} className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg">Cancel</button>
-                                <button type="submit" className="px-4 py-2 text-sm font-bold text-white bg-indigo-600 rounded-lg">Confirm Schedule</button>
+                                <button
+                                    type="submit"
+                                    disabled={isUpdating}
+                                    className="px-6 py-2 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                                >
+                                    {isUpdating ? <Loader2 className="animate-spin" size={16} /> : null}
+                                    {isUpdating ? 'Scheduling...' : 'Confirm Schedule'}
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -1790,9 +1944,198 @@ const Admin = () => {
                             </div>
                             <div className="pt-4 flex justify-end gap-3">
                                 <button type="button" onClick={() => setShowCompleteModal(false)} className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg">Cancel</button>
-                                <button type="submit" className="px-4 py-2 text-sm font-bold text-white bg-purple-600 rounded-lg">Complete & Upload</button>
+                                <button
+                                    type="submit"
+                                    disabled={isUpdating}
+                                    className="px-6 py-2 text-sm font-bold text-white bg-[#007F00] rounded-lg hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                >
+                                    {isUpdating ? <Loader2 className="animate-spin" size={16} /> : null}
+                                    {isUpdating ? 'Finalizing...' : 'Complete Assessment'}
+                                </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+            {/* ASSESSMENT DETAILS MODAL */}
+            {showAssessmentDetailModal && selectedAssessment && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+                        <div className="bg-white border-b border-gray-100 p-6 flex justify-between items-center shrink-0">
+                            <div>
+                                <h3 className="text-2xl font-bold text-gray-900">Assessment Details</h3>
+                                <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide mt-2 ${getStatusColor(selectedAssessment.status)}`}>
+                                    {selectedAssessment.status.replace('_', ' ')}
+                                </div>
+                            </div>
+                            <button onClick={() => setShowAssessmentDetailModal(false)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div className="p-8 overflow-y-auto space-y-8">
+                            {/* Detailed Property Grid */}
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-y-8 gap-x-6">
+                                <div className="space-y-2">
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Location</span>
+                                    <div className="flex items-start gap-2">
+                                        <MapPin className="text-[#007EA7] shrink-0 mt-0.5" size={16} />
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-900 leading-tight">{selectedAssessment.town}, {selectedAssessment.county}</p>
+                                            <p className="text-[11px] text-gray-500 mt-0.5">{selectedAssessment.property_address}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Property Type</span>
+                                    <div className="flex items-center gap-2">
+                                        <Home className="text-[#007EA7] shrink-0" size={16} />
+                                        <p className="text-sm font-bold text-gray-900">{selectedAssessment.property_type || 'N/A'}</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Size</span>
+                                    <p className="text-sm font-bold text-gray-900">{selectedAssessment.property_size || 'N/A'}</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Bedrooms</span>
+                                    <p className="text-sm font-bold text-gray-900">{selectedAssessment.bedrooms || 'N/A'}</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Purpose</span>
+                                    <p className="text-sm font-bold text-gray-900">{selectedAssessment.ber_purpose || 'N/A'}</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Heat Pump</span>
+                                    <p className="text-sm font-bold text-gray-900">{selectedAssessment.heat_pump || 'No'}</p>
+                                </div>
+                            </div>
+
+                            {/* Schedule & Features highlight */}
+                            <div className="bg-gray-50 rounded-[2rem] p-8 border border-gray-100 flex flex-col md:flex-row gap-8">
+                                <div className="flex-1 space-y-3">
+                                    <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest block">Preferred Schedule</span>
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-3 bg-white rounded-xl text-[#007EA7] shadow-sm">
+                                            <Calendar size={20} />
+                                        </div>
+                                        <p className="text-lg font-black text-gray-900">
+                                            {selectedAssessment.preferred_date ? (
+                                                `20${selectedAssessment.preferred_date.slice(2)} at ${selectedAssessment.preferred_time || 'anytime'}`
+                                            ) : (
+                                                'Not specified'
+                                            )}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex-1 space-y-3">
+                                    <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest block">Features</span>
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedAssessment.additional_features && selectedAssessment.additional_features.length > 0 ? (
+                                            selectedAssessment.additional_features.map((feature, i) => (
+                                                <span key={i} className="text-xs bg-white border border-gray-200 text-gray-600 px-4 py-1.5 rounded-full font-bold shadow-sm">
+                                                    {feature}
+                                                </span>
+                                            ))
+                                        ) : (
+                                            <span className="text-sm text-gray-400 font-medium">Standard property features</span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Client Summary card */}
+                            <div className="bg-[#007F00]/5 border border-[#007F00]/10 rounded-2xl p-6 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-[#007F00] text-white flex items-center justify-center font-black text-lg shadow-lg shadow-green-900/10">
+                                        {selectedAssessment.profiles?.full_name.charAt(0)}
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-black text-gray-900">{selectedAssessment.profiles?.full_name}</p>
+                                        <p className="text-xs text-gray-500 font-medium">{selectedAssessment.profiles?.email}</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <a href={`mailto:${selectedAssessment.profiles?.email}`} className="p-2.5 bg-white border border-gray-100 text-[#007F00] rounded-xl hover:bg-green-50 transition-all shadow-sm">
+                                        <Mail size={18} />
+                                    </a>
+                                </div>
+                            </div>
+
+                            {/* Actions Section */}
+                            <div className="pt-6 border-t border-gray-100">
+                                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Required Actions</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    {selectedAssessment.status === 'submitted' && (
+                                        <button
+                                            onClick={() => {
+                                                setShowQuoteModal(true);
+                                                setShowAssessmentDetailModal(false);
+                                            }}
+                                            className="bg-[#007F00] text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-sm flex items-center justify-center gap-2"
+                                        >
+                                            <TrendingUp size={18} />
+                                            Generate Quote
+                                        </button>
+                                    )}
+                                    {!selectedAssessment.contractor_id && selectedAssessment.status !== 'completed' && (
+                                        <button
+                                            onClick={() => {
+                                                setSelectedAssessmentForAssignment(selectedAssessment);
+                                                setShowAssignModal(true);
+                                                setShowAssessmentDetailModal(false);
+                                            }}
+                                            className="bg-[#007EA7] text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-sm flex items-center justify-center gap-2"
+                                        >
+                                            <Briefcase size={18} />
+                                            Assign Assessor
+                                        </button>
+                                    )}
+                                    {selectedAssessment.status === 'quote_accepted' && (
+                                        <button
+                                            onClick={() => {
+                                                setShowScheduleModal(true);
+                                                setShowAssessmentDetailModal(false);
+                                            }}
+                                            className="bg-indigo-600 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-sm flex items-center justify-center gap-2"
+                                        >
+                                            <Calendar size={18} />
+                                            Schedule
+                                        </button>
+                                    )}
+                                    {selectedAssessment.status === 'scheduled' && (
+                                        <button
+                                            onClick={() => {
+                                                setShowCompleteModal(true);
+                                                setShowAssessmentDetailModal(false);
+                                            }}
+                                            className="bg-purple-600 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-purple-700 transition-all shadow-sm flex items-center justify-center gap-2"
+                                        >
+                                            <RefreshCw size={18} />
+                                            Complete
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={() => {
+                                            const name = selectedAssessment.profiles?.full_name || 'there';
+                                            setMessageContent(`Hi ${name},\n\nI'm writing to you regarding your BER assessment for ${selectedAssessment.property_address}.\n\n[Type your message here]\n\nBest regards,\nThe Berman Team`);
+                                            setShowMessageModal(true);
+                                            setShowAssessmentDetailModal(false);
+                                        }}
+                                        className="bg-white border-2 border-gray-900 text-gray-900 px-4 py-3 rounded-xl text-sm font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <MessageSquare size={18} />
+                                        Message (Gmail)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
@@ -1874,7 +2217,12 @@ const Admin = () => {
                                     {editingSponsor && (
                                         <button type="button" onClick={() => setEditingSponsor(null)} className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg">Cancel Edit</button>
                                     )}
-                                    <button type="submit" className="px-4 py-2 text-sm font-bold text-white bg-[#007F00] rounded-lg">
+                                    <button
+                                        type="submit"
+                                        disabled={isUpdating}
+                                        className="px-6 py-2 text-sm font-bold text-white bg-[#007F00] rounded-lg hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                                    >
+                                        {isUpdating ? <Loader2 className="animate-spin" size={16} /> : null}
                                         {editingSponsor ? 'Update Sponsor' : 'Add Sponsor'}
                                     </button>
                                 </div>
@@ -1911,7 +2259,7 @@ const Admin = () => {
                             <button
                                 onClick={confirmDelete}
                                 disabled={isDeleting}
-                                className="flex-1 px-4 py-3 text-sm font-bold text-white bg-red-500 rounded-xl hover:bg-red-600 transition-all shadow-lg shadow-red-500/20 disabled:opacity-70 flex items-center justify-center gap-2"
+                                className="flex-1 px-4 py-3 text-sm font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 transition-colors shadow-lg shadow-red-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                                 {isDeleting ? (
                                     <>
@@ -1919,7 +2267,7 @@ const Admin = () => {
                                         Deleting...
                                     </>
                                 ) : (
-                                    'Delete'
+                                    'Delete Permanently'
                                 )}
                             </button>
                         </div>
@@ -1928,69 +2276,126 @@ const Admin = () => {
             )}
 
             {/* USER DETAILS MODAL */}
-            {selectedUser && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="p-8">
-                            <div className="flex justify-between items-start mb-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 rounded-full bg-green-50 text-[#007F00] flex items-center justify-center font-bold text-2xl border border-green-100">
-                                        {selectedUser.full_name.charAt(0)}
+            {
+                selectedUser && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+                            <div className="p-8">
+                                <div className="flex justify-between items-start mb-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-16 h-16 rounded-full bg-green-50 text-[#007F00] flex items-center justify-center font-bold text-2xl border border-green-100">
+                                            {selectedUser.full_name.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <h3 className="text-2xl font-bold text-gray-900">{selectedUser.full_name}</h3>
+                                            <p className="text-sm text-gray-500">{selectedUser.email}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h3 className="text-2xl font-bold text-gray-900">{selectedUser.full_name}</h3>
-                                        <p className="text-sm text-gray-500">{selectedUser.email}</p>
-                                    </div>
+                                    <button onClick={() => setSelectedUser(null)} className="text-gray-400 hover:text-gray-600">
+                                        <X size={24} />
+                                    </button>
                                 </div>
-                                <button onClick={() => setSelectedUser(null)} className="text-gray-400 hover:text-gray-600">
-                                    <X size={24} />
-                                </button>
-                            </div>
 
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Account Role</p>
-                                        <p className="text-sm font-bold text-gray-900 capitalize">{selectedUser.role}</p>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Account Role</p>
+                                            <p className="text-sm font-bold text-gray-900 capitalize">{selectedUser.role}</p>
+                                        </div>
+                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Status</p>
+                                            <p className={`text-sm font-bold capitalize ${selectedUser.is_active !== false ? 'text-green-600' : 'text-red-600'}`}>
+                                                {selectedUser.is_active !== false ? 'Active Account' : 'Suspended'}
+                                            </p>
+                                        </div>
                                     </div>
                                     <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Status</p>
-                                        <p className={`text-sm font-bold capitalize ${selectedUser.is_active !== false ? 'text-green-600' : 'text-red-600'}`}>
-                                            {selectedUser.is_active !== false ? 'Active Account' : 'Suspended'}
-                                        </p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">User ID</p>
+                                        <p className="text-xs font-mono text-gray-600 break-all">{selectedUser.id}</p>
+                                    </div>
+                                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Member Since</p>
+                                        <p className="text-sm font-bold text-gray-900">{new Date(selectedUser.created_at).toLocaleDateString()}</p>
                                     </div>
                                 </div>
-                                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">User ID</p>
-                                    <p className="text-xs font-mono text-gray-600 break-all">{selectedUser.id}</p>
-                                </div>
-                                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Member Since</p>
-                                    <p className="text-sm font-bold text-gray-900">{new Date(selectedUser.created_at).toLocaleDateString()}</p>
-                                </div>
-                            </div>
 
-                            <div className="mt-8 flex gap-3">
-                                <button
-                                    className="flex-1 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors text-sm"
-                                    onClick={() => setSelectedUser(null)}
-                                >
-                                    Close
-                                </button>
-                                <button
-                                    className="flex-1 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-colors text-sm border border-red-100"
-                                    onClick={() => {
-                                        toast.error('Privileged action: Use Supabase dashboard to suspend users.');
-                                    }}
-                                >
-                                    Toggle Suspension
-                                </button>
+                                <div className="mt-8 flex gap-3">
+                                    <button
+                                        className="flex-1 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors text-sm"
+                                        onClick={() => setSelectedUser(null)}
+                                    >
+                                        Close
+                                    </button>
+                                    <button
+                                        className={`flex-1 py-3 font-bold rounded-xl transition-colors text-sm border ${selectedUser.is_active !== false
+                                                ? 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100'
+                                                : 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100'
+                                            }`}
+                                        onClick={() => {
+                                            setItemToSuspend({
+                                                id: selectedUser.id,
+                                                name: selectedUser.full_name,
+                                                currentStatus: selectedUser.is_active !== false
+                                            });
+                                            setShowSuspendModal(true);
+                                        }}
+                                    >
+                                        {selectedUser.is_active !== false ? 'Suspend Account' : 'Activate Account'}
+                                    </button>
+                                </div>
                             </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* SUSPEND USER MODAL */}
+            {showSuspendModal && itemToSuspend && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center gap-4 mb-6 text-amber-600">
+                            <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center">
+                                <AlertTriangle size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900">
+                                    {itemToSuspend.currentStatus ? 'Suspend User' : 'Activate User'}
+                                </h3>
+                                <p className="text-sm text-gray-500">Confirm account status change</p>
+                            </div>
+                        </div>
+
+                        <p className="text-gray-600 mb-8">
+                            Are you sure you want to {itemToSuspend.currentStatus ? <span className="text-red-600 font-bold">suspend</span> : <span className="text-green-600 font-bold">activate</span>} <strong>{itemToSuspend.name}</strong>?
+                            {itemToSuspend.currentStatus && " The user will no longer be able to access their dashboard until reactivated."}
+                        </p>
+
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => {
+                                    setShowSuspendModal(false);
+                                    setItemToSuspend(null);
+                                }}
+                                className="px-6 py-2 rounded-xl text-gray-600 font-bold hover:bg-gray-50 transition-all border border-gray-200"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={toggleUserStatus}
+                                disabled={isUpdating}
+                                className={`px-6 py-2 rounded-xl text-white font-bold transition-all shadow-lg flex items-center gap-2 ${itemToSuspend.currentStatus
+                                        ? 'bg-red-600 hover:bg-red-700 shadow-red-100'
+                                        : 'bg-green-600 hover:bg-green-700 shadow-green-100'
+                                    }`}
+                            >
+                                {isUpdating ? <Loader2 size={18} className="animate-spin" /> : null}
+                                {itemToSuspend.currentStatus ? 'Suspend Account' : 'Activate Account'}
+                            </button>
                         </div>
                     </div>
                 </div>
             )}
-        </div>
+        </div >
     );
 };
 

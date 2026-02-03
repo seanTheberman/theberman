@@ -23,7 +23,7 @@ const ContractorOnboarding = () => {
         seaiYear: new Date().getFullYear().toString(),
         insuranceHolder: false,
         vatRegistered: false,
-        assessorType: 'Domestic Assessor',
+        assessorTypes: ['Domestic Assessor'] as string[],
         serviceAreas: [] as string[]
     });
 
@@ -41,6 +41,19 @@ const ContractorOnboarding = () => {
                 return { ...prev, serviceAreas: areas.filter(c => c !== county) };
             } else {
                 return { ...prev, serviceAreas: [...areas, county] };
+            }
+        });
+    };
+
+    const handleAssessorTypeToggle = (type: string) => {
+        setFormData(prev => {
+            const types = [...prev.assessorTypes];
+            if (types.includes(type)) {
+                // Prevent deselecting if it's the only one left
+                if (types.length === 1) return prev;
+                return { ...prev, assessorTypes: types.filter(t => t !== type) };
+            } else {
+                return { ...prev, assessorTypes: [...types, type] };
             }
         });
     };
@@ -69,7 +82,7 @@ const ContractorOnboarding = () => {
                     seai_since_year: parseInt(formData.seaiYear),
                     insurance_holder: formData.insuranceHolder,
                     vat_registered: formData.vatRegistered,
-                    assessor_type: formData.assessorType,
+                    assessor_type: formData.assessorTypes.join(' & '),
                     service_areas: formData.serviceAreas
                 })
                 .eq('id', user?.id);
@@ -78,7 +91,7 @@ const ContractorOnboarding = () => {
 
             toast.success('Profile completed successfully!');
             // Force reload to update auth context with new profile data
-            window.location.href = '/dashboard/contractor';
+            window.location.href = '/dashboard/ber-assessor';
         } catch (error: any) {
             console.error('Error updating profile:', error);
             toast.error(error.message || 'Failed to update profile');
@@ -216,36 +229,22 @@ const ContractorOnboarding = () => {
 
                         <div className="pt-6">
                             <label className="block text-sm font-bold text-gray-700 mb-3">Domestic or Commercial</label>
-                            <div className="flex items-center space-x-6">
-                                <label className="inline-flex items-center cursor-pointer">
-                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mr-2 ${formData.assessorType === 'Domestic Assessor' ? 'border-[#007F00]' : 'border-gray-300'}`}>
-                                        {formData.assessorType === 'Domestic Assessor' && <div className="w-2.5 h-2.5 rounded-full bg-[#007F00]" />}
-                                    </div>
-                                    <input
-                                        type="radio"
-                                        className="hidden"
-                                        name="assessorType"
-                                        value="Domestic Assessor"
-                                        checked={formData.assessorType === 'Domestic Assessor'}
-                                        onChange={(e) => setFormData({ ...formData, assessorType: e.target.value })}
-                                    />
-                                    <span className="text-gray-900 font-medium">Domestic Assessor</span>
-                                </label>
-                                <label className="inline-flex items-center cursor-pointer">
-                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mr-2 ${formData.assessorType === 'Commercial Assessor' ? 'border-[#007F00]' : 'border-gray-300'}`}>
-                                        {formData.assessorType === 'Commercial Assessor' && <div className="w-2.5 h-2.5 rounded-full bg-[#007F00]" />}
-                                    </div>
-                                    <input
-                                        type="radio"
-                                        className="hidden"
-                                        name="assessorType"
-                                        value="Commercial Assessor"
-                                        checked={formData.assessorType === 'Commercial Assessor'}
-                                        onChange={(e) => setFormData({ ...formData, assessorType: e.target.value })}
-                                    />
-                                    <span className="text-gray-900 font-medium">Commercial Assessor</span>
-                                </label>
+                            <div className="flex flex-wrap gap-4">
+                                {['Domestic Assessor', 'Commercial Assessor'].map((type) => (
+                                    <button
+                                        key={type}
+                                        type="button"
+                                        onClick={() => handleAssessorTypeToggle(type)}
+                                        className={`px-6 py-3 rounded-xl border-2 font-bold transition-all flex items-center gap-2 ${formData.assessorTypes.includes(type) ? 'border-[#007F00] bg-green-50 text-[#007F00]' : 'border-gray-200 bg-white text-gray-400'}`}
+                                    >
+                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${formData.assessorTypes.includes(type) ? 'border-[#007F00]' : 'border-gray-300'}`}>
+                                            {formData.assessorTypes.includes(type) && <div className="w-2.5 h-2.5 rounded-full bg-[#007F00]" />}
+                                        </div>
+                                        {type}
+                                    </button>
+                                ))}
                             </div>
+                            <p className="text-xs text-gray-500 mt-2">You can select both if you provide both services.</p>
                         </div>
 
 

@@ -55,7 +55,31 @@ const ROUTING_KEYS: Record<string, string> = {
 };
 
 const PROPERTY_TYPES = ['Semi-Detached', 'Mid-Terrace', 'End-Terrace', 'Apartment', 'Duplex', 'Detached', 'Bungalow', 'Multi-Unit', 'Other'];
-const PROPERTY_SIZES = ['Under 1000 sq.ft', '1000 - 1250 sq.ft', '1250 - 1500 sq.ft', '1500 - 1750 sq.ft', '1750 - 2000 sq.ft', '2000 - 2250 sq.ft', '2250 - 2500 sq.ft', '2500 - 2750 sq.ft', '2750+ sq.ft'];
+const PROPERTY_SIZES = [
+    'Under 750 sq.ft',
+    '750 - 1000 sq.ft',
+    '1000 - 1250 sq.ft',
+    '1250 - 1500 sq.ft',
+    '1500 - 1750 sq.ft',
+    '1750 - 2000 sq.ft',
+    '2000 - 2500 sq.ft',
+    '2500 - 3000 sq.ft',
+    '3000 - 4000 sq.ft',
+    'Over 4000 sq.ft'
+];
+
+const PROPERTY_SIZES_METRIC = [
+    'Under 70 m²',
+    '70 - 90 m²',
+    '90 - 110 m²',
+    '110 - 140 m²',
+    '140 - 160 m²',
+    '160 - 185 m²',
+    '185 - 230 m²',
+    '230 - 280 m²',
+    '280 - 370 m²',
+    'Over 370 m²'
+];
 const TIME_SLOTS = ['Any time', '8am - 10am', '10am - 2pm', '2pm - 6pm', '6pm - 8pm'];
 const ADDITIONAL_FEATURES = ['Attic/Garage conversion', 'Extensions', 'Conservatory', 'Multiple', 'None'];
 const HEAT_PUMP_OPTIONS = ['No', 'Air Source', 'Ground Source'];
@@ -85,6 +109,7 @@ interface QuoteFormModuleProps {
 const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
     const { user } = useAuth();
     const [currentStep, setCurrentStep] = useState(1);
+    const [sizeUnit, setSizeUnit] = useState<'ft' | 'm'>('ft');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [assessmentId, setAssessmentId] = useState<string | null>(null);
     const [emailError, setEmailError] = useState<string | null>(null);
@@ -298,7 +323,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                         </p>
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 max-w-5xl mx-auto overflow-y-auto max-h-[50vh] p-2 custom-scrollbar">
                             <button
-                                onClick={() => updateField('preferredDate', 'Flexible')}
+                                onClick={() => { updateField('preferredDate', 'Flexible'); handleNext(); }}
                                 className={`p-4 rounded-xl border-2 transition-all font-bold text-sm ${formData.preferredDate === 'Flexible' ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white text-gray-600'}`}
                             >
                                 I'm Flexible
@@ -306,7 +331,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                             {generateCalendarDates().map((date) => (
                                 <button
                                     key={formatDate(date)}
-                                    onClick={() => updateField('preferredDate', formatDate(date))}
+                                    onClick={() => { updateField('preferredDate', formatDate(date)); handleNext(); }}
                                     className={`p-4 rounded-xl border-2 transition-all ${formData.preferredDate === formatDate(date) ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white text-gray-600'}`}
                                 >
                                     <span className="block text-sm font-medium">{formatDateDisplay(date)}</span>
@@ -323,7 +348,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                             {TIME_SLOTS.map((time) => (
                                 <button
                                     key={time}
-                                    onClick={() => updateField('preferredTime', time)}
+                                    onClick={() => { updateField('preferredTime', time); handleNext(); }}
                                     className={`p-4 rounded-lg border-2 transition-all text-center ${formData.preferredTime === time ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                                 >{time}</button>
                             ))}
@@ -347,8 +372,21 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 return (
                     <div className="space-y-6">
                         <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Property size?</h2>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
-                            {PROPERTY_SIZES.map((size) => (
+                        <div className="flex justify-center mb-6">
+                            <div className="inline-flex p-1 bg-gray-100 rounded-xl">
+                                <button
+                                    onClick={() => setSizeUnit('ft')}
+                                    className={`px-6 py-2 rounded-lg font-bold transition-all ${sizeUnit === 'ft' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                >Sq. Feet</button>
+                                <button
+                                    onClick={() => setSizeUnit('m')}
+                                    className={`px-6 py-2 rounded-lg font-bold transition-all ${sizeUnit === 'm' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                >Sq. Meters</button>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-2xl mx-auto">
+                            {(sizeUnit === 'ft' ? PROPERTY_SIZES : PROPERTY_SIZES_METRIC).map((size) => (
                                 <button key={size} onClick={() => { updateField('propertySize', size); handleNext(); }}
                                     className={`p-4 rounded-lg border-2 transition-all text-center ${formData.propertySize === size ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                                 >{size}</button>
@@ -529,12 +567,14 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                     <button onClick={handleBack} disabled={currentStep === 1}
                         className={`px-6 py-4 rounded-xl font-bold transition-all ${currentStep === 1 ? 'text-gray-300' : 'text-gray-500 hover:bg-gray-200'}`}
                     >Back</button>
-                    <button onClick={handleNext} disabled={!canProceed()}
-                        className={`px-10 py-4 rounded-xl font-bold transition-all flex items-center gap-2 ${canProceed() ? 'bg-green-500 text-white shadow-lg shadow-green-100 hover:bg-green-600' : 'bg-gray-200 text-gray-400'}`}
-                    >
-                        {currentStep === 11 ? (isSubmitting ? 'Submitting...' : 'Get Quotes') : 'Next'}
-                        {currentStep < 11 && <ChevronRight size={18} />}
-                    </button>
+                    {(currentStep === 6 || currentStep === 11) && (
+                        <button onClick={handleNext} disabled={!canProceed()}
+                            className={`px-10 py-4 rounded-xl font-bold transition-all flex items-center gap-2 ${canProceed() ? 'bg-green-500 text-white shadow-lg shadow-green-100 hover:bg-green-600' : 'bg-gray-200 text-gray-400'}`}
+                        >
+                            {currentStep === 11 ? (isSubmitting ? 'Submitting...' : 'Get Quotes') : 'Next'}
+                            {currentStep < 11 && <ChevronRight size={18} />}
+                        </button>
+                    )}
                 </div>
             )}
         </div>

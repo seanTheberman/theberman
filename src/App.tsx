@@ -60,9 +60,9 @@ function App() {
                         }
                     />
 
-                    {/* Contractor Dashboard */}
+                    {/* BER Assessor Dashboard */}
                     <Route
-                        path="/contractor-onboarding"
+                        path="/assessor-onboarding"
                         element={
                             <ProtectedRoute allowedRoles={['contractor']}>
                                 <ContractorOnboarding />
@@ -71,7 +71,7 @@ function App() {
                     />
 
                     <Route
-                        path="/dashboard/contractor"
+                        path="/dashboard/ber-assessor"
                         element={
                             <ProtectedRoute allowedRoles={['contractor']}>
                                 <ContractorDashboard />

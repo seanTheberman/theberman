@@ -9,13 +9,13 @@ const Pricing = () => {
             <meta name="description" content="Clear, upfront pricing for Building Energy Ratings. Plans for apartments, houses, and commercial units." />
 
             {/* 1. COMPACT HERO SECTION */}
-            <section className="pt-24 pb-16 bg-white">
+            <section className="pt-32 pb-12 bg-white">
                 <div className="container mx-auto px-6 text-center max-w-4xl">
                     <span className="inline-block mb-4 px-4 py-1.5 rounded-full bg-green-50 text-[#007F00] text-xs font-black tracking-widest uppercase border border-green-100">
                         Pricing
                     </span>
                     <h1 className="text-4xl md:text-6xl font-black text-gray-900 mb-6 leading-tight">
-                        Transparent <br />
+                        Transparent <br className="hidden md:block" />
                         <span className="text-[#007F00]">Rates.</span>
                     </h1>
                     <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
@@ -30,7 +30,7 @@ const Pricing = () => {
                     <div className="grid md:grid-cols-3 gap-8">
                         <PricingCard
                             title="Apartment / Flat"
-                            price="€180"
+                            price="€150-€250"
                             description="Ideal for 1-2 bed self-contained units or duplexes."
                             features={[
                                 "Full SEAI Registered assessment",
@@ -41,7 +41,7 @@ const Pricing = () => {
                         />
                         <PricingCard
                             title="Standard House"
-                            price="€250"
+                            price="€200-€400"
                             isPopular={true}
                             description="For 3-4 bed semi-detached or terraced homes."
                             features={[
@@ -78,16 +78,16 @@ const Pricing = () => {
                         <p className="text-gray-400 text-xs font-black uppercase tracking-widest">Detail-oriented services</p>
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                        <table className="w-full text-left">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+                        <table className="w-full text-left min-w-[500px] md:min-w-0">
                             <thead className="bg-gray-50 text-gray-900 border-b border-gray-100">
                                 <tr>
-                                    <th className="p-6 text-xs font-black uppercase tracking-widest">Feature</th>
-                                    <th className="p-6 text-center text-xs font-black uppercase tracking-widest">Standard</th>
-                                    <th className="p-6 text-center text-xs font-black uppercase tracking-widest text-[#007F00]">Premium</th>
+                                    <th className="p-4 md:p-6 text-[10px] md:text-xs font-black uppercase tracking-widest">Feature</th>
+                                    <th className="p-4 md:p-6 text-center text-[10px] md:text-xs font-black uppercase tracking-widest">Standard</th>
+                                    <th className="p-4 md:p-6 text-center text-[10px] md:text-xs font-black uppercase tracking-widest text-[#007F00]">Premium</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100 font-bold text-sm">
+                            <tbody className="divide-y divide-gray-100 font-bold text-xs md:text-sm">
                                 <TableRow label="Official SEAI Cert" standard={true} premium={true} />
                                 <TableRow label="Advisory Report" standard={true} premium={true} />
                                 <TableRow label="Grant Advice" standard={true} premium={true} />
@@ -177,10 +177,10 @@ const TableRow = ({ label, standard, premium }: { label: string, standard: boole
     <tr className="hover:bg-gray-50/50 transition-colors">
         <td className="p-6 font-bold text-gray-700">{label}</td>
         <td className="p-6 text-center">
-            {standard ? <CheckCircle2 className="mx-auto text-green-200" size={20} /> : <X className="mx-auto text-gray-200" size={20} />}
+            {standard ? <CheckCircle2 className="mx-auto text-green-500" size={20} /> : <X className="mx-auto text-gray-300" size={20} />}
         </td>
         <td className="p-6 text-center">
-            {premium ? <CheckCircle2 className="mx-auto text-[#007F00]" size={20} /> : <X className="mx-auto text-gray-200" size={20} />}
+            {premium ? <CheckCircle2 className="mx-auto text-[#007F00]" size={20} /> : <X className="mx-auto text-gray-300" size={20} />}
         </td>
     </tr>
 );
