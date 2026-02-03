@@ -21,6 +21,7 @@ import UpdatePassword from './pages/UpdatePassword';
 import QuoteForm from './pages/QuoteForm';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
+import FAQ from './pages/FAQ';
 
 import ScrollToTop from './components/ScrollToTop';
 
@@ -42,6 +43,7 @@ function App() {
                         <Route path="terms" element={<TermsOfService />} />
                         <Route path="login" element={<Login />} />
                         <Route path="signup" element={<SignUp />} />
+                        <Route path="faq" element={<FAQ />} />
                     </Route>
 
                     {/* Quote Form - No Layout wrapper for cleaner UX */}

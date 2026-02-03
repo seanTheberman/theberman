@@ -250,6 +250,11 @@ const Layout = () => {
                                         </Link>
                                     </li>
                                 ))}
+                                <li>
+                                    <Link to="/faq" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
+                                        FAQ
+                                    </Link>
+                                </li>
                             </ul>
                         </div>
 
@@ -283,7 +288,7 @@ const Layout = () => {
                             <ul className="space-y-4">
                                 <li className="flex items-start gap-3 text-gray-400 text-sm">
                                     <Smartphone className="text-[#9ACD32] mt-0.5" size={16} />
-                                    <a href="tel:0874421653" className="hover:text-white transition">087 442 1653</a>
+                                    <a href="tel:0874421653" className="hover:text-white transition">087 4421653</a>
                                 </li>
                                 <li className="flex items-start gap-3 text-gray-400 text-sm">
                                     <Mail className="text-[#9ACD32] mt-0.5" size={16} />

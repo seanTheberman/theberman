@@ -305,7 +305,7 @@ const HomePage = () => {
                                 </div>
                                 <div>
                                     <p className="text-xs font-bold text-gray-500 uppercase">Emergency Support</p>
-                                    <p className="font-black text-2xl">087 442 1653</p>
+                                    <p className="font-black text-2xl">087 4421653</p>
                                 </div>
                             </div>
                         </div>

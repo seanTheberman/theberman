@@ -712,7 +712,7 @@ const ContractorDashboard = () => {
                                     {/* Header */}
                                     {/* <div className="bg-[#007EA7] text-white p-6 rounded-xl text-center">
                                         <h2 className="text-xl font-bold mb-1">My Clients</h2>
-                                        <p className="text-sm text-white/80">Here's your successful quotes on BerCert.com. Please contact <span className="text-yellow-300">your clients</span> within one business day.</p>
+                                        <p className="text-sm text-white/80">Here's your successful quotes on theberman.eu. Please contact <span className="text-yellow-300">your clients</span> within one business day.</p>
                                     </div> */}
 
                                     {/* Desktop Table View */}
