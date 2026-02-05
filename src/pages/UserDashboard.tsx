@@ -2,11 +2,12 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { LogOut, FileText, User, Calendar, Home, CheckCircle2, Clock, AlertCircle, X, Mail } from 'lucide-react';
+import { LogOut, FileText, User, Calendar, Home, AlertCircle, X, Mail } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import QuoteModal from '../components/QuoteModal';
 import EmailVerification from '../components/EmailVerification';
+import PaymentModal from '../components/PaymentModal';
 
 interface Quote {
     id: string;
@@ -16,11 +17,14 @@ interface Quote {
     status: 'pending' | 'accepted' | 'rejected';
     created_at: string;
     assessment_id: string;
+    created_by: string;
     contractor?: {
         full_name: string;
         seai_number: string;
         assessor_type?: string;
+        company_name?: string;
     };
+    assessment?: any;
 }
 
 interface Assessment {
@@ -37,6 +41,11 @@ interface Assessment {
     quotes?: Quote[];
     preferred_date?: string;
     preferred_time?: string;
+    property_size?: string;
+    bedrooms?: number;
+    heat_pump?: string;
+    ber_purpose?: string;
+    additional_features?: string[];
 }
 
 const UserDashboard = () => {
@@ -45,11 +54,15 @@ const UserDashboard = () => {
     const [assessments, setAssessments] = useState<Assessment[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
+    const [selectedDetailsQuote, setSelectedDetailsQuote] = useState<Quote | null>(null); // New state for quote details modal
     const [view, setView] = useState<'assessments' | 'quotes'>('assessments');
     const [verifyingQuote, setVerifyingQuote] = useState<{ assessmentId: string, quoteId: string, targetStatus: 'accepted' | 'rejected' } | null>(null);
     const [confirmReject, setConfirmReject] = useState<{ assessmentId: string, quoteId: string } | null>(null);
     const [verificationStep, setVerificationStep] = useState<1 | 2>(1);
+
     const [verifyEircode, setVerifyEircode] = useState('');
+    const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+    const [paymentQuote, setPaymentQuote] = useState<{ assessmentId: string, quoteId: string, amount: number } | null>(null);
 
     useEffect(() => {
         fetchAssessments();
@@ -92,7 +105,8 @@ const UserDashboard = () => {
                         contractor:profiles(
                             full_name,
                             seai_number,
-                            assessor_type
+                            assessor_type,
+                            company_name
                         )
                     )
                 `)
@@ -129,38 +143,19 @@ const UserDashboard = () => {
     const handleUpdateQuoteStatus = async (assessmentId: string, quoteId: string, newStatus: 'accepted' | 'rejected') => {
         try {
             if (newStatus === 'accepted') {
-                // Fetch the quote to get the contractor_id
+                // Fetch the quote to get the price
                 const { data: quote, error: fetchError } = await supabase
                     .from('quotes')
-                    .select('created_by')
+                    .select('price')
                     .eq('id', quoteId)
                     .single();
 
                 if (fetchError) throw fetchError;
 
-                const { error: quoteError } = await supabase
-                    .from('quotes')
-                    .update({ status: newStatus })
-                    .eq('id', quoteId);
-
-                if (quoteError) throw quoteError;
-
-                const { error: assessmentError } = await supabase
-                    .from('assessments')
-                    .update({
-                        status: 'quote_accepted',
-                        contractor_id: quote.created_by
-                    })
-                    .eq('id', assessmentId);
-
-                if (assessmentError) throw assessmentError;
-
-                // Notify homeowner and contractor about the acceptance
-                supabase.functions.invoke('send-acceptance-notification', {
-                    body: { assessmentId, quoteId }
-                }).catch(err => console.error('Failed to trigger acceptance notification:', err));
-
-                toast.success('Quote accepted!');
+                // Open Payment Modal instead of immediate update
+                setPaymentQuote({ assessmentId, quoteId, amount: quote.price + 10 }); // Including platform fee
+                setPaymentModalOpen(true);
+                return;
             } else {
                 const { error: quoteError } = await supabase
                     .from('quotes')
@@ -176,21 +171,72 @@ const UserDashboard = () => {
         }
     };
 
+    const handlePaymentSuccess = async (paymentIntentId: string) => {
+        if (!paymentQuote) return;
+
+        try {
+            // 1. Record Payment in DB
+            const { error: paymentError } = await supabase.from('payments').insert({
+                amount: paymentQuote.amount,
+                currency: 'eur',
+                status: 'completed',
+                assessment_id: paymentQuote.assessmentId,
+                user_id: user?.id,
+                stripe_payment_id: paymentIntentId
+            });
+
+            if (paymentError) {
+                console.error('Payment recorded failed but stripe succeeded:', paymentError);
+                toast.error('Payment recorded with errors. Please contact support.');
+            }
+
+            // 2. Finalize Quote Acceptance
+            // Fetch the quote to get the contractor_id
+            const { data: quote, error: fetchError } = await supabase
+                .from('quotes')
+                .select('created_by')
+                .eq('id', paymentQuote.quoteId)
+                .single();
+
+            if (fetchError) throw fetchError;
+
+            const { error: quoteError } = await supabase
+                .from('quotes')
+                .update({ status: 'accepted' })
+                .eq('id', paymentQuote.quoteId);
+
+            if (quoteError) throw quoteError;
+
+            const { error: assessmentError } = await supabase
+                .from('assessments')
+                .update({
+                    status: 'quote_accepted',
+                    contractor_id: quote.created_by,
+                    payment_status: 'paid'
+                })
+                .eq('id', paymentQuote.assessmentId);
+
+            if (assessmentError) throw assessmentError;
+
+            // Notify homeowner and contractor about the acceptance
+            supabase.functions.invoke('send-acceptance-notification', {
+                body: { assessmentId: paymentQuote.assessmentId, quoteId: paymentQuote.quoteId }
+            }).catch(err => console.error('Failed to trigger acceptance notification:', err));
+
+            toast.success('Payment successful! Quote accepted.');
+            setPaymentModalOpen(false);
+            setPaymentQuote(null);
+            fetchAssessments();
+
+        } catch (error: any) {
+            console.error('Error finalizing acceptance:', error);
+            toast.error('Payment succeeded but update failed. Contact support.');
+        }
+    };
+
     const handleSignOut = async () => {
         await signOut();
         navigate('/login');
-    };
-
-    const getStatusIcon = (status: string) => {
-        switch (status) {
-            case 'completed': return <CheckCircle2 className="text-green-500" size={18} />;
-            case 'scheduled': return <Calendar className="text-blue-500" size={18} />;
-            case 'quote_accepted': return <CheckCircle2 className="text-indigo-500" size={18} />;
-            case 'pending_quote': return <Clock className="text-amber-500" size={18} />;
-            case 'submitted': return <FileText className="text-blue-500" size={18} />;
-            case 'draft': return <FileText className="text-gray-400" size={18} />;
-            default: return <AlertCircle className="text-gray-500" size={18} />;
-        }
     };
 
     const getStatusStyles = (status: string) => {
@@ -272,7 +318,7 @@ const UserDashboard = () => {
                     </div>
                 ) : (
                     /* Populated Dashboard */
-                    <div className="max-w-6xl mx-auto">
+                    <div className="w-full mx-auto">
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
                             <div>
                                 <h2 className="text-3xl font-bold text-gray-900 mb-2">
@@ -310,84 +356,141 @@ const UserDashboard = () => {
                         </div>
 
                         {view === 'assessments' ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                {assessments.map((assessment) => (
-                                    /* Assessment Card ... keeps existing code but wrapped */
-                                    <div
-                                        key={assessment.id}
-                                        className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow group"
-                                    >
-                                        <div className="flex justify-between items-start mb-6">
-                                            <div className="p-3 bg-gray-50 rounded-xl group-hover:bg-green-50 transition-colors">
-                                                <Home size={24} className="text-gray-400 group-hover:text-[#007F00]" />
-                                            </div>
-                                            <div className="flex flex-col items-end gap-2">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${getStatusStyles(assessment.status)}`}>
+                            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                {/* Desktop Table View */}
+                                <div className="overflow-x-auto hidden md:block">
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr className="bg-gray-50 border-b border-gray-200">
+                                                <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Posted</th>
+                                                <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Town</th>
+                                                <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">County</th>
+                                                <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Type</th>
+                                                <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Sq. Mt.</th>
+                                                <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Beds</th>
+                                                <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Heat Pump</th>
+                                                <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Purpose</th>
+                                                <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Addition</th>
+                                                <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Preferred Date</th>
+                                                <th className="text-right py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {assessments.map((assessment, index) => (
+                                                <tr
+                                                    key={assessment.id}
+                                                    className={`border-b border-gray-50 hover:bg-green-50/20 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/10'}`}
+                                                >
+                                                    <td className="py-4 px-6">
+                                                        <div className="text-xs font-bold text-gray-400 whitespace-nowrap">
+                                                            {new Date(assessment.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-4 px-6 font-bold text-gray-900 whitespace-nowrap">
+                                                        <div className="flex items-center gap-2">
+                                                            {assessment.town}
+                                                            {assessment.quotes && assessment.quotes.some(q => q.status === 'pending') && (
+                                                                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-sm shadow-green-200" title="New Quote"></span>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-4 px-6 text-gray-600 font-medium whitespace-nowrap">
+                                                        {assessment.county}
+                                                    </td>
+                                                    <td className="py-4 px-6 text-gray-400 font-bold text-xs uppercase tracking-tight whitespace-nowrap">
+                                                        {assessment.property_type}
+                                                    </td>
+                                                    <td className="py-4 px-6 text-gray-600 text-xs whitespace-nowrap">
+                                                        {assessment.property_size}
+                                                    </td>
+                                                    <td className="py-4 px-6 text-gray-600 text-xs whitespace-nowrap">
+                                                        {assessment.bedrooms}
+                                                    </td>
+                                                    <td className="py-4 px-6 text-gray-600 text-xs whitespace-nowrap">
+                                                        {assessment.heat_pump}
+                                                    </td>
+                                                    <td className="py-4 px-6">
+                                                        <span className="px-2 py-0.5 bg-gray-100 rounded text-[10px] font-bold text-gray-600 whitespace-nowrap">
+                                                            {assessment.ber_purpose || '-'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-4 px-6 text-gray-500 text-xs max-w-[150px] truncate" title={assessment.additional_features?.join(', ')}>
+                                                        {assessment.additional_features?.join(', ') || 'None'}
+                                                    </td>
+                                                    <td className="py-4 px-6 text-gray-600 text-xs whitespace-nowrap">
+                                                        {assessment.preferred_date || 'Flexible'}
+                                                    </td>
+                                                    <td className="py-4 px-6 text-right whitespace-nowrap">
+                                                        {assessment.status === 'draft' ? (
+                                                            <div className="flex justify-end gap-2">
+                                                                <button
+                                                                    onClick={() => setSelectedAssessment(assessment)}
+                                                                    className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-all"
+                                                                >
+                                                                    Edit
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleSubmitAssessment(assessment.id)}
+                                                                    className="px-3 py-1.5 bg-[#007F00] text-white rounded-lg text-xs font-bold hover:bg-[#006600] transition-all"
+                                                                >
+                                                                    Submit
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => setSelectedAssessment(assessment)}
+                                                                className="px-4 py-2 border border-green-100 text-[#007F00] bg-green-50/50 rounded-xl text-xs font-black hover:bg-[#007F00] hover:text-white transition-all"
+                                                            >
+                                                                {assessment.status === 'completed' ? 'View Results' : 'View Details'}
+                                                            </button>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* Mobile Card View */}
+                                <div className="md:hidden divide-y divide-gray-100">
+                                    {assessments.map((assessment) => (
+                                        <div key={assessment.id} className="p-5">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div>
+                                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                                                        {new Date(assessment.created_at).toLocaleDateString()}
+                                                    </p>
+                                                    <h4 className="font-bold text-gray-900">{assessment.property_address}</h4>
+                                                    <p className="text-xs text-gray-500">{assessment.town}, {assessment.county}</p>
+                                                </div>
+                                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusStyles(assessment.status)}`}>
                                                     {assessment.status.replace('_', ' ')}
                                                 </span>
+                                            </div>
+
+                                            <div className="flex items-center gap-4 mb-4">
+                                                <div className="text-xs font-bold text-gray-600 bg-gray-50 px-2 py-1 rounded">
+                                                    {assessment.property_type}
+                                                </div>
                                                 {assessment.quotes && assessment.quotes.some(q => q.status === 'pending') && (
-                                                    <span className="bg-[#007F00] text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">
-                                                        New Quote
-                                                    </span>
+                                                    <div className="text-[10px] font-black text-[#007F00] flex items-center gap-1">
+                                                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                                                        NEW QUOTES
+                                                    </div>
                                                 )}
                                             </div>
-                                        </div>
 
-                                        <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-1">
-                                            {assessment.property_address}
-                                        </h3>
-
-                                        <div className="space-y-4 pt-4 border-t border-gray-50">
-                                            <div className="flex items-center gap-3 text-sm text-gray-600">
-                                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center">
-                                                    {getStatusIcon(assessment.status)}
-                                                </div>
-                                                <div>
-                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Status</p>
-                                                    <p className="font-medium text-gray-700 capitalize">{assessment.status}</p>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex items-center gap-3 text-sm text-gray-600">
-                                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center">
-                                                    <Calendar size={18} className="text-gray-400" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">
-                                                        {assessment.scheduled_date ? 'Scheduled Date' : 'Preferred Date'}
-                                                    </p>
-                                                    <p className="font-medium text-gray-700">
-                                                        {assessment.scheduled_date
-                                                            ? new Date(assessment.scheduled_date).toLocaleDateString('en-IE', {
-                                                                day: 'numeric',
-                                                                month: 'short',
-                                                                year: 'numeric'
-                                                            })
-                                                            : assessment.preferred_date ? (
-                                                                <>
-                                                                    {new Date(assessment.preferred_date).toLocaleDateString('en-IE', { day: 'numeric', month: 'short' })}
-                                                                    <span className="text-gray-400 font-normal mx-1">•</span>
-                                                                    {assessment.preferred_time}
-                                                                </>
-                                                            ) : 'TBC'
-                                                        }
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-6">
                                             {assessment.status === 'draft' ? (
-                                                <div className="flex gap-2">
+                                                <div className="grid grid-cols-2 gap-3">
                                                     <button
                                                         onClick={() => setSelectedAssessment(assessment)}
-                                                        className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all"
+                                                        className="w-full py-3 border border-gray-100 text-gray-600 rounded-xl font-black text-xs hover:bg-gray-50 transition-all"
                                                     >
                                                         Edit
                                                     </button>
                                                     <button
                                                         onClick={() => handleSubmitAssessment(assessment.id)}
-                                                        className="flex-1 py-2.5 rounded-xl bg-[#007F00] text-white text-sm font-semibold hover:bg-[#006600] transition-all"
+                                                        className="w-full py-3 bg-[#007F00] text-white rounded-xl font-black text-xs hover:bg-[#006600] transition-all"
                                                     >
                                                         Submit
                                                     </button>
@@ -395,15 +498,16 @@ const UserDashboard = () => {
                                             ) : (
                                                 <button
                                                     onClick={() => setSelectedAssessment(assessment)}
-                                                    className="w-full py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-green-50 hover:text-[#007F00] hover:border-[#007F00] transition-all"
+                                                    className="w-full py-3 bg-[#007F00] text-white rounded-xl font-black text-xs hover:bg-[#006600] transition-all shadow-md shadow-green-100"
                                                 >
                                                     {assessment.status === 'completed' ? 'View Certificate' : 'View Details'}
                                                 </button>
                                             )}
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
+
                         ) : (
                             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
                                 {assessments.flatMap(a => (a.quotes || []).map(q => ({ ...q, assessment: a })))
@@ -416,98 +520,149 @@ const UserDashboard = () => {
                                         <p className="text-gray-500 max-w-sm mx-auto">Once BER Assessors review your submitted assessments, their quotes will appear here.</p>
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col gap-6">
-                                        {assessments.flatMap(a => (a.quotes || []).map(q => ({ ...q, assessment: a })))
-                                            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                                            .map((quote) => (
-                                                <div key={quote.id} className="bg-white rounded-[1.5rem] border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                                                    <div className="p-6 sm:p-8">
-                                                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-                                                            {/* Main Quote Info */}
-                                                            <div className="flex-1 min-w-[200px]">
-                                                                <div className="flex items-center gap-4 mb-2">
-                                                                    <h4 className="text-4xl font-black text-gray-900">€{quote.price + 10}</h4>
-                                                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${quote.status === 'accepted' ? 'bg-green-50 text-green-700 border-green-100' :
-                                                                        quote.status === 'rejected' ? 'bg-red-50 text-red-700 border-red-100' :
-                                                                            'bg-green-50 text-[#007F00] border-green-100'
-                                                                        }`}>
-                                                                        {quote.status}
-                                                                    </span>
-                                                                </div>
-                                                                <p className="text-xs font-bold text-gray-400">Received {new Date(quote.created_at).toLocaleDateString()}</p>
-                                                                {quote.contractor && (
-                                                                    <div className="mt-2 text-xs text-gray-500">
-                                                                        <span className="font-bold text-gray-700">{quote.contractor.full_name}</span>
-                                                                        {quote.contractor.seai_number && (
-                                                                            <span className="ml-2 bg-gray-100 px-2 py-0.5 rounded text-[10px] text-gray-600 border border-gray-200">
-                                                                                SEAI: {quote.contractor.seai_number}
+                                    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                                        {/* Desktop Table View */}
+                                        <div className="overflow-x-auto hidden md:block">
+                                            <table className="w-full text-sm">
+                                                <thead>
+                                                    <tr className="bg-gray-50 border-b border-gray-200">
+                                                        <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">Property</th>
+                                                        <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">Quote</th>
+                                                        <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">Earliest Availability</th>
+                                                        <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">Assessor ID</th>
+                                                        <th className="text-right py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {assessments.flatMap(a => (a.quotes || []).map(q => ({ ...q, assessment: a })))
+                                                        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                                                        .map((quote, index) => (
+                                                            <tr
+                                                                key={quote.id}
+                                                                className={`border-b border-gray-50 hover:bg-green-50/30 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/20'}`}
+                                                            >
+                                                                <td className="py-4 px-6">
+                                                                    <div className="font-bold text-gray-900 line-clamp-1">{quote.assessment.property_address}</div>
+                                                                    <div className="text-[10px] text-gray-500 font-medium">{quote.assessment.town}</div>
+                                                                </td>
+                                                                <td className="py-4 px-6">
+                                                                    <div className="text-lg font-black text-gray-900">€{quote.price + 10}</div>
+                                                                </td>
+                                                                <td className="py-4 px-6 text-gray-600 font-medium whitespace-nowrap">
+                                                                    {quote.estimated_date ? new Date(quote.estimated_date).toLocaleDateString('en-IE', { weekday: 'short', day: 'numeric', month: 'short' }) : 'TBC'}
+                                                                </td>
+                                                                <td className="py-4 px-6">
+                                                                    {quote.contractor ? (
+                                                                        <div className="flex flex-col">
+                                                                            <span className="font-bold text-gray-700">#{quote.contractor.seai_number || quote.created_by.slice(0, 6)}</span>
+                                                                            <Link
+                                                                                to={`/profiles/${quote.created_by}`}
+                                                                                className="text-[10px] text-green-500 hover:text-green-600 font-bold hover:underline"
+                                                                            >
+                                                                                View Profile
+                                                                            </Link>
+                                                                        </div>
+                                                                    ) : <span className="text-gray-400">-</span>}
+                                                                </td>
+                                                                <td className="py-4 px-6 text-right">
+                                                                    {quote.status === 'pending' ? (
+                                                                        <div className="flex justify-end gap-3">
+                                                                            <button
+                                                                                onClick={() => setConfirmReject({ assessmentId: quote.assessment_id || quote.assessment.id, quoteId: quote.id })}
+                                                                                className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                                                title="Reject Quote"
+                                                                            >
+                                                                                <X size={18} />
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    // Show details modal first
+                                                                                    setSelectedDetailsQuote(quote);
+                                                                                }}
+                                                                                className="px-6 py-2.5 bg-[#007F00] text-white rounded-lg font-black text-xs hover:bg-[#006600] transition-all shadow-sm active:scale-95 leading-tight text-center"
+                                                                            >
+                                                                                Accept<br />Quote
+                                                                            </button>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="flex flex-col items-end">
+                                                                            <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${quote.status === 'accepted' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
+                                                                                {quote.status}
                                                                             </span>
-                                                                        )}
-                                                                    </div>
-                                                                )}
-                                                            </div>
+                                                                            <span className="mt-1 text-[9px] font-bold text-gray-400 italic">
+                                                                                {new Date(quote.created_at).toLocaleDateString()}
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
 
-                                                            {/* Property Details */}
-                                                            <div className="flex-[2] bg-gray-50/50 rounded-2xl p-4 border border-gray-100 flex items-center gap-4">
-                                                                <div className="w-10 h-10 bg-white rounded-xl shadow-xs flex items-center justify-center text-gray-400">
-                                                                    <Home size={18} />
-                                                                </div>
-                                                                <div>
-                                                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Property for Assessment</p>
-                                                                    <p className="text-sm font-bold text-gray-900 line-clamp-1">{quote.assessment.property_address}</p>
-                                                                </div>
+                                        {/* Mobile Card View */}
+                                        <div className="md:hidden divide-y divide-gray-100">
+                                            {assessments.flatMap(a => (a.quotes || []).map(q => ({ ...q, assessment: a })))
+                                                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                                                .map((quote) => (
+                                                    <div key={quote.id} className="p-5">
+                                                        <div className="flex justify-between items-start mb-4">
+                                                            <div>
+                                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{new Date(quote.created_at).toLocaleDateString()}</p>
+                                                                <h4 className="font-bold text-gray-900">{quote.assessment.town}</h4>
+                                                                <p className="text-xs text-gray-500 font-medium italic">
+                                                                    Earliest: {quote.estimated_date ? new Date(quote.estimated_date).toLocaleDateString() : 'TBC'}
+                                                                </p>
                                                             </div>
-
-                                                            {/* Actions or Status placeholder */}
-                                                            <div className="flex-1 flex lg:justify-end">
-                                                                {quote.status === 'pending' ? (
-                                                                    <div className="flex gap-3 w-full lg:w-auto">
-                                                                        <button
-                                                                            onClick={() => setConfirmReject({ assessmentId: quote.assessment_id || quote.assessment.id, quoteId: quote.id })}
-                                                                            className="px-6 py-3 border border-red-100 text-red-600 rounded-xl font-black text-sm hover:bg-red-50 transition-all text-center whitespace-nowrap"
-                                                                        >
-                                                                            Reject
-                                                                        </button>
-                                                                        <button
-                                                                            onClick={() => {
-                                                                                setVerifyingQuote({ assessmentId: quote.assessment_id || quote.assessment.id, quoteId: quote.id, targetStatus: 'accepted' });
-                                                                                setVerificationStep(1);
-                                                                                setVerifyEircode('');
-                                                                            }}
-                                                                            className="px-8 py-3 bg-[#007F00] text-white rounded-xl font-black text-sm hover:bg-[#006600] transition-all shadow-lg shadow-green-100 text-center whitespace-nowrap"
-                                                                        >
-                                                                            Accept Quote
-                                                                        </button>
-                                                                    </div>
-                                                                ) : (
-                                                                    <div className="text-right">
-                                                                        <p className="text-xs font-bold text-gray-400 mb-1">Status Date</p>
-                                                                        <p className="text-sm font-bold text-gray-700">Updated {new Date(quote.created_at).toLocaleDateString()}</p>
-                                                                    </div>
-                                                                )}
+                                                            <div className="text-right">
+                                                                <p className="text-xl font-black text-gray-900">€{quote.price + 10}</p>
+                                                                <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter border ${quote.status === 'accepted' ? 'bg-green-50 text-green-700 border-green-100' :
+                                                                    quote.status === 'rejected' ? 'bg-red-50 text-red-700 border-red-100' :
+                                                                        'bg-amber-50 text-amber-700 border-amber-100'
+                                                                    }`}>
+                                                                    {quote.status}
+                                                                </span>
                                                             </div>
                                                         </div>
 
-                                                        {/* Optional Details Row */}
-                                                        {(quote.notes || quote.estimated_date) && (
-                                                            <div className="mt-6 pt-6 border-t border-gray-50 flex flex-col sm:flex-row gap-6 items-start sm:items-center">
-                                                                {quote.estimated_date && (
-                                                                    <div className="flex items-center gap-2 text-sm font-bold text-gray-600 bg-amber-50/50 px-3 py-1.5 rounded-lg border border-amber-100/50">
-                                                                        <Calendar size={16} className="text-amber-500" />
-                                                                        Proposed: <span className="text-gray-900">{new Date(quote.estimated_date).toLocaleDateString()}</span>
-                                                                    </div>
-                                                                )}
-                                                                {quote.notes && (
-                                                                    <div className="flex-1 text-sm text-gray-600 italic leading-relaxed">
-                                                                        <span className="text-gray-400 font-black not-italic mr-2">Notes:</span>
-                                                                        "{quote.notes}"
-                                                                    </div>
-                                                                )}
+                                                        {quote.contractor && (
+                                                            <div className="flex items-center gap-2 mb-4 p-2 bg-gray-50 rounded-lg border border-gray-100">
+                                                                <div className="w-8 h-8 bg-white rounded-md flex items-center justify-center text-[#007F00] font-black text-xs shadow-sm border border-gray-100">
+                                                                    {quote.contractor.full_name.charAt(0)}
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-[10px] font-bold text-gray-900">{quote.contractor.full_name}</p>
+                                                                    <p className="text-[9px] text-gray-400">SEAI: {quote.contractor.seai_number || 'Pending'}</p>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {quote.status === 'pending' ? (
+                                                            <div className="grid grid-cols-2 gap-3">
+                                                                <button
+                                                                    onClick={() => setConfirmReject({ assessmentId: quote.assessment_id || quote.assessment.id, quoteId: quote.id })}
+                                                                    className="w-full py-3 border border-red-100 text-red-600 rounded-xl font-black text-xs hover:bg-red-50 transition-all"
+                                                                >
+                                                                    Reject
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setSelectedDetailsQuote(quote);
+                                                                    }}
+                                                                    className="w-full py-3 bg-[#80FF80] text-white rounded-xl font-black text-xs hover:bg-[#66E666] transition-all shadow-md shadow-green-100"
+                                                                >
+                                                                    Accept Quote
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="text-center py-2 bg-gray-50 rounded-xl text-[10px] font-bold text-gray-400">
+                                                                Processed on {new Date(quote.created_at).toLocaleDateString()}
                                                             </div>
                                                         )}
                                                     </div>
-                                                </div>
-                                            ))}
+                                                ))}
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -671,6 +826,24 @@ const UserDashboard = () => {
                     fetchAssessments();
                 }}
             />
+
+            {/* Payment Modal */}
+            {paymentModalOpen && paymentQuote && (
+                <PaymentModal
+                    isOpen={paymentModalOpen}
+                    onClose={() => setPaymentModalOpen(false)}
+                    amount={paymentQuote.amount}
+                    onSuccess={handlePaymentSuccess}
+                    metadata={{
+                        assessmentId: paymentQuote.assessmentId,
+                        quoteId: paymentQuote.quoteId,
+                        userId: user?.id
+                    }}
+                    title="Complete Assessment Booking"
+                    description={`Total includes quote price + €10 booking fee.`}
+                />
+            )}
+
             {/* Quote Verification Modal */}
             {verifyingQuote && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
@@ -761,6 +934,74 @@ const UserDashboard = () => {
                                     Cancel
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Quote Details & Final Confirmation Modal */}
+            {selectedDetailsQuote && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 animate-in zoom-in-95 duration-200 border border-gray-100">
+                        {/* Header */}
+                        <div className="mb-8">
+                            <h3 className="text-xl font-bold text-[#80FF80] mb-1">
+                                BER Assessor #{selectedDetailsQuote.contractor?.seai_number || selectedDetailsQuote.created_by.slice(0, 6)}
+                            </h3>
+                        </div>
+
+                        {/* Details Grid */}
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-center group">
+                                <span className="text-gray-500 font-medium text-sm">Quote</span>
+                                <span className="text-gray-900 font-black text-lg">€{selectedDetailsQuote.price}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-500 font-medium text-sm">Earliest Availability</span>
+                                <span className="text-gray-900 font-black text-sm">
+                                    {selectedDetailsQuote.estimated_date
+                                        ? new Date(selectedDetailsQuote.estimated_date).toLocaleDateString('en-IE', { weekday: 'short', day: 'numeric', month: 'short' })
+                                        : 'TBC'}
+                                </span>
+                            </div>
+
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-500 font-medium text-sm">SEAI Registered</span>
+                                <span className="text-gray-900 font-black text-sm">Yes</span>
+                            </div>
+
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-500 font-medium text-sm">VAT Registered</span>
+                                <span className="text-gray-900 font-black text-sm">{selectedDetailsQuote.contractor?.company_name ? 'Yes' : 'No'}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-500 font-medium text-sm">Professional Insurance</span>
+                                <span className="text-gray-900 font-black text-sm">Yes</span>
+                            </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-3 mt-10">
+                            <button
+                                onClick={() => setSelectedDetailsQuote(null)}
+                                className="flex-1 py-3 bg-[#B0BEC5] text-white rounded-lg font-black text-sm hover:bg-[#90A4AE] transition-all shadow-sm active:scale-95"
+                            >
+                                Close
+                            </button>
+                            <button
+                                onClick={() => {
+                                    const quote = selectedDetailsQuote;
+                                    setVerifyingQuote({ assessmentId: quote.assessment_id || (quote.assessment && quote.assessment.id), quoteId: quote.id, targetStatus: 'accepted' });
+                                    setVerificationStep(1);
+                                    setVerifyEircode('');
+                                    setSelectedDetailsQuote(null);
+                                }}
+                                className="flex-[1.5] py-3 bg-[#007F00] text-white rounded-lg font-black text-sm hover:bg-[#006600]  transition-all shadow-sm active:scale-95"
+                            >
+                                Accept €{selectedDetailsQuote.price} Quote
+                            </button>
                         </div>
                     </div>
                 </div>

@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { Loader2, User, HardHat } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 
@@ -83,42 +83,37 @@ const SignUp = () => {
     return (
         <div className="min-h-screen bg-white pt-24 pb-12 flex items-center justify-center">
             <div className="container mx-auto px-6 max-w-lg">
-                <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-xl overflow-hidden p-8 md:p-12">
+                <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-xl overflow-hidden p-8 md:p-12 text-center">
 
-                    <div className="mb-6">
-                        <h2 className="text-3xl font-serif font-bold text-gray-900 mb-3">Create Account</h2>
+                    <div className="mb-8">
+                        <h2 className="text-3xl font-serif font-bold text-gray-900 mb-2">Create Account</h2>
                         <p className="text-gray-500">Sign up to get started.</p>
                     </div>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
-                        {/* Role Selection */}
-                        <div className="grid grid-cols-2 gap-4 mb-6 relative">
-                            <div
+                        {/* Role Selection Tabs */}
+                        <div className="flex border-b border-gray-200 mb-8">
+                            <button
+                                type="button"
                                 onClick={() => setValue('role', 'user')}
-                                className={`cursor-pointer rounded-xl border-2 p-4 flex flex-col items-center justify-center gap-2 transition-all ${selectedRole === 'user'
-                                    ? 'border-[#007F00] bg-green-50 text-[#007F00]'
-                                    : 'border-gray-200 hover:border-green-200 text-gray-500'
+                                className={`py-3 px-6 text-sm font-medium transition-all border-b-2 -mb-px ${selectedRole === 'user'
+                                    ? 'border-gray-400 text-gray-700'
+                                    : 'border-transparent text-gray-400 hover:text-gray-600'
                                     }`}
                             >
-                                <div className={`p-2 rounded-full ${selectedRole === 'user' ? 'bg-[#007F00] text-white' : 'bg-gray-100'}`}>
-                                    <User size={20} />
-                                </div>
-                                <span className="font-bold text-sm">Homeowner</span>
-                            </div>
-
-                            <div
+                                Homeowner
+                            </button>
+                            <button
+                                type="button"
                                 onClick={() => setValue('role', 'contractor')}
-                                className={`cursor-pointer rounded-xl border-2 p-4 flex flex-col items-center justify-center gap-2 transition-all ${selectedRole === 'contractor'
-                                    ? 'border-[#007F00] bg-green-50 text-[#007F00]'
-                                    : 'border-gray-200 hover:border-green-200 text-gray-500'
+                                className={`py-3 px-6 text-sm font-medium transition-all border-b-2 -mb-px ${selectedRole === 'contractor'
+                                    ? 'border-gray-400 text-gray-700'
+                                    : 'border-transparent text-gray-400 hover:text-gray-600'
                                     }`}
                             >
-                                <div className={`p-2 rounded-full ${selectedRole === 'contractor' ? 'bg-[#007F00] text-white' : 'bg-gray-100'}`}>
-                                    <HardHat size={20} />
-                                </div>
-                                <span className="font-bold text-sm">BER Assessor</span>
-                            </div>
+                                BER Assessor
+                            </button>
                         </div>
 
                         <div className="space-y-1 text-left">

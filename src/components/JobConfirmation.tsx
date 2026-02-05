@@ -6,9 +6,10 @@ interface JobConfirmationProps {
     county: string;
     email: string;
     emailError?: string | null;
+    hideNavigation?: boolean;
 }
 
-const JobConfirmation = ({ customerName, county, email, emailError }: JobConfirmationProps) => {
+const JobConfirmation = ({ customerName, county, email, emailError, hideNavigation }: JobConfirmationProps) => {
     return (
         <div className="space-y-8 text-center">
             {/* Success Icon */}
@@ -106,19 +107,23 @@ const JobConfirmation = ({ customerName, county, email, emailError }: JobConfirm
             </div>
 
             {/* Return Home Button */}
-            <div className="pt-4">
-                <Link to="/dashboard/user">
-                    <button className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-4 rounded-lg transition-all shadow-lg hover:shadow-xl">
-                        <Home size={20} />
-                        Return to Dashboard
-                    </button>
-                </Link>
-            </div>
+            {!hideNavigation && (
+                <>
+                    <div className="pt-4">
+                        <Link to="/dashboard/user">
+                            <button className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-4 rounded-lg transition-all shadow-lg hover:shadow-xl">
+                                <Home size={20} />
+                                Return to Dashboard
+                            </button>
+                        </Link>
+                    </div>
 
-            {/* Footer Note */}
-            <p className="text-gray-400 text-sm">
-                Thanks for using TheBerman.eu — Ireland's largest BER website
-            </p>
+                    {/* Footer Note */}
+                    <p className="text-gray-400 text-sm">
+                        Thanks for using TheBerman.eu — Ireland's largest BER website
+                    </p>
+                </>
+            )}
         </div>
     );
 };

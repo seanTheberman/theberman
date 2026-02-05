@@ -532,6 +532,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                             county={formData.county}
                             email={formData.email}
                             emailError={emailError}
+                            hideNavigation={!!onClose}
                         />
                         {onClose && (
                             <button onClick={onClose} className="mt-8 w-full bg-gray-900 text-white font-bold py-4 rounded-xl">

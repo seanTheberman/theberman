@@ -284,7 +284,7 @@ const HomePage = () => {
                                 </div>
                             ))}
                         </div>
-                        <Link to="/about#faq">
+                        <Link to="/faq">
                             <button className="mt-12 text-[#007F00] font-black border-b-2 border-[#007F00] pb-1 hover:text-[#006400] transition-all flex items-center gap-2 group cursor-pointer">
                                 View all FAQs
                                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />

@@ -22,6 +22,9 @@ import QuoteForm from './pages/QuoteForm';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import FAQ from './pages/FAQ';
+import PublicAssessorProfile from './pages/PublicAssessorProfile';
+import AssessorTerms from './pages/AssessorTerms';
+
 
 import ScrollToTop from './components/ScrollToTop';
 
@@ -41,6 +44,7 @@ function App() {
                         <Route path="catalogue" element={<Catalogue />} />
                         <Route path="privacy" element={<PrivacyPolicy />} />
                         <Route path="terms" element={<TermsOfService />} />
+                        <Route path="assessor-terms" element={<AssessorTerms />} />
                         <Route path="login" element={<Login />} />
                         <Route path="signup" element={<SignUp />} />
                         <Route path="faq" element={<FAQ />} />
@@ -90,6 +94,9 @@ function App() {
                             </ProtectedRoute>
                         }
                     />
+
+                    {/* Public Assessor Profile */}
+                    <Route path="/profiles/:id" element={<PublicAssessorProfile />} />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>
