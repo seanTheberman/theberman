@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 
 interface FaqItem {
     id: string;
@@ -350,7 +350,7 @@ const FAQ = () => {
                     <div className="lg:col-span-4 order-1 lg:order-2 sticky top-32">
                         <div className="border-l border-gray-100 pl-8">
                             <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-8">BER FAQ</h3>
-                            <nav className="space-y-4 max-h-[70vh] overflow-y-auto pr-4 custom-scrollbar">
+                            <nav className="space-y-4 max-h-[70vh] overflow-y-auto pr-4 custom-scrollbar cursor-pointer">
                                 {FAQ_DATA.map((item) => (
                                     <button
                                         key={item.id}
@@ -358,7 +358,7 @@ const FAQ = () => {
                                             setActiveId(item.id);
                                             window.scrollTo({ top: 0, behavior: 'smooth' });
                                         }}
-                                        className={`w-full text-left text-[13px] font-bold transition-all leading-tight hover:text-[#007F00] ${activeId === item.id
+                                        className={`w-full text-left text-[13px] font-bold transition-all leading-tight cursor-pointer hover:text-[#007F00] ${activeId === item.id
                                             ? 'text-[#007F00]'
                                             : 'text-gray-500'
                                             }`}
@@ -371,9 +371,11 @@ const FAQ = () => {
                             <div className="mt-12 p-8 bg-green-50 rounded-[2rem] border border-green-100">
                                 <p className="text-lg font-black text-[#007F00] mb-2 uppercase tracking-tight">Ireland's Leading BER Consultants</p>
                                 <p className="text-sm text-green-700/80 mb-6 font-medium leading-relaxed">Trusted by 10,000+ homeowners across the country.</p>
-                                <button className="w-full bg-[#007F00] text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#006400] transition-colors shadow-sm">
+                                <p className="text-sm text-green-700/80 mb-6 font-medium leading-relaxed">Call 087 4421653</p>
+                                <p className="text-sm text-green-700/80 mb-6 font-medium leading-relaxed">Email: info@theberman.eu</p>
+                                <Link to="/catalogue" className="w-full bg-[#007F00] text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#006400] transition-colors shadow-sm">
                                     Hire an Agent
-                                </button>
+                                </Link>
                             </div>
                         </div>
                     </div>

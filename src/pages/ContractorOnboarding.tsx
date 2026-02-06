@@ -83,7 +83,7 @@ const ContractorOnboarding = () => {
                     insurance_holder: formData.insuranceHolder,
                     vat_registered: formData.vatRegistered,
                     assessor_type: formData.assessorTypes.join(' & '),
-                    service_areas: formData.serviceAreas
+                    preferred_counties: formData.serviceAreas
                 })
                 .eq('id', user?.id);
 
@@ -193,9 +193,9 @@ const ContractorOnboarding = () => {
 
                         {/* BOOLEANS */}
                         <div className="space-y-4 pt-4">
-                            <div className="flex items-center justify-between border border-gray-300 p-4 rounded-xl bg-white">
+                            <div className={`flex items-center justify-between border p-4 rounded-xl transition-all ${formData.insuranceHolder ? 'border-[#007F00] bg-green-50/30' : 'border-gray-200 bg-white'}`}>
                                 <div>
-                                    <span className="block text-sm font-bold text-gray-900">Professional insurance policy holder</span>
+                                    <span className={`block text-sm font-bold ${formData.insuranceHolder ? 'text-[#007F00]' : 'text-gray-900'}`}>Professional insurance policy holder</span>
                                     <span className="text-xs text-gray-500">Do you hold valid professional indemnity insurance?</span>
                                 </div>
                                 <div className="flex items-center space-x-3">
@@ -206,13 +206,13 @@ const ContractorOnboarding = () => {
                                     >
                                         <span className={`pointer-events-none inline-block h-6 w-6 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200 ${formData.insuranceHolder ? 'translate-x-5' : 'translate-x-0'}`} />
                                     </button>
-                                    <span className="text-sm font-bold text-gray-700 w-8">{formData.insuranceHolder ? 'Yes' : 'No'}</span>
+                                    <span className={`text-sm font-bold w-8 ${formData.insuranceHolder ? 'text-[#007F00]' : 'text-gray-700'}`}>{formData.insuranceHolder ? 'Yes' : 'No'}</span>
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between border border-gray-300 p-4 rounded-xl bg-white">
+                            <div className={`flex items-center justify-between border p-4 rounded-xl transition-all ${formData.vatRegistered ? 'border-[#007F00] bg-green-50/30' : 'border-gray-200 bg-white'}`}>
                                 <div>
-                                    <span className="block text-sm font-bold text-gray-900">VAT Registered</span>
+                                    <span className={`block text-sm font-bold ${formData.vatRegistered ? 'text-[#007F00]' : 'text-gray-900'}`}>VAT Registered</span>
                                 </div>
                                 <div className="flex items-center space-x-3">
                                     <button
@@ -222,7 +222,7 @@ const ContractorOnboarding = () => {
                                     >
                                         <span className={`pointer-events-none inline-block h-6 w-6 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200 ${formData.vatRegistered ? 'translate-x-5' : 'translate-x-0'}`} />
                                     </button>
-                                    <span className="text-sm font-bold text-gray-700 w-8">{formData.vatRegistered ? 'Yes' : 'No'}</span>
+                                    <span className={`text-sm font-bold w-8 ${formData.vatRegistered ? 'text-[#007F00]' : 'text-gray-700'}`}>{formData.vatRegistered ? 'Yes' : 'No'}</span>
                                 </div>
                             </div>
                         </div>

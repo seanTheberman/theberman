@@ -9,7 +9,8 @@ import About from './pages/About';
 import Services from './pages/Services';
 import Pricing from './pages/Pricing';
 import Contact from './pages/Contact';
-import Catalogue from './pages/Catalogue';
+import Catalogue from './pages/NewCatalogue';
+import ListingDetail from './pages/ListingDetail';
 import Admin from './pages/Admin';
 import Login from './pages/Login';
 import UserDashboard from './pages/UserDashboard';
@@ -24,6 +25,8 @@ import TermsOfService from './pages/TermsOfService';
 import FAQ from './pages/FAQ';
 import PublicAssessorProfile from './pages/PublicAssessorProfile';
 import AssessorTerms from './pages/AssessorTerms';
+import RegionPage from './pages/RegionPage';
+import Locations from './pages/Locations';
 
 
 import ScrollToTop from './components/ScrollToTop';
@@ -42,6 +45,9 @@ function App() {
                         <Route path="pricing" element={<Pricing />} />
                         <Route path="contact" element={<Contact />} />
                         <Route path="catalogue" element={<Catalogue />} />
+                        <Route path="catalogue/:slug" element={<ListingDetail />} />
+                        <Route path="locations" element={<Locations />} />
+                        <Route path="region/:slug" element={<RegionPage />} />
                         <Route path="privacy" element={<PrivacyPolicy />} />
                         <Route path="terms" element={<TermsOfService />} />
                         <Route path="assessor-terms" element={<AssessorTerms />} />

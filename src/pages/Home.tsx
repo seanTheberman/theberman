@@ -61,9 +61,9 @@ const HomePage = () => {
                         {/* Dual Primary CTAs */}
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-2xl mx-auto mb-16">
                             <Link to="/get-quote" className="w-full sm:w-auto">
-                                <button className="w-full sm:px-10 py-5 bg-[#007F00] hover:bg-[#006400] text-white text-xl font-black rounded-2xl shadow-xl shadow-green-100 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3 cursor-pointer">
+                                <button className="w-full sm:px-16 py-8 bg-[#007F00] hover:bg-[#006400] text-white text-2xl md:text-3xl font-black rounded-[2rem] shadow-2xl shadow-green-100 transition-all transform hover:-translate-y-2 hover:scale-105 flex items-center justify-center gap-4 cursor-pointer border-4 border-white/10">
                                     Get Quotes
-                                    <ArrowRight size={24} strokeWidth={3} />
+                                    <ArrowRight size={32} strokeWidth={3} />
                                 </button>
                             </Link>
 

@@ -2,8 +2,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, TrendingUp, Briefcase } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2 } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 interface Lead {
@@ -35,6 +35,7 @@ interface Assessment {
     property_address: string;
     status: 'draft' | 'submitted' | 'pending' | 'pending_quote' | 'quote_accepted' | 'scheduled' | 'completed' | 'assigned';
     scheduled_date: string | null;
+    completed_at?: string | null;
     certificate_url: string | null;
     eircode?: string;
     town?: string;
@@ -92,6 +93,37 @@ interface AppSettings {
     support_email: string;
 }
 
+interface CatalogueListing {
+    id: string;
+    name: string;
+    company_name: string;
+    email: string;
+    phone: string;
+    description: string;
+    address: string;
+    website: string;
+    logo_url: string;
+    features: string[];
+    is_verified: boolean;
+    featured: boolean;
+    is_active: boolean;
+    created_at: string;
+    images?: { id: string, url: string, display_order: number }[];
+    social_media?: {
+        facebook?: string;
+        instagram?: string;
+        linkedin?: string;
+        twitter?: string;
+    };
+}
+
+interface CatalogueCategory {
+    id: string;
+    name: string;
+    icon: string;
+    description: string;
+}
+
 const Admin = () => {
     const [leads, setLeads] = useState<Lead[]>([]);
     const [assessments, setAssessments] = useState<Assessment[]>([]);
@@ -99,7 +131,7 @@ const Admin = () => {
     const [payments, setPayments] = useState<Payment[]>([]);
     const [sponsors, setSponsors] = useState<Sponsor[]>([]);
     const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
-    const [view, setView] = useState<'stats' | 'leads' | 'assessments' | 'users' | 'payments' | 'settings'>('stats');
+    const [view, setView] = useState<'stats' | 'leads' | 'assessments' | 'users' | 'payments' | 'settings' | 'catalogue'>('stats');
     const [loading, setLoading] = useState(true);
     const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
     const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
@@ -125,6 +157,7 @@ const Admin = () => {
     const [editingSponsor, setEditingSponsor] = useState<Sponsor | null>(null);
 
     const [selectedDate, setSelectedDate] = useState('');
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [certUrl, setCertUrl] = useState('');
 
     // Quote Form State
@@ -136,6 +169,17 @@ const Admin = () => {
 
     // Message Form State
     const [messageContent, setMessageContent] = useState('');
+
+    // Catalogue Management State
+    const [catalogueTab, setCatalogueTab] = useState<'listings' | 'categories'>('listings');
+    const [catalogueListings, setCatalogueListings] = useState<CatalogueListing[]>([]);
+    const [catalogueCategories, setCatalogueCategories] = useState<CatalogueCategory[]>([]);
+    const [showListingModal, setShowListingModal] = useState(false);
+    const [showCategoryModal, setShowCategoryModal] = useState(false);
+    const [editingListing, setEditingListing] = useState<CatalogueListing | null>(null);
+    const [editingCategory, setEditingCategory] = useState<CatalogueCategory | null>(null);
+    const [isSavingCatalogue, setIsSavingCatalogue] = useState(false);
+    const [listingImages, setListingImages] = useState<string[]>(['', '', '']); // State for multiple images
 
     const { signOut, user } = useAuth();
     const navigate = useNavigate();
@@ -228,6 +272,147 @@ const Admin = () => {
             setAppSettings(data);
         } catch (error) {
             console.error('Error fetching settings:', error);
+        }
+    };
+
+    // Catalogue Fetch Functions
+    const fetchCatalogueListings = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('catalogue_listings')
+                .select(`
+                    *,
+                    images:catalogue_listing_images(id, url, display_order)
+                `)
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            setCatalogueListings(data || []);
+        } catch (error) {
+            console.error('Error fetching listings:', error);
+            toast.error('Failed to load listings');
+        }
+    };
+
+    const fetchCatalogueCategories = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('catalogue_categories')
+                .select('*')
+                .order('name');
+            if (error) throw error;
+            setCatalogueCategories(data || []);
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+            toast.error('Failed to load categories');
+        }
+    };
+
+    const handleSaveListing = async (listingData: Partial<CatalogueListing>) => {
+        setIsSavingCatalogue(true);
+        try {
+            let listingId = editingListing?.id;
+
+            if (editingListing) {
+                const { error } = await supabase
+                    .from('catalogue_listings')
+                    .update(listingData)
+                    .eq('id', editingListing.id);
+                if (error) throw error;
+                toast.success('Listing updated successfully');
+            } else {
+                const { data, error } = await supabase
+                    .from('catalogue_listings')
+                    .insert(listingData)
+                    .select()
+                    .single();
+                if (error) throw error;
+                listingId = data.id;
+                toast.success('Listing created successfully');
+            }
+
+            // Handle Images
+            if (listingId) {
+                // Delete existing images first (simple replacement strategy)
+                await supabase.from('catalogue_listing_images').delete().eq('listing_id', listingId);
+
+                // Insert new images
+                const imagesToInsert = listingImages
+                    .filter(url => url && url.trim() !== '')
+                    .map((url, index) => ({
+                        listing_id: listingId,
+                        url,
+                        display_order: index
+                    }));
+
+                if (imagesToInsert.length > 0) {
+                    const { error: imgError } = await supabase.from('catalogue_listing_images').insert(imagesToInsert);
+                    if (imgError) throw imgError;
+                }
+            }
+
+            setShowListingModal(false);
+            setEditingListing(null);
+            setListingImages(['', '', '']);
+            fetchCatalogueListings();
+        } catch (error) {
+            console.error('Error saving listing:', error);
+            toast.error('Failed to save listing');
+        } finally {
+            setIsSavingCatalogue(false);
+        }
+    };
+
+    const handleDeleteListing = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this listing?')) return;
+        try {
+            const { error } = await supabase.from('catalogue_listings').delete().eq('id', id);
+            if (error) throw error;
+            toast.success('Listing deleted');
+            fetchCatalogueListings();
+        } catch (error) {
+            console.error('Error deleting listing:', error);
+            toast.error('Failed to delete listing');
+        }
+    };
+
+    const handleSaveCategory = async (categoryData: Partial<CatalogueCategory>) => {
+        setIsSavingCatalogue(true);
+        try {
+            if (editingCategory) {
+                const { error } = await supabase
+                    .from('catalogue_categories')
+                    .update(categoryData)
+                    .eq('id', editingCategory.id);
+                if (error) throw error;
+                toast.success('Category updated successfully');
+            } else {
+                const { error } = await supabase
+                    .from('catalogue_categories')
+                    .insert(categoryData);
+                if (error) throw error;
+                toast.success('Category created successfully');
+            }
+            setShowCategoryModal(false);
+            setEditingCategory(null);
+            fetchCatalogueCategories();
+        } catch (error) {
+            console.error('Error saving category:', error);
+            toast.error('Failed to save category');
+        } finally {
+            setIsSavingCatalogue(false);
+        }
+    };
+
+    const handleDeleteCategory = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this category?')) return;
+        try {
+            const { error } = await supabase.from('catalogue_categories').delete().eq('id', id);
+            if (error) throw error;
+            toast.success('Category deleted');
+            fetchCatalogueCategories();
+        } catch (error) {
+            console.error('Error deleting category:', error);
+            toast.error('Failed to delete category');
         }
     };
 
@@ -366,10 +551,10 @@ const Admin = () => {
 
             if (editingSponsor) {
                 setSponsors(sponsors.map(s => s.id === editingSponsor.id ? data : s));
-                toast.success('Sponsor updated!');
+                toast.success(`Sponsor "${data.name}" updated successfully!`);
             } else {
                 setSponsors([...sponsors, data]);
-                toast.success('Sponsor added!');
+                toast.success(`Sponsor "${data.name}" added successfully!`);
             }
             setShowSponsorModal(false);
             setEditingSponsor(null);
@@ -460,6 +645,9 @@ const Admin = () => {
                     // Fetch everything for stats
                     await Promise.all([fetchLeads(), fetchAssessments(), fetchUsers(), fetchPayments()]);
                 }
+                else if (view === 'catalogue') {
+                    await Promise.all([fetchCatalogueListings(), fetchCatalogueCategories()]);
+                }
             } finally {
                 setIsUpdating(false);
             }
@@ -476,6 +664,8 @@ const Admin = () => {
             .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchUsers())
             .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, () => fetchPayments())
             .on('postgres_changes', { event: '*', schema: 'public', table: 'app_settings' }, () => fetchAppSettings())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'catalogue_listings' }, () => fetchCatalogueListings())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'catalogue_categories' }, () => fetchCatalogueCategories())
             .subscribe();
 
         return () => {
@@ -609,7 +799,8 @@ const Admin = () => {
                 .from('assessments')
                 .update({
                     status: 'completed',
-                    certificate_url: certUrl
+                    certificate_url: certUrl,
+                    completed_at: new Date().toISOString()
                 })
                 .eq('id', selectedAssessment.id);
 
@@ -765,44 +956,62 @@ const Admin = () => {
     return (
         <div className="min-h-screen bg-gray-50 font-sans relative">
             {/* Admin Header */}
-            <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-20">
-                <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-[#007F00] rounded-lg flex items-center justify-center text-white font-bold">
-                            BM
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-bold text-gray-900">Admin Dashboard</h1>
-                            <span className="text-xs text-gray-500 flex items-center gap-1">
-                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+            <header className="bg-[#0c121d] backdrop-blur-md border-b border-white/5 sticky top-0 z-[9999] shadow-lg transition-all duration-300">
+                <div className="container mx-auto px-6 h-20 flex justify-between items-center">
+                    <div className="flex items-center gap-8">
+                        <Link to="/" className="relative flex-shrink-0">
+                            <img src="/logo.svg" alt="The Berman Logo" className="h-10 w-auto relative z-10" />
+                        </Link>
+                        <div className="hidden xl:block">
+                            <h1 className="text-lg font-bold text-white leading-tight">Admin Dashboard</h1>
+                            <span className="text-[10px] text-gray-400 flex items-center gap-1.5 uppercase tracking-widest font-bold">
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
                                 Live Connection
                             </span>
                         </div>
                     </div>
                     <div className="flex items-center gap-6">
-                        <nav className="hidden lg:flex items-center gap-4">
-                            <button onClick={() => setView('stats')} className={`text-sm font-medium transition-colors ${view === 'stats' ? 'text-[#007F00]' : 'text-gray-500 hover:text-gray-900'}`}>Overview</button>
-                            <button onClick={() => setView('leads')} className={`text-sm font-medium transition-colors ${view === 'leads' ? 'text-[#007F00]' : 'text-gray-500 hover:text-gray-900'}`}>Leads</button>
-                            <button onClick={() => setView('assessments')} className={`text-sm font-medium transition-colors ${view === 'assessments' ? 'text-[#007F00]' : 'text-gray-500 hover:text-gray-900'}`}>Assessments</button>
-                            <button onClick={() => setView('users')} className={`text-sm font-medium transition-colors ${view === 'users' ? 'text-[#007F00]' : 'text-gray-500 hover:text-gray-900'}`}>Users</button>
-                            <button onClick={() => setView('payments')} className={`text-sm font-medium transition-colors ${view === 'payments' ? 'text-[#007F00]' : 'text-gray-500 hover:text-gray-900'}`}>Payments</button>
-                            <button onClick={() => setView('settings')} className={`text-sm font-medium transition-colors ${view === 'settings' ? 'text-[#007F00]' : 'text-gray-500 hover:text-gray-900'}`}>Settings</button>
-                        </nav>
-                        <span className="w-px h-6 bg-gray-200 hidden lg:block"></span>
-                        <button
-                            onClick={() => { setShowSponsorModal(true); fetchSponsors(); }}
-                            className="text-sm text-gray-600 hover:text-[#007F00] font-medium transition-colors"
-                        >
-                            Partners
-                        </button>
-                        <span className="w-px h-4 bg-gray-300 hidden md:block"></span>
-                        <button
-                            onClick={handleSignOut}
-                            className="flex items-center gap-2 text-sm text-gray-600 hover:text-red-600 transition-colors border px-3 py-1.5 rounded-lg hover:bg-gray-50"
-                        >
-                            <LogOut size={16} />
-                            Sign Out
-                        </button>
+                        <div className="relative">
+                            <button
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                className="bg-white/5 p-2.5 rounded-xl hover:bg-white/10 transition-colors border border-white/10 flex items-center gap-2 text-white/70"
+                            >
+                                {isMenuOpen ? <X size={20} className="text-[#5CB85C]" /> : <Menu size={20} className="text-[#5CB85C]" />}
+                                <span className="text-[11px] font-black uppercase tracking-[0.15em] hidden sm:block">Menu</span>
+                            </button>
+
+                            {isMenuOpen && (
+                                <div className="absolute right-0 top-full mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+                                    <div className="p-2 space-y-1">
+                                        {(['stats', 'leads', 'assessments', 'users', 'payments', 'catalogue', 'settings'] as const).map((v) => (
+                                            <button
+                                                key={v}
+                                                onClick={() => { setView(v); setIsMenuOpen(false); }}
+                                                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] transition-all duration-200 ${view === v ? 'bg-[#5CB85C]/10 text-[#5CB85C]' : 'text-gray-600 hover:bg-gray-50'}`}
+                                            >
+                                                {v === 'stats' ? 'Overview' : v}
+                                                {view === v && <div className="w-1.5 h-1.5 rounded-full bg-[#5CB85C]"></div>}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="p-2 bg-gray-50/50 border-t border-gray-100 flex flex-col gap-1">
+                                        <button
+                                            onClick={() => { setShowSponsorModal(true); fetchSponsors(); setIsMenuOpen(false); }}
+                                            className="w-full text-left px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] text-gray-600 hover:bg-gray-50 flex items-center justify-between"
+                                        >
+                                            Partners
+                                        </button>
+                                        <button
+                                            onClick={handleSignOut}
+                                            className="w-full text-left px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] text-red-500 hover:bg-red-50 flex items-center justify-between"
+                                        >
+                                            Sign Out
+                                            <LogOut size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </header>
@@ -811,44 +1020,6 @@ const Admin = () => {
             <main className="container mx-auto px-4 py-8">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <div className="flex flex-col gap-4 w-full md:w-auto">
-                        <div className="flex bg-white p-1 rounded-xl shadow-sm border border-gray-200 overflow-x-auto whitespace-nowrap">
-                            <button
-                                onClick={() => setView('stats')}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${view === 'stats' ? 'bg-[#007F00] text-white' : 'text-gray-500 hover:text-gray-700'}`}
-                            >
-                                Overview
-                            </button>
-                            <button
-                                onClick={() => setView('leads')}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${view === 'leads' ? 'bg-[#007F00] text-white' : 'text-gray-500 hover:text-gray-700'}`}
-                            >
-                                Leads
-                            </button>
-                            <button
-                                onClick={() => setView('assessments')}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${view === 'assessments' ? 'bg-[#007F00] text-white' : 'text-gray-500 hover:text-gray-700'}`}
-                            >
-                                Assessments
-                            </button>
-                            <button
-                                onClick={() => setView('users')}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${view === 'users' ? 'bg-[#007F00] text-white' : 'text-gray-500 hover:text-gray-700'}`}
-                            >
-                                Users
-                            </button>
-                            <button
-                                onClick={() => setView('payments')}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${view === 'payments' ? 'bg-[#007F00] text-white' : 'text-gray-500 hover:text-gray-700'}`}
-                            >
-                                Payments
-                            </button>
-                            <button
-                                onClick={() => setView('settings')}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${view === 'settings' ? 'bg-[#007F00] text-white' : 'text-gray-500 hover:text-gray-700'}`}
-                            >
-                                Settings
-                            </button>
-                        </div>
                         <div>
                             <h2 className="text-2xl font-bold text-gray-800">
                                 {view === 'stats' ? 'System Overview' :
@@ -1338,11 +1509,11 @@ const Admin = () => {
                             >
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">Company Name</label>
-                                    <input name="company_name" defaultValue={appSettings?.company_name} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                    <input name="company_name" defaultValue={appSettings?.company_name || ''} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">Support Email</label>
-                                    <input name="support_email" defaultValue={appSettings?.support_email} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                    <input name="support_email" defaultValue={appSettings?.support_email || ''} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">Default Quote Price (€)</label>
@@ -1382,7 +1553,7 @@ const Admin = () => {
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 mb-1">Headline</label>
                                         <input
-                                            value={promoSettings.headline}
+                                            value={promoSettings.headline || ''}
                                             onChange={(e) => setPromoSettings({ ...promoSettings, headline: e.target.value })}
                                             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
                                         />
@@ -1390,7 +1561,7 @@ const Admin = () => {
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 mb-1">Sub Text</label>
                                         <input
-                                            value={promoSettings.sub_text}
+                                            value={promoSettings.sub_text || ''}
                                             onChange={(e) => setPromoSettings({ ...promoSettings, sub_text: e.target.value })}
                                             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
                                         />
@@ -1398,7 +1569,7 @@ const Admin = () => {
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-bold text-gray-700 mb-1">Destination URL</label>
                                         <input
-                                            value={promoSettings.destination_url}
+                                            value={promoSettings.destination_url || ''}
                                             onChange={(e) => setPromoSettings({ ...promoSettings, destination_url: e.target.value })}
                                             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
                                         />
@@ -1416,6 +1587,165 @@ const Admin = () => {
                                 </div>
                             </form>
                         </div>
+                    </div>
+                ) : view === 'catalogue' ? (
+                    <div className="space-y-6">
+                        {/* Header */}
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-lg font-bold text-gray-900">Manage Catalogue</h3>
+                                <Link
+                                    to="/catalogue"
+                                    className="text-[#007F00] text-sm font-bold hover:underline flex items-center gap-1"
+                                >
+                                    <Eye size={16} />
+                                    View Public Catalogue
+                                </Link>
+                            </div>
+
+                            {/* Sub-Tabs */}
+                            <div className="flex gap-2 border-b border-gray-200">
+                                {(['listings', 'categories'] as const).map((tab) => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => {
+                                            setCatalogueTab(tab);
+                                            if (tab === 'listings') fetchCatalogueListings();
+                                            if (tab === 'categories') fetchCatalogueCategories();
+                                        }}
+                                        className={`px-4 py-2 text-sm font-bold capitalize transition-colors border-b-2 -mb-px ${catalogueTab === tab
+                                            ? 'border-[#007F00] text-[#007F00]'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                                            }`}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Listings Tab */}
+                        {catalogueTab === 'listings' && (
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h4 className="font-bold text-gray-800">Listings ({catalogueListings.length})</h4>
+                                    <button
+                                        onClick={() => { setEditingListing(null); setShowListingModal(true); }}
+                                        className="bg-[#007F00] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#006600] transition-colors"
+                                    >
+                                        + Add Listing
+                                    </button>
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                        <thead className="bg-gray-50">
+                                            <tr>
+                                                <th className="px-4 py-3 text-left font-bold text-gray-600">Name</th>
+                                                <th className="px-4 py-3 text-left font-bold text-gray-600">Company</th>
+                                                <th className="px-4 py-3 text-left font-bold text-gray-600">Email</th>
+                                                <th className="px-4 py-3 text-left font-bold text-gray-600">Status</th>
+                                                <th className="px-4 py-3 text-right font-bold text-gray-600">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100">
+                                            {catalogueListings.map((listing) => (
+                                                <tr key={listing.id} className="hover:bg-gray-50">
+                                                    <td className="px-4 py-3 font-medium text-gray-900">{listing.name}</td>
+                                                    <td className="px-4 py-3 text-gray-600">{listing.company_name}</td>
+                                                    <td className="px-4 py-3 text-gray-600">{listing.email}</td>
+                                                    <td className="px-4 py-3">
+                                                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${listing.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                                            {listing.is_active ? 'Active' : 'Inactive'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-right">
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            <button
+                                                                onClick={() => {
+                                                                    setEditingListing(listing);
+                                                                    // Load images
+                                                                    const urls = listing.images?.sort((a, b) => a.display_order - b.display_order).map(i => i.url) || [];
+                                                                    // Pad to 3
+                                                                    while (urls.length < 3) urls.push('');
+                                                                    setListingImages(urls.slice(0, 3));
+                                                                    setShowListingModal(true);
+                                                                }}
+                                                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                                title="Edit Listing"
+                                                            >
+                                                                <Pencil size={18} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeleteListing(listing.id)}
+                                                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                                title="Delete Listing"
+                                                            >
+                                                                <Trash2 size={18} />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            {catalogueListings.length === 0 && (
+                                                <tr>
+                                                    <td colSpan={5} className="px-4 py-8 text-center text-gray-500 italic">
+                                                        No listings found. Click "Add Listing" to create one.
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Categories Tab */}
+                        {catalogueTab === 'categories' && (
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h4 className="font-bold text-gray-800">Categories ({catalogueCategories.length})</h4>
+                                    <button
+                                        onClick={() => { setEditingCategory(null); setShowCategoryModal(true); }}
+                                        className="bg-[#007F00] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#006600] transition-colors"
+                                    >
+                                        + Add Category
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {catalogueCategories.map((category) => (
+                                        <div key={category.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <h5 className="font-bold text-gray-900">{category.name}</h5>
+                                                    <p className="text-xs text-gray-500 mt-1">{category.description || 'No description'}</p>
+                                                </div>
+                                                <div className="flex gap-1">
+                                                    <button
+                                                        onClick={() => { setEditingCategory(category); setShowCategoryModal(true); }}
+                                                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                                                        title="Edit Category"
+                                                    >
+                                                        <Pencil size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteCategory(category.id)}
+                                                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                                                        title="Delete Category"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {catalogueCategories.length === 0 && (
+                                        <div className="col-span-full text-center py-8 text-gray-500 italic">
+                                            No categories found. Click "Add Category" to create one.
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 ) : null}
             </main>
@@ -2019,13 +2349,21 @@ const Admin = () => {
                             {/* Schedule & Features highlight */}
                             <div className="bg-gray-50 rounded-[2rem] p-8 border border-gray-100 flex flex-col md:flex-row gap-8">
                                 <div className="flex-1 space-y-3">
-                                    <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest block">Preferred Schedule</span>
+                                    <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest block">
+                                        {selectedAssessment.status === 'completed' ? 'Completed On' : 'Preferred Schedule'}
+                                    </span>
                                     <div className="flex items-center gap-3">
                                         <div className="p-3 bg-white rounded-xl text-[#007EA7] shadow-sm">
-                                            <Calendar size={20} />
+                                            {selectedAssessment.status === 'completed' ? <CheckCircle2 size={20} className="text-[#007F00]" /> : <Calendar size={20} />}
                                         </div>
                                         <p className="text-lg font-black text-gray-900">
-                                            {selectedAssessment.preferred_date ? (
+                                            {selectedAssessment.status === 'completed' && selectedAssessment.completed_at ? (
+                                                new Date(selectedAssessment.completed_at).toLocaleDateString('en-IE', {
+                                                    day: 'numeric',
+                                                    month: 'long',
+                                                    year: 'numeric'
+                                                })
+                                            ) : selectedAssessment.preferred_date ? (
                                                 `20${selectedAssessment.preferred_date.slice(2)} at ${selectedAssessment.preferred_time || 'anytime'}`
                                             ) : (
                                                 'Not specified'
@@ -2167,7 +2505,7 @@ const Admin = () => {
                                                 onClick={() => setEditingSponsor(sponsor)}
                                                 className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
                                             >
-                                                Edit
+                                                <Pencil size={18} />
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteSponsor(sponsor.id)}
@@ -2328,8 +2666,8 @@ const Admin = () => {
                                     </button>
                                     <button
                                         className={`flex-1 py-3 font-bold rounded-xl transition-colors text-sm border ${selectedUser.is_active !== false
-                                                ? 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100'
-                                                : 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100'
+                                            ? 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100'
+                                            : 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100'
                                             }`}
                                         onClick={() => {
                                             setItemToSuspend({
@@ -2384,8 +2722,8 @@ const Admin = () => {
                                 onClick={toggleUserStatus}
                                 disabled={isUpdating}
                                 className={`px-6 py-2 rounded-xl text-white font-bold transition-all shadow-lg flex items-center gap-2 ${itemToSuspend.currentStatus
-                                        ? 'bg-red-600 hover:bg-red-700 shadow-red-100'
-                                        : 'bg-green-600 hover:bg-green-700 shadow-green-100'
+                                    ? 'bg-red-600 hover:bg-red-700 shadow-red-100'
+                                    : 'bg-green-600 hover:bg-green-700 shadow-green-100'
                                     }`}
                             >
                                 {isUpdating ? <Loader2 size={18} className="animate-spin" /> : null}
@@ -2395,6 +2733,198 @@ const Admin = () => {
                     </div>
                 </div>
             )}
+
+            {/* LISTING MODAL */}
+            {showListingModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-gray-900">{editingListing ? 'Edit Listing' : 'Add New Listing'}</h3>
+                            <button onClick={() => { setShowListingModal(false); setEditingListing(null); setListingImages(['', '', '']); }} className="text-gray-400 hover:text-gray-600">
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            const form = e.target as HTMLFormElement;
+                            const formData = new FormData(form);
+                            handleSaveListing({
+                                name: formData.get('name') as string,
+                                company_name: formData.get('company_name') as string,
+                                email: formData.get('email') as string,
+                                phone: formData.get('phone') as string,
+                                description: formData.get('description') as string,
+                                address: formData.get('address') as string,
+                                website: formData.get('website') as string,
+                                logo_url: formData.get('logo_url') as string,
+                                is_active: formData.get('is_active') === 'on',
+                                featured: formData.get('is_featured') === 'on',
+                                is_verified: formData.get('is_verified') === 'on',
+                                features: formData.get('features') ? (formData.get('features') as string).split(',').map(s => s.trim()).filter(s => s) : [],
+                                social_media: {
+                                    facebook: formData.get('social_facebook') as string || undefined,
+                                    instagram: formData.get('social_instagram') as string || undefined,
+                                    linkedin: formData.get('social_linkedin') as string || undefined,
+                                    twitter: formData.get('social_twitter') as string || undefined,
+                                }
+                            });
+                        }} className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Name *</label>
+                                    <input name="name" defaultValue={editingListing?.name || ''} required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Company Name *</label>
+                                    <input name="company_name" defaultValue={editingListing?.company_name || ''} required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Email *</label>
+                                    <input name="email" type="email" defaultValue={editingListing?.email || ''} required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Phone *</label>
+                                    <input name="phone" defaultValue={editingListing?.phone || ''} required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div className="col-span-2">
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
+                                    <textarea name="description" defaultValue={editingListing?.description || ''} rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Address *</label>
+                                    <input name="address" defaultValue={editingListing?.address || ''} required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Website</label>
+                                    <input name="website" defaultValue={editingListing?.website || ''} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div className="col-span-2">
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Logo URL</label>
+                                    <input name="logo_url" defaultValue={editingListing?.logo_url || ''} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+
+                                <div className="col-span-2">
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Features (comma separated)</label>
+                                    <textarea
+                                        name="features"
+                                        defaultValue={editingListing?.features?.join(', ') || ''}
+                                        rows={2}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                                        placeholder="e.g. Free Quote, 24/7 Support, SEAI Registered"
+                                    />
+                                </div>
+
+                                <div className="col-span-2 space-y-3 pt-4 border-t border-gray-100">
+                                    <label className="block text-sm font-bold text-gray-900 uppercase tracking-widest">Social Media</label>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-500 mb-1">Facebook URL</label>
+                                            <input name="social_facebook" defaultValue={editingListing?.social_media?.facebook || ''} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="https://facebook.com/..." />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-500 mb-1">Instagram URL</label>
+                                            <input name="social_instagram" defaultValue={editingListing?.social_media?.instagram || ''} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="https://instagram.com/..." />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-500 mb-1">LinkedIn URL</label>
+                                            <input name="social_linkedin" defaultValue={editingListing?.social_media?.linkedin || ''} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="https://linkedin.com/..." />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-500 mb-1">Twitter / X URL</label>
+                                            <input name="social_twitter" defaultValue={editingListing?.social_media?.twitter || ''} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="https://twitter.com/..." />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="col-span-2 space-y-3 pt-4 border-t border-gray-100">
+                                    <label className="block text-sm font-bold text-gray-900 uppercase tracking-widest">Hero Images (Carousel)</label>
+                                    <p className="text-xs text-gray-500 mb-2">Add up to 3 images for the top carousel.</p>
+                                    {listingImages.map((img, index) => (
+                                        <div key={index}>
+                                            <input
+                                                value={img}
+                                                onChange={(e) => {
+                                                    const newImages = [...listingImages];
+                                                    newImages[index] = e.target.value;
+                                                    setListingImages(newImages);
+                                                }}
+                                                placeholder={`Image URL #${index + 1}`}
+                                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="flex gap-6 pt-2">
+                                <label className="flex items-center gap-2">
+                                    <input type="checkbox" name="is_active" defaultChecked={editingListing?.is_active ?? true} className="w-4 h-4 text-[#007F00]" />
+                                    <span className="text-sm font-medium">Active</span>
+                                </label>
+                                <label className="flex items-center gap-2">
+                                    <input type="checkbox" name="is_featured" defaultChecked={editingListing?.featured ?? false} className="w-4 h-4 text-[#007F00]" />
+                                    <span className="text-sm font-medium">Featured</span>
+                                </label>
+                                <label className="flex items-center gap-2">
+                                    <input type="checkbox" name="is_verified" defaultChecked={editingListing?.is_verified ?? false} className="w-4 h-4 text-[#007F00]" />
+                                    <span className="text-sm font-medium">Verified</span>
+                                </label>
+                            </div>
+                            <div className="flex justify-end gap-3 pt-4 border-t">
+                                <button type="button" onClick={() => { setShowListingModal(false); setEditingListing(null); setListingImages(['', '', '']); }} className="px-4 py-2 text-gray-600 font-bold hover:bg-gray-50 rounded-lg">Cancel</button>
+                                <button type="submit" disabled={isSavingCatalogue} className="bg-[#007F00] text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 disabled:opacity-50">
+                                    {isSavingCatalogue ? <Loader2 size={18} className="animate-spin" /> : null}
+                                    {editingListing ? 'Update Listing' : 'Create Listing'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* CATEGORY MODAL */}
+            {showCategoryModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-gray-900">{editingCategory ? 'Edit Category' : 'Add New Category'}</h3>
+                            <button onClick={() => { setShowCategoryModal(false); setEditingCategory(null); }} className="text-gray-400 hover:text-gray-600">
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            const form = e.target as HTMLFormElement;
+                            const formData = new FormData(form);
+                            handleSaveCategory({
+                                name: formData.get('name') as string,
+                                icon: formData.get('icon') as string,
+                                description: formData.get('description') as string,
+                            });
+                        }} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Name *</label>
+                                <input name="name" defaultValue={editingCategory?.name || ''} required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Icon (lucide name)</label>
+                                <input name="icon" defaultValue={editingCategory?.icon || ''} placeholder="e.g., home, briefcase, zap" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
+                                <textarea name="description" defaultValue={editingCategory?.description || ''} rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                            </div>
+                            <div className="flex justify-end gap-3 pt-4 border-t">
+                                <button type="button" onClick={() => { setShowCategoryModal(false); setEditingCategory(null); }} className="px-4 py-2 text-gray-600 font-bold hover:bg-gray-50 rounded-lg">Cancel</button>
+                                <button type="submit" disabled={isSavingCatalogue} className="bg-[#007F00] text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 disabled:opacity-50">
+                                    {isSavingCatalogue ? <Loader2 size={18} className="animate-spin" /> : null}
+                                    {editingCategory ? 'Update Category' : 'Create Category'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
         </div >
     );
 };

@@ -1,7 +1,7 @@
 import { useEffect, useState, Fragment } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, DollarSign, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, Phone, Mail, Settings, MessageCircle, User } from 'lucide-react';
+import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, DollarSign, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, Settings, MessageCircle, User, Menu } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
 import toast from 'react-hot-toast';
@@ -28,6 +28,11 @@ interface Quote {
         preferred_time?: string;
         created_at: string;
         property_address?: string;
+        scheduled_date: string | null;
+        completed_at?: string | null;
+        user_id: string;
+        status: 'live' | 'submitted' | 'pending_quote' | 'quote_accepted' | 'scheduled' | 'completed';
+        eircode?: string;
     };
 }
 
@@ -40,6 +45,7 @@ interface Assessment {
     status: 'live' | 'submitted' | 'pending_quote' | 'quote_accepted' | 'scheduled' | 'completed';
     created_at: string;
     scheduled_date: string | null;
+    completed_at?: string | null;
     user_id: string;
     property_size: string;
     bedrooms: number;
@@ -57,6 +63,7 @@ interface Assessment {
     };
     quotes?: Quote[];
     payment_status?: string;
+    eircode?: string;
 }
 
 const COUNTIES = [
@@ -95,6 +102,7 @@ const ContractorDashboard = () => {
     const [expandedContactId, setExpandedContactId] = useState<string | null>(null);
     const [selectedAvailabilityDate, setSelectedAvailabilityDate] = useState<string | null>(null);
     const [termsAgreed, setTermsAgreed] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
 
 
@@ -120,7 +128,18 @@ const ContractorDashboard = () => {
         try {
             setLoading(true);
 
-            // 1. Fetch Available Jobs (submitted status, no quote from this contractor yet)
+            // 1. Fetch Profile Data (needed for location filtering)
+            const { data: profileData, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user?.id)
+                .single();
+
+            if (!profileError && profileData) {
+                setProfile(profileData);
+            }
+
+            // 2. Fetch Available Jobs (submitted status, no quote from this contractor yet)
             const { data: jobs, error: jobsError } = await supabase
                 .from('assessments')
                 .select(`
@@ -133,7 +152,7 @@ const ContractorDashboard = () => {
 
             if (jobsError) throw jobsError;
 
-            // 2. Fetch My Quotes with assessment details
+            // 3. Fetch My Quotes with assessment details
             const { data: quotes, error: quotesError } = await supabase
                 .from('quotes')
                 .select(`
@@ -168,7 +187,7 @@ const ContractorDashboard = () => {
             });
             const uniqueQuotes = Array.from(uniqueQuotesMap.values());
 
-            // 3. Fetch lowest quotes for these assessments
+            // 4. Fetch lowest quotes for these assessments
             const assessmentIds = uniqueQuotes.map(q => q.assessment_id);
             let enrichedQuotes = uniqueQuotes;
 
@@ -189,12 +208,46 @@ const ContractorDashboard = () => {
                 }
             }
 
-            // 4. Update states
+            // 5. Update states
             setMyQuotes(enrichedQuotes);
 
-            // Available jobs are those without a quote from this contractor
+            // Available jobs filtering:
+            // 1. Exclude jobs already quoted for
             const quotedIds = new Set(quotes?.map(q => q.assessment_id) || []);
-            setAvailableJobs(jobs?.filter(j => !quotedIds.has(j.id)) || []);
+            let filteredAvailableJobs = jobs?.filter(j => !quotedIds.has(j.id)) || [];
+
+            // 2. Apply location preference filtering if configured
+            if (profileData?.preferred_counties && profileData.preferred_counties.length > 0) {
+                filteredAvailableJobs = filteredAvailableJobs.filter(job =>
+                    profileData.preferred_counties.includes(job.county)
+                );
+            }
+
+            // 3. Apply Assessor Type filtering (Domestic vs Commercial)
+            const assessorType = profileData?.assessor_type || '';
+            const isDomesticAssessor = assessorType.includes('Domestic');
+            const isCommercialAssessor = assessorType.includes('Commercial');
+
+            filteredAvailableJobs = filteredAvailableJobs.filter(job => {
+                // Determine if the job is domestic or commercial based on property_type
+                // These are common commercial indicators. Can be expanded as the system grows.
+                const commercialTypes = ['Commercial', 'Office', 'Retail', 'Industrial', 'Warehouse', 'Unit', 'Retail Unit'];
+
+                // Multi-Unit is usually domestic in this flow but we check specifically if "Office" etc is in the address/type
+                const isCommercialJob = commercialTypes.some(type =>
+                    job.property_type?.toLowerCase().includes(type.toLowerCase()) ||
+                    job.property_address?.toLowerCase().includes(type.toLowerCase())
+                );
+
+                if (isCommercialJob) {
+                    return isCommercialAssessor;
+                } else {
+                    // Default to domestic if not explicitly commercial
+                    return isDomesticAssessor;
+                }
+            });
+
+            setAvailableJobs(filteredAvailableJobs);
 
             // Active jobs are those where contractor_id matches this contractor
             const { data: active, error: activeError } = await supabase
@@ -219,18 +272,6 @@ const ContractorDashboard = () => {
             }));
 
             setActiveJobs(activeWithQuotes);
-
-
-            // 5. Fetch Profile Data
-            const { data: profileData, error: profileError } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', user?.id)
-                .single();
-
-            if (!profileError) {
-                setProfile(profileData);
-            }
 
         } catch (error: any) {
             console.error('Error fetching contractor data:', error);
@@ -274,8 +315,9 @@ const ContractorDashboard = () => {
             preferred_date: quote.assessment.preferred_date,
             preferred_time: quote.assessment.preferred_time || '',
             status: 'pending_quote', // Default status for quoting
-            scheduled_date: null,
-            user_id: '' // Not strictly needed for the modal
+            scheduled_date: quote.assessment.scheduled_date,
+            completed_at: quote.assessment.completed_at,
+            user_id: quote.assessment.user_id,
         };
 
         setSelectedJob(jobData);
@@ -384,7 +426,8 @@ const ContractorDashboard = () => {
                     status: newStatus,
                     ...extraData
                 })
-                .eq('id', jobId);
+                .eq('id', jobId)
+                .select();
 
             if (error) throw error;
 
@@ -393,6 +436,7 @@ const ContractorDashboard = () => {
             setCompletingJob(null);
             fetchData();
         } catch (error: any) {
+            console.error('Error updating status:', error);
             toast.error(error.message || 'Failed to update status');
         } finally {
             setIsSubmitting(false);
@@ -409,28 +453,71 @@ const ContractorDashboard = () => {
     return (
         <div className="min-h-screen bg-[#F8FAFC] font-sans">
             {/* Nav */}
-            <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
-                <div className="w-full px-6 py-4 flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[#007EA7] rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-100">
-                            <HardHat size={24} />
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-bold text-gray-900 leading-tight">Assessor Portal</h1>
-                            <span className="text-[10px] font-bold text-[#007EA7] uppercase tracking-widest">Licensed BER Assessor</span>
+            <header className="bg-[#0c121d] backdrop-blur-md border-b border-white/5 sticky top-0 z-[9999] shadow-lg transition-all duration-300">
+                <div className="container mx-auto px-6 h-20 flex justify-between items-center">
+                    <div className="flex items-center gap-8">
+                        <Link to="/" className="relative flex-shrink-0">
+                            <img src="/logo.svg" alt="The Berman Logo" className="h-10 w-auto relative z-10" />
+                        </Link>
+                        <div className="hidden xl:block">
+                            <h1 className="text-lg font-bold text-white leading-tight">Assessor Portal</h1>
+                            <span className="text-[10px] text-gray-400 flex items-center gap-1.5 uppercase tracking-widest font-bold">
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+                                Live Assessment Network
+                            </span>
                         </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <div className="hidden md:flex flex-col items-end">
-                            <span className="text-sm font-bold text-gray-900">{user?.email?.split('@')[0]}</span>
-                            <span className="text-[10px] text-gray-400 font-medium">Verified Partner</span>
+
+                    <div className="flex items-center gap-6">
+                        <div className="relative">
+                            <button
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                className="bg-white/5 p-2.5 rounded-xl hover:bg-white/10 transition-colors border border-white/10 flex items-center gap-2 text-white/70"
+                            >
+                                {isMenuOpen ? <X size={20} className="text-[#5CB85C]" /> : <Menu size={20} className="text-[#5CB85C]" />}
+                                <span className="text-[11px] font-black uppercase tracking-[0.15em] hidden sm:block">Menu</span>
+                            </button>
+
+                            {isMenuOpen && (
+                                <div className="absolute right-0 top-full mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+                                    <div className="p-2 space-y-1 border-b border-gray-50 bg-gray-50/30">
+                                        <div className="px-4 py-3">
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Signed in as</p>
+                                            <p className="text-sm font-bold text-gray-900 truncate">{user?.email}</p>
+                                        </div>
+                                    </div>
+                                    <div className="p-2 space-y-1">
+                                        {[
+                                            { id: 'available', label: 'Available Jobs', icon: Briefcase },
+                                            { id: 'my_quotes', label: 'My Quotes', icon: ClipboardList },
+                                            { id: 'active', label: 'My Clients', icon: User },
+                                            { id: 'settings', label: 'Settings', icon: Settings },
+                                        ].map((item) => (
+                                            <button
+                                                key={item.id}
+                                                onClick={() => { setView(item.id as any); setIsMenuOpen(false); }}
+                                                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] transition-all duration-200 ${view === item.id ? 'bg-[#5CB85C]/10 text-[#5CB85C]' : 'text-gray-600 hover:bg-gray-50'}`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <item.icon size={16} />
+                                                    {item.label}
+                                                </div>
+                                                {view === item.id && <div className="w-1.5 h-1.5 rounded-full bg-[#5CB85C]"></div>}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="p-2 bg-gray-50/50 border-t border-gray-100 flex flex-col gap-1">
+                                        <button
+                                            onClick={handleSignOut}
+                                            className="w-full text-left px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] text-red-500 hover:bg-red-50 flex items-center justify-between"
+                                        >
+                                            Sign Out
+                                            <LogOut size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                        <button
-                            onClick={handleSignOut}
-                            className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border border-gray-100"
-                        >
-                            <LogOut size={20} />
-                        </button>
                     </div>
                 </div>
             </header>
@@ -480,36 +567,30 @@ const ContractorDashboard = () => {
 
                 {/* Main Content Area */}
                 <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden min-h-[600px] flex flex-col">
-                    <div className="flex border-b border-gray-100 p-2 gap-2 bg-gray-50/50">
-                        <button
-                            onClick={() => setView('available')}
-                            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold transition-all ${view === 'available' ? 'bg-[#007EA7] text-white shadow-md' : 'text-gray-500 hover:bg-white hover:text-gray-900'}`}
-                        >
-                            <Briefcase size={18} />
-                            Available Jobs
-                            {availableJobs.length > 0 && <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full ml-1">{availableJobs.length}</span>}
-                        </button>
-                        <button
-                            onClick={() => setView('my_quotes')}
-                            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold transition-all ${view === 'my_quotes' ? 'bg-[#007EA7] text-white shadow-md' : 'text-gray-500 hover:bg-white hover:text-gray-900'}`}
-                        >
-                            <ClipboardList size={18} />
-                            My Quotes
-                        </button>
-                        <button
-                            onClick={() => setView('active')}
-                            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold transition-all ${view === 'active' ? 'bg-[#007EA7] text-white shadow-md' : 'text-gray-500 hover:bg-white hover:text-gray-900'}`}
-                        >
-                            <ClipboardList size={18} />
-                            My Clients
-                        </button>
-                        <button
-                            onClick={() => setView('settings')}
-                            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold transition-all ${view === 'settings' ? 'bg-[#007EA7] text-white shadow-md' : 'text-gray-500 hover:bg-white hover:text-gray-900'}`}
-                        >
-                            <Settings size={18} />
-                            Settings
-                        </button>
+                    <div className="px-8 py-10 border-b border-gray-100 bg-gray-50/30">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                            <div className="flex-1">
+                                <h2 className="text-3xl font-black text-gray-900 mb-2">
+                                    {view === 'available' ? 'Available Assessment Leads' :
+                                        view === 'my_quotes' ? 'My Active Quotes' :
+                                            view === 'active' ? 'My Assessment Clients' :
+                                                view === 'settings' ? 'Assessor Settings' : 'Dashboard'}
+                                </h2>
+                                <p className="text-gray-500 font-medium max-w-2xl">
+                                    {view === 'available' ? 'Browse and quote for energy assessment leads in your preferred counties.' :
+                                        view === 'my_quotes' ? "Track and manage quotes you've submitted to homeowners." :
+                                            view === 'active' ? 'Manage your current inspection schedule and client communications.' :
+                                                view === 'settings' ? 'Configure your notification preferences and service area.' :
+                                                    'Welcome to your professional assessor dashboard.'}
+                                </p>
+                            </div>
+                            {view === 'available' && availableJobs.length > 0 && (
+                                <div className="flex items-center gap-2 bg-[#007EA7]/10 text-[#007EA7] px-4 py-2 rounded-xl border border-[#007EA7]/20">
+                                    <Briefcase size={16} />
+                                    <span className="text-sm font-bold">{availableJobs.length} New Leads Available</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div className="flex-1 p-6">
@@ -536,6 +617,7 @@ const ContractorDashboard = () => {
                                                 <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Posted</th>
                                                 <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Town</th>
                                                 <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">County</th>
+                                                <th className="text-left py-3 px-4 text-xs font-bold text-blue-600 uppercase tracking-wider">Eircode</th>
                                                 <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Type</th>
                                                 <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Sq. Mt.</th>
                                                 <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Beds</th>
@@ -561,6 +643,7 @@ const ContractorDashboard = () => {
                                                         </td>
                                                         <td className="py-3 px-4 text-gray-900 font-bold">{job.town}</td>
                                                         <td className="py-3 px-4 text-gray-600">{job.county}</td>
+                                                        <td className="py-3 px-4 text-blue-600 font-medium">{job.eircode}</td>
                                                         <td className="py-3 px-4 text-gray-600">{job.property_type}</td>
                                                         <td className="py-3 px-4 text-gray-600">{job.property_size}</td>
                                                         <td className="py-3 px-4 text-gray-600">{job.bedrooms}</td>
@@ -611,6 +694,7 @@ const ContractorDashboard = () => {
                                                 <div className="flex justify-between items-start mb-3">
                                                     <div>
                                                         <p className="font-bold text-gray-900">{job.town}, {job.county}</p>
+                                                        <p className="text-[10px] text-blue-600 font-bold">{job.eircode}</p>
                                                         <p className="text-xs text-gray-500">{job.property_type} • {job.bedrooms} beds</p>
                                                     </div>
                                                     <span className="text-xs text-gray-400">
@@ -669,6 +753,7 @@ const ContractorDashboard = () => {
                                                     <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Posted</th>
                                                     <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Town</th>
                                                     <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">County</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-blue-600 uppercase tracking-wider">Eircode</th>
                                                     <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Type</th>
                                                     <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Sq. Mt.</th>
                                                     <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Beds</th>
@@ -695,6 +780,7 @@ const ContractorDashboard = () => {
                                                             </td>
                                                             <td className="py-3 px-3 text-gray-900 font-bold">{quote.assessment?.town || '-'}</td>
                                                             <td className="py-3 px-3 text-gray-600">{quote.assessment?.county || '-'}</td>
+                                                            <td className="py-3 px-3 text-blue-600 font-medium">{quote.assessment?.eircode || '-'}</td>
                                                             <td className="py-3 px-3 text-gray-600">{quote.assessment?.property_type || '-'}</td>
                                                             <td className="py-3 px-3 text-gray-600">{quote.assessment?.property_size || '-'}</td>
                                                             <td className="py-3 px-3 text-gray-600">{quote.assessment?.bedrooms || '-'}</td>
@@ -744,6 +830,7 @@ const ContractorDashboard = () => {
                                                     <div className="flex justify-between items-start mb-3">
                                                         <div>
                                                             <p className="font-bold text-gray-900">{quote.assessment?.town || '-'}, {quote.assessment?.county || '-'}</p>
+                                                            <p className="text-[10px] text-blue-600 font-bold">{quote.assessment?.eircode}</p>
                                                             <p className="text-xs text-gray-500">{quote.assessment?.property_type || '-'} • {quote.assessment?.bedrooms || 0} beds</p>
                                                         </div>
                                                         <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md ${quote.status === 'accepted' ? 'bg-green-100 text-green-700' : quote.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
@@ -818,67 +905,83 @@ const ContractorDashboard = () => {
                                                             key={job.id}
                                                             className={`border-b border-gray-100 hover:bg-amber-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}
                                                         >
-                                                            <td className="py-3 px-3 text-gray-600 font-medium">
+                                                            <td className="py-3 px-3 text-gray-600 font-medium whitespace-nowrap">
                                                                 {new Date(job.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
                                                             </td>
                                                             <td className="py-3 px-3 text-gray-900 font-bold">{job.town}</td>
                                                             <td className="py-3 px-3 text-gray-600">{job.county}</td>
                                                             <td className="py-3 px-3">
-                                                                <a href="#" className="text-blue-600 underline font-medium hover:text-blue-800">
-                                                                    {job.property_address?.slice(0, 7) || 'N/A'}
-                                                                </a>
+                                                                <span className="text-blue-600 font-medium">
+                                                                    {job.eircode || '-'}
+                                                                </span>
                                                             </td>
                                                             <td className="py-3 px-3 text-gray-600">{job.property_type}</td>
                                                             <td className="py-3 px-3 text-gray-600">{job.property_size}</td>
-                                                            <td className="py-3 px-3 text-gray-600">{job.bedrooms}</td>
+                                                            <td className="py-3 px-3 text-gray-600 font-bold">{job.bedrooms}</td>
                                                             <td className="py-3 px-3 text-gray-600">{job.heat_pump || 'None'}</td>
                                                             <td className="py-3 px-3">
-                                                                <span className={`px-2 py-1 rounded text-xs font-bold ${job.ber_purpose?.toLowerCase().includes('mortgage') ? 'bg-blue-100 text-blue-700' :
+                                                                <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${job.ber_purpose?.toLowerCase().includes('mortgage') ? 'bg-blue-100 text-blue-700' :
                                                                     job.ber_purpose?.toLowerCase().includes('grant') ? 'bg-green-100 text-green-700' :
-                                                                        job.ber_purpose?.toLowerCase().includes('letting') ? 'bg-amber-100 text-amber-700' :
-                                                                            job.ber_purpose?.toLowerCase().includes('selling') ? 'bg-purple-100 text-purple-700' :
-                                                                                'bg-gray-100 text-gray-600'
+                                                                        'bg-gray-100 text-gray-600'
                                                                     }`}>
                                                                     {job.ber_purpose || '-'}
                                                                 </span>
                                                             </td>
                                                             <td className="py-3 px-3">
-                                                                <span className={`px-2 py-1 rounded text-xs font-bold capitalize ${job.status === 'completed' ? 'bg-gray-100 text-gray-600' :
-                                                                    'bg-green-100 text-green-700'
+                                                                <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${job.status === 'completed' ? 'bg-gray-100 text-gray-600' :
+                                                                    job.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
+                                                                        'bg-green-100 text-green-700'
                                                                     }`}>
                                                                     {job.status?.replace('_', ' ') || '-'}
                                                                 </span>
                                                             </td>
                                                             <td className="py-3 px-3">
-                                                                <span className={`px-2 py-1 rounded text-xs font-bold capitalize ${job.payment_status === 'paid' ? 'bg-green-100 text-green-700' :
+                                                                <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${job.payment_status === 'paid' ? 'bg-green-100 text-green-700' :
                                                                     'bg-orange-100 text-orange-700'
                                                                     }`}>
                                                                     {job.payment_status || 'Unpaid'}
                                                                 </span>
                                                             </td>
-                                                            <td className="py-3 px-3">
-                                                                <span className={`px-2 py-1 rounded text-xs font-bold capitalize ${job.status === 'completed' ? 'bg-gray-100 text-gray-600' :
-                                                                    'bg-green-100 text-green-700'
-                                                                    }`}>
-                                                                    {job.status?.replace('_', ' ') || '-'}
-                                                                </span>
-                                                            </td>
-                                                            <td className="py-3 px-3 text-gray-600">
+                                                            <td className="py-3 px-3 text-gray-600 text-xs italic">
                                                                 {job.additional_features?.length ? job.additional_features.join(', ') : 'None'}
                                                             </td>
-                                                            <td className="py-3 px-3 text-gray-600">
+                                                            <td className="py-3 px-3 text-gray-600 font-bold">
                                                                 {job.scheduled_date
-                                                                    ? new Date(job.scheduled_date).toLocaleDateString('en-IE', { weekday: 'short', day: '2-digit', month: 'short' })
-                                                                    : job.preferred_date || 'TBD'
+                                                                    ? new Date(job.scheduled_date).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })
+                                                                    : 'TBD'
                                                                 }
                                                             </td>
-                                                            <td className="py-3 px-3">
+                                                            <td className="py-3 px-3 flex flex-col gap-1">
                                                                 <button
                                                                     onClick={() => setExpandedContactId(expandedContactId === job.id ? null : job.id)}
-                                                                    className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-bold transition-all"
+                                                                    className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-[10px] font-black uppercase transition-all whitespace-nowrap"
                                                                 >
-                                                                    Contact Details
+                                                                    Contact Info
                                                                 </button>
+                                                                {job.status === 'quote_accepted' && (
+                                                                    <button
+                                                                        onClick={() => setSchedulingJob(job)}
+                                                                        className="px-3 py-1.5 bg-[#007EA7] hover:bg-[#005F7E] text-white rounded text-[10px] font-black uppercase transition-all whitespace-nowrap"
+                                                                    >
+                                                                        Schedule
+                                                                    </button>
+                                                                )}
+                                                                {job.status === 'scheduled' && (
+                                                                    <div className="flex flex-col gap-1">
+                                                                        <button
+                                                                            onClick={() => setCompletingJob(job)}
+                                                                            className="px-3 py-1.5 bg-[#007F00] hover:bg-green-800 text-white rounded text-[10px] font-black uppercase transition-all whitespace-nowrap"
+                                                                        >
+                                                                            Complete
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => setSchedulingJob(job)}
+                                                                            className="px-3 py-1.5 bg-gray-500 hover:bg-gray-600 text-white rounded text-[10px] font-black uppercase transition-all whitespace-nowrap"
+                                                                        >
+                                                                            Reschedule
+                                                                        </button>
+                                                                    </div>
+                                                                )}
                                                             </td>
                                                             <td className="py-3 px-3 text-green-700 font-bold">
                                                                 €{job.quotes?.find(q => q.status === 'accepted')?.price?.toLocaleString() || job.quotes?.[0]?.price?.toLocaleString() || '-'}
@@ -888,7 +991,7 @@ const ContractorDashboard = () => {
                                                         {/* Expandable Contact Details Row */}
                                                         {expandedContactId === job.id && (
                                                             <tr key={`${job.id}-contact`} className="bg-green-50 border-b border-gray-100">
-                                                                <td colSpan={13} className="py-3 px-6">
+                                                                <td colSpan={15} className="py-3 px-6">
                                                                     <div className="flex items-center gap-6 text-sm">
                                                                         <span className="text-gray-400">↳</span>
                                                                         <span><strong>Name:</strong> {job.contact_name || job.profiles?.full_name || 'N/A'}</span>
@@ -903,48 +1006,87 @@ const ContractorDashboard = () => {
                                             </tbody>
                                         </table>
 
-                                        {/* Mobile Card View */}
                                         <div className="md:hidden space-y-4">
                                             {activeJobs.map(job => (
-                                                <div key={job.id} className="bg-white border border-gray-200 rounded-2xl p-4">
-                                                    <div className="flex justify-between items-start mb-3">
+                                                <div key={job.id} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+                                                    <div className="flex justify-between items-start mb-4">
                                                         <div>
-                                                            <p className="font-bold text-gray-900">{job.town}, {job.county}</p>
-                                                            <p className="text-xs text-gray-500">{job.property_type} • {job.bedrooms} beds</p>
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                                                    Accepted {new Date(job.created_at).toLocaleDateString()}
+                                                                </span>
+                                                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter border ${job.status === 'completed' ? 'bg-gray-100 text-gray-600 border-gray-200' :
+                                                                    job.status === 'scheduled' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                                                                        'bg-green-50 text-green-700 border-green-100'
+                                                                    }`}>
+                                                                    {job.status?.replace('_', ' ') || '-'}
+                                                                </span>
+                                                            </div>
+                                                            <h4 className="font-bold text-gray-900">{job.property_address}</h4>
+                                                            <p className="text-xs text-gray-500">{job.town}, {job.county}</p>
                                                         </div>
-                                                        <div className="flex flex-col items-end gap-1">
-                                                            <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md ${job.status === 'completed' ? 'bg-gray-100 text-gray-500' : 'bg-green-100 text-green-700'}`}>
-                                                                {job.status?.replace('_', ' ')}
-                                                            </span>
-                                                            <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md ${job.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                                                        <div className="text-right">
+                                                            <p className="text-lg font-black text-green-700">
+                                                                €{job.quotes?.find(q => q.status === 'accepted')?.price?.toLocaleString() || job.quotes?.[0]?.price?.toLocaleString() || '-'}
+                                                            </p>
+                                                            <p className="text-[10px] font-extrabold text-orange-600 uppercase">
                                                                 {job.payment_status || 'Unpaid'}
-                                                            </span>
+                                                            </p>
                                                         </div>
                                                     </div>
-                                                    <div className="flex justify-between items-center mb-4">
-                                                        <div>
-                                                            <p className="text-xs text-gray-400">Balance</p>
-                                                            <p className="text-lg font-bold text-green-700">€{job.quotes?.[0]?.price?.toLocaleString() || '-'}</p>
-                                                        </div>
-                                                        <p className="text-xs text-gray-400">
-                                                            {new Date(job.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
-                                                        </p>
+
+                                                    <div className="grid grid-cols-1 gap-2">
+                                                        <button
+                                                            onClick={() => setExpandedContactId(expandedContactId === job.id ? null : job.id)}
+                                                            className="w-full py-3 bg-gray-50 border border-gray-100 text-gray-600 rounded-xl font-bold text-xs hover:bg-gray-100 transition-all uppercase tracking-tight"
+                                                        >
+                                                            {expandedContactId === job.id ? 'Close Contact Details' : 'View Contact Details'}
+                                                        </button>
+
+                                                        {job.status === 'quote_accepted' && (
+                                                            <button
+                                                                onClick={() => setSchedulingJob(job)}
+                                                                className="w-full py-3 bg-[#007EA7] text-white rounded-xl font-black text-xs hover:bg-[#005F7E] transition-all uppercase tracking-tight shadow-md shadow-blue-50"
+                                                            >
+                                                                Schedule Inspection
+                                                            </button>
+                                                        )}
+
+                                                        {job.status === 'scheduled' && (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => setCompletingJob(job)}
+                                                                    className="w-full py-3 bg-[#007F00] text-white rounded-xl font-black text-xs hover:bg-green-800 transition-all uppercase tracking-tight shadow-md shadow-green-50"
+                                                                >
+                                                                    Mark Complete
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => setSchedulingJob(job)}
+                                                                    className="w-full py-2 bg-gray-500 text-white rounded-xl font-bold text-[10px] hover:bg-gray-600 transition-all uppercase tracking-widest"
+                                                                >
+                                                                    Reschedule
+                                                                </button>
+                                                            </>
+                                                        )}
                                                     </div>
-                                                    {job.contact_phone && (
-                                                        <div className="flex flex-wrap gap-2 mb-4 text-xs">
-                                                            <a href={`tel:${job.contact_phone}`} className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                                                                <Phone size={12} /> {job.contact_phone}
-                                                            </a>
-                                                            <a href={`mailto:${job.contact_email}`} className="flex items-center gap-1 text-gray-600 bg-gray-50 px-2 py-1 rounded">
-                                                                <Mail size={12} /> Email
-                                                            </a>
+
+                                                    {/* Mobile Expandable Contact Info */}
+                                                    {expandedContactId === job.id && (
+                                                        <div className="mt-4 pt-4 border-t border-gray-50 space-y-2 animate-in slide-in-from-top-2 duration-200">
+                                                            <div className="flex justify-between text-xs">
+                                                                <span className="text-gray-400">Name:</span>
+                                                                <span className="font-bold text-gray-900">{job.contact_name || job.profiles?.full_name || 'N/A'}</span>
+                                                            </div>
+                                                            <div className="flex justify-between text-xs">
+                                                                <span className="text-gray-400">Email:</span>
+                                                                <a href={`mailto:${job.contact_email}`} className="font-bold text-blue-600 underline">{job.contact_email || 'N/A'}</a>
+                                                            </div>
+                                                            <div className="flex justify-between text-xs">
+                                                                <span className="text-gray-400">Phone:</span>
+                                                                <a href={`tel:${job.contact_phone}`} className="font-bold text-blue-600 underline">{job.contact_phone || 'N/A'}</a>
+                                                            </div>
                                                         </div>
                                                     )}
-                                                    <button
-                                                        className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all"
-                                                    >
-                                                        Contact Details
-                                                    </button>
                                                 </div>
                                             ))}
                                         </div>
@@ -1551,7 +1693,7 @@ const ContractorDashboard = () => {
                                     <p className="text-[10px] text-gray-400 mt-2 font-medium italic">Please provide a link to the generated BER certificate.</p>
                                 </div>
                                 <button
-                                    onClick={() => handleUpdateStatus(completingJob.id, 'completed', { certificate_url: certUrl })}
+                                    onClick={() => handleUpdateStatus(completingJob.id, 'completed', { certificate_url: certUrl, completed_at: new Date().toISOString() })}
                                     disabled={isSubmitting || !certUrl}
                                     className="w-full bg-[#007F00] text-white py-4 rounded-2xl font-bold hover:bg-green-800 transition-all shadow-lg shadow-green-100 disabled:opacity-50"
                                 >
@@ -1564,7 +1706,7 @@ const ContractorDashboard = () => {
             }
 
 
-        </div >
+        </div>
     );
 };
 

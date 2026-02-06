@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { LogOut, FileText, User, Calendar, Home, AlertCircle, X, Mail } from 'lucide-react';
+import { LogOut, FileText, User, Calendar, Home, AlertCircle, X, Mail, Menu } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import QuoteModal from '../components/QuoteModal';
@@ -23,6 +23,8 @@ interface Quote {
         seai_number: string;
         assessor_type?: string;
         company_name?: string;
+        insurance_holder?: boolean;
+        vat_registered?: boolean;
     };
     assessment?: any;
 }
@@ -59,6 +61,7 @@ const UserDashboard = () => {
     const [verifyingQuote, setVerifyingQuote] = useState<{ assessmentId: string, quoteId: string, targetStatus: 'accepted' | 'rejected' } | null>(null);
     const [confirmReject, setConfirmReject] = useState<{ assessmentId: string, quoteId: string } | null>(null);
     const [verificationStep, setVerificationStep] = useState<1 | 2>(1);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const [verifyEircode, setVerifyEircode] = useState('');
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -106,7 +109,9 @@ const UserDashboard = () => {
                             full_name,
                             seai_number,
                             assessor_type,
-                            company_name
+                            company_name,
+                            insurance_holder,
+                            vat_registered
                         )
                     )
                 `)
@@ -253,27 +258,69 @@ const UserDashboard = () => {
 
     return (
         <div className="min-h-screen bg-[#FDFDFD] font-sans">
-            {/* Header */}
-            <header className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-20">
-                <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                    <Link to="/" className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[#007F00] rounded-lg flex items-center justify-center text-white font-bold text-lg">
-                            BM
+            <header className="bg-[#0c121d] backdrop-blur-md border-b border-white/5 sticky top-0 z-[9999] shadow-lg transition-all duration-300">
+                <div className="container mx-auto px-6 h-20 flex justify-between items-center">
+                    <div className="flex items-center gap-8">
+                        <Link to="/" className="relative flex-shrink-0">
+                            <img src="/logo.svg" alt="The Berman Logo" className="h-10 w-auto relative z-10" />
+                        </Link>
+                        <div className="hidden xl:block">
+                            <h1 className="text-lg font-bold text-white leading-tight">My Dashboard</h1>
+                            <span className="text-[10px] text-gray-400 flex items-center gap-1.5 uppercase tracking-widest font-bold">
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+                                Active Account Status
+                            </span>
                         </div>
-                        <h1 className="text-xl font-bold text-gray-900 tracking-tight hidden sm:block">My Dashboard</h1>
-                    </Link>
+                    </div>
+
                     <div className="flex items-center gap-6">
-                        <div className="hidden md:flex flex-col items-end">
-                            <span className="text-sm font-semibold text-gray-900">{user?.email?.split('@')[0]}</span>
-                            <span className="text-xs text-gray-500">{user?.email}</span>
+                        <div className="relative">
+                            <button
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                className="bg-white/5 p-2.5 rounded-xl hover:bg-white/10 transition-colors border border-white/10 flex items-center gap-2 text-white/70"
+                            >
+                                {isMenuOpen ? <X size={20} className="text-[#5CB85C]" /> : <Menu size={20} className="text-[#5CB85C]" />}
+                                <span className="text-[11px] font-black uppercase tracking-[0.15em] hidden sm:block">Menu</span>
+                            </button>
+
+                            {isMenuOpen && (
+                                <div className="absolute right-0 top-full mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+                                    <div className="p-2 space-y-1 border-b border-gray-50 bg-gray-50/30">
+                                        <div className="px-4 py-3">
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Signed in as</p>
+                                            <p className="text-sm font-bold text-gray-900 truncate">{user?.email}</p>
+                                        </div>
+                                    </div>
+                                    <div className="p-2 space-y-1">
+                                        {[
+                                            { id: 'assessments', label: 'My Assessments', icon: Home },
+                                            { id: 'quotes', label: 'My Quotes', icon: FileText },
+                                        ].map((item) => (
+                                            <button
+                                                key={item.id}
+                                                onClick={() => { setView(item.id as any); setIsMenuOpen(false); }}
+                                                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] transition-all duration-200 ${view === item.id ? 'bg-[#5CB85C]/10 text-[#5CB85C]' : 'text-gray-600 hover:bg-gray-50'}`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <item.icon size={16} />
+                                                    {item.label}
+                                                </div>
+                                                {view === item.id && <div className="w-1.5 h-1.5 rounded-full bg-[#5CB85C]"></div>}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="p-2 bg-gray-50/50 border-t border-gray-100 flex flex-col gap-1">
+                                        <button
+                                            onClick={handleSignOut}
+                                            className="w-full text-left px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] text-red-500 hover:bg-red-50 flex items-center justify-between"
+                                        >
+                                            Sign Out
+                                            <LogOut size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                        <button
-                            onClick={handleSignOut}
-                            className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-red-600 transition-all border border-gray-200 px-4 py-2 rounded-full hover:bg-red-50 hover:border-red-100"
-                        >
-                            <LogOut size={16} />
-                            <span className="hidden xs:block">Sign Out</span>
-                        </button>
                     </div>
                 </div>
             </header>
@@ -319,40 +366,26 @@ const UserDashboard = () => {
                 ) : (
                     /* Populated Dashboard */
                     <div className="w-full mx-auto">
-                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-                            <div>
-                                <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                                    {view === 'assessments' ? 'Your BER Assessments' : 'Received Quotes'}
-                                </h2>
-                                <p className="text-gray-500">
-                                    {view === 'assessments' ? 'Track the progress of your property certification' : 'Review and manage quotes from our verified BER Assessors'}
-                                </p>
+                        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden mb-8">
+                            <div className="px-8 py-10 border-b border-gray-100 bg-gray-50/30">
+                                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                                    <div className="flex-1">
+                                        <h2 className="text-3xl font-black text-gray-900 mb-2">
+                                            {view === 'assessments' ? 'My BER Assessments' : 'Received Quotes'}
+                                        </h2>
+                                        <p className="text-gray-500 font-medium max-w-2xl">
+                                            {view === 'assessments' ? 'Track the progress of your property certification and view scheduled assessments.' : 'Review and manage quotes from our verified professional BER Assessors.'}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => setIsQuoteModalOpen(true)}
+                                        className="bg-[#007F00] text-white px-8 py-4 rounded-full font-bold hover:bg-[#006600] transition-all shadow-lg shadow-green-100 hover:shadow-green-200 hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
+                                    >
+                                        <Home size={20} />
+                                        New Assessment
+                                    </button>
+                                </div>
                             </div>
-                            <div className="flex bg-gray-100 p-1 rounded-xl">
-                                <button
-                                    onClick={() => setView('assessments')}
-                                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${view === 'assessments' ? 'bg-white text-[#007F00] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
-                                >
-                                    Assessments
-                                </button>
-                                <button
-                                    onClick={() => setView('quotes')}
-                                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${view === 'quotes' ? 'bg-white text-[#007F00] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
-                                >
-                                    Quotes
-                                    {assessments.reduce((acc, a) => acc + (a.quotes?.filter(q => q.status === 'pending').length || 0), 0) > 0 && (
-                                        <span className="ml-2 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
-                                            {assessments.reduce((acc, a) => acc + (a.quotes?.filter(q => q.status === 'pending').length || 0), 0)}
-                                        </span>
-                                    )}
-                                </button>
-                            </div>
-                            <button
-                                onClick={() => setIsQuoteModalOpen(true)}
-                                className="bg-[#007F00] text-white px-6 py-3 rounded-full font-semibold hover:bg-[#006600] transition-all shadow-md active:scale-95"
-                            >
-                                New Assessment
-                            </button>
                         </div>
 
                         {view === 'assessments' ? (
@@ -847,7 +880,7 @@ const UserDashboard = () => {
             {/* Quote Verification Modal */}
             {verifyingQuote && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+                    <div className={`bg-white rounded-[2.5rem] shadow-2xl w-full ${verificationStep === 2 ? 'max-w-3xl' : 'max-w-sm'} overflow-hidden animate-in zoom-in-95 duration-200 transition-all duration-500`}>
                         {verificationStep === 1 ? (
                             <div className="p-10 text-center">
                                 <div className="mb-8">
@@ -869,6 +902,26 @@ const UserDashboard = () => {
                                                 toast.error('Please enter a valid Eircode');
                                                 return;
                                             }
+
+                                            // Validate Eircode against the assessment record
+                                            const assessment = assessments.find(a => a.id === verifyingQuote.assessmentId);
+                                            if (assessment) {
+                                                const storedEircode = assessment.eircode?.toUpperCase().replace(/\s/g, '') || '';
+                                                const inputEircode = verifyEircode.toUpperCase().replace(/\s/g, '');
+
+                                                if (inputEircode !== storedEircode) {
+                                                    toast.error('Incorrect Eircode for this property. Please check and try again.', {
+                                                        icon: '❌',
+                                                        style: {
+                                                            borderRadius: '10px',
+                                                            background: '#333',
+                                                            color: '#fff',
+                                                        },
+                                                    });
+                                                    return;
+                                                }
+                                            }
+
                                             setVerificationStep(2);
                                         }}
                                         className={`w-full ${verifyingQuote.targetStatus === 'accepted' ? 'bg-[#007F00] hover:bg-[#006600]' : 'bg-red-600 hover:bg-red-700'} text-white py-4 rounded-2xl font-bold text-lg transition-all`}
@@ -884,7 +937,7 @@ const UserDashboard = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="p-6">
+                            <div className="p-0 md:p-10 max-h-[90vh] overflow-y-auto">
                                 <EmailVerification
                                     email={user?.email || ''}
                                     assessmentId={verifyingQuote.assessmentId}
@@ -973,12 +1026,12 @@ const UserDashboard = () => {
 
                             <div className="flex justify-between items-center">
                                 <span className="text-gray-500 font-medium text-sm">VAT Registered</span>
-                                <span className="text-gray-900 font-black text-sm">{selectedDetailsQuote.contractor?.company_name ? 'Yes' : 'No'}</span>
+                                <span className="text-gray-900 font-black text-sm">{selectedDetailsQuote.contractor?.vat_registered ? 'Yes' : 'No'}</span>
                             </div>
 
                             <div className="flex justify-between items-center">
                                 <span className="text-gray-500 font-medium text-sm">Professional Insurance</span>
-                                <span className="text-gray-900 font-black text-sm">Yes</span>
+                                <span className="text-gray-900 font-black text-sm">{selectedDetailsQuote.contractor?.insurance_holder ? 'Yes' : 'No'}</span>
                             </div>
                         </div>
 
