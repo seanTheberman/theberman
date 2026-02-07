@@ -420,6 +420,16 @@ const ContractorDashboard = () => {
     const handleUpdateStatus = async (jobId: string, newStatus: string, extraData: any = {}) => {
         try {
             setIsSubmitting(true);
+
+            // Fetch current job to check if it was already scheduled (for rescheduling notification)
+            const { data: currentJob } = await supabase
+                .from('assessments')
+                .select('status, scheduled_date')
+                .eq('id', jobId)
+                .single();
+
+            const isRescheduled = newStatus === 'scheduled' && currentJob?.status === 'scheduled' && currentJob?.scheduled_date !== extraData.scheduled_date;
+
             const { error } = await supabase
                 .from('assessments')
                 .update({
@@ -430,6 +440,21 @@ const ContractorDashboard = () => {
                 .select();
 
             if (error) throw error;
+
+            // Trigger notification
+            if (newStatus === 'scheduled' || newStatus === 'completed') {
+                supabase.functions.invoke('send-job-status-notification', {
+                    body: {
+                        assessmentId: jobId,
+                        status: isRescheduled ? 'rescheduled' : newStatus,
+                        details: {
+                            inspectionDate: extraData.scheduled_date,
+                            certificateUrl: extraData.certificate_url,
+                            contractorName: profile?.full_name
+                        }
+                    }
+                }).catch(err => console.error('Failed to trigger status notification:', err));
+            }
 
             toast.success(`Job marked as ${newStatus.replace('_', ' ')}`);
             setSchedulingJob(null);
@@ -808,11 +833,14 @@ const ContractorDashboard = () => {
                                                             </td>
                                                             <td className="py-3 px-3 text-gray-600">{quote.assessment?.preferred_date || 'Flexible'}</td>
                                                             <td className="py-3 px-3 text-gray-900 font-bold">€ {quote.lowestPrice?.toLocaleString() || '-'}</td>
-                                                            <td className={`py-3 px-3 font-bold ${isCompetitive ? 'text-green-700' : 'text-red-600'}`}>€{quote.price.toLocaleString()}</td>
+                                                            <td className={`py-3 px-3 font-bold ${isCompetitive ? 'text-green-700' : 'text-red-600'}`}>
+                                                                €{quote.price.toLocaleString()}
+                                                            </td>
                                                             <td className="py-3 px-3">
                                                                 <button
                                                                     onClick={() => handleReQuote(quote)}
-                                                                    className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-bold transition-all"
+                                                                    disabled={quote.status === 'accepted'}
+                                                                    className="px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded text-xs font-bold transition-all"
                                                                 >
                                                                     Re-Quote
                                                                 </button>
@@ -849,7 +877,8 @@ const ContractorDashboard = () => {
                                                     </div>
                                                     <button
                                                         onClick={() => handleReQuote(quote)}
-                                                        className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all"
+                                                        disabled={quote.status === 'accepted'}
+                                                        className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 disabled:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                                     >
                                                         Re-Quote
                                                     </button>
@@ -1268,7 +1297,7 @@ const ContractorDashboard = () => {
                         ) : null}
                     </div>
                 </div>
-            </main>
+            </main >
 
             {/* Job Details Modal - STEP 1 */}
             {
@@ -1706,7 +1735,7 @@ const ContractorDashboard = () => {
             }
 
 
-        </div>
+        </div >
     );
 };
 

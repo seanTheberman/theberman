@@ -743,7 +743,12 @@ const Admin = () => {
 
             if (updateError) throw updateError;
 
-            // 3. Log Audit
+            // 3. Notify homeowner about the new quote
+            supabase.functions.invoke('send-quote-notification', {
+                body: { assessmentId: selectedAssessment.id }
+            }).catch(err => console.error('Failed to trigger homeowner notification:', err));
+
+            // 4. Log Audit
             await logAudit('generate_quote', 'assessment', selectedAssessment.id, {
                 quote_id: quote.id,
                 price: quoteData.price
@@ -767,6 +772,9 @@ const Admin = () => {
 
         setIsUpdating(true);
         try {
+            // Check if rescheduling
+            const isRescheduled = selectedAssessment.status === 'scheduled' && selectedAssessment.scheduled_date !== selectedDate;
+
             const { error } = await supabase
                 .from('assessments')
                 .update({
@@ -776,6 +784,18 @@ const Admin = () => {
                 .eq('id', selectedAssessment.id);
 
             if (error) throw error;
+
+            // Trigger notification
+            supabase.functions.invoke('send-job-status-notification', {
+                body: {
+                    assessmentId: selectedAssessment.id,
+                    status: isRescheduled ? 'rescheduled' : 'scheduled',
+                    details: {
+                        inspectionDate: selectedDate,
+                        contractorName: 'The Berman Team' // Admin action
+                    }
+                }
+            }).catch(err => console.error('Failed to trigger status notification:', err));
 
             await logAudit('schedule_assessment', 'assessment', selectedAssessment.id, { scheduled_date: selectedDate });
 
@@ -805,6 +825,18 @@ const Admin = () => {
                 .eq('id', selectedAssessment.id);
 
             if (error) throw error;
+
+            // Trigger notification
+            supabase.functions.invoke('send-job-status-notification', {
+                body: {
+                    assessmentId: selectedAssessment.id,
+                    status: 'completed',
+                    details: {
+                        certificateUrl: certUrl,
+                        contractorName: 'The Berman Team'
+                    }
+                }
+            }).catch(err => console.error('Failed to trigger status notification:', err));
 
             await logAudit('complete_assessment', 'assessment', selectedAssessment.id, { certificate_url: certUrl });
 

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { LogOut, FileText, User, Calendar, Home, AlertCircle, X, Mail, Menu } from 'lucide-react';
+import { LogOut, FileText, User, Calendar, Home, AlertCircle, X, Mail, Menu, Trash2 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import QuoteModal from '../components/QuoteModal';
@@ -66,6 +66,7 @@ const UserDashboard = () => {
     const [verifyEircode, setVerifyEircode] = useState('');
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
     const [paymentQuote, setPaymentQuote] = useState<{ assessmentId: string, quoteId: string, amount: number } | null>(null);
+    const [deletingAssessmentId, setDeletingAssessmentId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchAssessments();
@@ -142,6 +143,29 @@ const UserDashboard = () => {
             fetchAssessments();
         } catch (error: any) {
             toast.error(error.message || 'Failed to submit');
+        }
+    };
+
+    const handleDeleteAssessment = async (id: string) => {
+        try {
+            const assessment = assessments.find(a => a.id === id);
+            if (assessment?.status === 'completed') {
+                toast.error('Cannot delete a completed assessment');
+                return;
+            }
+
+            const { error } = await supabase
+                .from('assessments')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            toast.success('Assessment deleted successfully');
+            fetchAssessments();
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to delete assessment');
+        } finally {
+            setDeletingAssessmentId(null);
         }
     };
 
@@ -454,29 +478,43 @@ const UserDashboard = () => {
                                                         {assessment.preferred_date || 'Flexible'}
                                                     </td>
                                                     <td className="py-4 px-6 text-right whitespace-nowrap">
-                                                        {assessment.status === 'draft' ? (
-                                                            <div className="flex justify-end gap-2">
+                                                        <div className="flex justify-end items-center gap-3">
+                                                            {assessment.status === 'draft' ? (
+                                                                <>
+                                                                    <button
+                                                                        onClick={() => setSelectedAssessment(assessment)}
+                                                                        className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-all"
+                                                                    >
+                                                                        Edit
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleSubmitAssessment(assessment.id)}
+                                                                        className="px-3 py-1.5 bg-[#007F00] text-white rounded-lg text-xs font-bold hover:bg-[#006600] transition-all"
+                                                                    >
+                                                                        Submit
+                                                                    </button>
+                                                                </>
+                                                            ) : (
                                                                 <button
                                                                     onClick={() => setSelectedAssessment(assessment)}
-                                                                    className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-all"
+                                                                    className="px-4 py-2 border border-green-100 text-[#007F00] bg-green-50/50 rounded-xl text-xs font-black hover:bg-[#007F00] hover:text-white transition-all"
                                                                 >
-                                                                    Edit
+                                                                    {assessment.status === 'completed' ? 'View Results' : 'View Details'}
                                                                 </button>
+                                                            )}
+                                                            {assessment.status !== 'completed' && (
                                                                 <button
-                                                                    onClick={() => handleSubmitAssessment(assessment.id)}
-                                                                    className="px-3 py-1.5 bg-[#007F00] text-white rounded-lg text-xs font-bold hover:bg-[#006600] transition-all"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setDeletingAssessmentId(assessment.id);
+                                                                    }}
+                                                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                                    title="Delete Assessment"
                                                                 >
-                                                                    Submit
+                                                                    <Trash2 size={16} />
                                                                 </button>
-                                                            </div>
-                                                        ) : (
-                                                            <button
-                                                                onClick={() => setSelectedAssessment(assessment)}
-                                                                className="px-4 py-2 border border-green-100 text-[#007F00] bg-green-50/50 rounded-xl text-xs font-black hover:bg-[#007F00] hover:text-white transition-all"
-                                                            >
-                                                                {assessment.status === 'completed' ? 'View Results' : 'View Details'}
-                                                            </button>
-                                                        )}
+                                                            )}
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -514,7 +552,7 @@ const UserDashboard = () => {
                                             </div>
 
                                             {assessment.status === 'draft' ? (
-                                                <div className="grid grid-cols-2 gap-3">
+                                                <div className="grid grid-cols-2 gap-3 mb-3">
                                                     <button
                                                         onClick={() => setSelectedAssessment(assessment)}
                                                         className="w-full py-3 border border-gray-100 text-gray-600 rounded-xl font-black text-xs hover:bg-gray-50 transition-all"
@@ -531,9 +569,19 @@ const UserDashboard = () => {
                                             ) : (
                                                 <button
                                                     onClick={() => setSelectedAssessment(assessment)}
-                                                    className="w-full py-3 bg-[#007F00] text-white rounded-xl font-black text-xs hover:bg-[#006600] transition-all shadow-md shadow-green-100"
+                                                    className="w-full py-3 bg-[#007F00] text-white rounded-xl font-black text-xs hover:bg-[#006600] transition-all shadow-md shadow-green-100 mb-3"
                                                 >
                                                     {assessment.status === 'completed' ? 'View Certificate' : 'View Details'}
+                                                </button>
+                                            )}
+
+                                            {assessment.status !== 'completed' && (
+                                                <button
+                                                    onClick={() => setDeletingAssessmentId(assessment.id)}
+                                                    className="w-full py-3 border border-red-50 text-red-400 rounded-xl font-black text-xs hover:bg-red-50 hover:text-red-500 transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    <Trash2 size={14} />
+                                                    Delete Assessment
                                                 </button>
                                             )}
                                         </div>
@@ -1055,6 +1103,36 @@ const UserDashboard = () => {
                             >
                                 Accept €{selectedDetailsQuote.price} Quote
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Assessment Confirmation Modal */}
+            {deletingAssessmentId && (
+                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-10 text-center">
+                            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500">
+                                <Trash2 size={40} />
+                            </div>
+                            <h3 className="text-2xl font-black text-gray-900 mb-2">Delete Job?</h3>
+                            <p className="text-gray-500 font-medium mb-8 text-sm">Are you sure you want to delete this assessment? This action cannot be undone and will remove all associated quotes.</p>
+
+                            <div className="space-y-4">
+                                <button
+                                    onClick={() => handleDeleteAssessment(deletingAssessmentId)}
+                                    className="w-full bg-red-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-red-700 transition-all shadow-lg shadow-red-100"
+                                >
+                                    Yes, Delete Job
+                                </button>
+                                <button
+                                    onClick={() => setDeletingAssessmentId(null)}
+                                    className="w-full bg-gray-100 text-gray-600 py-4 rounded-2xl font-bold text-lg hover:bg-gray-200 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
