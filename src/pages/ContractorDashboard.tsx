@@ -170,7 +170,8 @@ const ContractorDashboard = () => {
                         preferred_date,
                         preferred_time,
                         created_at,
-                        property_address
+                        property_address,
+                        eircode
                     )
                 `)
                 .eq('created_by', user?.id)

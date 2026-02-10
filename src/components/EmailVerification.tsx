@@ -114,15 +114,26 @@ const EmailVerification = ({ email, assessmentId, onVerified, onBack }: EmailVer
 
             if (error) {
                 console.error('Verify OTP error:', error);
-                // Try to get error message from response if possible
                 let errorMessage = 'Failed to verify code. Please try again.';
+
                 try {
-                    const errorDetails = await error.context?.json();
-                    if (errorDetails?.error) errorMessage = errorDetails.error;
+                    // FunctionsHttpError has a context with a response body
+                    if (error.context && typeof error.context.json === 'function') {
+                        const errorDetails = await error.context.json();
+                        if (errorDetails?.error) errorMessage = errorDetails.error;
+                        else if (errorDetails?.message) errorMessage = errorDetails.message;
+                    } else if (error.message) {
+                        errorMessage = error.message;
+                    }
                 } catch (e) {
-                    // Fallback to generic message
+                    console.error('Error parsing verify-otp error body:', e);
                 }
-                toast.error(errorMessage);
+
+                if (errorMessage === 'Incorrect password') {
+                    errorMessage = 'Incorrect OTP';
+                }
+
+                toast.error(errorMessage, { duration: 4000 });
                 return;
             }
 
@@ -130,7 +141,8 @@ const EmailVerification = ({ email, assessmentId, onVerified, onBack }: EmailVer
                 toast.success('Email verified successfully!');
                 onVerified();
             } else {
-                toast.error(data?.error || 'Invalid verification code. Please try again.');
+                const errorMsg = data?.error || 'Invalid verification code. Please try again.';
+                toast.error(errorMsg, { duration: 4000 });
                 setCode(['', '', '', '', '', '']);
                 inputRefs.current[0]?.focus();
             }

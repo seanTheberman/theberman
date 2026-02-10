@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2 } from 'lucide-react';
+import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2, Users } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -58,6 +58,11 @@ interface Assessment {
         full_name: string;
         email: string;
     };
+    referred_by_listing_id?: string | null;
+    referred_by?: {
+        name: string;
+        company_name: string;
+    } | null;
 }
 
 interface Sponsor {
@@ -93,9 +98,24 @@ interface AppSettings {
     support_email: string;
 }
 
+interface CatalogueEnquiry {
+    id: string;
+    created_at: string;
+    name: string;
+    email: string;
+    phone: string;
+    message: string;
+    listing_id: string;
+    catalogue_listings?: {
+        name: string;
+        company_name: string;
+    };
+}
+
 interface CatalogueListing {
     id: string;
     name: string;
+    slug: string;
     company_name: string;
     email: string;
     phone: string;
@@ -115,6 +135,10 @@ interface CatalogueListing {
         linkedin?: string;
         twitter?: string;
     };
+    locations?: { location_id: string }[];
+    categories?: { category_id: string }[];
+    latitude?: number;
+    longitude?: number;
 }
 
 interface CatalogueCategory {
@@ -124,6 +148,82 @@ interface CatalogueCategory {
     description: string;
 }
 
+interface CatalogueLocation {
+    id: string;
+    name: string;
+    slug: string;
+}
+
+const generateSlug = (text: string) => {
+    return text
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-')     // Replace spaces with -
+        .replace(/[^\w\-]+/g, '') // Remove all non-word chars
+        .replace(/\-\-+/g, '-');  // Replace multiple - with single -
+};
+
+const geocodeAddress = async (address: string): Promise<{ lat: number, lon: number } | null> => {
+    // Helper to fetch
+    const fetchCoords = async (query: string) => {
+        try {
+            console.log(`Geocoding attempt: ${query}`);
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+            const data = await response.json();
+            if (data && data.length > 0) {
+                console.log(`Geocoding success for ${query}:`, data[0]);
+                return {
+                    lat: parseFloat(data[0].lat),
+                    lon: parseFloat(data[0].lon)
+                };
+            }
+        } catch (error) {
+            console.error('Geocoding error:', error);
+        }
+        return null;
+    };
+
+    // 1. Try full address
+    let coords = await fetchCoords(address);
+    if (coords) return coords;
+
+    // 2. Try separating by newlines if present
+    // User might paste:
+    // Street
+    // City
+    // County
+    // Eircode
+    // Let's try to extract Eircode first as it is most accurate
+    const eircodeRegex = /([AC-FHKNPRTV-Y]\d{2}|D6W)[0-9AC-FHKNPRTV-Y]{4}/i;
+    const eircodeMatch = address.match(eircodeRegex);
+    if (eircodeMatch) {
+        // Try simply searching the Eircode
+        coords = await fetchCoords(eircodeMatch[0] + ', Ireland');
+        if (coords) return coords;
+    }
+
+    // 3. Try cleaning up structure: Split by newlines or commas, take first 2 parts + last part?
+    // Or just try "City, County" if we can detect them.
+    // Let's try a fallback of just the first line + "Ireland" if it's a multi-line string
+    const lines = address.split(/[\n,]/).map(s => s.trim()).filter(s => s);
+    if (lines.length > 1) {
+        // Try first part (Street/House) + last part (Country/County?)
+        // Often user puts "Co. Dublin" or "Dublin" near end.
+        const cityOrCounty = lines.find(l => l.toLowerCase().includes('dublin') || l.toLowerCase().includes('cork') || l.toLowerCase().includes('galway') || l.toLowerCase().includes('limerick'));
+        if (cityOrCounty) {
+            coords = await fetchCoords(`${lines[0]}, ${cityOrCounty}, Ireland`);
+            if (coords) return coords;
+        }
+
+        // Try just first line + Ireland
+        coords = await fetchCoords(`${lines[0]}, Ireland`);
+        if (coords) return coords;
+    }
+
+    return null;
+};
+
 const Admin = () => {
     const [leads, setLeads] = useState<Lead[]>([]);
     const [assessments, setAssessments] = useState<Assessment[]>([]);
@@ -131,7 +231,8 @@ const Admin = () => {
     const [payments, setPayments] = useState<Payment[]>([]);
     const [sponsors, setSponsors] = useState<Sponsor[]>([]);
     const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
-    const [view, setView] = useState<'stats' | 'leads' | 'assessments' | 'users' | 'payments' | 'settings' | 'catalogue'>('stats');
+    const [catalogue_enquiries, setCatalogueEnquiries] = useState<CatalogueEnquiry[]>([]);
+    const [view, setView] = useState<'stats' | 'leads' | 'assessments' | 'users' | 'payments' | 'settings' | 'catalogue' | 'referrals' | 'enquiries'>('stats');
     const [loading, setLoading] = useState(true);
     const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
     const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
@@ -174,12 +275,50 @@ const Admin = () => {
     const [catalogueTab, setCatalogueTab] = useState<'listings' | 'categories'>('listings');
     const [catalogueListings, setCatalogueListings] = useState<CatalogueListing[]>([]);
     const [catalogueCategories, setCatalogueCategories] = useState<CatalogueCategory[]>([]);
+    const [catalogueLocations, setCatalogueLocations] = useState<CatalogueLocation[]>([]); // New State
     const [showListingModal, setShowListingModal] = useState(false);
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [editingListing, setEditingListing] = useState<CatalogueListing | null>(null);
     const [editingCategory, setEditingCategory] = useState<CatalogueCategory | null>(null);
     const [isSavingCatalogue, setIsSavingCatalogue] = useState(false);
     const [listingImages, setListingImages] = useState<string[]>(['', '', '']); // State for multiple images
+    const [selectedLocationId, setSelectedLocationId] = useState<string>(''); // New State for form
+    const [selectedCategoryId, setSelectedCategoryId] = useState<string>(''); // New State for Category
+
+    // Address breakdown state
+    const [addressFields, setAddressFields] = useState({
+        street: '',
+        town: '',
+        county: '',
+        eircode: ''
+    });
+
+    const fetchCatalogueEnquiries = async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('catalogue_enquiries')
+                .select(`
+                    *,
+                    catalogue_listings (
+                        name,
+                        company_name
+                    )
+                `)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setCatalogueEnquiries(data || []);
+        } catch (error) {
+            console.error('Error fetching catalogue enquiries:', error);
+            toast.error('Failed to load partner enquiries');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const [selectedEnquiry, setSelectedEnquiry] = useState<CatalogueEnquiry | null>(null);
+    const [showEnquiryModal, setShowEnquiryModal] = useState(false);
 
     const { signOut, user } = useAuth();
     const navigate = useNavigate();
@@ -226,7 +365,8 @@ const Admin = () => {
                 .from('assessments')
                 .select(`
                     *,
-                    profiles:user_id (full_name, email)
+                    profiles:user_id (full_name, email),
+                    referred_by:referred_by_listing_id (name, company_name)
                 `)
                 .order('created_at', { ascending: false });
 
@@ -275,6 +415,20 @@ const Admin = () => {
         }
     };
 
+    const fetchCatalogueLocations = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('catalogue_locations')
+                .select('*')
+                .order('name');
+            if (error) throw error;
+            setCatalogueLocations(data || []);
+        } catch (error) {
+            console.error('Error fetching locations:', error);
+            toast.error('Failed to load locations');
+        }
+    };
+
     // Catalogue Fetch Functions
     const fetchCatalogueListings = async () => {
         try {
@@ -282,7 +436,9 @@ const Admin = () => {
                 .from('catalogue_listings')
                 .select(`
                     *,
-                    images:catalogue_listing_images(id, url, display_order)
+                    images:catalogue_listing_images(id, url, display_order),
+                    locations:catalogue_listing_locations(location_id),
+                    categories:catalogue_listing_categories(category_id)
                 `)
                 .order('created_at', { ascending: false });
             if (error) throw error;
@@ -310,6 +466,37 @@ const Admin = () => {
     const handleSaveListing = async (listingData: Partial<CatalogueListing>) => {
         setIsSavingCatalogue(true);
         try {
+            // Generate slug if missing
+            if (!listingData.slug && listingData.name) {
+                listingData.slug = generateSlug(listingData.name);
+            }
+
+            // Geocode using structured data hierarchy
+            let coords = null;
+
+            // 1. Try Eircode first (Most Accurate)
+            if (addressFields.eircode) {
+                coords = await geocodeAddress(`${addressFields.eircode}, Ireland`);
+            }
+
+            // 2. Try Street + Town + County if no Eircode match
+            if (!coords && addressFields.street && (addressFields.town || addressFields.county)) {
+                const query = `${addressFields.street}, ${addressFields.town} ${addressFields.county}, Ireland`;
+                coords = await geocodeAddress(query);
+            }
+
+            // 3. Last attempt: Just the concatenated address string
+            if (!coords && listingData.address) {
+                coords = await geocodeAddress(listingData.address);
+            }
+
+            if (coords) {
+                listingData.latitude = coords.lat;
+                listingData.longitude = coords.lon;
+            } else {
+                console.warn("Could not geocode address:", listingData.address);
+            }
+
             let listingId = editingListing?.id;
 
             if (editingListing) {
@@ -350,9 +537,45 @@ const Admin = () => {
                 }
             }
 
+            // Handle Location Link
+            if (listingId && selectedLocationId) {
+                // Delete existing location links (assuming 1-to-1 for now, or just clearing to reset)
+                await supabase.from('catalogue_listing_locations').delete().eq('listing_id', listingId);
+
+                // Insert new location link
+                const { error: locError } = await supabase.from('catalogue_listing_locations').insert({
+                    listing_id: listingId,
+                    location_id: selectedLocationId
+                });
+
+                if (locError) {
+                    console.error('Error linking location:', locError);
+                    toast.error('Listing saved, but failed to link location');
+                }
+            }
+
+            // Handle Category Link
+            if (listingId && selectedCategoryId) {
+                // Delete existing category links
+                await supabase.from('catalogue_listing_categories').delete().eq('listing_id', listingId);
+
+                // Insert new category link
+                const { error: catError } = await supabase.from('catalogue_listing_categories').insert({
+                    listing_id: listingId,
+                    category_id: selectedCategoryId
+                });
+
+                if (catError) {
+                    console.error('Error linking category:', catError);
+                    toast.error('Listing saved, but failed to link category');
+                }
+            }
+
             setShowListingModal(false);
             setEditingListing(null);
             setListingImages(['', '', '']);
+            setSelectedLocationId('');
+            setSelectedCategoryId('');
             fetchCatalogueListings();
         } catch (error) {
             console.error('Error saving listing:', error);
@@ -636,17 +859,28 @@ const Admin = () => {
                 else if (view === 'assessments') await fetchAssessments();
                 else if (view === 'users') await fetchUsers();
                 else if (view === 'payments') await fetchPayments();
+                else if (view === 'enquiries') await fetchCatalogueEnquiries();
                 else if (view === 'settings') {
                     await fetchAppSettings();
                     await fetchPromoSettings();
                     await fetchSponsors();
                 }
-                else if (view === 'stats') {
-                    // Fetch everything for stats
-                    await Promise.all([fetchLeads(), fetchAssessments(), fetchUsers(), fetchPayments()]);
+                else if (view === 'stats' || view === 'referrals') {
+                    // Fetch assessments and listings for referrals or stats
+                    await Promise.all([
+                        fetchLeads(),
+                        fetchAssessments(),
+                        fetchUsers(),
+                        fetchPayments(),
+                        fetchCatalogueListings()
+                    ]);
                 }
                 else if (view === 'catalogue') {
-                    await Promise.all([fetchCatalogueListings(), fetchCatalogueCategories()]);
+                    await Promise.all([
+                        fetchCatalogueListings(),
+                        fetchCatalogueCategories(),
+                        fetchCatalogueLocations() // Fetch locations
+                    ]);
                 }
             } finally {
                 setIsUpdating(false);
@@ -895,7 +1129,7 @@ const Admin = () => {
         try {
             const { data: profile, error: profileError } = await supabase
                 .from('profiles')
-                .select('id, full_name')
+                .select('id, full_name, email')
                 .eq('email', selectedLead.email)
                 .maybeSingle();
 
@@ -914,12 +1148,27 @@ const Admin = () => {
                     town: selectedLead.town,
                     county: selectedLead.county,
                     property_type: selectedLead.property_type,
-                    status: 'submitted'
+                    status: 'live' // Make it live immediately
                 })
                 .select()
                 .single();
 
             if (assessmentError) throw assessmentError;
+
+            // Trigger notification for converted lead
+            try {
+                await supabase.functions.invoke('send-job-live-email', {
+                    body: {
+                        email: profile.email,
+                        customerName: profile.full_name,
+                        county: selectedLead.county,
+                        town: selectedLead.town,
+                        assessmentId: assessment.id
+                    }
+                });
+            } catch (emailErr) {
+                console.error('Failed to trigger live email for converted lead:', emailErr);
+            }
 
             const { error: leadUpdateError } = await supabase
                 .from('leads')
@@ -928,7 +1177,7 @@ const Admin = () => {
 
             if (leadUpdateError) throw leadUpdateError;
 
-            toast.success('Lead converted successfully!');
+            toast.success('Lead converted and assessors notified!');
             fetchLeads();
             fetchAssessments();
             logAudit('convert_lead', 'lead', selectedLead.id, { assessmentId: assessment.id });
@@ -1015,13 +1264,13 @@ const Admin = () => {
                             {isMenuOpen && (
                                 <div className="absolute right-0 top-full mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
                                     <div className="p-2 space-y-1">
-                                        {(['stats', 'leads', 'assessments', 'users', 'payments', 'catalogue', 'settings'] as const).map((v) => (
+                                        {(['stats', 'leads', 'enquiries', 'assessments', 'users', 'payments', 'catalogue', 'referrals', 'settings'] as const).map((v) => (
                                             <button
                                                 key={v}
                                                 onClick={() => { setView(v); setIsMenuOpen(false); }}
                                                 className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] transition-all duration-200 ${view === v ? 'bg-[#5CB85C]/10 text-[#5CB85C]' : 'text-gray-600 hover:bg-gray-50'}`}
                                             >
-                                                {v === 'stats' ? 'Overview' : v}
+                                                {v === 'stats' ? 'Overview' : v === 'enquiries' ? 'Partner Enquiries' : v}
                                                 {view === v && <div className="w-1.5 h-1.5 rounded-full bg-[#5CB85C]"></div>}
                                             </button>
                                         ))}
@@ -1059,7 +1308,8 @@ const Admin = () => {
                                         view === 'assessments' ? 'BER Assessments' :
                                             view === 'users' ? 'User Management' :
                                                 view === 'payments' ? 'Financials' :
-                                                    view === 'settings' ? 'System Settings' : 'Admin'}
+                                                    view === 'settings' ? 'System Settings' :
+                                                        view === 'referrals' ? 'Referral Performance' : 'Admin'}
                             </h2>
                             <p className="text-gray-500 text-sm mt-1">
                                 {view === 'stats' ? 'Key metrics and business performance.' :
@@ -1067,7 +1317,8 @@ const Admin = () => {
                                         view === 'assessments' ? 'Manage homeowner assessment requests.' :
                                             view === 'users' ? 'Manage homeowners and BER Assessors.' :
                                                 view === 'payments' ? 'View and export payment records.' :
-                                                    view === 'settings' ? 'Configure global platform settings.' : ''}
+                                                    view === 'settings' ? 'Configure global platform settings.' :
+                                                        view === 'referrals' ? 'Track conversions from partner referral links.' : ''}
                             </p>
                         </div>
                     </div>
@@ -1507,6 +1758,76 @@ const Admin = () => {
                             </div>
                         )}
                     </div>
+                ) : view === 'enquiries' ? (
+                    /* PARTNER ENQUIRIES VIEW */
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900">Partner Enquiries</h3>
+                                <p className="text-sm text-gray-500">Messages sent via "Message Directly" forms.</p>
+                            </div>
+                            <button
+                                onClick={fetchCatalogueEnquiries}
+                                className="p-2 text-gray-400 hover:text-[#007EA7] transition-colors"
+                                title="Refresh enquiries"
+                            >
+                                <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+                            </button>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm text-gray-600">
+                                <thead className="bg-gray-50/50 text-gray-900 font-bold uppercase tracking-wider text-xs border-b border-gray-100">
+                                    <tr>
+                                        <th className="px-6 py-4">Date</th>
+                                        <th className="px-6 py-4">Client</th>
+                                        <th className="px-6 py-4">Partner</th>
+                                        <th className="px-6 py-4">Message Preview</th>
+                                        <th className="px-6 py-4 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-50">
+                                    {catalogue_enquiries.map((enquiry) => (
+                                        <tr key={enquiry.id} className="hover:bg-green-50/30 transition-colors group">
+                                            <td className="px-6 py-4 text-gray-500 font-medium">
+                                                {new Date(enquiry.created_at).toLocaleDateString()}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="font-bold text-gray-900">{enquiry.name}</div>
+                                                <div className="text-xs text-gray-400">{enquiry.email}</div>
+                                                <div className="text-[10px] text-gray-400">{enquiry.phone}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="font-medium text-gray-700">{enquiry.catalogue_listings?.name || 'Unknown Partner'}</div>
+                                                <div className="text-[10px] text-gray-400">{enquiry.catalogue_listings?.company_name}</div>
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-500 italic max-w-xs truncate">
+                                                "{enquiry.message || 'No message'}"
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedEnquiry(enquiry);
+                                                        setShowEnquiryModal(true);
+                                                    }}
+                                                    className="bg-white border border-gray-200 text-gray-600 hover:text-[#007EA7] hover:border-[#007EA7] px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1 ml-auto"
+                                                >
+                                                    <Eye size={14} />
+                                                    Read Message
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {catalogue_enquiries.length === 0 && (
+                                        <tr>
+                                            <td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">
+                                                No partner enquiries found.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 ) : view === 'settings' ? (
                     /* SETTINGS VIEW */
                     <div className="space-y-6">
@@ -1662,7 +1983,13 @@ const Admin = () => {
                                 <div className="flex justify-between items-center mb-4">
                                     <h4 className="font-bold text-gray-800">Listings ({catalogueListings.length})</h4>
                                     <button
-                                        onClick={() => { setEditingListing(null); setShowListingModal(true); }}
+                                        onClick={() => {
+                                            setEditingListing(null);
+                                            setSelectedLocationId(''); // Reset location
+                                            setAddressFields({ street: '', town: '', county: '', eircode: '' }); // Reset address
+                                            setListingImages(['', '', '']);
+                                            setShowListingModal(true);
+                                        }}
                                         className="bg-[#007F00] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#006600] transition-colors"
                                     >
                                         + Add Listing
@@ -1672,7 +1999,7 @@ const Admin = () => {
                                     <table className="w-full text-sm">
                                         <thead className="bg-gray-50">
                                             <tr>
-                                                <th className="px-4 py-3 text-left font-bold text-gray-600">Name</th>
+                                                <th className="px-4 py-3 text-left font-bold text-gray-600">Name / Slug</th>
                                                 <th className="px-4 py-3 text-left font-bold text-gray-600">Company</th>
                                                 <th className="px-4 py-3 text-left font-bold text-gray-600">Email</th>
                                                 <th className="px-4 py-3 text-left font-bold text-gray-600">Status</th>
@@ -1682,7 +2009,12 @@ const Admin = () => {
                                         <tbody className="divide-y divide-gray-100">
                                             {catalogueListings.map((listing) => (
                                                 <tr key={listing.id} className="hover:bg-gray-50">
-                                                    <td className="px-4 py-3 font-medium text-gray-900">{listing.name}</td>
+                                                    <td className="px-4 py-3">
+                                                        <div className="font-bold text-gray-900">{listing.name}</div>
+                                                        <div className="text-[10px] font-mono text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded inline-block mt-1">
+                                                            {listing.slug}
+                                                        </div>
+                                                    </td>
                                                     <td className="px-4 py-3 text-gray-600">{listing.company_name}</td>
                                                     <td className="px-4 py-3 text-gray-600">{listing.email}</td>
                                                     <td className="px-4 py-3">
@@ -1700,6 +2032,49 @@ const Admin = () => {
                                                                     // Pad to 3
                                                                     while (urls.length < 3) urls.push('');
                                                                     setListingImages(urls.slice(0, 3));
+
+                                                                    // Load Location
+                                                                    const locId = listing.locations?.[0]?.location_id || '';
+                                                                    setSelectedLocationId(locId);
+
+                                                                    // Load Category
+                                                                    const catId = listing.categories?.[0]?.category_id || '';
+                                                                    setSelectedCategoryId(catId);
+
+                                                                    // Parse Address
+                                                                    const parts = (listing.address || '').split(',').map(s => s.trim()).filter(Boolean);
+                                                                    let street = listing.address || '';
+                                                                    let town = '';
+                                                                    let county = '';
+                                                                    let eircode = '';
+
+                                                                    // Simple heuristic for existing structured data
+                                                                    if (parts.length >= 3) {
+                                                                        // Check for Eircode
+                                                                        const eircodeIndex = parts.findIndex(p => /([AC-FHKNPRTV-Y]\d{2}|D6W)[0-9AC-FHKNPRTV-Y]{4}/i.test(p));
+                                                                        if (eircodeIndex !== -1) {
+                                                                            eircode = parts[eircodeIndex];
+                                                                        }
+
+                                                                        // Map fields
+                                                                        street = parts[0];
+                                                                        if (parts.length > 1) town = parts[1];
+                                                                        if (parts.length > 2) {
+                                                                            const p = parts[2];
+                                                                            // If it's not the Eircode and not Country, assume County
+                                                                            if (p !== eircode && !['IRL', 'IRELAND'].includes(p.toUpperCase())) {
+                                                                                county = p;
+                                                                            }
+                                                                        }
+                                                                    }
+
+                                                                    setAddressFields({
+                                                                        street,
+                                                                        town,
+                                                                        county,
+                                                                        eircode
+                                                                    });
+
                                                                     setShowListingModal(true);
                                                                 }}
                                                                 className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -1778,6 +2153,149 @@ const Admin = () => {
                                 </div>
                             </div>
                         )}
+                    </div>
+                ) : view === 'referrals' ? (
+                    <div className="space-y-8">
+                        {/* Referral Overview Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total Referrals</p>
+                                <div className="flex items-end justify-between">
+                                    <h3 className="text-3xl font-bold text-gray-900">
+                                        {assessments.filter(a => a.referred_by_listing_id).length}
+                                    </h3>
+                                    <div className="bg-blue-100 p-2 rounded-lg text-blue-700">
+                                        <Users size={20} />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Referral Rate</p>
+                                <div className="flex items-end justify-between">
+                                    <h3 className="text-3xl font-bold text-gray-900">
+                                        {assessments.length > 0
+                                            ? Math.round((assessments.filter(a => a.referred_by_listing_id).length / assessments.length) * 100)
+                                            : 0}%
+                                    </h3>
+                                    <TrendingUp size={20} className="text-green-600 mb-1" />
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Active Partners</p>
+                                <div className="flex items-end justify-between">
+                                    <h3 className="text-3xl font-bold text-gray-900">
+                                        {new Set(assessments.filter(a => a.referred_by_listing_id).map(a => a.referred_by_listing_id)).size}
+                                    </h3>
+                                    <div className="bg-green-100 p-2 rounded-lg text-green-700">
+                                        <Briefcase size={20} />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Partner Breakdown Table */}
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+                                <h3 className="text-lg font-bold text-gray-900">Partner Breakdown</h3>
+                                <p className="text-sm text-gray-500">Conversions attributed to specific business partners.</p>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-sm text-gray-600">
+                                    <thead className="bg-gray-50/50 text-gray-900 font-bold uppercase tracking-wider text-xs border-b border-gray-100">
+                                        <tr>
+                                            <th className="px-6 py-4">Partner Name</th>
+                                            <th className="px-6 py-4">Conversions</th>
+                                            <th className="px-6 py-4">Last Activity</th>
+                                            <th className="px-6 py-4 text-right">Progress</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50">
+                                        {catalogueListings.map(listing => {
+                                            const conversions = assessments.filter(a => a.referred_by_listing_id === listing.id);
+                                            if (conversions.length === 0) return null;
+                                            return (
+                                                <tr key={listing.id} className="hover:bg-green-50/30 transition-colors">
+                                                    <td className="px-6 py-4 font-bold text-gray-900">
+                                                        {listing.name}
+                                                        <div className="text-xs text-gray-400 font-normal">{listing.company_name}</div>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-lg font-bold text-gray-900">{conversions.length}</span>
+                                                            <span className="text-xs text-gray-500">Jobs</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-gray-500">
+                                                        {new Date(conversions[0].created_at).toLocaleDateString()}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <div className="w-32 ml-auto bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                                                            <div
+                                                                className="bg-[#007F00] h-full"
+                                                                style={{ width: `${Math.min((conversions.length / 10) * 100, 100)}%` }}
+                                                            ></div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                        {catalogueListings.filter(l => assessments.some(a => a.referred_by_listing_id === l.id)).length === 0 && (
+                                            <tr>
+                                                <td colSpan={4} className="px-6 py-8 text-center text-gray-400 italic">
+                                                    No referrals tracked yet.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Recent Referred Assessments */}
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+                                <h3 className="text-lg font-bold text-gray-900">Recent Referrals</h3>
+                                <p className="text-sm text-gray-500">The latest assessments arriving via partner links.</p>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-sm text-gray-600">
+                                    <thead className="bg-gray-50/50 text-gray-900 font-bold uppercase tracking-wider text-xs border-b border-gray-100">
+                                        <tr>
+                                            <th className="px-6 py-4">Date</th>
+                                            <th className="px-6 py-4">Property</th>
+                                            <th className="px-6 py-4">Referred By</th>
+                                            <th className="px-6 py-4">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50">
+                                        {assessments
+                                            .filter(a => a.referred_by_listing_id)
+                                            .slice(0, 10)
+                                            .map(assessment => (
+                                                <tr key={assessment.id} className="hover:bg-gray-50">
+                                                    <td className="px-6 py-4 text-gray-500">
+                                                        {new Date(assessment.created_at).toLocaleDateString()}
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="font-bold text-gray-900">{assessment.property_address}</div>
+                                                        <div className="text-xs text-gray-400">{assessment.profiles?.full_name}</div>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded">
+                                                            {assessment.referred_by?.name || 'Partner'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${getStatusColor(assessment.status)}`}>
+                                                            {assessment.status.replace('_', ' ')}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 ) : null}
             </main>
@@ -2319,6 +2837,56 @@ const Admin = () => {
                     </div>
                 </div>
             )}
+            {/* ENQUIRY MESSAGE MODAL */}
+            {showEnquiryModal && selectedEnquiry && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-in zoom-in-95 duration-200">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-gray-900">Enquiry from {selectedEnquiry.name}</h3>
+                            <button onClick={() => setShowEnquiryModal(false)} className="text-gray-400 hover:text-gray-600">
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="text-sm font-bold text-gray-700 mb-1">Partner:</p>
+                                    <p className="text-sm text-[#007EA7] font-medium">{selectedEnquiry.catalogue_listings?.name}</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-sm font-bold text-gray-700 mb-1">Date:</p>
+                                    <p className="text-sm text-gray-500">{new Date(selectedEnquiry.created_at).toLocaleDateString()}</p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p className="text-sm font-bold text-gray-700 mb-1">Client Email:</p>
+                                    <p className="text-sm text-gray-900 truncate">{selectedEnquiry.email}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold text-gray-700 mb-1">Phone:</p>
+                                    <p className="text-sm text-gray-900">{selectedEnquiry.phone || 'N/A'}</p>
+                                </div>
+                            </div>
+                            <div>
+                                <p className="block text-sm font-bold text-gray-700 mb-1">Message:</p>
+                                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 min-h-[150px]">
+                                    <p className="text-sm text-gray-800 whitespace-pre-wrap">{selectedEnquiry.message || 'No message provided.'}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="pt-6 flex justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setShowEnquiryModal(false)}
+                                className="px-6 py-2.5 text-sm font-bold text-white bg-[#007EA7] rounded-xl hover:bg-[#006e92] transition-colors shadow-lg"
+                            >
+                                Done
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             {/* ASSESSMENT DETAILS MODAL */}
             {showAssessmentDetailModal && selectedAssessment && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
@@ -2768,15 +3336,9 @@ const Admin = () => {
 
             {/* LISTING MODAL */}
             {showListingModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-gray-900">{editingListing ? 'Edit Listing' : 'Add New Listing'}</h3>
-                            <button onClick={() => { setShowListingModal(false); setEditingListing(null); setListingImages(['', '', '']); }} className="text-gray-400 hover:text-gray-600">
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <form onSubmit={(e) => {
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+                    <form
+                        onSubmit={(e) => {
                             e.preventDefault();
                             const form = e.target as HTMLFormElement;
                             const formData = new FormData(form);
@@ -2785,7 +3347,7 @@ const Admin = () => {
                                 company_name: formData.get('company_name') as string,
                                 email: formData.get('email') as string,
                                 phone: formData.get('phone') as string,
-                                description: formData.get('description') as string,
+                                description: (formData.get('description') as string) || '',
                                 address: formData.get('address') as string,
                                 website: formData.get('website') as string,
                                 logo_url: formData.get('logo_url') as string,
@@ -2800,7 +3362,26 @@ const Admin = () => {
                                     twitter: formData.get('social_twitter') as string || undefined,
                                 }
                             });
-                        }} className="space-y-4">
+                        }}
+                        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl animate-in zoom-in-95 duration-200 max-h-[80vh] flex flex-col overflow-hidden"
+                    >
+                        {/* Header */}
+                        <div className="flex justify-between items-center px-8 py-6 border-b border-gray-100 bg-white shrink-0">
+                            <div>
+                                <h3 className="text-2xl font-black text-gray-900 tracking-tight">{editingListing ? 'Edit Listing' : 'Add New Listing'}</h3>
+                                <p className="text-sm font-bold text-gray-400 mt-1 uppercase tracking-wider">Catalogue Management</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => { setShowListingModal(false); setEditingListing(null); setListingImages(['', '', '']); }}
+                                className="p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Scrollable Content */}
+                        <div className="flex-1 overflow-y-auto p-8 space-y-6">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">Name *</label>
@@ -2818,21 +3399,44 @@ const Admin = () => {
                                     <label className="block text-sm font-bold text-gray-700 mb-1">Phone *</label>
                                     <input name="phone" defaultValue={editingListing?.phone || ''} required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                                 </div>
-                                <div className="col-span-2">
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
-                                    <textarea name="description" defaultValue={editingListing?.description || ''} rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Location Category *</label>
+                                    <select
+                                        value={selectedLocationId}
+                                        onChange={(e) => setSelectedLocationId(e.target.value)}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                                    >
+                                        <option value="">Select Location</option>
+                                        {catalogueLocations.map(loc => (
+                                            <option key={loc.id} value={loc.id}>{loc.name}</option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Address *</label>
-                                    <input name="address" defaultValue={editingListing?.address || ''} required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Upgrade Type (Category) *</label>
+                                    <select
+                                        value={selectedCategoryId}
+                                        onChange={(e) => setSelectedCategoryId(e.target.value)}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                                    >
+                                        <option value="">Select Upgrade Type</option>
+                                        {catalogueCategories.map(cat => (
+                                            <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">Website</label>
                                     <input name="website" defaultValue={editingListing?.website || ''} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                                 </div>
-                                <div className="col-span-2">
+                                <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">Logo URL</label>
                                     <input name="logo_url" defaultValue={editingListing?.logo_url || ''} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+
+                                <div className="col-span-2">
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
+                                    <textarea name="description" defaultValue={editingListing?.description || ''} rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                                 </div>
 
                                 <div className="col-span-2">
@@ -2901,61 +3505,76 @@ const Admin = () => {
                                     <span className="text-sm font-medium">Verified</span>
                                 </label>
                             </div>
-                            <div className="flex justify-end gap-3 pt-4 border-t">
-                                <button type="button" onClick={() => { setShowListingModal(false); setEditingListing(null); setListingImages(['', '', '']); }} className="px-4 py-2 text-gray-600 font-bold hover:bg-gray-50 rounded-lg">Cancel</button>
-                                <button type="submit" disabled={isSavingCatalogue} className="bg-[#007F00] text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 disabled:opacity-50">
-                                    {isSavingCatalogue ? <Loader2 size={18} className="animate-spin" /> : null}
-                                    {editingListing ? 'Update Listing' : 'Create Listing'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+                        </div>
 
-            {/* CATEGORY MODAL */}
-            {showCategoryModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-gray-900">{editingCategory ? 'Edit Category' : 'Add New Category'}</h3>
-                            <button onClick={() => { setShowCategoryModal(false); setEditingCategory(null); }} className="text-gray-400 hover:text-gray-600">
-                                <X size={24} />
+                        {/* Footer */}
+                        <div className="flex justify-end gap-3 px-8 py-5 border-t border-gray-100 bg-gray-50/50 shrink-0">
+                            <button
+                                type="button"
+                                onClick={() => { setShowListingModal(false); setEditingListing(null); setListingImages(['', '', '']); }}
+                                className="px-6 py-2.5 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={isSavingCatalogue}
+                                className="bg-[#007F00] text-white px-8 py-2.5 rounded-xl font-black uppercase tracking-wider text-xs shadow-lg shadow-green-900/10 hover:shadow-green-900/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isSavingCatalogue ? <Loader2 size={16} className="animate-spin" /> : null}
+                                {editingListing ? 'Save Changes' : 'Create Listing'}
                             </button>
                         </div>
-                        <form onSubmit={(e) => {
-                            e.preventDefault();
-                            const form = e.target as HTMLFormElement;
-                            const formData = new FormData(form);
-                            handleSaveCategory({
-                                name: formData.get('name') as string,
-                                icon: formData.get('icon') as string,
-                                description: formData.get('description') as string,
-                            });
-                        }} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Name *</label>
-                                <input name="name" defaultValue={editingCategory?.name || ''} required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Icon (lucide name)</label>
-                                <input name="icon" defaultValue={editingCategory?.icon || ''} placeholder="e.g., home, briefcase, zap" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
-                                <textarea name="description" defaultValue={editingCategory?.description || ''} rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-                            </div>
-                            <div className="flex justify-end gap-3 pt-4 border-t">
-                                <button type="button" onClick={() => { setShowCategoryModal(false); setEditingCategory(null); }} className="px-4 py-2 text-gray-600 font-bold hover:bg-gray-50 rounded-lg">Cancel</button>
-                                <button type="submit" disabled={isSavingCatalogue} className="bg-[#007F00] text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 disabled:opacity-50">
-                                    {isSavingCatalogue ? <Loader2 size={18} className="animate-spin" /> : null}
-                                    {editingCategory ? 'Update Category' : 'Create Category'}
+                    </form>
+                </div>
+            )
+            }
+
+            {/* CATEGORY MODAL */}
+            {
+                showCategoryModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-xl font-bold text-gray-900">{editingCategory ? 'Edit Category' : 'Add New Category'}</h3>
+                                <button onClick={() => { setShowCategoryModal(false); setEditingCategory(null); }} className="text-gray-400 hover:text-gray-600">
+                                    <X size={24} />
                                 </button>
                             </div>
-                        </form>
+                            <form onSubmit={(e) => {
+                                e.preventDefault();
+                                const form = e.target as HTMLFormElement;
+                                const formData = new FormData(form);
+                                handleSaveCategory({
+                                    name: formData.get('name') as string,
+                                    icon: formData.get('icon') as string,
+                                    description: formData.get('description') as string,
+                                });
+                            }} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Name *</label>
+                                    <input name="name" defaultValue={editingCategory?.name || ''} required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Icon (lucide name)</label>
+                                    <input name="icon" defaultValue={editingCategory?.icon || ''} placeholder="e.g., home, briefcase, zap" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
+                                    <textarea name="description" defaultValue={editingCategory?.description || ''} rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div className="flex justify-end gap-3 pt-4 border-t">
+                                    <button type="button" onClick={() => { setShowCategoryModal(false); setEditingCategory(null); }} className="px-4 py-2 text-gray-600 font-bold hover:bg-gray-50 rounded-lg">Cancel</button>
+                                    <button type="submit" disabled={isSavingCatalogue} className="bg-[#007F00] text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 disabled:opacity-50">
+                                        {isSavingCatalogue ? <Loader2 size={18} className="animate-spin" /> : null}
+                                        {editingCategory ? 'Update Category' : 'Create Category'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
         </div >
     );
