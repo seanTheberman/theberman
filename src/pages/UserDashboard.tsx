@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { LogOut, FileText, User, Calendar, Home, AlertCircle, X, Mail, Menu, Trash2 } from 'lucide-react';
+import { LogOut, FileText, User, Home, AlertCircle, X, Menu, Trash2 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import QuoteModal from '../components/QuoteModal';
@@ -55,7 +55,7 @@ const UserDashboard = () => {
     const navigate = useNavigate();
     const [assessments, setAssessments] = useState<Assessment[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
+
     const [selectedDetailsQuote, setSelectedDetailsQuote] = useState<Quote | null>(null); // New state for quote details modal
     const [view, setView] = useState<'assessments' | 'quotes'>('assessments');
     const [verifyingQuote, setVerifyingQuote] = useState<{ assessmentId: string, quoteId: string, targetStatus: 'accepted' | 'rejected' } | null>(null);
@@ -133,15 +133,42 @@ const UserDashboard = () => {
 
     const handleSubmitAssessment = async (id: string) => {
         try {
-            const { error } = await supabase
+            // 1. Fetch assessment details for notification
+            const { data: assessment, error: fetchError } = await supabase
                 .from('assessments')
-                .update({ status: 'submitted' })
+                .select('*, profiles(full_name, email)')
+                .eq('id', id)
+                .single();
+
+            if (fetchError) throw fetchError;
+
+            // 2. Update status to live
+            const { error: updateError } = await supabase
+                .from('assessments')
+                .update({ status: 'live' })
                 .eq('id', id);
 
-            if (error) throw error;
-            toast.success('Assessment submitted for review!');
+            if (updateError) throw updateError;
+
+            // 3. Trigger notification
+            try {
+                await supabase.functions.invoke('send-job-live-email', {
+                    body: {
+                        email: assessment.profiles?.email || assessment.contact_email,
+                        customerName: assessment.profiles?.full_name || assessment.contact_name,
+                        county: assessment.county,
+                        town: assessment.town,
+                        assessmentId: id
+                    }
+                });
+            } catch (emailErr) {
+                console.error('Failed to send job live email:', emailErr);
+            }
+
+            toast.success('Assessment is now live and assessors have been notified!');
             fetchAssessments();
         } catch (error: any) {
+            console.error('Submission error:', error);
             toast.error(error.message || 'Failed to submit');
         }
     };
@@ -480,28 +507,22 @@ const UserDashboard = () => {
                                                     <td className="py-4 px-6 text-right whitespace-nowrap">
                                                         <div className="flex justify-end items-center gap-3">
                                                             {assessment.status === 'draft' ? (
-                                                                <>
-                                                                    <button
-                                                                        onClick={() => setSelectedAssessment(assessment)}
-                                                                        className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-all"
-                                                                    >
-                                                                        Edit
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => handleSubmitAssessment(assessment.id)}
-                                                                        className="px-3 py-1.5 bg-[#007F00] text-white rounded-lg text-xs font-bold hover:bg-[#006600] transition-all"
-                                                                    >
-                                                                        Submit
-                                                                    </button>
-                                                                </>
-                                                            ) : (
                                                                 <button
-                                                                    onClick={() => setSelectedAssessment(assessment)}
+                                                                    onClick={() => handleSubmitAssessment(assessment.id)}
+                                                                    className="px-3 py-1.5 bg-[#007F00] text-white rounded-lg text-xs font-bold hover:bg-[#006600] transition-all"
+                                                                >
+                                                                    Submit
+                                                                </button>
+                                                            ) : assessment.status === 'completed' && assessment.certificate_url ? (
+                                                                <a
+                                                                    href={assessment.certificate_url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
                                                                     className="px-4 py-2 border border-green-100 text-[#007F00] bg-green-50/50 rounded-xl text-xs font-black hover:bg-[#007F00] hover:text-white transition-all"
                                                                 >
-                                                                    {assessment.status === 'completed' ? 'View Results' : 'View Details'}
-                                                                </button>
-                                                            )}
+                                                                    View Certificate
+                                                                </a>
+                                                            ) : null}
                                                             {assessment.status !== 'completed' && (
                                                                 <button
                                                                     onClick={(e) => {
@@ -552,28 +573,22 @@ const UserDashboard = () => {
                                             </div>
 
                                             {assessment.status === 'draft' ? (
-                                                <div className="grid grid-cols-2 gap-3 mb-3">
-                                                    <button
-                                                        onClick={() => setSelectedAssessment(assessment)}
-                                                        className="w-full py-3 border border-gray-100 text-gray-600 rounded-xl font-black text-xs hover:bg-gray-50 transition-all"
-                                                    >
-                                                        Edit
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleSubmitAssessment(assessment.id)}
-                                                        className="w-full py-3 bg-[#007F00] text-white rounded-xl font-black text-xs hover:bg-[#006600] transition-all"
-                                                    >
-                                                        Submit
-                                                    </button>
-                                                </div>
-                                            ) : (
                                                 <button
-                                                    onClick={() => setSelectedAssessment(assessment)}
-                                                    className="w-full py-3 bg-[#007F00] text-white rounded-xl font-black text-xs hover:bg-[#006600] transition-all shadow-md shadow-green-100 mb-3"
+                                                    onClick={() => handleSubmitAssessment(assessment.id)}
+                                                    className="w-full py-3 bg-[#007F00] text-white rounded-xl font-black text-xs hover:bg-[#006600] transition-all mb-3"
                                                 >
-                                                    {assessment.status === 'completed' ? 'View Certificate' : 'View Details'}
+                                                    Submit
                                                 </button>
-                                            )}
+                                            ) : assessment.status === 'completed' && assessment.certificate_url ? (
+                                                <a
+                                                    href={assessment.certificate_url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="w-full py-3 bg-[#007F00] text-white rounded-xl font-black text-xs hover:bg-[#006600] transition-all shadow-md shadow-green-100 mb-3 block text-center"
+                                                >
+                                                    View Certificate
+                                                </a>
+                                            ) : null}
 
                                             {assessment.status !== 'completed' && (
                                                 <button
@@ -647,24 +662,35 @@ const UserDashboard = () => {
                                                                 </td>
                                                                 <td className="py-4 px-6 text-right">
                                                                     {quote.status === 'pending' ? (
-                                                                        <div className="flex justify-end gap-3">
-                                                                            <button
-                                                                                onClick={() => setConfirmReject({ assessmentId: quote.assessment_id || quote.assessment.id, quoteId: quote.id })}
-                                                                                className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                                                                title="Reject Quote"
-                                                                            >
-                                                                                <X size={18} />
-                                                                            </button>
-                                                                            <button
-                                                                                onClick={() => {
-                                                                                    // Show details modal first
-                                                                                    setSelectedDetailsQuote(quote);
-                                                                                }}
-                                                                                className="px-6 py-2.5 bg-[#007F00] text-white rounded-lg font-black text-xs hover:bg-[#006600] transition-all shadow-sm active:scale-95 leading-tight text-center"
-                                                                            >
-                                                                                Accept<br />Quote
-                                                                            </button>
-                                                                        </div>
+                                                                        (quote.assessment.quotes && quote.assessment.quotes.some(q => q.status === 'accepted')) ? (
+                                                                            <div className="flex flex-col items-end">
+                                                                                <span className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-gray-100 text-gray-500 border border-gray-200">
+                                                                                    Quote Closed
+                                                                                </span>
+                                                                                <span className="mt-1 text-[9px] font-bold text-gray-500 italic">
+                                                                                    Job Awarded
+                                                                                </span>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <div className="flex justify-end gap-3">
+                                                                                <button
+                                                                                    onClick={() => setConfirmReject({ assessmentId: quote.assessment_id || quote.assessment.id, quoteId: quote.id })}
+                                                                                    className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                                                    title="Reject Quote"
+                                                                                >
+                                                                                    <X size={18} />
+                                                                                </button>
+                                                                                <button
+                                                                                    onClick={() => {
+                                                                                        // Show details modal first
+                                                                                        setSelectedDetailsQuote(quote);
+                                                                                    }}
+                                                                                    className="px-6 py-2.5 bg-[#007F00] text-white rounded-lg font-black text-xs hover:bg-[#006600] transition-all shadow-sm active:scale-95 leading-tight text-center"
+                                                                                >
+                                                                                    Accept<br />Quote
+                                                                                </button>
+                                                                            </div>
+                                                                        )
                                                                     ) : (
                                                                         <div className="flex flex-col items-end">
                                                                             <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${quote.status === 'accepted' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
@@ -720,26 +746,31 @@ const UserDashboard = () => {
                                                         )}
 
                                                         {quote.status === 'pending' ? (
-                                                            <div className="grid grid-cols-2 gap-3">
-                                                                <button
-                                                                    onClick={() => setConfirmReject({ assessmentId: quote.assessment_id || quote.assessment.id, quoteId: quote.id })}
-                                                                    className="w-full py-3 border border-red-100 text-red-600 rounded-xl font-black text-xs hover:bg-red-50 transition-all"
-                                                                >
-                                                                    Reject
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => {
-                                                                        setSelectedDetailsQuote(quote);
-                                                                    }}
-                                                                    className="w-full py-3 bg-[#80FF80] text-white rounded-xl font-black text-xs hover:bg-[#66E666] transition-all shadow-md shadow-green-100"
-                                                                >
-                                                                    Accept Quote
-                                                                </button>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="text-center py-2 bg-gray-50 rounded-xl text-[10px] font-bold text-gray-400">
-                                                                Processed on {new Date(quote.created_at).toLocaleDateString()}
-                                                            </div>
+                                                            quote.assessment.status === 'quote_accepted' ? (
+                                                                <div className="text-center py-2 bg-gray-50 rounded-xl text-[10px] font-bold text-gray-500 border border-gray-100">
+                                                                    Quote Closed - Job Awarded
+                                                                </div>
+                                                            ) : (
+                                                                <div className="grid grid-cols-2 gap-3">
+                                                                    <button
+                                                                        onClick={() => setConfirmReject({ assessmentId: quote.assessment_id || quote.assessment.id, quoteId: quote.id })}
+                                                                        className="w-full py-3 border border-red-100 text-red-600 rounded-xl font-black text-xs hover:bg-red-50 transition-all"
+                                                                    >
+                                                                        Reject
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setSelectedDetailsQuote(quote);
+                                                                        }}
+                                                                        className="w-full py-3 bg-[#80FF80] text-white rounded-xl font-black text-xs hover:bg-[#66E666] transition-all shadow-md shadow-green-100"
+                                                                    >
+                                                                        Accept Quote
+                                                                    </button>
+                                                                </div>
+                                                            )
+                                                        ) : (<div className="text-center py-2 bg-gray-50 rounded-xl text-[10px] font-bold text-gray-400">
+                                                            Processed on {new Date(quote.created_at).toLocaleDateString()}
+                                                        </div>
                                                         )}
                                                     </div>
                                                 ))}
@@ -752,152 +783,6 @@ const UserDashboard = () => {
                 )}
             </main>
 
-            {/* Assessment Details Modal */}
-            {selectedAssessment && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-                        <div className="bg-white border-b border-gray-100 p-6 flex justify-between items-center shrink-0">
-                            <div>
-                                <h3 className="text-xl font-bold text-gray-900">Assessment Details</h3>
-                                <p className="text-sm text-gray-500 mt-1">{selectedAssessment.property_address}</p>
-                            </div>
-                            <button
-                                onClick={() => setSelectedAssessment(null)}
-                                className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
-                            >
-                                <X className="w-6 h-6" />
-                            </button>
-                        </div>
-
-                        <div className="p-6 overflow-y-auto space-y-8 grow">
-                            {/* Property Info Section */}
-                            <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
-                                <h4 className="flex items-center gap-2 text-xs font-extrabold text-gray-400 uppercase tracking-widest mb-4">
-                                    <Home size={16} />
-                                    Property Information
-                                </h4>
-                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                                    <div>
-                                        <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Type</p>
-                                        <p className="text-sm font-bold text-gray-900">{selectedAssessment.property_type || 'N/A'}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Town</p>
-                                        <p className="text-sm font-bold text-gray-900">{selectedAssessment.town || 'N/A'}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">County</p>
-                                        <p className="text-sm font-bold text-gray-900">{selectedAssessment.county || 'N/A'}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Eircode</p>
-                                        <p className="text-sm font-bold text-gray-900">{selectedAssessment.eircode || 'N/A'}</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Quotes Section */}
-                            <div>
-                                <h4 className="flex items-center gap-2 text-sm font-bold text-gray-900 mb-4">
-                                    <FileText size={18} className="text-[#007F00]" />
-                                    Quotes
-                                </h4>
-                                {selectedAssessment.quotes && selectedAssessment.quotes.length > 0 ? (
-                                    <div className="space-y-4">
-                                        {selectedAssessment.quotes.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map(quote => (
-                                            <div key={quote.id} className="bg-green-50/50 border border-green-100 rounded-2xl p-5">
-                                                <div className="flex justify-between items-start mb-4">
-                                                    <div>
-                                                        <p className="text-2xl font-bold text-gray-900">€{quote.price + 10}</p>
-                                                        <p className="text-xs text-gray-400 mt-1">Received {new Date(quote.created_at).toLocaleDateString()}</p>
-                                                    </div>
-                                                    <div className={`px-3 py-1 rounded-full border text-[10px] font-bold uppercase ${quote.status === 'accepted' ? 'bg-green-100 text-green-700 border-green-200' :
-                                                        quote.status === 'rejected' ? 'bg-red-100 text-red-700 border-red-200' :
-                                                            'bg-white text-[#007F00] border-green-200'
-                                                        }`}>
-                                                        {quote.status || 'Pending'} Quote
-                                                    </div>
-                                                </div>
-                                                {quote.estimated_date && (
-                                                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                                                        <Calendar size={14} />
-                                                        <span>Proposed Date: <strong>{new Date(quote.estimated_date).toLocaleDateString()}</strong></span>
-                                                    </div>
-                                                )}
-                                                {quote.notes && (
-                                                    <div className="text-sm text-gray-600 italic bg-white/50 p-3 rounded-xl mb-4">
-                                                        "{quote.notes}"
-                                                    </div>
-                                                )}
-
-                                                {selectedAssessment.status === 'pending_quote' && quote.status === 'pending' && (
-                                                    <div className="flex gap-3">
-                                                        <button
-                                                            onClick={() => setConfirmReject({ assessmentId: selectedAssessment.id, quoteId: quote.id })}
-                                                            className="flex-1 py-2 rounded-xl border border-red-200 text-red-600 text-xs font-bold hover:bg-red-50 transition-all"
-                                                        >
-                                                            Reject
-                                                        </button>
-                                                        <button
-                                                            onClick={() => {
-                                                                setVerifyingQuote({ assessmentId: selectedAssessment.id, quoteId: quote.id, targetStatus: 'accepted' });
-                                                                setVerificationStep(1);
-                                                                setVerifyEircode('');
-                                                            }}
-                                                            className="flex-1 py-2 rounded-xl bg-[#007F00] text-white text-xs font-bold hover:bg-[#006600] transition-all shadow-sm"
-                                                        >
-                                                            Accept Quote
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className="text-sm text-gray-400 italic bg-gray-50 p-4 rounded-xl text-center">
-                                        No quotes have been generated for this assessment yet.
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Communication Section */}
-                            <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-5">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <div className="p-2 bg-blue-100 rounded-lg">
-                                        <Mail size={16} className="text-blue-600" />
-                                    </div>
-                                    <h4 className="text-sm font-bold text-blue-900">Communication Status</h4>
-                                </div>
-                                <p className="text-xs text-blue-700 leading-relaxed font-medium">
-                                    All official communication, updates, and chat for this assessment are currently handled via your registered email: <span className="text-blue-900 font-bold">{user?.email}</span>.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="p-6 border-t border-gray-100 bg-gray-50 shrink-0">
-                            {selectedAssessment.status === 'completed' && selectedAssessment.certificate_url ? (
-                                <a
-                                    href={selectedAssessment.certificate_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="w-full flex items-center justify-center gap-2 bg-[#007F00] text-white py-4 rounded-xl font-bold hover:bg-[#006600] transition-colors shadow-md"
-                                >
-                                    <FileText size={20} />
-                                    Download BER Certificate
-                                </a>
-                            ) : (
-                                <button
-                                    onClick={() => navigate('/contact')}
-                                    className="w-full bg-[#007F00] text-white py-3 rounded-xl font-bold hover:bg-[#006600] transition-colors shadow-md flex items-center justify-center gap-2"
-                                >
-                                    <Mail size={18} />
-                                    Contact Support via Email
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Quote Questionnaire Modal */}
             <QuoteModal
@@ -1046,7 +931,7 @@ const UserDashboard = () => {
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 animate-in zoom-in-95 duration-200 border border-gray-100">
                         {/* Header */}
                         <div className="mb-8">
-                            <h3 className="text-xl font-bold text-[#80FF80] mb-1">
+                            <h3 className="text-xl font-bold mb-1">
                                 BER Assessor #{selectedDetailsQuote.contractor?.seai_number || selectedDetailsQuote.created_by.slice(0, 6)}
                             </h3>
                         </div>
@@ -1055,7 +940,7 @@ const UserDashboard = () => {
                         <div className="space-y-6">
                             <div className="flex justify-between items-center group">
                                 <span className="text-gray-500 font-medium text-sm">Quote</span>
-                                <span className="text-gray-900 font-black text-lg">€{selectedDetailsQuote.price}</span>
+                                <span className="text-gray-900 font-black text-lg">€{selectedDetailsQuote.price + 10}</span>
                             </div>
 
                             <div className="flex justify-between items-center">
@@ -1101,7 +986,7 @@ const UserDashboard = () => {
                                 }}
                                 className="flex-[1.5] py-3 bg-[#007F00] text-white rounded-lg font-black text-sm hover:bg-[#006600]  transition-all shadow-sm active:scale-95"
                             >
-                                Accept €{selectedDetailsQuote.price} Quote
+                                Accept €{selectedDetailsQuote.price + 10} Quote
                             </button>
                         </div>
                     </div>

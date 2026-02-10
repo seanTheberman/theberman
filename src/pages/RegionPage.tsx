@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MapPin, Loader2, ChevronRight, Search, ChevronDown, CheckCircle2, Star, X } from 'lucide-react';
+import { MapPin, Loader2, ChevronRight, Search, ChevronDown, CheckCircle2, Star, X, Map, List } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
@@ -85,6 +85,7 @@ const RegionPage = () => {
     const [selectedListingForAgent, setSelectedListingForAgent] = useState<Listing | null>(null);
     const [showAgentModal, setShowAgentModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [mobileView, setMobileView] = useState<'list' | 'map'>('list');
 
     useEffect(() => {
         fetchRegionData();
@@ -161,7 +162,7 @@ const RegionPage = () => {
                 {/* Left Column: List and Filters */}
                 <div className="flex-1 flex flex-col border-r border-gray-100 overflow-hidden">
                     {/* Search & Filter Bar */}
-                    <div className="px-8 py-6 space-y-4">
+                    <div className="px-4 md:px-8 py-4 md:py-6 space-y-4">
                         <div className="flex flex-col md:flex-row gap-4">
                             <div className="flex-1 relative">
                                 <input
@@ -184,7 +185,7 @@ const RegionPage = () => {
                             </div>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-6">
+                        <div className="flex flex-wrap items-center gap-4 md:gap-6">
                             <button className="flex items-center gap-2 text-[11px] font-bold text-gray-600 hover:text-[#007EA7] transition-colors uppercase tracking-tight">
                                 Categories
                                 <ChevronDown size={14} />
@@ -197,11 +198,29 @@ const RegionPage = () => {
                                 Price Filter
                                 <ChevronDown size={14} />
                             </button>
+
+                            {/* Mobile View Toggle */}
+                            <div className="lg:hidden ml-auto flex items-center gap-1 bg-gray-100 p-1 rounded-lg">
+                                <button
+                                    onClick={() => setMobileView('list')}
+                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-[10px] font-bold uppercase transition-all ${mobileView === 'list' ? 'bg-white shadow-sm text-[#007EA7]' : 'text-gray-500'}`}
+                                >
+                                    <List size={14} />
+                                    List
+                                </button>
+                                <button
+                                    onClick={() => setMobileView('map')}
+                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-[10px] font-bold uppercase transition-all ${mobileView === 'map' ? 'bg-white shadow-sm text-[#007EA7]' : 'text-gray-500'}`}
+                                >
+                                    <Map size={14} />
+                                    Map
+                                </button>
+                            </div>
                         </div>
                     </div>
 
                     {/* Listings List */}
-                    <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-4 bg-gray-50/30">
+                    <div className={`flex-1 overflow-y-auto px-4 md:px-8 pb-8 space-y-4 bg-gray-50/30 ${mobileView === 'map' ? 'hidden lg:block' : ''}`}>
                         {listings.length === 0 ? (
                             <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-200 mt-4">
                                 <p className="text-gray-400">No active listings found in this region.</p>
@@ -211,10 +230,10 @@ const RegionPage = () => {
                                 <div
                                     key={listing.id}
                                     onClick={() => handleCardClick(listing)}
-                                    className="bg-white rounded-xl shadow-sm border border-gray-100/80 hover:border-[#007EA7]/20 hover:shadow-md transition-all cursor-pointer group flex items-start p-1 bg-white relative"
+                                    className="bg-white rounded-xl shadow-sm border border-gray-100/80 hover:border-[#007EA7]/20 hover:shadow-md transition-all cursor-pointer group flex flex-col sm:flex-row items-stretch sm:items-start p-1 relative"
                                 >
                                     {/* Left: Product Image Area */}
-                                    <div className="relative w-44 h-44 lg:w-52 lg:h-52 overflow-hidden rounded-lg flex-shrink-0 bg-gray-50">
+                                    <div className="relative w-full sm:w-36 md:w-44 lg:w-52 h-48 sm:h-36 md:h-44 lg:h-52 overflow-hidden rounded-lg flex-shrink-0 bg-gray-50">
                                         <img
                                             src={listing.logo_url || '/placeholder-business.png'}
                                             alt={listing.name}
@@ -240,28 +259,28 @@ const RegionPage = () => {
                                     </div>
 
                                     {/* Right: Content Area */}
-                                    <div className="flex-1 p-6 flex flex-col justify-between self-stretch relative">
+                                    <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between self-stretch relative">
                                         <div>
                                             <div className="flex items-center justify-between">
-                                                <h3 className="text-lg lg:text-xl font-black text-gray-900 group-hover:text-[#007EA7] transition-colors flex items-center gap-2">
+                                                <h3 className="text-base sm:text-lg lg:text-xl font-black text-gray-900 group-hover:text-[#007EA7] transition-colors flex items-center gap-2">
                                                     {listing.name}
-                                                    <CheckCircle2 size={18} className="text-[#007F00] fill-[#007F00]" />
+                                                    <CheckCircle2 size={16} className="text-[#007F00] fill-[#007F00] hidden sm:block" />
                                                 </h3>
                                             </div>
                                             <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-wider">{regionName || 'Ireland'}</p>
                                         </div>
 
-                                        <div className="flex justify-start pt-4">
+                                        <div className="flex flex-wrap gap-2 pt-4">
                                             <Link
                                                 to={`/catalogue/${listing.slug}`}
-                                                className="text-[10px] font-black text-gray-800 hover:text-[#007EA7] flex items-center gap-2 uppercase tracking-widest bg-white px-5 py-2.5 rounded-full transition-all border border-gray-200"
+                                                className="text-[10px] font-black text-gray-800 hover:text-[#007EA7] flex items-center gap-2 uppercase tracking-widest bg-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full transition-all border border-gray-200"
                                             >
                                                 View Business
                                                 <ChevronRight size={14} />
                                             </Link>
                                             <button
                                                 onClick={(e) => handleHireAgent(e, listing)}
-                                                className="text-[10px] font-black text-white bg-[#007F00] hover:bg-[#006400] flex items-center gap-2 uppercase tracking-widest px-5 py-2.5 rounded-full transition-all border border-transparent"
+                                                className="text-[10px] font-black text-white bg-[#007F00] hover:bg-[#006400] flex items-center gap-2 uppercase tracking-widest px-4 sm:px-5 py-2 sm:py-2.5 rounded-full transition-all border border-transparent"
                                             >
                                                 Hire Agent
                                                 <Star size={10} fill="white" />
@@ -275,7 +294,7 @@ const RegionPage = () => {
                 </div>
 
                 {/* Right Column: Map */}
-                <div className="flex-[1.3] relative hidden lg:block">
+                <div className={`flex-1 lg:flex-[1.3] relative ${mobileView === 'list' ? 'hidden lg:block' : 'block h-[60vh] lg:h-auto'}`}>
                     <MapContainer
                         center={mapCenter}
                         zoom={11}
@@ -316,7 +335,7 @@ const RegionPage = () => {
                                                     <p className="text-[10px] font-bold text-gray-500 mb-3 uppercase">{listing.categories?.[0]?.name || 'Service Provider'}</p>
                                                     <Link
                                                         to={`/catalogue/${listing.slug}`}
-                                                        className={`block w-full text-center py-2 ${isHighlighted ? 'bg-[#007F00]' : 'bg-[#007EA7]'} text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-colors`}
+                                                        className={`block w-full text-center py-2 ${isHighlighted ? 'bg-[#007F00]' : 'bg-[#007EA7]'} !text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-colors`}
                                                     >
                                                         View Details
                                                     </Link>
@@ -358,6 +377,7 @@ const RegionPage = () => {
                 .leaflet-popup-content-wrapper { border-radius: 1rem; padding: 0; overflow: hidden; }
                 .leaflet-popup-content { margin: 0; }
                 .custom-map-popup .leaflet-popup-tip { display: none; }
+                .custom-map-popup .leaflet-popup-content a { color: white !important; }
             `}</style>
         </div>
     );

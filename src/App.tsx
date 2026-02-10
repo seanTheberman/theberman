@@ -27,6 +27,7 @@ import PublicAssessorProfile from './pages/PublicAssessorProfile';
 import AssessorTerms from './pages/AssessorTerms';
 import RegionPage from './pages/RegionPage';
 import Locations from './pages/Locations';
+import ReferralTracker from './components/ReferralTracker';
 
 
 import ScrollToTop from './components/ScrollToTop';
@@ -34,8 +35,22 @@ import ScrollToTop from './components/ScrollToTop';
 function App() {
     return (
         <AuthProvider>
-            <Toaster position="top-center" reverseOrder={false} />
+            <Toaster
+                position="top-center"
+                reverseOrder={false}
+                containerStyle={{ zIndex: 99999 }}
+                toastOptions={{
+                    duration: 4000,
+                    style: {
+                        background: '#333',
+                        color: '#fff',
+                        fontWeight: 'bold',
+                        borderRadius: '10px',
+                    },
+                }}
+            />
             <BrowserRouter>
+                <ReferralTracker />
                 <ScrollToTop />
                 <Routes>
                     <Route path="/" element={<Layout />}>

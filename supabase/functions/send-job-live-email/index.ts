@@ -124,27 +124,41 @@ Deno.serve(async (req: Request) => {
             const { data: sponsors } = await supabase.from('sponsors').select('*').eq('is_active', true).limit(3);
             const promoHtml = generatePromoHtml(sponsors || []);
 
-            // 2. Notify Customer
-            const customerHtml = `
-        <div style="font-family: Arial, sans-serif; padding: 20px;">
-          <h2 style="color: #007F00;">Your BER job is live!</h2>
-          <p>Hi ${customerName},</p>
-          <p>Assessors in <strong>${county}</strong> have been notified of your request.</p>
-          <p>We'll notify you when your first quote arrives.</p>
-          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-          ${promoHtml}
-        </div>
-      `;
-            await client.send(smtpFrom, email, 'Your job is live on TheBerman.eu', customerHtml);
+            // 2. Notify Customer (Optional/Non-blocking)
+            try {
+                const customerHtml = `
+                    <div style="font-family: Arial, sans-serif; padding: 20px;">
+                      <h2 style="color: #007F00;">Your BER job is live!</h2>
+                      <p>Hi ${customerName},</p>
+                      <p>Assessors in <strong>${county}</strong> have been notified of your request.</p>
+                      <p>We'll notify you when your first quote arrives.</p>
+                      <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                      ${promoHtml}
+                    </div>
+                `;
+                await client.send(smtpFrom, email, 'Your job is live on TheBerman.eu', customerHtml);
+                console.log(`[SMTP] Notified customer: ${email}`);
+            } catch (custErr) {
+                console.error(`[SMTP ERROR] Failed to notify customer ${email}:`, custErr);
+            }
 
-            // 3. Notify All Contractors
+            // 3. Notify Relevant Contractors
             const { data: contractors } = await supabase
                 .from('profiles')
-                .select('email, full_name')
-                .eq('role', 'contractor');
+                .select('email, full_name, preferred_counties')
+                .eq('role', 'contractor')
+                .eq('is_active', true);
 
             if (contractors && contractors.length > 0) {
-                for (const contractor of contractors) {
+                // Filter by county if preferred_counties is set
+                const relevantContractors = contractors.filter(c => {
+                    if (!c.preferred_counties || c.preferred_counties.length === 0) return true; // Notify if no preference set
+                    return c.preferred_counties.includes(county);
+                });
+
+                console.log(`[INFO] Job in ${county}. Notifying ${relevantContractors.length} relevant contractors out of ${contractors.length} total.`);
+
+                for (const contractor of relevantContractors) {
                     try {
                         const contractorHtml = generateContractorEmail(county, town, contractor.full_name, promoHtml, websiteUrl);
                         await client.send(smtpFrom, contractor.email, `New BER Job in ${town || county}`, contractorHtml);
@@ -156,11 +170,11 @@ Deno.serve(async (req: Request) => {
             }
 
             await client.close();
-            return new Response(JSON.stringify({ success: true, message: 'Emails sent successfully' }), { headers: responseHeaders });
+            return new Response(JSON.stringify({ success: true, message: 'Process completed' }), { headers: responseHeaders });
 
         } catch (smtpErr: any) {
-            console.error("[SMTP ERROR]", smtpErr);
-            return new Response(JSON.stringify({ success: false, error: 'SMTP Failed', details: smtpErr?.message }), { headers: responseHeaders });
+            console.error("[SMTP GLOBAL ERROR]", smtpErr);
+            return new Response(JSON.stringify({ success: false, error: 'SMTP Connection Failed', details: smtpErr?.message }), { headers: responseHeaders });
         }
 
     } catch (err: any) {

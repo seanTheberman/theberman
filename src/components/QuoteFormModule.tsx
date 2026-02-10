@@ -145,9 +145,27 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
         });
     };
 
+    // Update field and immediately advance to next step (single-click behavior)
+    const updateFieldAndAdvance = (field: keyof FormData, value: string | string[]) => {
+        setFormData((prev: FormData) => {
+            const newData = { ...prev, [field]: value };
+
+            // Auto-fill Routing Key if county changes and eircode is empty
+            if (field === 'county' && typeof value === 'string' && !prev.eircode) {
+                newData.eircode = (ROUTING_KEYS[value] || '').replace(/\s/g, '');
+            }
+
+            return newData;
+        });
+        // Directly advance to next step
+        setCurrentStep(prev => prev + 1);
+    };
+
     const toggleFeature = (feature: string) => {
         if (feature === 'None') {
             setFormData((prev: FormData) => ({ ...prev, additionalFeatures: ['None'] }));
+            // Auto-advance when selecting 'None'
+            setTimeout(() => setCurrentStep(prev => prev + 1), 150);
         } else {
             setFormData((prev: FormData) => {
                 const current = prev.additionalFeatures.filter((f: string) => f !== 'None');
@@ -225,6 +243,22 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
             const currentUserId = session?.user?.id || user?.id;
 
             // 1. Create assessment record
+            const lastReferralStr = localStorage.getItem('last_referral');
+            let referredByListingId = null;
+
+            if (lastReferralStr) {
+                try {
+                    const referralData = JSON.parse(lastReferralStr);
+                    // Optional: only use referral if it's less than 30 days old
+                    const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+                    if (Date.now() - referralData.timestamp < THIRTY_DAYS) {
+                        referredByListingId = referralData.listingId;
+                    }
+                } catch (e) {
+                    console.error('Error parsing referral data:', e);
+                }
+            }
+
             const { data, error: dbError } = await supabase
                 .from('assessments')
                 .insert({
@@ -244,7 +278,8 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                     contact_email: formData.email,
                     contact_phone: formData.phone,
                     eircode: formData.eircode,
-                    user_id: currentUserId // Link reliably to user
+                    user_id: currentUserId, // Link reliably to user
+                    referred_by_listing_id: referredByListingId
                 })
                 .select()
                 .single();
@@ -323,7 +358,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                         </p>
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 max-w-5xl mx-auto overflow-y-auto max-h-[50vh] p-2 custom-scrollbar">
                             <button
-                                onClick={() => { updateField('preferredDate', 'Flexible'); handleNext(); }}
+                                onClick={() => updateFieldAndAdvance('preferredDate', 'Flexible')}
                                 className={`p-4 rounded-xl border-2 transition-all font-bold text-sm ${formData.preferredDate === 'Flexible' ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white text-gray-600'}`}
                             >
                                 I'm Flexible
@@ -331,7 +366,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                             {generateCalendarDates().map((date) => (
                                 <button
                                     key={formatDate(date)}
-                                    onClick={() => { updateField('preferredDate', formatDate(date)); handleNext(); }}
+                                    onClick={() => updateFieldAndAdvance('preferredDate', formatDate(date))}
                                     className={`p-4 rounded-xl border-2 transition-all ${formData.preferredDate === formatDate(date) ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white text-gray-600'}`}
                                 >
                                     <span className="block text-sm font-medium">{formatDateDisplay(date)}</span>
@@ -348,7 +383,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                             {TIME_SLOTS.map((time) => (
                                 <button
                                     key={time}
-                                    onClick={() => { updateField('preferredTime', time); handleNext(); }}
+                                    onClick={() => updateFieldAndAdvance('preferredTime', time)}
                                     className={`p-4 rounded-lg border-2 transition-all text-center ${formData.preferredTime === time ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                                 >{time}</button>
                             ))}
@@ -361,7 +396,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                         <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Property type?</h2>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
                             {PROPERTY_TYPES.map((type) => (
-                                <button key={type} onClick={() => { updateField('propertyType', type); handleNext(); }}
+                                <button key={type} onClick={() => updateFieldAndAdvance('propertyType', type)}
                                     className={`p-4 rounded-lg border-2 transition-all text-center ${formData.propertyType === type ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                                 >{type}</button>
                             ))}
@@ -387,7 +422,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
 
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-2xl mx-auto">
                             {(sizeUnit === 'ft' ? PROPERTY_SIZES : PROPERTY_SIZES_METRIC).map((size) => (
-                                <button key={size} onClick={() => { updateField('propertySize', size); handleNext(); }}
+                                <button key={size} onClick={() => updateFieldAndAdvance('propertySize', size)}
                                     className={`p-4 rounded-lg border-2 transition-all text-center ${formData.propertySize === size ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                                 >{size}</button>
                             ))}
@@ -400,7 +435,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                         <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Bedrooms?</h2>
                         <div className="flex justify-center gap-4 flex-wrap max-w-xl mx-auto">
                             {['1', '2', '3', '4', '5', '6'].map((num) => (
-                                <button key={num} onClick={() => { updateField('bedrooms', num); handleNext(); }}
+                                <button key={num} onClick={() => updateFieldAndAdvance('bedrooms', num)}
                                     className={`w-16 h-16 rounded-full border-2 transition-all text-xl font-medium ${formData.bedrooms === num ? 'border-green-500 bg-green-500 text-white' : 'border-gray-200 hover:border-green-300 bg-white text-gray-700'}`}
                                 >{num}</button>
                             ))}
@@ -429,7 +464,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                         <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Heat pump?</h2>
                         <div className="flex justify-center gap-4 flex-wrap max-w-xl mx-auto">
                             {HEAT_PUMP_OPTIONS.map((option) => (
-                                <button key={option} onClick={() => { updateField('heatPump', option); handleNext(); }}
+                                <button key={option} onClick={() => updateFieldAndAdvance('heatPump', option)}
                                     className={`px-8 py-4 rounded-lg border-2 transition-all ${formData.heatPump === option ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                                 >{option}</button>
                             ))}
@@ -444,7 +479,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                             {COUNTIES.map((county) => (
                                 <button
                                     key={county}
-                                    onClick={() => { updateField('county', county); updateField('town', ''); handleNext(); }}
+                                    onClick={() => { updateField('county', county); updateField('town', ''); setCurrentStep(prev => prev + 1); }}
                                     className={`p-4 rounded-xl border-2 transition-all font-bold text-lg ${formData.county === county ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white text-gray-600'}`}
                                 >
                                     {county}
@@ -462,7 +497,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                             {(TOWNS_BY_COUNTY[formData.county] || []).map((town) => (
                                 <button
                                     key={town}
-                                    onClick={() => { updateField('town', town); handleNext(); }}
+                                    onClick={() => updateFieldAndAdvance('town', town)}
                                     className={`p-4 rounded-xl border-2 transition-all font-bold text-lg ${formData.town === town ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white text-gray-600'}`}
                                 >
                                     {town}
@@ -478,7 +513,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                         <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">BER Purpose?</h2>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
                             {BER_PURPOSES.map((purpose) => (
-                                <button key={purpose} onClick={() => { updateField('berPurpose', purpose); handleNext(); }}
+                                <button key={purpose} onClick={() => updateFieldAndAdvance('berPurpose', purpose)}
                                     className={`p-4 rounded-lg border-2 transition-all text-center ${formData.berPurpose === purpose ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                                 >{purpose}</button>
                             ))}
