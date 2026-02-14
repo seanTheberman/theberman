@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2, Users, Search } from 'lucide-react';
+import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2, Users, Search, Newspaper } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -25,7 +25,7 @@ interface Profile {
     created_at: string;
     full_name: string;
     email: string;
-    role: 'admin' | 'contractor' | 'user' | 'homeowner';
+    role: 'admin' | 'contractor' | 'user' | 'homeowner' | 'business';
     is_active?: boolean;
 }
 
@@ -139,6 +139,7 @@ interface CatalogueListing {
     categories?: { category_id: string }[];
     latitude?: number;
     longitude?: number;
+    owner_id?: string | null;
 }
 
 interface CatalogueCategory {
@@ -152,6 +153,19 @@ interface CatalogueLocation {
     id: string;
     name: string;
     slug: string;
+}
+
+interface NewsArticle {
+    id: string;
+    created_at: string;
+    published_at: string;
+    title: string;
+    excerpt: string;
+    author: string;
+    image_url: string;
+    category: string;
+    is_live: boolean;
+    read_time: string;
 }
 
 const generateSlug = (text: string) => {
@@ -232,7 +246,8 @@ const Admin = () => {
     const [sponsors, setSponsors] = useState<Sponsor[]>([]);
     const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
     const [catalogue_enquiries, setCatalogueEnquiries] = useState<CatalogueEnquiry[]>([]);
-    const [view, setView] = useState<'stats' | 'leads' | 'assessments' | 'users' | 'payments' | 'settings' | 'catalogue' | 'referrals' | 'enquiries'>('stats');
+    const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
+    const [view, setView] = useState<'stats' | 'leads' | 'assessments' | 'users' | 'payments' | 'settings' | 'catalogue' | 'referrals' | 'enquiries' | 'news'>('stats');
     const [loading, setLoading] = useState(true);
     const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
     const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
@@ -518,6 +533,47 @@ const Admin = () => {
         } catch (error) {
             console.error('Error fetching categories:', error);
             toast.error('Failed to load categories');
+        }
+    };
+
+    const fetchNewsArticles = async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('news_articles')
+                .select('*')
+                .order('published_at', { ascending: false })
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setNewsArticles(data || []);
+        } catch (error) {
+            console.error('Error fetching news:', error);
+            toast.error('Failed to load news articles');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDeleteNewsArticle = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this article?')) return;
+
+        setIsUpdating(true);
+        try {
+            const { error } = await supabase
+                .from('news_articles')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            setNewsArticles(newsArticles.filter(a => a.id !== id));
+            toast.success('Article deleted successfully');
+        } catch (error: any) {
+            console.error('Error deleting article:', error);
+            toast.error('Failed to delete article');
+        } finally {
+            setIsUpdating(false);
         }
     };
 
@@ -940,6 +996,9 @@ const Admin = () => {
                         fetchCatalogueLocations() // Fetch locations
                     ]);
                 }
+                else if (view === 'news') {
+                    await fetchNewsArticles();
+                }
             } finally {
                 setIsUpdating(false);
             }
@@ -1322,7 +1381,7 @@ const Admin = () => {
                             {isMenuOpen && (
                                 <div className="absolute right-0 top-full mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
                                     <div className="p-2 space-y-1">
-                                        {(['stats', 'leads', 'enquiries', 'assessments', 'users', 'payments', 'catalogue', 'referrals', 'settings'] as const).map((v) => (
+                                        {(['stats', 'leads', 'enquiries', 'assessments', 'users', 'payments', 'news', 'settings'] as const).map((v) => (
                                             <button
                                                 key={v}
                                                 onClick={() => { setView(v); setIsMenuOpen(false); }}
@@ -1367,7 +1426,8 @@ const Admin = () => {
                                             view === 'users' ? 'User Management' :
                                                 view === 'payments' ? 'Financials' :
                                                     view === 'settings' ? 'System Settings' :
-                                                        view === 'referrals' ? 'Referral Performance' : 'Admin'}
+                                                        view === 'news' ? 'News & Updates' :
+                                                            view === 'referrals' ? 'Referral Performance' : 'Admin'}
                             </h2>
                             <p className="text-gray-500 text-sm mt-1">
                                 {view === 'stats' ? 'Key metrics and business performance.' :
@@ -1935,6 +1995,112 @@ const Admin = () => {
                                         <tr>
                                             <td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">
                                                 No partner enquiries found.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                ) : view === 'news' ? (
+                    /* NEWS MANAGEMENT VIEW */
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900">Website News Articles</h3>
+                                <p className="text-sm text-gray-500">Manage the content appearing on the News page.</p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={fetchNewsArticles}
+                                    className="p-2 text-gray-400 hover:text-[#007EA7] transition-colors"
+                                    title="Refresh news"
+                                >
+                                    <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+                                </button>
+                                <button
+                                    onClick={() => navigate('/admin/news/new')}
+                                    className="bg-[#007F00] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#006600] transition-colors flex items-center gap-2"
+                                >
+                                    <Newspaper size={16} />
+                                    Add New Article
+                                </button>
+                            </div>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm text-gray-600">
+                                <thead className="bg-gray-50/50 text-gray-900 font-bold uppercase tracking-wider text-xs border-b border-gray-100">
+                                    <tr>
+                                        <th className="px-6 py-4">Article</th>
+                                        <th className="px-6 py-4">Author & Category</th>
+                                        <th className="px-6 py-4">Published Date</th>
+                                        <th className="px-6 py-4">Status</th>
+                                        <th className="px-6 py-4 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {newsArticles.map((article) => (
+                                        <tr key={article.id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-6 py-4 max-w-sm">
+                                                <div className="flex items-center gap-4">
+                                                    {article.image_url && (
+                                                        <img
+                                                            src={article.image_url}
+                                                            alt=""
+                                                            className="w-12 h-12 rounded-lg object-cover border border-gray-100 shrink-0"
+                                                        />
+                                                    )}
+                                                    <div>
+                                                        <div className="font-bold text-gray-900 line-clamp-1">{article.title}</div>
+                                                        <div className="text-xs text-gray-400 line-clamp-2 mt-0.5">{article.excerpt}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="font-medium text-gray-700">{article.author}</div>
+                                                <div className="text-xs text-gray-500 capitalize">{article.category} • {article.read_time}</div>
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-500">
+                                                {new Date(article.published_at).toLocaleDateString()}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${article.is_live ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                                    {article.is_live ? 'Live' : 'Draft'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex items-center justify-end gap-2 text-[#007EA7]">
+                                                    <button
+                                                        onClick={() => navigate(`/admin/news/edit/${article.id}`)}
+                                                        className="p-1.5 hover:bg-blue-50 rounded-lg transition-colors"
+                                                        title="Edit Article"
+                                                    >
+                                                        <Pencil size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteNewsArticle(article.id)}
+                                                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                        title="Delete Article"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                    <a
+                                                        href="/news"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="p-1.5 hover:bg-gray-50 rounded-lg transition-colors text-gray-400"
+                                                        title="View on site"
+                                                    >
+                                                        <Eye size={16} />
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {newsArticles.length === 0 && (
+                                        <tr>
+                                            <td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">
+                                                No news articles found.
                                             </td>
                                         </tr>
                                     )}
@@ -3468,6 +3634,7 @@ const Admin = () => {
                                 is_active: formData.get('is_active') === 'on',
                                 featured: formData.get('is_featured') === 'on',
                                 is_verified: formData.get('is_verified') === 'on',
+                                owner_id: formData.get('owner_id') as string || null,
                                 features: formData.get('features') ? (formData.get('features') as string).split(',').map(s => s.trim()).filter(s => s) : [],
                                 social_media: {
                                     facebook: formData.get('social_facebook') as string || undefined,
@@ -3536,6 +3703,19 @@ const Admin = () => {
                                         <option value="">Select Upgrade Type</option>
                                         {catalogueCategories.map(cat => (
                                             <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Business Owner (Portal Access)</label>
+                                    <select
+                                        name="owner_id"
+                                        defaultValue={editingListing?.owner_id || ''}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                                    >
+                                        <option value="">No Owner Assigned</option>
+                                        {users_list.filter(u => u.role === 'business' || u.role === 'contractor').map(user => (
+                                            <option key={user.id} value={user.id}>{user.full_name} ({user.email}) [{user.role}]</option>
                                         ))}
                                     </select>
                                 </div>
@@ -3690,7 +3870,7 @@ const Admin = () => {
                 )
             }
 
-        </div >
+        </div>
     );
 };
 

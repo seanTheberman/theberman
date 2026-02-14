@@ -8,7 +8,7 @@ interface AuthContextType {
     session: Session | null;
     profile: any | null;
     loading: boolean;
-    role: 'admin' | 'contractor' | 'user' | 'homeowner' | null;
+    role: 'admin' | 'contractor' | 'user' | 'homeowner' | 'business' | null;
     signIn: (email: string, password: string) => Promise<{ data: { user: User | null, session: Session | null }, error: any }>;
     signUp: (email: string, password: string, fullName: string, role: 'user' | 'contractor' | 'homeowner') => Promise<{ data: { user: User | null, session: Session | null }, error: any }>;
     resetPassword: (email: string) => Promise<{ data: any, error: any }>;
@@ -21,7 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [session, setSession] = useState<Session | null>(null);
-    const [role, setRole] = useState<'admin' | 'contractor' | 'user' | 'homeowner' | null>(null);
+    const [role, setRole] = useState<'admin' | 'contractor' | 'user' | 'homeowner' | 'business' | null>(null);
     const [loading, setLoading] = useState(true);
     const [isInitialCheckDone, setIsInitialCheckDone] = useState(false);
 

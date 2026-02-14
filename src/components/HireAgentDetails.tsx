@@ -17,7 +17,7 @@ const HireAgentDetails = () => {
                     </div>
                     <div>
                         <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">
-                            Hire an Energy Agent for Free
+                            Speak to an Energy Advisor
                         </h3>
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1 italic">
                             Impartial guidance & Verified technical input

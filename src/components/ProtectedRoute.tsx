@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
-    allowedRoles?: ('admin' | 'contractor' | 'user' | 'homeowner')[];
+    allowedRoles?: ('admin' | 'contractor' | 'user' | 'homeowner' | 'business')[];
 }
 
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
@@ -25,6 +25,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         // Logged in but wrong role -> Go to their respective dashboard
         if (role === 'admin') return <Navigate to="/admin" replace />;
         if (role === 'contractor') return <Navigate to="/dashboard/ber-assessor" replace />;
+        if (role === 'business') return <Navigate to="/dashboard/business" replace />;
         return <Navigate to="/dashboard/user" replace />;
     }
 

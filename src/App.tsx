@@ -12,9 +12,11 @@ import Contact from './pages/Contact';
 import Catalogue from './pages/NewCatalogue';
 import ListingDetail from './pages/ListingDetail';
 import Admin from './pages/Admin';
+import AdminNewsAction from './pages/AdminNewsAction';
 import Login from './pages/Login';
 import UserDashboard from './pages/UserDashboard';
 import ContractorDashboard from './pages/ContractorDashboard';
+import BusinessDashboard from './pages/BusinessDashboard';
 import SignUp from './pages/SignUp';
 import ContractorOnboarding from './pages/ContractorOnboarding';
 import ForgotPassword from './pages/ForgotPassword';
@@ -27,6 +29,9 @@ import PublicAssessorProfile from './pages/PublicAssessorProfile';
 import AssessorTerms from './pages/AssessorTerms';
 import RegionPage from './pages/RegionPage';
 import Locations from './pages/Locations';
+import News from './pages/News';
+import NewsDetail from './pages/NewsDetail';
+import SolarQuoteForm from './pages/SolarQuoteForm';
 import ReferralTracker from './components/ReferralTracker';
 
 
@@ -69,6 +74,9 @@ function App() {
                         <Route path="login" element={<Login />} />
                         <Route path="signup" element={<SignUp />} />
                         <Route path="faq" element={<FAQ />} />
+                        <Route path="news" element={<News />} />
+                        <Route path="news/:id" element={<NewsDetail />} />
+                        <Route path="/get-solar-quote" element={<SolarQuoteForm />} />
                     </Route>
 
                     {/* Quote Form - No Layout wrapper for cleaner UX */}
@@ -83,6 +91,22 @@ function App() {
                         element={
                             <ProtectedRoute allowedRoles={['admin']}>
                                 <Admin />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/news/new"
+                        element={
+                            <ProtectedRoute allowedRoles={['admin']}>
+                                <AdminNewsAction />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/news/edit/:id"
+                        element={
+                            <ProtectedRoute allowedRoles={['admin']}>
+                                <AdminNewsAction />
                             </ProtectedRoute>
                         }
                     />
@@ -112,6 +136,16 @@ function App() {
                         element={
                             <ProtectedRoute allowedRoles={['user', 'homeowner']}>
                                 <UserDashboard />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    {/* Business Dashboard */}
+                    <Route
+                        path="/dashboard/business"
+                        element={
+                            <ProtectedRoute allowedRoles={['business', 'contractor']}>
+                                <BusinessDashboard />
                             </ProtectedRoute>
                         }
                     />

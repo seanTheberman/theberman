@@ -7,9 +7,15 @@ interface JobConfirmationProps {
     email: string;
     emailError?: string | null;
     hideNavigation?: boolean;
+    jobType?: 'BER' | 'Solar';
 }
 
-const JobConfirmation = ({ customerName, county, email, emailError, hideNavigation }: JobConfirmationProps) => {
+const JobConfirmation = ({ customerName, county, email, emailError, hideNavigation, jobType = 'BER' }: JobConfirmationProps) => {
+    const isSolar = jobType === 'Solar';
+    const professionalTitle = isSolar ? 'Solar Installers' : 'BER Assessors';
+    const professionalSingular = isSolar ? 'Installer' : 'Assessor';
+    const jobTitle = isSolar ? 'Solar quote request' : 'BER assessment request';
+
     return (
         <div className="space-y-8 text-center">
             {/* Success Icon */}
@@ -25,7 +31,7 @@ const JobConfirmation = ({ customerName, county, email, emailError, hideNavigati
                     Your Job is Live!
                 </h1>
                 <p className="text-xl text-gray-600 max-w-lg mx-auto">
-                    Hi {customerName}, your BER assessment request is now live on TheBerman.eu
+                    Hi {customerName}, your {jobTitle} is now live on TheBerman.eu
                 </p>
             </div>
 
@@ -39,7 +45,7 @@ const JobConfirmation = ({ customerName, county, email, emailError, hideNavigati
                         <h4 className="font-semibold text-amber-800">Email Notification Pending</h4>
                         <p className="text-amber-700 text-sm">
                             We couldn't send the confirmation email right now: <span className="font-mono">{emailError}</span>.
-                            Don't worry, your job is active and assessors can still see it.
+                            Don't worry, your job is active and {professionalTitle.toLowerCase()} can still see it.
                         </p>
                     </div>
                 </div>
@@ -47,14 +53,14 @@ const JobConfirmation = ({ customerName, county, email, emailError, hideNavigati
 
             {/* Info Cards */}
             <div className="grid md:grid-cols-3 gap-6 max-w-3xl mx-auto pt-4">
-                {/* Assessors Notified */}
+                {/* Professionals Notified */}
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                     <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
                         <Mail size={24} className="text-blue-600" />
                     </div>
-                    <h3 className="font-semibold text-gray-800 mb-2">Assessors Notified</h3>
+                    <h3 className="font-semibold text-gray-800 mb-2">{isSolar ? 'Installers' : 'Assessors'} Notified</h3>
                     <p className="text-gray-500 text-sm">
-                        We've notified all registered BER Assessors in <span className="font-semibold text-gray-700">{county}</span>
+                        We've notified all registered {professionalTitle} in <span className="font-semibold text-gray-700">{county}</span>
                     </p>
                 </div>
 
@@ -65,7 +71,7 @@ const JobConfirmation = ({ customerName, county, email, emailError, hideNavigati
                     </div>
                     <h3 className="font-semibold text-gray-800 mb-2">Quotes Incoming</h3>
                     <p className="text-gray-500 text-sm">
-                        Assessors can now submit quotes. We'll email you when quotes arrive.
+                        {professionalTitle} can now submit quotes. We'll email you when quotes arrive.
                     </p>
                 </div>
 
@@ -93,7 +99,7 @@ const JobConfirmation = ({ customerName, county, email, emailError, hideNavigati
                 <ol className="text-left text-green-700 space-y-3">
                     <li className="flex gap-3">
                         <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-200 text-green-800 flex items-center justify-center text-sm font-bold">1</span>
-                        <span>BER Assessors in your area will review your job and submit quotes</span>
+                        <span>{professionalTitle} in your area will review your job and submit quotes</span>
                     </li>
                     <li className="flex gap-3">
                         <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-200 text-green-800 flex items-center justify-center text-sm font-bold">2</span>
@@ -101,7 +107,7 @@ const JobConfirmation = ({ customerName, county, email, emailError, hideNavigati
                     </li>
                     <li className="flex gap-3">
                         <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-200 text-green-800 flex items-center justify-center text-sm font-bold">3</span>
-                        <span>Compare quotes and choose the best assessor for you</span>
+                        <span>Compare quotes and choose the best {professionalSingular.toLowerCase()} for you</span>
                     </li>
                 </ol>
             </div>

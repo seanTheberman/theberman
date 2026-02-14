@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, MapPin, Star, Loader2, X, ChevronDown } from 'lucide-react';
+import { Search, MapPin, Star, Loader2, ChevronDown, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
-import HireAgentDetails from '../components/HireAgentDetails';
 
 const HERO_SLIDES = [
     { image: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=1600' },
@@ -72,9 +71,7 @@ const NewCatalogue = () => {
 
 
 
-    // Agent Modal State
-    const [showAgentModal, setShowAgentModal] = useState(false);
-    const [selectedListingForAgent, setSelectedListingForAgent] = useState<CatalogueListing | null>(null);
+
 
     useEffect(() => {
         fetchInitialData();
@@ -177,10 +174,7 @@ const NewCatalogue = () => {
 
 
 
-    const handleHireAgent = (listing: CatalogueListing) => {
-        setSelectedListingForAgent(listing);
-        setShowAgentModal(true);
-    };
+
 
 
 
@@ -291,8 +285,8 @@ const NewCatalogue = () => {
                 {/* Partners Section Header */}
                 <div className="flex flex-col md:flex-row justify-between items-center my-12 gap-8">
                     <div className="text-center md:text-left">
-                        <h2 className="text-3xl md:text-4xl font-black text-gray-900 uppercase tracking-tight mb-2">Top Rated Builders & Tradesmen</h2>
-                        <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] md:text-xs">Find Builders & Tradesmen in Your Local Area Today</p>
+                        <h2 className="text-3xl md:text-4xl font-black text-gray-900 uppercase tracking-tight mb-2">Operators and Energy Consultants</h2>
+                        <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] md:text-xs">Find Operators and Energy Consultants in Your Local Area Today</p>
                     </div>
 
                     <div className="relative group/sort min-w-[200px]">
@@ -366,16 +360,11 @@ const NewCatalogue = () => {
                                                     </span>
                                                 </div>
                                             </div>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    handleHireAgent(listing);
-                                                }}
+                                            {/* <button
                                                 className="px-4 py-2 bg-[#007F00] hover:bg-[#006400] text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-colors shadow-lg shrink-0"
                                             >
-                                                Hire Agent
-                                            </button>
+                                                Hire Contractor
+                                            </button> */}
                                         </div>
                                     </div>
                                 </Link>
@@ -402,13 +391,17 @@ const NewCatalogue = () => {
                 </div>
             </div>
 
-            {/* Hire an Agent Modal */}
-            {showAgentModal && (
-                <AgentModal
-                    listing={selectedListingForAgent}
-                    onClose={() => setShowAgentModal(false)}
-                />
-            )}
+
+
+            <Link
+                to="/get-quote"
+                className="fixed bottom-8 right-8 z-50 bg-[#007F00] hover:bg-[#006400] text-white px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest shadow-2xl flex items-center gap-3 transition-all hover:-translate-y-1 active:scale-95 border-4 border-white/20"
+            >
+                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                    <Zap size={16} fill="currentColor" />
+                </div>
+                Hire an Energy Expert
+            </Link>
 
             <style>{`
                 .no-scrollbar::-webkit-scrollbar {
@@ -423,179 +416,6 @@ const NewCatalogue = () => {
     );
 };
 
-const AgentModal = ({ listing, onClose }: {
-    listing: CatalogueListing | null,
-    onClose: () => void
-}) => {
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        message: '',
-        county: '',
-        town: '',
-        property_type: 'Detached'
-    });
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-
-        const categoriesList = listing?.categories?.map(c => c.name).join(', ') || 'General';
-        const fullMessage = `
---- HIRED AN AGENT ---
-Interested in: ${categoriesList}
-Target Provider: ${listing?.name || 'Any verified provider'}
-User Message: ${formData.message}
-        `.trim();
-
-        try {
-            const { error } = await supabase
-                .from('leads')
-                .insert([{
-                    name: formData.name,
-                    email: formData.email,
-                    phone: formData.phone,
-                    message: fullMessage,
-                    status: 'new',
-                    county: formData.county,
-                    town: formData.town,
-                    property_type: formData.property_type,
-                    purpose: categoriesList
-                }]);
-
-            if (error) throw error;
-
-            toast.success('Agent request submitted! We will contact you shortly.', {
-                duration: 5000,
-                icon: '🚀'
-            });
-            onClose();
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to submit request');
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    return (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
-                <div className="p-6 md:p-12 overflow-y-auto flex-1 custom-scrollbar">
-                    <div className="flex justify-between items-start mb-8 gap-4">
-                        <div className="flex-1 min-w-0">
-                            <span className="inline-block px-3 py-1 bg-blue-50 text-[#007EA7] text-[10px] font-black uppercase tracking-widest rounded-full mb-3 border border-blue-100">Concierge Request</span>
-                            <h2 className="text-2xl md:text-3xl font-black text-gray-900 uppercase tracking-tight leading-tight break-words">Hire your Agent</h2>
-                        </div>
-                        <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors shrink-0">
-                            <X size={24} className="text-gray-400" />
-                        </button>
-                    </div>
-
-                    <HireAgentDetails />
-
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
-                                <input
-                                    required
-                                    type="text"
-                                    placeholder="e.g. John Murphy"
-                                    value={formData.name}
-                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-[#007F00] focus:bg-white rounded-2xl outline-none font-bold text-sm transition-all"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
-                                <input
-                                    required
-                                    type="email"
-                                    placeholder="john@example.com"
-                                    value={formData.email}
-                                    onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-[#007F00] focus:bg-white rounded-2xl outline-none font-bold text-sm transition-all"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Phone Number</label>
-                                <input
-                                    required
-                                    type="tel"
-                                    placeholder="08X XXX XXXX"
-                                    value={formData.phone}
-                                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                    className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-[#007F00] focus:bg-white rounded-2xl outline-none font-bold text-sm transition-all"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">County</label>
-                                <select
-                                    required
-                                    value={formData.county}
-                                    onChange={e => setFormData({ ...formData, county: e.target.value, town: '' })}
-                                    className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-[#007F00] focus:bg-white rounded-2xl outline-none font-bold text-sm transition-all appearance-none cursor-pointer"
-                                >
-                                    <option value="">Select County</option>
-                                    {IRELAND_COUNTIES.map(county => (
-                                        <option key={county} value={county}>{county}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Town</label>
-                            <select
-                                required
-                                disabled={!formData.county}
-                                value={formData.town}
-                                onChange={e => setFormData({ ...formData, town: e.target.value })}
-                                className={`w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-[#007F00] focus:bg-white rounded-2xl outline-none font-bold text-sm transition-all appearance-none cursor-pointer ${!formData.county ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            >
-                                <option value="">{formData.county ? 'Select Town' : 'Select County First'}</option>
-                                {formData.county && TOWNS_BY_COUNTY[formData.county]?.map(town => (
-                                    <option key={town} value={town}>{town}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Tell us about your project</label>
-                            <textarea
-                                required
-                                rows={4}
-                                placeholder="I'm interested in solar panels and possibly a battery storage system..."
-                                value={formData.message}
-                                onChange={e => setFormData({ ...formData, message: e.target.value })}
-                                className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-[#007F00] focus:bg-white rounded-2xl outline-none font-bold text-sm transition-all resize-none"
-                            />
-                        </div>
-
-                        <div className="pt-4">
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="w-full bg-[#007F00] text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#006400] transition-all shadow-2xl shadow-green-100 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed active:scale-[0.98]"
-                            >
-                                {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : null}
-                                {isSubmitting ? 'Submitting...' : 'Submit Agent Request'}
-                            </button>
-                            <p className="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-6 flex items-center justify-center gap-2">
-                                <Star size={14} className="text-[#007F00]" />
-                                No upfront cost • No commitment • Expert advice
-                            </p>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    );
-};
 
 export default NewCatalogue;

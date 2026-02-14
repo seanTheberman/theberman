@@ -9,9 +9,11 @@ import QuoteModal from './QuoteModal';
 const NAV_LINKS = [
     { label: 'Home', path: '/' },
     { label: 'About', path: '/about' },
-    { label: 'Services', path: '/services' },
-    { label: 'Locations', path: '/locations' },
-    { label: 'Pricing', path: '/pricing' },
+    { label: 'Home Energy Catalog', path: '/catalogue' },
+    { label: 'Speak to an Energy Advisor', path: '/contact' },
+    { label: 'Find BER Assessor', path: '/get-quote' },
+    { label: 'Our News', path: '/news' },
+    { label: 'Location', path: '/locations' },
     { label: 'Contact', path: '/contact' },
 ];
 
@@ -25,6 +27,7 @@ const Layout = () => {
     const navigate = useNavigate();
     const { user, role, signOut } = useAuth();
     const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+    const [hasBusinessListing, setHasBusinessListing] = useState(false);
 
     // Dynamic Positioning Refs and State
     const locationsRef = useRef<HTMLButtonElement>(null);
@@ -40,7 +43,21 @@ const Layout = () => {
             if (data) setLocations(data);
         };
         fetchLocations();
-    }, []);
+
+        const checkBusinessListing = async () => {
+            if (user && role === 'contractor') {
+                const { data } = await supabase
+                    .from('catalogue_listings')
+                    .select('id')
+                    .eq('owner_id', user.id)
+                    .maybeSingle();
+                setHasBusinessListing(!!data);
+            } else {
+                setHasBusinessListing(false);
+            }
+        };
+        checkBusinessListing();
+    }, [user, role]);
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
     const closeMenu = () => {
@@ -57,6 +74,7 @@ const Layout = () => {
         if (!user) return '/contact';
         if (role === 'admin') return '/admin';
         if (role === 'contractor') return '/dashboard/ber-assessor';
+        if (role === 'business') return '/dashboard/business';
         return '/dashboard/user';
     };
 
@@ -107,7 +125,7 @@ const Layout = () => {
                             <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white rounded-lg shadow-xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden max-h-[80vh] overflow-y-auto">
                                 <div className="py-2">
                                     {NAV_LINKS.map((link) => (
-                                        link.label === 'Locations' ? (
+                                        link.label === 'Location' ? (
                                             <div key={link.path}>
                                                 {/* Locations Button */}
                                                 <button
@@ -118,7 +136,7 @@ const Layout = () => {
                                                     }}
                                                     className={`w-full px-5 py-3 text-left text-sm font-semibold uppercase tracking-wide border-b border-gray-100 flex justify-between items-center transition-colors ${isLocationsOpen ? 'bg-gray-50 text-[#007EA7]' : 'text-gray-700 hover:bg-gray-50'}`}
                                                 >
-                                                    Locations
+                                                    Location
                                                     <ChevronRight size={16} className={`transition-transform duration-200 ${isLocationsOpen ? 'rotate-90' : ''}`} />
                                                 </button>
 
@@ -207,10 +225,19 @@ const Layout = () => {
                                                 <Link
                                                     to={getDashboardLink()}
                                                     onClick={closeMenu}
-                                                    className="block px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 uppercase tracking-wide"
+                                                    className="block px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 uppercase tracking-wide border-b border-gray-100/50"
                                                 >
-                                                    Dashboard
+                                                    {role === 'business' ? 'Business Portal' : role === 'contractor' ? 'Assessor Dashboard' : 'Dashboard'}
                                                 </Link>
+                                                {role === 'contractor' && hasBusinessListing && (
+                                                    <Link
+                                                        to="/dashboard/business"
+                                                        onClick={closeMenu}
+                                                        className="block px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 uppercase tracking-wide border-b border-gray-100/50"
+                                                    >
+                                                        Business Portal
+                                                    </Link>
+                                                )}
                                                 <button
                                                     onClick={handleLogout}
                                                     className="w-full px-5 py-3 text-left text-sm font-medium text-red-600 hover:bg-red-50 uppercase tracking-wide"
@@ -312,7 +339,7 @@ const Layout = () => {
                                 </li>
                                 <li className="flex items-start gap-3 text-gray-400 text-sm">
                                     <Mail className="text-[#9ACD32] mt-0.5" size={16} />
-                                    <a href="mailto:hello@theberman.eu" className="hover:text-white transition">hello@theberman.eu</a>
+                                    <a href="mailto:hello@theberman.eu" className="hover:text-white transition">support@theberman.eu</a>
                                 </li>
                                 <li className="flex items-start gap-3 text-gray-400 text-sm">
                                     <Home className="text-[#9ACD32] mt-0.5" size={16} />

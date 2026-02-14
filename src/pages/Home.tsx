@@ -1,7 +1,7 @@
 import {
     ArrowRight, CheckCircle2, Star, Clock,
     Zap as ZapIcon, ShieldCheck, TrendingUp,
-    Phone, Users, Shield, ClipboardList, X
+    Phone, Users, Shield, ClipboardList, X, Search, ChevronRight
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
@@ -57,7 +57,7 @@ const HomePage = () => {
                         </h1>
 
                         <p className="text-lg md:text-2xl text-gray-600 mb-10 md:mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
-                            The fastest, most reliable way to get your Building Energy Rating. Guaranteed lowest prices from 300+ assessors nationwide.
+                            The fastest, most reliable way to get your Building Energy Rating. Guaranteed lowest prices from 100+ assessors nationwide.
                         </p>
 
                         {/* Dual Primary CTAs */}
@@ -74,8 +74,8 @@ const HomePage = () => {
                         {/* Fast Benefits Row */}
                         <div className="flex flex-wrap justify-center gap-x-12 gap-y-6">
                             {[
-                                { icon: <Users size={20} />, text: "300+ Assessors Nationwide" },
-                                { icon: <ShieldCheck size={20} />, text: "SEAI Registered Only" },
+                                { icon: <Users size={20} />, text: "100+ Assessors Nationwide" },
+                                { icon: <ShieldCheck size={20} />, text: "BER registered assessors only" },
                                 { icon: <Clock size={20} />, text: "Choose Your Date & Time" }
                             ].map((item, i) => (
                                 <div key={i} className="flex items-center gap-2 text-gray-500 font-bold text-sm tracking-wide uppercase">
@@ -153,7 +153,7 @@ const HomePage = () => {
                             <div className="space-y-6">
                                 {[
                                     { title: "Lowest Prices Guaranteed", desc: "Our network competes for your job, driving prices down for you." },
-                                    { title: "SEAI Registered Professionals", desc: "Every assessor is fully certified and vetted for quality." },
+                                    { title: "BER Registered Assessors Only", desc: "Every assessor is fully certified and vetted for quality." },
                                     { title: "Money-Back Guarantee", desc: "We ensure you get a professional service or your money back." },
                                     { title: "Instant Online Booking", desc: "No back-and-forth phone calls. Book everything in real-time." }
                                 ].map((benefit, i) => (
@@ -173,11 +173,11 @@ const HomePage = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-4 pt-8">
                                     <div className="bg-gray-50 p-8 rounded-3xl border border-gray-100">
-                                        <div className="text-4xl font-black text-[#007F00] mb-2">20k+</div>
+                                        <div className="text-4xl font-black text-[#007F00] mb-2">1k+</div>
                                         <div className="text-sm font-bold text-gray-500 uppercase">Users Served</div>
                                     </div>
                                     <div className="bg-green-50 p-8 rounded-3xl border border-green-100">
-                                        <div className="text-4xl font-black text-[#007F00] mb-2">300+</div>
+                                        <div className="text-4xl font-black text-[#007F00] mb-2">100+</div>
                                         <div className="text-sm font-bold text-gray-500 uppercase">Assessors</div>
                                     </div>
                                 </div>
@@ -208,7 +208,7 @@ const HomePage = () => {
                             <Star className="text-green-500 fill-green-500" size={32} />
                             <span className="text-3xl font-black">Excellent</span>
                         </div>
-                        <p className="text-gray-500 font-bold uppercase tracking-widest text-sm">Based on 20,000+ Verified Customer Ratings</p>
+                        <p className="text-gray-500 font-bold uppercase tracking-widest text-sm">Based on 1,000 Verified Customer Ratings</p>
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-8 items-stretch">
@@ -267,6 +267,151 @@ const HomePage = () => {
                 </div>
             </section>
 
+            {/* Solar Panel Promotion */}
+            <section className="py-24 bg-gray-900 border-t border-green-900 overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-96 h-96 bg-green-500/10 blur-3xl rounded-full -mr-48 -mt-48"></div>
+                <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#9ACD32]/10 blur-3xl rounded-full -ml-48 -mb-48"></div>
+
+                <div className="container mx-auto px-6 relative z-10">
+                    <div className="flex flex-col lg:flex-row items-center gap-16">
+                        <div className="lg:w-1/2">
+                            <span className="inline-block mb-6 px-4 py-1.5 rounded-full bg-green-500/10 text-[#9ACD32] text-xs font-black tracking-widest uppercase border border-green-500/20">
+                                Eco-Friendly Savings
+                            </span>
+                            <h2 className="text-4xl md:text-5xl font-black text-white mb-8 leading-tight">
+                                Compare Solar Deals
+                            </h2>
+                            <p className="text-gray-400 text-lg mb-10 leading-relaxed max-w-xl">
+                                Reduce your electricity bills and carbon footprint with customized solar solutions. Our partners provide expert installation and the latest technology tailored for your home.
+                            </p>
+                            <Link
+                                to="/get-solar-quote"
+                                className="inline-flex items-center gap-3 bg-[#007F00] hover:bg-[#006400] text-white px-10 py-5 rounded-2xl font-black text-xs md:text-sm uppercase tracking-widest transition-all active:scale-95 shadow-[0_20px_40px_rgba(0,127,0,0.3)] group"
+                            >
+                                Compare Solar Deals
+                                <ChevronRight className="group-hover:translate-x-1 transition-transform" size={18} />
+                            </Link>
+                        </div>
+                        <div className="lg:w-1/2 relative">
+                            <div className="relative rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl skew-x-1">
+                                <img
+                                    src="https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=1000"
+                                    alt="Solar Panels installation"
+                                    className="w-full h-[500px] object-cover"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
+                            </div>
+                            {/* Floating Stats */}
+                            <div className="absolute -bottom-8 -left-8 bg-white p-8 rounded-3xl shadow-2xl border border-gray-100 hidden md:block animate-bounce-slow">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-[#007F00]">
+                                        <Star fill="currentColor" size={24} />
+                                    </div>
+                                    <div>
+                                        <p className="text-2xl font-black text-gray-900">Up to 60%</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Bill Reduction</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Selling Home Promotion */}
+            <section className="py-24 bg-white relative overflow-hidden">
+                <div className="container mx-auto px-6">
+                    <div className="bg-gray-50 rounded-[3rem] p-8 md:p-16 border border-gray-100 relative overflow-hidden flex flex-col md:flex-row items-center gap-12">
+                        <div className="absolute top-0 left-0 w-32 h-32 bg-[#007EF0]/5 rounded-full blur-3xl"></div>
+
+                        <div className="md:w-3/5 relative z-10">
+                            <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-6 leading-tight uppercase tracking-tight">
+                                Considering selling <br /> your home?
+                            </h2>
+                            <p className="text-gray-600 text-lg mb-10 leading-relaxed">
+                                We've partnered with <span className="font-bold text-[#007F00]">Berman Property</span> to provide you with seamless property services. Get a professional valuation and expert advice on how to maximize your home's value before you sell.
+                            </p>
+                            <a
+                                href="https://bermanproperty.ie"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-3 bg-gray-900 hover:bg-black text-white px-10 py-5 rounded-2xl font-black text-xs md:text-sm uppercase tracking-widest transition-all active:scale-95 shadow-2xl"
+                            >
+                                Visit Property Partner
+                                <ChevronRight size={18} />
+                            </a>
+                        </div>
+
+                        <div className="md:w-2/5">
+                            <div className="bg-white p-4 rounded-[2rem] shadow-xl border border-gray-100 rotate-2 hover:rotate-0 transition-transform duration-500">
+                                <img
+                                    src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=600"
+                                    alt="Modern Home Interior"
+                                    className="rounded-[1.5rem] w-full h-[300px] object-cover"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* 6. HOME ENERGY CATALOG SECTION */}
+            <section className="py-24 bg-gray-50 overflow-hidden relative border-t border-gray-100">
+                <div className="container mx-auto px-6 relative z-10">
+                    <div className="flex flex-col lg:flex-row items-center gap-16">
+                        <div className="flex-1">
+                            <span className="inline-block px-4 py-1.5 rounded-full bg-[#007F00]/10 text-[#007F00] text-xs font-black uppercase tracking-widest mb-6">Explore Our Network</span>
+                            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-8 leading-tight">
+                                Find the Best <br />
+                                <span className="text-[#007F00]">Home Energy</span> Partners.
+                            </h2>
+                            <p className="text-lg md:text-xl text-gray-500 font-medium leading-relaxed mb-10 max-w-2xl">
+                                Access our curated catalog of certified home energy businesses. From solar panel installers to insulation specialists, find the right partner for your home's journey to efficiency.
+                            </p>
+                            <div className="flex flex-wrap gap-4">
+                                <Link to="/catalogue">
+                                    <button className="px-10 py-5 bg-[#007F00] text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-[#006400] transition-all shadow-xl shadow-green-100 flex items-center gap-3 active:scale-95 cursor-pointer">
+                                        Browse Catalog
+                                        <ArrowRight size={18} />
+                                    </button>
+                                </Link>
+                                <Link to="/contact">
+                                    <button className="px-10 py-5 bg-white text-gray-900 border-2 border-gray-100 font-black text-xs uppercase tracking-widest rounded-2xl hover:border-[#007F00] transition-all flex items-center gap-3 active:scale-95 cursor-pointer">
+                                        Speak to Advisor
+                                    </button>
+                                </Link>
+                            </div>
+                        </div>
+                        <div className="flex-1 relative w-full max-w-xl mx-auto">
+                            <div className="relative aspect-square bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-gray-100 group">
+                                <img
+                                    src="https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=800"
+                                    alt="Home Energy Upgrades"
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                                <div className="absolute bottom-10 left-10 right-10">
+                                    <div className="bg-white/95 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-white/20">
+                                        <div className="flex items-center gap-4 mb-3">
+                                            <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-[#007F00]">
+                                                <Search size={24} />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-lg font-black text-gray-900 leading-none">Smart Search</h4>
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">By County & Service Type</p>
+                                            </div>
+                                        </div>
+                                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                            <div className="h-full bg-[#007F00] w-2/3 animate-pulse"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* 5. FAQ / EDUCATION SECTION */}
             <section className="py-24 bg-white relative">
                 <div className="container mx-auto px-6 grid md:grid-cols-2 gap-20 items-center">
@@ -298,7 +443,7 @@ const HomePage = () => {
                         <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white/5 blur-3xl"></div>
                         <h3 className="text-3xl font-black mb-6">Ready to get your <br /> BER Certificate?</h3>
                         <p className="text-gray-400 mb-10 text-lg leading-relaxed">
-                            Join over 20,000 satisfied homeowners. Get competitive quotes from trusted local assessors in seconds.
+                            Join over 1,000 satisfied homeowners. Get competitive quotes from trusted local assessors in seconds.
                         </p>
                         <div className="space-y-6 mb-12">
                             <div className="flex items-center gap-4">
@@ -331,7 +476,7 @@ const HomePage = () => {
                             <span className="text-[#007F00] font-bold uppercase tracking-widest text-sm mb-6 block">Premium Resources</span>
                             <h2 className="text-4xl md:text-5xl font-black mb-8 leading-tight text-gray-900">Get Our Complete Home <br /> Energy Upgrade Guide</h2>
                             <p className="text-gray-600 mb-12 text-xl font-medium leading-relaxed">
-                                Join 5,000+ homeowners receiving our monthly energy saving tips and exclusive sponsor discounts.
+                                Join 5,000+ homeowners receiving our weekly energy updates, flash sales, and exclusive energy upgrade offers.
                             </p>
 
                             <form
@@ -379,9 +524,9 @@ const HomePage = () => {
                                 />
                                 <button
                                     disabled={isSubmitting}
-                                    className="bg-[#007F00] text-white font-black px-10 py-5 rounded-2xl hover:bg-[#006400] transition-all shadow-xl shadow-green-100 whitespace-nowrap text-lg cursor-pointer disabled:opacity-70 flex items-center justify-center min-w-[160px]"
+                                    className="bg-[#007F00] text-white font-black px-10 py-5 rounded-2xl hover:bg-[#006400] transition-all shadow-xl shadow-green-100 whitespace-nowrap text-lg cursor-pointer disabled:opacity-70 flex items-center justify-center min-w-[200px]"
                                 >
-                                    {isSubmitting ? 'Sending...' : 'Send Guide'}
+                                    {isSubmitting ? 'Sending...' : 'Subscribe to news'}
                                 </button>
                             </form>
 
