@@ -394,13 +394,13 @@ const NewCatalogue = () => {
 
 
             <Link
-                to="/get-quote"
+                to="/hire-agent"
                 className="fixed bottom-8 right-8 z-50 bg-[#007F00] hover:bg-[#006400] text-white px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest shadow-2xl flex items-center gap-3 transition-all hover:-translate-y-1 active:scale-95 border-4 border-white/20"
             >
                 <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                     <Zap size={16} fill="currentColor" />
                 </div>
-                Hire an Energy Expert
+                Hire An Energy Agent For Free
             </Link>
 
             <style>{`

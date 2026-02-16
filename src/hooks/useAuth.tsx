@@ -10,7 +10,7 @@ interface AuthContextType {
     loading: boolean;
     role: 'admin' | 'contractor' | 'user' | 'homeowner' | 'business' | null;
     signIn: (email: string, password: string) => Promise<{ data: { user: User | null, session: Session | null }, error: any }>;
-    signUp: (email: string, password: string, fullName: string, role: 'user' | 'contractor' | 'homeowner') => Promise<{ data: { user: User | null, session: Session | null }, error: any }>;
+    signUp: (email: string, password: string, fullName: string, role: 'user' | 'contractor' | 'homeowner' | 'business') => Promise<{ data: { user: User | null, session: Session | null }, error: any }>;
     resetPassword: (email: string) => Promise<{ data: any, error: any }>;
     updateUserPassword: (password: string) => Promise<{ data: { user: User | null }, error: any }>;
     signOut: () => Promise<void>;
@@ -102,7 +102,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
-    const signUp = async (email: string, password: string, fullName: string, role: 'user' | 'contractor' | 'homeowner') => {
+    const signUp = async (email: string, password: string, fullName: string, role: 'user' | 'contractor' | 'homeowner' | 'business') => {
         return await supabase.auth.signUp({
             email,
             password,

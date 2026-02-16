@@ -259,9 +259,8 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
                         <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12 bg-gradient-to-t from-black/60 to-transparent">
-                            <div className="container mx-auto max-w-7xl">
-                                <h1 className="text-4xl md:text-6xl font-bold text-white mb-2 shadow-sm">{displayName}</h1>
-                                <p className="text-lg text-white/90 font-medium max-w-2xl shadow-sm">{listing.description}</p>
+                            <div className="container mx-auto max-w-7xl text-center md:text-left">
+                                <h1 className="text-4xl md:text-6xl font-black text-white mb-2 shadow-sm drop-shadow-lg uppercase tracking-tight">{displayName}</h1>
                             </div>
                         </div>
                     </div>

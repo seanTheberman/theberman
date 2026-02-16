@@ -99,10 +99,7 @@ const Catalogue = () => {
                                 </p>
                             </div>
                             <div className="space-y-4">
-                                <div className="bg-white/10 p-4 rounded-2xl border border-white/20">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-[#9ACD32] mb-1">Direct Advisory</p>
-                                    <p className="text-2xl font-black">087 442 1653</p>
-                                </div>
+
                                 <Link to="/contact">
                                     <button className="w-full bg-white text-[#007F00] py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all hover:bg-green-50 shadow-lg cursor-pointer">
                                         Book Assessment

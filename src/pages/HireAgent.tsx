@@ -4,12 +4,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '../lib/supabase';
 import {
-    Loader2, Send, Mail, MapPin, Clock
+    Loader2, Send,
+    CheckCircle2, Shield, Zap as ZapIcon,
+    Mail, MapPin, Clock
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
 
-const contactSchema = z.object({
+const hireAgentSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
     email: z.string().email('Please enter a valid email address'),
     phone: z.string().regex(/^\+?[0-9\s-]{9,15}$/, 'Please enter a valid phone number'),
@@ -21,9 +23,9 @@ const contactSchema = z.object({
     bot_check: z.string().optional(), // Honeypot field
 });
 
-type ContactFormData = z.infer<typeof contactSchema>;
+type HireAgentFormData = z.infer<typeof hireAgentSchema>;
 
-const Contact = () => {
+const HireAgent = () => {
     const {
         register,
         handleSubmit,
@@ -31,13 +33,13 @@ const Contact = () => {
         watch,
         setValue,
         formState: { errors, isSubmitting },
-    } = useForm<ContactFormData>({
-        resolver: zodResolver(contactSchema),
+    } = useForm<HireAgentFormData>({
+        resolver: zodResolver(hireAgentSchema),
     });
 
     const selectedCounty = watch('county');
 
-    const onSubmit = async (data: ContactFormData) => {
+    const onSubmit = async (data: HireAgentFormData) => {
         if (data.bot_check) {
             toast.success('Message sent successfully!');
             reset();
@@ -55,17 +57,17 @@ const Contact = () => {
                     town: data.town,
                     property_type: data.property_type,
                     purpose: data.purpose,
-                    message: data.message,
+                    message: `[HIRE AGENT INQUIRY]: ${data.message}`,
                 }]);
 
             if (error) throw error;
 
             // Trigger Supabase Edge Function for Email Notification
             await supabase.functions.invoke('send-email', {
-                body: { record: data }
+                body: { record: { ...data, message: `[HIRE AGENT INQUIRY]: ${data.message}` } }
             });
 
-            toast.success('Message sent successfully! We will be in touch shortly.');
+            toast.success('Your inquiry has been sent! An Energy Advisor will contact you shortly.');
             reset();
         } catch (error) {
             console.error('Error:', error);
@@ -75,35 +77,81 @@ const Contact = () => {
 
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen">
-            <title>Contact Us | The Berman</title>
+            <title>Hire an Energy Agent | The Berman</title>
 
             {/* 1. COMPACT HERO */}
             <section className="pt-32 pb-8 bg-white">
                 <div className="container mx-auto px-6 text-center max-w-4xl">
                     <span className="inline-block mb-4 px-4 py-1.5 rounded-full bg-green-50 text-[#007F00] text-xs font-black tracking-widest uppercase border border-green-100">
-                        Get In Touch
+                        Expert Guidance
                     </span>
                     <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 leading-tight">
-                        How can we <br className="md:hidden" /> <span className="text-[#007F00]">help?</span>
+                        Hire An <span className="text-[#007F00]">Energy Agent</span> For Free
                     </h1>
                     <p className="text-base md:text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
-                        Have a question about BER assessments? Our team is here to provide the support you need.
+                        Get impartial guidance, verified technical input, and access to competitive pricing for your home energy upgrades.
                     </p>
                 </div>
             </section>
 
-
-            {/* 3. CONTACT CONTENT */}
+            {/* 2. ENERGY AGENT INFO BLOCK */}
             <section className="pb-12">
+                <div className="container mx-auto px-6 max-w-4xl">
+                    <div className="bg-green-50/50 border-2 border-green-100 rounded-[2rem] p-8 md:p-12 text-left shadow-sm">
+                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-6 uppercase tracking-tight">Speak to an <span className="text-[#007F00]">Energy Advisor</span></h2>
+                        <div className="space-y-6 text-gray-700 leading-relaxed font-medium">
+                            <p>
+                                Your energy agent will organise and work directly with a BER assessor to ensure all advice and upgrade recommendations are technically accurate and based on your existing BER certificate and advisory report.
+                            </p>
+
+                            <div className="space-y-4">
+                                <p className="font-black text-gray-900 uppercase tracking-widest text-xs">The agent will then:</p>
+                                <ul className="grid md:grid-cols-2 gap-4">
+                                    {[
+                                        "Identify cost-effective upgrade options",
+                                        "Advise on best BER improvements",
+                                        "Source and compare contractor quotes",
+                                        "Negotiate best-value options",
+                                        "Assist with SEAI grant paperwork",
+                                        "Avoid unnecessary or overpriced works"
+                                    ].map((item, i) => (
+                                        <li key={i} className="flex items-start gap-3">
+                                            <CheckCircle2 className="text-[#007F00] mt-1 shrink-0" size={18} />
+                                            <span className="text-sm font-bold">{item}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            <p className="text-gray-600 italic text-sm">
+                                The goal is to provide clear, impartial guidance, verified technical input, and access to competitive pricing, ensuring upgrades are completed in the smartest and most economical way possible.
+                            </p>
+
+                            <div className="pt-6 border-t border-green-100 flex flex-col md:flex-row gap-6 items-center text-xs font-black uppercase tracking-widest text-gray-500">
+                                <div className="flex items-center gap-2">
+                                    <Shield className="text-[#007F00]" size={16} />
+                                    <span>Independent from contractors</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <ZapIcon className="text-[#007F00]" size={16} />
+                                    <span>Technical input & certification</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* 3. FORM SECTION */}
+            <section className="pb-24">
                 <div className="container mx-auto px-6 max-w-7xl">
                     <div className="flex flex-col lg:flex-row gap-8 items-stretch">
 
-                        {/* UNIFIED CONTACT INFO CARD */}
+                        {/* LEFT COLUMN: CONTACT INFO */}
                         <div className="lg:w-1/3 w-full bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 border border-gray-100 shadow-sm group hover:border-green-100 transition-all h-full">
                             <h3 className="text-xl font-black text-gray-900 mb-8 uppercase tracking-tight">Our details</h3>
 
                             <div className="space-y-6">
-
                                 <InfoItem
                                     icon={<Mail size={20} />}
                                     title="Email Us"
@@ -137,9 +185,9 @@ const Contact = () => {
                             </div>
                         </div>
 
-                        {/* FORM COLUMN */}
+                        {/* RIGHT COLUMN: FORM */}
                         <div className="lg:w-2/3 w-full bg-gray-50 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 border border-gray-100 shadow-sm transition-all hover:shadow-md">
-                            <h3 className="text-lg md:text-xl font-black text-gray-900 mb-6 text-center uppercase tracking-tight px-4">Send us a detailed message</h3>
+                            <h3 className="text-lg md:text-xl font-black text-gray-900 mb-6 text-center uppercase tracking-tight px-4">Request Your Energy Agent</h3>
 
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                                 <div className="grid md:grid-cols-2 gap-4">
@@ -237,7 +285,7 @@ const Contact = () => {
                                         {...register('message')}
                                         rows={3}
                                         className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all resize-none ${errors.message ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'}`}
-                                        placeholder="Tell us more about your request..."
+                                        placeholder="Tell us about your home energy goals..."
                                     ></textarea>
                                     {errors.message && <p className="text-red-500 text-xs font-bold mt-1 ml-1">{errors.message.message}</p>}
                                 </div>
@@ -260,7 +308,7 @@ const Contact = () => {
                                     ) : (
                                         <>
                                             <Send size={20} />
-                                            Send Message
+                                            Hire Energy Agent
                                         </>
                                     )}
                                 </button>
@@ -304,4 +352,4 @@ const InfoItem = ({ icon, title, value, href, onClick }: { icon: React.ReactNode
     return content;
 };
 
-export default Contact;
+export default HireAgent;

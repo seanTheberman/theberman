@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { Menu, X, Home, Smartphone, Mail, Facebook, Instagram, Linkedin, ChevronRight } from 'lucide-react';
+import { Menu, X, Home, Mail, Facebook, Instagram, Linkedin, ChevronRight } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import QuoteModal from './QuoteModal';
@@ -9,8 +9,8 @@ import QuoteModal from './QuoteModal';
 const NAV_LINKS = [
     { label: 'Home', path: '/' },
     { label: 'About', path: '/about' },
-    { label: 'Home Energy Catalog', path: '/catalogue' },
-    { label: 'Speak to an Energy Advisor', path: '/contact' },
+    { label: 'Home Energy Catalogue', path: '/catalogue' },
+    { label: 'Speak to an Energy Advisor', path: '/hire-agent' },
     { label: 'Find BER Assessor', path: '/get-quote' },
     { label: 'Our News', path: '/news' },
     { label: 'Location', path: '/locations' },
@@ -93,7 +93,10 @@ const Layout = () => {
                                 <img src="/logo.svg" alt="The Berman Logo" className="h-18 w-auto relative z-10" />
                             </div>
                         </Link>
+                    </div>
 
+                    {/* Menu Button - Visible on all screens */}
+                    <div className="flex items-center gap-4 relative">
                         {/* Catalogue Hub Link - Desktop */}
                         <Link
                             to="/catalogue"
@@ -104,11 +107,6 @@ const Layout = () => {
                                 Home Energy <span className="text-[#9ACD32]">Catalogue</span>
                             </span>
                         </Link>
-                    </div>
-
-                    {/* Menu Button - Visible on all screens */}
-                    {/* Menu Button - Visible on all screens */}
-                    <div className="flex items-center gap-4 relative">
                         <button
                             className="bg-gray-200 p-2 rounded-md hover:bg-gray-300 transition-colors"
                             onClick={toggleMenu}
@@ -215,6 +213,13 @@ const Layout = () => {
                                                 >
                                                     Assessor Registration
                                                 </Link>
+                                                <Link
+                                                    to="/signup?role=business"
+                                                    onClick={closeMenu}
+                                                    className="block px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 uppercase tracking-wide"
+                                                >
+                                                    Business Catalogue Registration
+                                                </Link>
                                             </>
                                         ) : (
                                             <>
@@ -298,6 +303,11 @@ const Layout = () => {
                                     </li>
                                 ))}
                                 <li>
+                                    <Link to="/assessor-membership" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
+                                        Assessor Membership
+                                    </Link>
+                                </li>
+                                <li>
                                     <Link to="/faq" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
                                         FAQ
                                     </Link>
@@ -333,10 +343,6 @@ const Layout = () => {
                         <div>
                             <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">Get in Touch</h4>
                             <ul className="space-y-4">
-                                <li className="flex items-start gap-3 text-gray-400 text-sm">
-                                    <Smartphone className="text-[#9ACD32] mt-0.5" size={16} />
-                                    <a href="tel:0874421653" className="hover:text-white transition">087 4421653</a>
-                                </li>
                                 <li className="flex items-start gap-3 text-gray-400 text-sm">
                                     <Mail className="text-[#9ACD32] mt-0.5" size={16} />
                                     <a href="mailto:hello@theberman.eu" className="hover:text-white transition">support@theberman.eu</a>

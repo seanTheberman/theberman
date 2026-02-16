@@ -98,19 +98,6 @@ interface AppSettings {
     support_email: string;
 }
 
-interface CatalogueEnquiry {
-    id: string;
-    created_at: string;
-    name: string;
-    email: string;
-    phone: string;
-    message: string;
-    listing_id: string;
-    catalogue_listings?: {
-        name: string;
-        company_name: string;
-    };
-}
 
 interface CatalogueListing {
     id: string;
@@ -245,9 +232,8 @@ const Admin = () => {
     const [payments, setPayments] = useState<Payment[]>([]);
     const [sponsors, setSponsors] = useState<Sponsor[]>([]);
     const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
-    const [catalogue_enquiries, setCatalogueEnquiries] = useState<CatalogueEnquiry[]>([]);
     const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
-    const [view, setView] = useState<'stats' | 'leads' | 'assessments' | 'users' | 'payments' | 'settings' | 'catalogue' | 'referrals' | 'enquiries' | 'news'>('stats');
+    const [view, setView] = useState<'stats' | 'leads' | 'assessments' | 'users' | 'payments' | 'settings' | 'catalogue' | 'referrals' | 'news'>('stats');
     const [loading, setLoading] = useState(true);
     const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
     const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
@@ -366,32 +352,6 @@ const Admin = () => {
         eircode: ''
     });
 
-    const fetchCatalogueEnquiries = async () => {
-        setLoading(true);
-        try {
-            const { data, error } = await supabase
-                .from('catalogue_enquiries')
-                .select(`
-                    *,
-                    catalogue_listings (
-                        name,
-                        company_name
-                    )
-                `)
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-            setCatalogueEnquiries(data || []);
-        } catch (error) {
-            console.error('Error fetching catalogue enquiries:', error);
-            toast.error('Failed to load partner enquiries');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const [selectedEnquiry, setSelectedEnquiry] = useState<CatalogueEnquiry | null>(null);
-    const [showEnquiryModal, setShowEnquiryModal] = useState(false);
 
     const { signOut, user } = useAuth();
     const navigate = useNavigate();
@@ -973,7 +933,6 @@ const Admin = () => {
                 else if (view === 'assessments') await fetchAssessments();
                 else if (view === 'users') await fetchUsers();
                 else if (view === 'payments') await fetchPayments();
-                else if (view === 'enquiries') await fetchCatalogueEnquiries();
                 else if (view === 'settings') {
                     await fetchAppSettings();
                     await fetchPromoSettings();
@@ -1381,13 +1340,13 @@ const Admin = () => {
                             {isMenuOpen && (
                                 <div className="absolute right-0 top-full mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
                                     <div className="p-2 space-y-1">
-                                        {(['stats', 'leads', 'enquiries', 'assessments', 'users', 'payments', 'news', 'settings'] as const).map((v) => (
+                                        {(['stats', 'leads', 'assessments', 'users', 'payments', 'settings', 'catalogue', 'referrals', 'news'] as const).map((v) => (
                                             <button
                                                 key={v}
                                                 onClick={() => { setView(v); setIsMenuOpen(false); }}
                                                 className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] transition-all duration-200 ${view === v ? 'bg-[#5CB85C]/10 text-[#5CB85C]' : 'text-gray-600 hover:bg-gray-50'}`}
                                             >
-                                                {v === 'stats' ? 'Overview' : v === 'enquiries' ? 'Partner Enquiries' : v}
+                                                {v === 'stats' ? 'Overview' : v}
                                                 {view === v && <div className="w-1.5 h-1.5 rounded-full bg-[#5CB85C]"></div>}
                                             </button>
                                         ))}
@@ -1931,76 +1890,6 @@ const Admin = () => {
                                 </table>
                             </div>
                         )}
-                    </div>
-                ) : view === 'enquiries' ? (
-                    /* PARTNER ENQUIRIES VIEW */
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-900">Partner Enquiries</h3>
-                                <p className="text-sm text-gray-500">Messages sent via "Message Directly" forms.</p>
-                            </div>
-                            <button
-                                onClick={fetchCatalogueEnquiries}
-                                className="p-2 text-gray-400 hover:text-[#007EA7] transition-colors"
-                                title="Refresh enquiries"
-                            >
-                                <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-                            </button>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm text-gray-600">
-                                <thead className="bg-gray-50/50 text-gray-900 font-bold uppercase tracking-wider text-xs border-b border-gray-100">
-                                    <tr>
-                                        <th className="px-6 py-4">Date</th>
-                                        <th className="px-6 py-4">Client</th>
-                                        <th className="px-6 py-4">Partner</th>
-                                        <th className="px-6 py-4">Message Preview</th>
-                                        <th className="px-6 py-4 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {catalogue_enquiries.map((enquiry) => (
-                                        <tr key={enquiry.id} className="hover:bg-green-50/30 transition-colors group">
-                                            <td className="px-6 py-4 text-gray-500 font-medium">
-                                                {new Date(enquiry.created_at).toLocaleDateString()}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="font-bold text-gray-900">{enquiry.name}</div>
-                                                <div className="text-xs text-gray-400">{enquiry.email}</div>
-                                                <div className="text-[10px] text-gray-400">{enquiry.phone}</div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="font-medium text-gray-700">{enquiry.catalogue_listings?.name || 'Unknown Partner'}</div>
-                                                <div className="text-[10px] text-gray-400">{enquiry.catalogue_listings?.company_name}</div>
-                                            </td>
-                                            <td className="px-6 py-4 text-gray-500 italic max-w-xs truncate">
-                                                "{enquiry.message || 'No message'}"
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedEnquiry(enquiry);
-                                                        setShowEnquiryModal(true);
-                                                    }}
-                                                    className="bg-white border border-gray-200 text-gray-600 hover:text-[#007EA7] hover:border-[#007EA7] px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1 ml-auto"
-                                                >
-                                                    <Eye size={14} />
-                                                    Read Message
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {catalogue_enquiries.length === 0 && (
-                                        <tr>
-                                            <td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">
-                                                No partner enquiries found.
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
                     </div>
                 ) : view === 'news' ? (
                     /* NEWS MANAGEMENT VIEW */
@@ -2889,7 +2778,7 @@ const Admin = () => {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         onClick={() => toast.success('Opening Gmail...')}
-                                        href={`https://mail.google.com/mail/?view=cm&fs=1&to=${selectedLead.email}&su=${encodeURIComponent('Re: Your inquiry to The Berman')}&body=${encodeURIComponent(`Hi ${selectedLead.name},\n\nThank you for reaching out regarding your property in ${selectedLead.town || 'your area'}.\n\n`)}`}
+                                        href={`https://mail.google.com/mail/?view=cm&fs=1&to=${selectedLead.email}&su=${encodeURIComponent('Re: Your inquiry to The Berman')}&body=${encodeURIComponent(`Hi ${selectedLead.name},\n\nI'm writing to you regarding your BER assessment for ${selectedLead.town || 'your area'}.\n\n`)}`}
                                         className="w-full bg-white border-2 border-gray-900 text-gray-900 font-bold text-sm py-4 rounded-2xl hover:bg-gray-50 transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-lg active:scale-[0.98] no-underline"
                                     >
                                         <Mail size={18} />
@@ -3114,56 +3003,6 @@ const Admin = () => {
                                 </button>
                             </div>
                         </form>
-                    </div>
-                </div>
-            )}
-            {/* ENQUIRY MESSAGE MODAL */}
-            {showEnquiryModal && selectedEnquiry && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-in zoom-in-95 duration-200">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-gray-900">Enquiry from {selectedEnquiry.name}</h3>
-                            <button onClick={() => setShowEnquiryModal(false)} className="text-gray-400 hover:text-gray-600">
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="text-sm font-bold text-gray-700 mb-1">Partner:</p>
-                                    <p className="text-sm text-[#007EA7] font-medium">{selectedEnquiry.catalogue_listings?.name}</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-sm font-bold text-gray-700 mb-1">Date:</p>
-                                    <p className="text-sm text-gray-500">{new Date(selectedEnquiry.created_at).toLocaleDateString()}</p>
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <p className="text-sm font-bold text-gray-700 mb-1">Client Email:</p>
-                                    <p className="text-sm text-gray-900 truncate">{selectedEnquiry.email}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold text-gray-700 mb-1">Phone:</p>
-                                    <p className="text-sm text-gray-900">{selectedEnquiry.phone || 'N/A'}</p>
-                                </div>
-                            </div>
-                            <div>
-                                <p className="block text-sm font-bold text-gray-700 mb-1">Message:</p>
-                                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 min-h-[150px]">
-                                    <p className="text-sm text-gray-800 whitespace-pre-wrap">{selectedEnquiry.message || 'No message provided.'}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="pt-6 flex justify-end">
-                            <button
-                                type="button"
-                                onClick={() => setShowEnquiryModal(false)}
-                                className="px-6 py-2.5 text-sm font-bold text-white bg-[#007EA7] rounded-xl hover:bg-[#006e92] transition-colors shadow-lg"
-                            >
-                                Done
-                            </button>
-                        </div>
                     </div>
                 </div>
             )}

@@ -52,11 +52,11 @@ const About = () => {
                         <div className="lg:col-span-4 lg:pl-12 lg:border-l border-gray-200">
                             <div className="sticky top-12 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-8 lg:space-y-12">
                                 <div>
-                                    <p className="text-4xl md:text-5xl font-black text-[#007F00] mb-2">10k+</p>
+                                    <p className="text-4xl md:text-5xl font-black text-[#007F00] mb-2">1k+</p>
                                     <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-tight">Completed <br className="hidden lg:block" />BER Assessments</p>
                                 </div>
                                 <div>
-                                    <p className="text-4xl md:text-5xl font-black text-[#007F00] mb-2">300+</p>
+                                    <p className="text-4xl md:text-5xl font-black text-[#007F00] mb-2">100+</p>
                                     <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-tight">Nationwide <br className="hidden lg:block" />Network Assessors</p>
                                 </div>
                                 <div>

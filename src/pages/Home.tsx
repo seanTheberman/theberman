@@ -1,7 +1,7 @@
 import {
     ArrowRight, CheckCircle2, Star, Clock,
     Zap as ZapIcon, ShieldCheck, TrendingUp,
-    Phone, Users, Shield, ClipboardList, X, Search, ChevronRight
+    Users, Shield, ClipboardList, X, Search, ChevronRight
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
@@ -61,21 +61,26 @@ const HomePage = () => {
                         </p>
 
                         {/* Dual Primary CTAs */}
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-2xl mx-auto mb-16">
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-2xl mx-auto mb-16 px-4">
                             <Link to="/get-quote" className="w-full sm:w-auto">
                                 <button className="w-full sm:px-16 py-8 bg-[#007F00] hover:bg-[#006400] text-white text-2xl md:text-3xl font-black rounded-[2rem] shadow-2xl shadow-green-100 transition-all transform hover:-translate-y-2 hover:scale-105 flex items-center justify-center gap-4 cursor-pointer border-4 border-white/10">
                                     Get Quotes
                                     <ArrowRight size={32} strokeWidth={3} />
                                 </button>
                             </Link>
-
+                            <button
+                                onClick={() => document.getElementById('newsletter')?.scrollIntoView({ behavior: 'smooth' })}
+                                className="w-full sm:w-auto sm:px-10 py-6 bg-white hover:bg-gray-50 text-gray-900 text-lg md:text-xl font-black rounded-2xl border-2 border-gray-100 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3 cursor-pointer"
+                            >
+                                Subscribe to News
+                            </button>
                         </div>
 
                         {/* Fast Benefits Row */}
                         <div className="flex flex-wrap justify-center gap-x-12 gap-y-6">
                             {[
                                 { icon: <Users size={20} />, text: "100+ Assessors Nationwide" },
-                                { icon: <ShieldCheck size={20} />, text: "BER registered assessors only" },
+                                { icon: <ShieldCheck size={20} />, text: "SEAI REGISTERED ASSESSORS ONLY" },
                                 { icon: <Clock size={20} />, text: "Choose Your Date & Time" }
                             ].map((item, i) => (
                                 <div key={i} className="flex items-center gap-2 text-gray-500 font-bold text-sm tracking-wide uppercase">
@@ -284,13 +289,15 @@ const HomePage = () => {
                             <p className="text-gray-400 text-lg mb-10 leading-relaxed max-w-xl">
                                 Reduce your electricity bills and carbon footprint with customized solar solutions. Our partners provide expert installation and the latest technology tailored for your home.
                             </p>
-                            <Link
-                                to="/get-solar-quote"
+                            <a
+                                href="https://solarquotesireland.com/"
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="inline-flex items-center gap-3 bg-[#007F00] hover:bg-[#006400] text-white px-10 py-5 rounded-2xl font-black text-xs md:text-sm uppercase tracking-widest transition-all active:scale-95 shadow-[0_20px_40px_rgba(0,127,0,0.3)] group"
                             >
                                 Compare Solar Deals
                                 <ChevronRight className="group-hover:translate-x-1 transition-transform" size={18} />
-                            </Link>
+                            </a>
                         </div>
                         <div className="lg:w-1/2 relative">
                             <div className="relative rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl skew-x-1">
@@ -366,12 +373,12 @@ const HomePage = () => {
                                 <span className="text-[#007F00]">Home Energy</span> Partners.
                             </h2>
                             <p className="text-lg md:text-xl text-gray-500 font-medium leading-relaxed mb-10 max-w-2xl">
-                                Access our curated catalog of certified home energy businesses. From solar panel installers to insulation specialists, find the right partner for your home's journey to efficiency.
+                                Access our curated catalogue of certified home energy businesses. From solar panel installers to insulation specialists, find the right partner for your home's journey to efficiency.
                             </p>
                             <div className="flex flex-wrap gap-4">
                                 <Link to="/catalogue">
                                     <button className="px-10 py-5 bg-[#007F00] text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-[#006400] transition-all shadow-xl shadow-green-100 flex items-center gap-3 active:scale-95 cursor-pointer">
-                                        Browse Catalog
+                                        Browse Catalogue
                                         <ArrowRight size={18} />
                                     </button>
                                 </Link>
@@ -446,15 +453,7 @@ const HomePage = () => {
                             Join over 1,000 satisfied homeowners. Get competitive quotes from trusted local assessors in seconds.
                         </p>
                         <div className="space-y-6 mb-12">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-green-400">
-                                    <Phone size={24} />
-                                </div>
-                                <div>
-                                    <p className="text-xs font-bold text-gray-500 uppercase">Emergency Support</p>
-                                    <p className="font-black text-2xl">087 4421653</p>
-                                </div>
-                            </div>
+
                         </div>
                         <Link to="/get-quote">
                             <button className="w-full bg-[#007F00] hover:bg-green-600 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-green-900/40 transform hover:-translate-y-1 cursor-pointer">
@@ -466,7 +465,7 @@ const HomePage = () => {
             </section>
 
             {/* 6. FINAL CTA / NEWSLETTER */}
-            <section className="py-24 bg-gray-50 border-t border-gray-100">
+            <section id="newsletter" className="py-24 bg-gray-50 border-t border-gray-100">
                 <div className="container mx-auto px-6">
                     <div className="p-16 text-center relative overflow-hidden">
                         <div className="absolute top-0 right-0 -mr-32 -mt-32 w-80 h-80 rounded-full bg-white/5 blur-3xl"></div>

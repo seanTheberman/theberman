@@ -13,7 +13,7 @@ const signupSchema = z.object({
     email: z.string().email('Invalid email address'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z.string(),
-    role: z.enum(['user', 'contractor']),
+    role: z.enum(['user', 'contractor', 'business']),
 }).refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
@@ -26,13 +26,14 @@ const SignUp = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const roleParam = searchParams.get('role');
-    const defaultRole = (roleParam === 'contractor' || roleParam === 'user') ? roleParam : 'user';
+    const defaultRole = (roleParam === 'contractor' || roleParam === 'user' || roleParam === 'business') ? roleParam : 'user';
 
     // Redirect if already authenticated
     useEffect(() => {
         if (!loading && user && role) {
             if (role === 'admin') navigate('/admin', { replace: true });
             else if (role === 'contractor') navigate('/dashboard/ber-assessor', { replace: true });
+            else if (role === 'business') navigate('/dashboard/business', { replace: true });
             else navigate('/dashboard/user', { replace: true });
         }
     }, [user, role, loading, navigate]);
@@ -52,6 +53,13 @@ const SignUp = () => {
 
     const selectedRole = watch('role');
 
+    // Sync role from query param if it changes
+    useEffect(() => {
+        if (roleParam && (roleParam === 'contractor' || roleParam === 'user' || roleParam === 'business')) {
+            setValue('role', roleParam as any);
+        }
+    }, [roleParam, setValue]);
+
     const onSubmit = async (data: SignUpFormData) => {
         try {
             const { error, data: authData } = await signUp(data.email.trim(), data.password, data.fullName, data.role);
@@ -67,9 +75,11 @@ const SignUp = () => {
                     navigate('/login');
                 } else {
                     toast.success('Account created successfully!');
-                    // If signed in immediately, redirect to appropriate destination
+                    // Redirect to appropriate destination
                     if (data.role === 'contractor') {
                         navigate('/assessor-onboarding');
+                    } else if (data.role === 'business') {
+                        navigate('/business-onboarding');
                     } else {
                         navigate('/dashboard/user');
                     }
@@ -86,43 +96,66 @@ const SignUp = () => {
                 <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-xl overflow-hidden p-8 md:p-12 text-center">
 
                     <div className="mb-8">
-                        <h2 className="text-3xl font-serif font-bold text-gray-900 mb-2">Create Account</h2>
-                        <p className="text-gray-500">Sign up to get started.</p>
+                        <h2 className="text-3xl font-serif font-bold text-gray-900 mb-2">
+                            {selectedRole === 'business' ? 'Business Registration' :
+                                selectedRole === 'contractor' ? 'Assessor Registration' :
+                                    'Create Account'}
+                        </h2>
+                        <p className="text-gray-500">
+                            {selectedRole === 'business' ? 'Register your company in our Home Energy Catalogue.' :
+                                selectedRole === 'contractor' ? 'Join our network of professional BER assessors.' :
+                                    'Sign up to get started.'}
+                        </p>
                     </div>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
                         {/* Role Selection Tabs */}
-                        <div className="flex border-b border-gray-200 mb-8">
-                            <button
-                                type="button"
-                                onClick={() => setValue('role', 'user')}
-                                className={`py-3 px-6 text-sm font-medium transition-all border-b-2 -mb-px ${selectedRole === 'user'
-                                    ? 'border-gray-400 text-gray-700'
-                                    : 'border-transparent text-gray-400 hover:text-gray-600'
-                                    }`}
-                            >
-                                Homeowner
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setValue('role', 'contractor')}
-                                className={`py-3 px-6 text-sm font-medium transition-all border-b-2 -mb-px ${selectedRole === 'contractor'
-                                    ? 'border-gray-400 text-gray-700'
-                                    : 'border-transparent text-gray-400 hover:text-gray-600'
-                                    }`}
-                            >
-                                BER Assessor
-                            </button>
-                        </div>
+                        {!roleParam && (
+                            <div className="flex border-b border-gray-200 mb-8">
+                                <button
+                                    type="button"
+                                    onClick={() => setValue('role', 'user')}
+                                    className={`py-3 px-4 text-sm font-medium transition-all border-b-2 -mb-px ${selectedRole === 'user'
+                                        ? 'border-gray-400 text-gray-700'
+                                        : 'border-transparent text-gray-400 hover:text-gray-600'
+                                        }`}
+                                >
+                                    Homeowner
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setValue('role', 'contractor')}
+                                    className={`py-3 px-4 text-sm font-medium transition-all border-b-2 -mb-px ${selectedRole === 'contractor'
+                                        ? 'border-gray-400 text-gray-700'
+                                        : 'border-transparent text-gray-400 hover:text-gray-600'
+                                        }`}
+                                >
+                                    BER Assessor
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setValue('role', 'business')}
+                                    className={`py-3 px-4 text-sm font-medium transition-all border-b-2 -mb-px ${selectedRole === 'business'
+                                        ? 'border-gray-400 text-gray-700'
+                                        : 'border-transparent text-gray-400 hover:text-gray-600'
+                                        }`}
+                                >
+                                    Business
+                                </button>
+                            </div>
+                        )}
+
 
                         <div className="space-y-1 text-left">
-                            <label className="text-sm font-bold text-gray-700 ml-1">Full Name</label>
+                            <label className="text-sm font-bold text-gray-700 ml-1">
+                                {selectedRole === 'business' ? 'Full Business Name' : 'Full Name'}
+                            </label>
                             <input
                                 {...register('fullName')}
                                 type="text"
                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                placeholder="John Doe"
+                                placeholder={selectedRole === 'business' ? 'Acme Energy Solutions' : 'John Doe'}
                             />
                             {errors.fullName && <p className="text-red-500 text-xs mt-1 font-medium ml-1">{errors.fullName.message}</p>}
                         </div>

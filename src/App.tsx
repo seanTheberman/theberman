@@ -19,6 +19,7 @@ import ContractorDashboard from './pages/ContractorDashboard';
 import BusinessDashboard from './pages/BusinessDashboard';
 import SignUp from './pages/SignUp';
 import ContractorOnboarding from './pages/ContractorOnboarding';
+import BusinessOnboarding from './pages/BusinessOnboarding';
 import ForgotPassword from './pages/ForgotPassword';
 import UpdatePassword from './pages/UpdatePassword';
 import QuoteForm from './pages/QuoteForm';
@@ -32,6 +33,8 @@ import Locations from './pages/Locations';
 import News from './pages/News';
 import NewsDetail from './pages/NewsDetail';
 import SolarQuoteForm from './pages/SolarQuoteForm';
+import HireAgent from './pages/HireAgent';
+import AssessorMembership from './pages/AssessorMembership';
 import ReferralTracker from './components/ReferralTracker';
 
 
@@ -76,10 +79,12 @@ function App() {
                         <Route path="faq" element={<FAQ />} />
                         <Route path="news" element={<News />} />
                         <Route path="news/:id" element={<NewsDetail />} />
+                        <Route path="hire-agent" element={<HireAgent />} />
                         <Route path="/get-solar-quote" element={<SolarQuoteForm />} />
                     </Route>
 
-                    {/* Quote Form - No Layout wrapper for cleaner UX */}
+                    {/* No Layout wrapper for cleaner UX */}
+                    <Route path="/assessor-membership" element={<AssessorMembership />} />
                     <Route path="/get-quote" element={<QuoteForm />} />
 
                     <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -117,6 +122,16 @@ function App() {
                         element={
                             <ProtectedRoute allowedRoles={['contractor']}>
                                 <ContractorOnboarding />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    {/* Business Onboarding */}
+                    <Route
+                        path="/business-onboarding"
+                        element={
+                            <ProtectedRoute allowedRoles={['business']}>
+                                <BusinessOnboarding />
                             </ProtectedRoute>
                         }
                     />

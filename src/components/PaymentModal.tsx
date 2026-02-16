@@ -60,7 +60,7 @@ const CheckoutForm = ({ onSuccess, amount }: { onSuccess: (id: string) => void, 
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            <PaymentElement id="payment-element" options={{ layout: "tabs" }} />
+            <PaymentElement id="payment-element" options={{ layout: "tabs", wallets: { applePay: 'never', googlePay: 'never' } }} />
 
             {message && (
                 <div className="bg-red-50 text-red-600 p-3 rounded-lg flex items-center gap-2 text-sm font-medium">

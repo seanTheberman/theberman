@@ -337,7 +337,7 @@ const FAQ = () => {
                             <div className="mt-16 pt-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
                                 <div>
                                     <p className="text-sm text-gray-400 mb-1 font-bold uppercase tracking-widest">Need immediate help?</p>
-                                    <p className="text-xl font-black text-gray-900 tracking-tight">Call 087 4421653</p>
+                                    <p className="text-xl font-black text-gray-900 tracking-tight">Email info@theberman.eu</p>
                                 </div>
                                 <button className="bg-[#007F00] text-white px-10 py-4 rounded-full font-black text-sm uppercase tracking-wider hover:bg-[#006400] transition-all shadow-lg hover:-translate-y-1">
                                     Get a Quote Now
@@ -371,7 +371,6 @@ const FAQ = () => {
                             <div className="mt-12 p-8 bg-green-50 rounded-[2rem] border border-green-100">
                                 <p className="text-lg font-black text-[#007F00] mb-2 uppercase tracking-tight">Ireland's Leading BER Consultants</p>
                                 <p className="text-sm text-green-700/80 mb-6 font-medium leading-relaxed">Trusted by 10,000+ homeowners across the country.</p>
-                                <p className="text-sm text-green-700/80 mb-6 font-medium leading-relaxed">Call 087 4421653</p>
                                 <p className="text-sm text-green-700/80 mb-6 font-medium leading-relaxed">Email: info@theberman.eu</p>
                             </div>
                         </div>

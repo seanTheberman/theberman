@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 import { Check, Plus, X } from 'lucide-react';
@@ -24,7 +23,7 @@ const ContractorOnboarding = () => {
         vatRegistered: false,
         assessorTypes: ['Domestic Assessor'] as string[],
         serviceAreas: [] as string[],
-        selectedCategories: [] as string[],
+        wantsCatalogueListing: true, // Default to true as per simplified requirement
         companyName: '',
         website: '',
         socialFacebook: '',
@@ -35,25 +34,6 @@ const ContractorOnboarding = () => {
 
     const [featureInput, setFeatureInput] = useState('');
 
-    const [categories, setCategories] = useState<any[]>([]);
-
-    useEffect(() => {
-        const fetchCategories = async () => {
-            const { data } = await supabase
-                .from('catalogue_categories')
-                .select('*')
-                .order('name');
-            if (data) setCategories(data);
-        };
-        fetchCategories();
-    }, []);
-
-    useEffect(() => {
-        if (user) {
-            // Provide basic fetch if profile already has partial data? 
-            // For now, assume it's fresh.
-        }
-    }, [user]);
 
     const handleServiceAreaToggle = (county: string) => {
         setFormData(prev => {
@@ -79,15 +59,8 @@ const ContractorOnboarding = () => {
         });
     };
 
-    const handleCategoryToggle = (id: string) => {
-        setFormData(prev => {
-            const current = [...prev.selectedCategories];
-            if (current.includes(id)) {
-                return { ...prev, selectedCategories: current.filter(c => c !== id) };
-            } else {
-                return { ...prev, selectedCategories: [...current, id] };
-            }
-        });
+    const setWantsCatalogueListing = (val: boolean) => {
+        setFormData(prev => ({ ...prev, wantsCatalogueListing: val }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -105,7 +78,7 @@ const ContractorOnboarding = () => {
 
         setLoading(true);
         try {
-            // Fetch coordinates silently in the background
+            // Fetch coordinates silently
             let latitude = null;
             let longitude = null;
 
@@ -116,137 +89,23 @@ const ContractorOnboarding = () => {
                 longitude = coords.longitude;
             }
 
+            // Store registration data in sessionStorage for later persistence (after payment)
+            const registrationData = {
+                ...formData,
+                latitude,
+                longitude,
+                user_id: user?.id,
+                user_email: user?.email,
+                user_full_name: user?.user_metadata?.full_name
+            };
 
+            sessionStorage.setItem('pending_assessor_registration', JSON.stringify(registrationData));
 
-            // Update profile
-            const { error: profileError } = await supabase
-                .from('profiles')
-                .update({
-                    phone: formData.phone,
-                    home_county: formData.homeCounty,
-                    seai_number: formData.seaiNumber,
-                    insurance_holder: formData.insuranceHolder,
-                    vat_registered: formData.vatRegistered,
-                    assessor_type: formData.assessorTypes.join(' & '),
-                    preferred_counties: formData.serviceAreas,
-                    company_name: formData.companyName,
-                    website_url: formData.website
-                })
-                .eq('id', user?.id);
-
-            if (profileError) {
-                console.error('Profile Update Error:', profileError);
-                throw new Error(`Profile update failed: ${profileError.message} (${profileError.details || 'no details'})`);
-            }
-
-            // Link categories to the contractor listing
-            // First, find or create a listing for this contractor
-            let { data: listing, error: findError } = await supabase
-                .from('catalogue_listings')
-                .select('id')
-                .eq('email', user?.email)
-                .maybeSingle();
-
-            if (findError) {
-                console.warn('Error finding listing:', findError);
-            }
-
-            if (!listing) {
-                const { data: newListing, error: listError } = await supabase
-                    .from('catalogue_listings')
-                    .insert({
-                        name: user?.user_metadata?.full_name || 'Service Provider',
-                        email: user?.email,
-                        phone: formData.phone,
-                        company_name: formData.companyName || user?.user_metadata?.full_name || '',
-                        is_active: true,
-                        description: '',
-                        address: `${formData.homeTown}, Co. ${formData.homeCounty}`,
-                        website: formData.website || '',
-                        logo_url: '',
-                        latitude: latitude,
-                        longitude: longitude,
-                        features: formData.features.length > 0 ? formData.features : [],
-                        social_media: {
-                            facebook: formData.socialFacebook || undefined,
-                            instagram: formData.socialInstagram || undefined,
-                            linkedin: formData.socialLinkedin || undefined
-                        },
-                        slug: generateSlug(user?.user_metadata?.full_name || `provider-${user?.id?.slice(0, 8)}`)
-                    })
-                    .select()
-                    .single();
-
-                if (listError) {
-                    console.error('Listing Create Error:', listError);
-                    throw new Error(`Catalogue listing creation failed: ${listError.message}`);
-                }
-                listing = newListing;
-            } else {
-                // Update existing listing with phone and address
-                await supabase
-                    .from('catalogue_listings')
-                    .update({
-                        phone: formData.phone,
-                        company_name: formData.companyName || undefined,
-                        address: `${formData.homeTown}, Co. ${formData.homeCounty}`,
-                        website: formData.website || '',
-                        latitude: latitude,
-                        longitude: longitude,
-                        features: formData.features.length > 0 ? formData.features : [],
-                        social_media: {
-                            facebook: formData.socialFacebook || undefined,
-                            instagram: formData.socialInstagram || undefined,
-                            linkedin: formData.socialLinkedin || undefined
-                        }
-                    })
-                    .eq('id', listing.id);
-            }
-
-            if (listing && formData.selectedCategories.length > 0) {
-                // Clear existing and insert new
-                const { error: delCatError } = await supabase.from('catalogue_listing_categories').delete().eq('listing_id', listing.id);
-                if (delCatError) console.warn('Error deleting old categories:', delCatError);
-
-                const categoryLinks = formData.selectedCategories.map(catId => ({
-                    listing_id: listing.id,
-                    category_id: catId
-                }));
-                const { error: insCatError } = await supabase.from('catalogue_listing_categories').insert(categoryLinks);
-                if (insCatError) {
-                    console.error('Category Link Error:', insCatError);
-                    // Don't fail the whole thing for category linking if profile is updated
-                }
-
-                // Also update location mapping
-                const { error: delLocError } = await supabase.from('catalogue_listing_locations').delete().eq('listing_id', listing.id);
-                if (delLocError) console.warn('Error deleting old locations:', delLocError);
-
-                // Get location ID for the home county
-                const { data: locData } = await supabase
-                    .from('catalogue_locations')
-                    .select('id')
-                    .eq('name', formData.homeCounty)
-                    .maybeSingle();
-
-                if (locData) {
-                    const { error: insLocError } = await supabase.from('catalogue_listing_locations').insert({
-                        listing_id: listing.id,
-                        location_id: locData.id
-                    });
-                    if (insLocError) console.error('Location Link Error:', insLocError);
-                }
-            }
-
-            toast.success('Profile completed successfully!');
-            // Force reload to update auth context with new profile data
-            setTimeout(() => {
-                window.location.href = '/dashboard/ber-assessor';
-            }, 1500);
+            window.location.href = '/assessor-membership';
 
         } catch (error: any) {
-            console.error('Onboarding Submission Error:', error);
-            toast.error(error.message || 'Failed to complete onboarding. Please check console for details.');
+            console.error('Onboarding Processing Error:', error);
+            toast.error('Failed to process information. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -536,31 +395,35 @@ const ContractorOnboarding = () => {
                         </div>
 
 
-                        {/* Service Selection */}
+                        {/* Service Selection Simplified */}
                         <div className="pt-8 border-t border-gray-100">
-                            <label className="block text-lg font-bold text-gray-900 mb-4">
-                                Select which parts of the catalogue you offer:
+                            <label className="block text-sm font-bold text-gray-900 mb-2">
+                                Would you like to be listed in our Home Energy catalogue as a 'BER ASSESSOR'?
                             </label>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {categories.map(cat => (
-                                    <div
-                                        key={cat.id}
-                                        onClick={() => handleCategoryToggle(cat.id)}
-                                        className={`
-                                            cursor-pointer p-4 rounded-xl border flex items-center justify-between transition-all select-none
-                                            ${formData.selectedCategories.includes(cat.id)
-                                                ? 'bg-green-50/50 border-[#007F00] text-[#007F00] shadow-sm'
-                                                : 'bg-white border-gray-200 hover:border-green-300 text-gray-600'}
-                                        `}
-                                    >
-                                        <div className="flex flex-col">
-                                            <span className="font-bold text-sm uppercase tracking-wide">{cat.name}</span>
-                                        </div>
-                                        {formData.selectedCategories.includes(cat.id) && <Check size={16} className="text-[#007EA7]" />}
+                            <p className="text-sm text-gray-500 mb-6">This will help homeowners find you directly for BER assessments in your area.</p>
+
+                            <div className="flex gap-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setWantsCatalogueListing(true)}
+                                    className={`flex-1 py-4 px-6 rounded-xl border-2 font-bold transition-all flex items-center justify-center gap-2 ${formData.wantsCatalogueListing ? 'border-[#007F00] bg-green-50 text-[#007F00]' : 'border-gray-200 bg-white text-gray-400'}`}
+                                >
+                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${formData.wantsCatalogueListing ? 'border-[#007F00]' : 'border-gray-300'}`}>
+                                        {formData.wantsCatalogueListing && <div className="w-2.5 h-2.5 rounded-full bg-[#007F00]" />}
                                     </div>
-                                ))}
+                                    YES
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setWantsCatalogueListing(false)}
+                                    className={`flex-1 py-4 px-6 rounded-xl border-2 font-bold transition-all flex items-center justify-center gap-2 ${!formData.wantsCatalogueListing ? 'border-red-500 bg-red-50 text-red-600' : 'border-gray-200 bg-white text-gray-400'}`}
+                                >
+                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${!formData.wantsCatalogueListing ? 'border-red-500' : 'border-gray-300'}`}>
+                                        {!formData.wantsCatalogueListing && <div className="w-2.5 h-2.5 rounded-full bg-red-500" />}
+                                    </div>
+                                    NO
+                                </button>
                             </div>
-                            <p className="text-xs text-gray-500 mt-2 text-right">{formData.selectedCategories.length} categories selected</p>
                         </div>
 
                         {/* Service Areas */}
@@ -574,11 +437,11 @@ const ContractorOnboarding = () => {
                                         key={county}
                                         onClick={() => handleServiceAreaToggle(county)}
                                         className={`
-                                            cursor-pointer p-3 rounded-xl border flex items-center justify-between transition-all select-none
-                                            ${formData.serviceAreas.includes(county)
+                                                cursor-pointer p-3 rounded-xl border flex items-center justify-between transition-all select-none
+                                                ${formData.serviceAreas.includes(county)
                                                 ? 'bg-green-50/50 border-[#007F00] text-[#007F00] shadow-sm'
                                                 : 'bg-white border-gray-200 hover:border-green-300 text-gray-600'}
-                                        `}
+                                            `}
                                     >
                                         <span className="font-medium text-sm">Co. {county}</span>
                                         {formData.serviceAreas.includes(county) && <Check size={16} className="text-[#007F00]" />}
@@ -594,7 +457,7 @@ const ContractorOnboarding = () => {
                                 disabled={loading}
                                 className={`w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-lg font-bold text-white bg-[#007F00] hover:bg-[#006600] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#007F00] transition-all transform active:scale-95 ${loading ? 'opacity-75 cursor-not-allowed' : ''}`}
                             >
-                                {loading ? 'Saving Profile...' : 'Complete Registration'}
+                                {loading ? 'Saving Profile...' : 'Proceed'}
                             </button>
                         </div>
                     </form>
@@ -602,16 +465,6 @@ const ContractorOnboarding = () => {
             </div>
         </div>
     );
-};
-
-const generateSlug = (text: string) => {
-    return text
-        .toString()
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, '-')
-        .replace(/[^\w\-]+/g, '')
-        .replace(/\-\-+/g, '-');
 };
 
 export default ContractorOnboarding;

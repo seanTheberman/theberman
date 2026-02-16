@@ -20,7 +20,7 @@ const Login = () => {
     const { signIn, signOut, user, role, loading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
-    const [activeTab, setActiveTab] = useState<'homeowner' | 'assessor'>('homeowner');
+    const [activeTab, setActiveTab] = useState<'homeowner' | 'assessor' | 'business'>('homeowner');
 
     // Default redirect to /admin if no previous path
     const from = location.state?.from?.pathname;
@@ -33,6 +33,7 @@ const Login = () => {
             } else {
                 if (role === 'admin') navigate('/admin', { replace: true });
                 else if (role === 'contractor') navigate('/dashboard/ber-assessor', { replace: true });
+                else if (role === 'business') navigate('/dashboard/business', { replace: true });
                 else navigate('/dashboard/user', { replace: true });
             }
         }
@@ -78,10 +79,23 @@ const Login = () => {
                         await signOut();
                         throw new Error('This account is registered as a BER Assessor. Please use the "BER Assessor" tab to log in.');
                     }
+                    if (userRole === 'business') {
+                        await signOut();
+                        throw new Error('This account is registered as a Business. Please use the "Business" tab to log in.');
+                    }
                 } else if (activeTab === 'assessor') {
                     if (userRole === 'user' || userRole === 'homeowner') {
                         await signOut();
                         throw new Error('This account is registered as a Homeowner. Please use the "Homeowner" tab to log in.');
+                    }
+                    if (userRole === 'business') {
+                        await signOut();
+                        throw new Error('This account is registered as a Business. Please use the "Business" tab to log in.');
+                    }
+                } else if (activeTab === 'business') {
+                    if (userRole !== 'business' && userRole !== 'admin') {
+                        await signOut();
+                        throw new Error('This account is not registered as a Business.');
                     }
                 }
 
@@ -91,6 +105,8 @@ const Login = () => {
                     if (userRole === 'admin') navigate('/admin', { replace: true });
                     else if (userRole === 'contractor') {
                         navigate('/dashboard/ber-assessor', { replace: true });
+                    } else if (userRole === 'business') {
+                        navigate('/dashboard/business', { replace: true });
                     } else {
                         navigate('/dashboard/user', { replace: true });
                     }
@@ -126,12 +142,22 @@ const Login = () => {
                     <button
                         type="button"
                         onClick={() => setActiveTab('assessor')}
-                        className={`py-3 px-6 text-sm font-medium transition-all border-b-2 -mb-px ${activeTab === 'assessor'
+                        className={`py-3 px-4 text-sm font-medium transition-all border-b-2 -mb-px ${activeTab === 'assessor'
                             ? 'border-gray-400 text-gray-700'
                             : 'border-transparent text-gray-400 hover:text-gray-600'
                             }`}
                     >
                         BER Assessor
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('business')}
+                        className={`py-3 px-4 text-sm font-medium transition-all border-b-2 -mb-px ${activeTab === 'business'
+                            ? 'border-gray-400 text-gray-700'
+                            : 'border-transparent text-gray-400 hover:text-gray-600'
+                            }`}
+                    >
+                        Business
                     </button>
                 </div>
 
