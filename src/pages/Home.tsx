@@ -382,7 +382,7 @@ const HomePage = () => {
                                         <ArrowRight size={18} />
                                     </button>
                                 </Link>
-                                <Link to="/contact">
+                                <Link to="/hire-agent">
                                     <button className="px-10 py-5 bg-white text-gray-900 border-2 border-gray-100 font-black text-xs uppercase tracking-widest rounded-2xl hover:border-[#007F00] transition-all flex items-center gap-3 active:scale-95 cursor-pointer">
                                         Speak to Advisor
                                     </button>
