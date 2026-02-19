@@ -1,7 +1,7 @@
 import { useEffect, useState, Fragment } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, DollarSign, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, Settings, MessageCircle, User, Menu, Plus } from 'lucide-react';
+import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, DollarSign, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, Settings, MessageCircle, User, Menu, Plus, Search } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { DatePicker } from '../components/ui/DatePicker';
 import { geocodeAddress } from '../lib/geocoding';
@@ -66,6 +66,15 @@ interface Assessment {
     quotes?: Quote[];
     payment_status?: string;
     eircode?: string;
+    job_type?: string;
+    building_type?: string;
+    floor_area?: string;
+    building_complexity?: string;
+    assessment_purpose?: string;
+    heating_cooling_systems?: string[];
+    existing_docs?: string[];
+    notes?: string;
+    contractor_payout?: number;
 }
 
 const COUNTIES = [
@@ -120,6 +129,7 @@ const ContractorDashboard = () => {
     const [selectedAvailabilityDate, setSelectedAvailabilityDate] = useState<string | null>(null);
     const [termsAgreed, setTermsAgreed] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
 
 
@@ -199,7 +209,15 @@ const ContractorDashboard = () => {
                         preferred_time,
                         created_at,
                         property_address,
-                        eircode
+                        eircode,
+                        job_type,
+                        building_type,
+                        floor_area,
+                        building_complexity,
+                        assessment_purpose,
+                        heating_cooling_systems,
+                        existing_docs,
+                        notes
                     )
                 `)
                 .eq('created_by', user?.id)
@@ -252,26 +270,17 @@ const ContractorDashboard = () => {
                 );
             }
 
-            // 3. Apply Assessor Type filtering (Domestic vs Commercial)
+            // 3. Apply Assessor Type filtering using explicit job_type field
             const assessorType = profileData?.assessor_type || '';
             const isDomesticAssessor = assessorType.includes('Domestic');
             const isCommercialAssessor = assessorType.includes('Commercial');
 
             filteredAvailableJobs = filteredAvailableJobs.filter(job => {
-                // Determine if the job is domestic or commercial based on property_type
-                // These are common commercial indicators. Can be expanded as the system grows.
-                const commercialTypes = ['Commercial', 'Office', 'Retail', 'Industrial', 'Warehouse', 'Unit', 'Retail Unit'];
-
-                // Multi-Unit is usually domestic in this flow but we check specifically if "Office" etc is in the address/type
-                const isCommercialJob = commercialTypes.some(type =>
-                    job.property_type?.toLowerCase().includes(type.toLowerCase()) ||
-                    job.property_address?.toLowerCase().includes(type.toLowerCase())
-                );
+                const isCommercialJob = job.job_type === 'commercial';
 
                 if (isCommercialJob) {
                     return isCommercialAssessor;
                 } else {
-                    // Default to domestic if not explicitly commercial
                     return isDomesticAssessor;
                 }
             });
@@ -669,6 +678,7 @@ const ContractorDashboard = () => {
                                         <thead>
                                             <tr className="bg-gray-50 border-b border-gray-200">
                                                 <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Posted</th>
+                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Job</th>
                                                 <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Town</th>
                                                 <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">County</th>
                                                 <th className="text-left py-3 px-4 text-xs font-bold text-blue-600 uppercase tracking-wider">Eircode</th>
@@ -695,21 +705,26 @@ const ContractorDashboard = () => {
                                                         <td className="py-3 px-4 text-gray-600 font-medium">
                                                             {new Date(job.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
                                                         </td>
+                                                        <td className="py-3 px-4">
+                                                            <span className={`px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider ${job.job_type === 'commercial' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                                                                {job.job_type === 'commercial' ? 'Comm' : 'Dom'}
+                                                            </span>
+                                                        </td>
                                                         <td className="py-3 px-4 text-gray-900 font-bold">{job.town}</td>
                                                         <td className="py-3 px-4 text-gray-600">{job.county}</td>
                                                         <td className="py-3 px-4 text-blue-600 font-medium">{job.eircode}</td>
-                                                        <td className="py-3 px-4 text-gray-600">{job.property_type}</td>
-                                                        <td className="py-3 px-4 text-gray-600">{job.property_size}</td>
-                                                        <td className="py-3 px-4 text-gray-600">{job.bedrooms}</td>
-                                                        <td className="py-3 px-4 text-gray-600">{job.heat_pump}</td>
+                                                        <td className="py-3 px-4 text-gray-600">{job.job_type === 'commercial' ? (job.building_type || '-') : job.property_type}</td>
+                                                        <td className="py-3 px-4 text-gray-600">{job.job_type === 'commercial' ? (job.floor_area || '-') : job.property_size}</td>
+                                                        <td className="py-3 px-4 text-gray-600">{job.job_type === 'commercial' ? '-' : job.bedrooms}</td>
+                                                        <td className="py-3 px-4 text-gray-600">{job.heat_pump || '-'}</td>
                                                         <td className="py-3 px-4">
-                                                            <span className={`px-2 py-1 rounded text-xs font-bold ${job.ber_purpose?.toLowerCase().includes('mortgage') ? 'bg-blue-100 text-blue-700' :
-                                                                job.ber_purpose?.toLowerCase().includes('grant') ? 'bg-green-100 text-green-700' :
-                                                                    job.ber_purpose?.toLowerCase().includes('letting') ? 'bg-amber-100 text-amber-700' :
-                                                                        job.ber_purpose?.toLowerCase().includes('selling') ? 'bg-purple-100 text-purple-700' :
+                                                            <span className={`px-2 py-1 rounded text-xs font-bold ${(job.ber_purpose || job.assessment_purpose || '')?.toLowerCase().includes('mortgage') ? 'bg-blue-100 text-blue-700' :
+                                                                (job.ber_purpose || job.assessment_purpose || '')?.toLowerCase().includes('grant') || (job.ber_purpose || job.assessment_purpose || '')?.toLowerCase().includes('funding') ? 'bg-green-100 text-green-700' :
+                                                                    (job.ber_purpose || job.assessment_purpose || '')?.toLowerCase().includes('letting') || (job.ber_purpose || job.assessment_purpose || '')?.toLowerCase().includes('leasing') ? 'bg-amber-100 text-amber-700' :
+                                                                        (job.ber_purpose || job.assessment_purpose || '')?.toLowerCase().includes('selling') ? 'bg-purple-100 text-purple-700' :
                                                                             'bg-gray-100 text-gray-600'
                                                                 }`}>
-                                                                {job.ber_purpose}
+                                                                {job.ber_purpose || job.assessment_purpose || '-'}
                                                             </span>
                                                         </td>
                                                         <td className="py-3 px-4">
@@ -749,7 +764,10 @@ const ContractorDashboard = () => {
                                                     <div>
                                                         <p className="font-bold text-gray-900">{job.town}, {job.county}</p>
                                                         <p className="text-[10px] text-blue-600 font-bold">{job.eircode}</p>
-                                                        <p className="text-xs text-gray-500">{job.property_type} • {job.bedrooms} beds</p>
+                                                        <p className="text-xs text-gray-500">{job.job_type === 'commercial' ? (job.building_type || 'Commercial') : job.property_type} {job.job_type !== 'commercial' && `• ${job.bedrooms} beds`}</p>
+                                                        <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${job.job_type === 'commercial' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                                                            {job.job_type === 'commercial' ? 'Commercial' : 'Domestic'}
+                                                        </span>
                                                     </div>
                                                     <span className="text-xs text-gray-400">
                                                         {new Date(job.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
@@ -793,126 +811,229 @@ const ContractorDashboard = () => {
                                 </div>
                             ) : (
                                 <div className="space-y-6">
-                                    {/* Header
-                                    <div className="bg-[#007EA7] text-white p-6 rounded-xl text-center">
-                                        <h2 className="text-xl font-bold mb-1">My Quotes</h2>
-                                        <p className="text-sm text-white/80">Here's your live pending quotes.</p>
-                                    </div> */}
+                                    {/* Search Bar */}
+                                    <div className="relative">
+                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                        <input
+                                            type="text"
+                                            placeholder="Search by town, county, type, or eircode..."
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            className="w-full pl-11 pr-4 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] transition-all shadow-sm"
+                                        />
+                                        {searchQuery && (
+                                            <button
+                                                onClick={() => setSearchQuery('')}
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                            >
+                                                <X size={16} />
+                                            </button>
+                                        )}
+                                    </div>
 
-                                    {/* Desktop Table View */}
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-sm hidden md:table">
-                                            <thead>
-                                                <tr className="bg-gray-50 border-b border-gray-200">
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Posted</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Town</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">County</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-blue-600 uppercase tracking-wider">Eircode</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Type</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Sq. Mt.</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Beds</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Heat Pump</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Purpose</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Addition</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Survey Date</th>
-                                                    <td className="text-left py-3 px-3 text-xs font-bold text-gray-900 uppercase tracking-wider">Lowest Quote</td>
-                                                    <td className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">My Quote</td>
-                                                    <td className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider"></td>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {myQuotes.map((quote, index) => {
-                                                    const isCompetitive = !quote.lowestPrice || quote.price <= quote.lowestPrice;
-                                                    return (
-                                                        <tr
-                                                            key={quote.id}
-                                                            className={`border-b border-gray-100 hover:bg-amber-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}
-                                                        >
-                                                            <td className="py-3 px-3 text-gray-600 font-medium">
-                                                                {new Date(quote.assessment?.created_at || quote.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
-                                                            </td>
-                                                            <td className="py-3 px-3 text-gray-900 font-bold">{quote.assessment?.town || '-'}</td>
-                                                            <td className="py-3 px-3 text-gray-600">{quote.assessment?.county || '-'}</td>
-                                                            <td className="py-3 px-3 text-blue-600 font-medium">{quote.assessment?.eircode || '-'}</td>
-                                                            <td className="py-3 px-3 text-gray-600">{quote.assessment?.property_type || '-'}</td>
-                                                            <td className="py-3 px-3 text-gray-600">{quote.assessment?.property_size || '-'}</td>
-                                                            <td className="py-3 px-3 text-gray-600">{quote.assessment?.bedrooms || '-'}</td>
-                                                            <td className="py-3 px-3 text-gray-600">{quote.assessment?.heat_pump || 'None'}</td>
-                                                            <td className="py-3 px-3">
-                                                                <span className={`px-2 py-1 rounded text-xs font-bold ${quote.assessment?.ber_purpose?.toLowerCase().includes('mortgage') ? 'bg-blue-100 text-blue-700' :
-                                                                    quote.assessment?.ber_purpose?.toLowerCase().includes('grant') ? 'bg-green-100 text-green-700' :
-                                                                        quote.assessment?.ber_purpose?.toLowerCase().includes('letting') ? 'bg-amber-100 text-amber-700' :
-                                                                            quote.assessment?.ber_purpose?.toLowerCase().includes('selling') ? 'bg-purple-100 text-purple-700' :
-                                                                                'bg-gray-100 text-gray-600'
-                                                                    }`}>
-                                                                    {quote.assessment?.ber_purpose || '-'}
-                                                                </span>
-                                                            </td>
-                                                            <td className="py-3 px-3">
-                                                                <span className={`px-2 py-1 rounded text-xs font-bold capitalize ${quote.status === 'accepted' ? 'bg-green-100 text-green-700' :
-                                                                    quote.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                                                                        'bg-amber-100 text-amber-700'
-                                                                    }`}>
-                                                                    {quote.status || '-'}
-                                                                </span>
-                                                            </td>
-                                                            <td className="py-3 px-3 text-gray-600">
-                                                                {quote.assessment?.additional_features?.length ? quote.assessment.additional_features.join(', ') : 'None'}
-                                                            </td>
-                                                            <td className="py-3 px-3 text-gray-600">{quote.assessment?.preferred_date || 'Flexible'}</td>
-                                                            <td className="py-3 px-3 text-gray-900 font-bold">€ {quote.lowestPrice?.toLocaleString() || '-'}</td>
-                                                            <td className={`py-3 px-3 font-bold ${isCompetitive ? 'text-green-700' : 'text-red-600'}`}>
-                                                                €{quote.price.toLocaleString()}
-                                                            </td>
-                                                            <td className="py-3 px-3">
-                                                                <button
-                                                                    onClick={() => handleReQuote(quote)}
-                                                                    disabled={quote.status === 'accepted'}
-                                                                    className="px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded text-xs font-bold transition-all"
-                                                                >
-                                                                    Re-Quote
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </tbody>
-                                        </table>
+                                    {/* ===== MERGED QUOTES TABLE (Domestic + Commercial) ===== */}
+                                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                                        {/* Desktop Table View */}
+                                        <div className="overflow-x-auto overflow-y-auto max-h-[500px] hidden md:block">
+                                            <table className="w-full text-sm">
+                                                <thead className="sticky top-0 z-10">
+                                                    <tr className="bg-gray-50 border-b border-gray-200">
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Posted</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Job Type</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Town</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">County</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-blue-600 uppercase tracking-wider">Eircode</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Type / Building</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Size / Area</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Beds / Complexity</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Heat Pump / Systems</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Purpose</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Survey Date</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-900 uppercase tracking-wider">Lowest Quote</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">My Quote</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {myQuotes.filter(q => {
+                                                        if (!searchQuery.trim()) return true;
+                                                        const s = searchQuery.toLowerCase();
+                                                        const a = (q as any).assessment;
+                                                        return (
+                                                            (a?.town?.toLowerCase().includes(s)) ||
+                                                            (a?.county?.toLowerCase().includes(s)) ||
+                                                            (a?.property_type?.toLowerCase().includes(s)) ||
+                                                            (a?.building_type?.toLowerCase().includes(s)) ||
+                                                            (a?.eircode?.toLowerCase().includes(s)) ||
+                                                            (a?.ber_purpose?.toLowerCase().includes(s)) ||
+                                                            (a?.assessment_purpose?.toLowerCase().includes(s))
+                                                        );
+                                                    }).map((quote, index) => {
+                                                        const isCompetitive = !quote.lowestPrice || quote.price <= quote.lowestPrice;
+                                                        const a = (quote as any).assessment;
+                                                        const isCommercial = a?.job_type === 'commercial';
+                                                        return (
+                                                            <tr
+                                                                key={quote.id}
+                                                                className={`border-b border-gray-100 hover:bg-amber-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}
+                                                            >
+                                                                <td className="py-3 px-3 text-gray-600 font-medium">
+                                                                    {new Date(a?.created_at || quote.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
+                                                                </td>
+                                                                <td className="py-3 px-3">
+                                                                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${isCommercial ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'}`}>
+                                                                        {isCommercial ? 'Commercial' : 'Domestic'}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="py-3 px-3 text-gray-900 font-bold">{a?.town || '-'}</td>
+                                                                <td className="py-3 px-3 text-gray-600">{a?.county || '-'}</td>
+                                                                <td className="py-3 px-3 text-blue-600 font-medium">{a?.eircode || '-'}</td>
+                                                                {/* Type / Building */}
+                                                                <td className="py-3 px-3 text-gray-600">
+                                                                    {isCommercial ? (a?.building_type || '-') : (a?.property_type || '-')}
+                                                                </td>
+                                                                {/* Size / Area */}
+                                                                <td className="py-3 px-3 text-gray-600">
+                                                                    {isCommercial ? (a?.floor_area || '-') : (a?.property_size || '-')}
+                                                                </td>
+                                                                {/* Beds / Complexity */}
+                                                                <td className="py-3 px-3 text-gray-600">
+                                                                    {isCommercial ? (a?.building_complexity || '-') : (a?.bedrooms || '-')}
+                                                                </td>
+                                                                {/* Heat Pump / Systems */}
+                                                                <td className="py-3 px-3 text-gray-600 text-xs">
+                                                                    {isCommercial
+                                                                        ? (a?.heating_cooling_systems?.length ? a.heating_cooling_systems.join(', ') : '-')
+                                                                        : (a?.heat_pump || 'None')
+                                                                    }
+                                                                </td>
+                                                                {/* Purpose */}
+                                                                <td className="py-3 px-3">
+                                                                    {isCommercial ? (
+                                                                        <span className={`px-2 py-1 rounded text-xs font-bold ${(a?.assessment_purpose || '').toLowerCase().includes('compliance') ? 'bg-blue-100 text-blue-700' :
+                                                                            (a?.assessment_purpose || '').toLowerCase().includes('leasing') ? 'bg-amber-100 text-amber-700' :
+                                                                                (a?.assessment_purpose || '').toLowerCase().includes('selling') ? 'bg-purple-100 text-purple-700' :
+                                                                                    'bg-gray-100 text-gray-600'
+                                                                            }`}>
+                                                                            {a?.assessment_purpose || '-'}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className={`px-2 py-1 rounded text-xs font-bold ${a?.ber_purpose?.toLowerCase().includes('mortgage') ? 'bg-blue-100 text-blue-700' :
+                                                                            a?.ber_purpose?.toLowerCase().includes('grant') ? 'bg-green-100 text-green-700' :
+                                                                                a?.ber_purpose?.toLowerCase().includes('letting') ? 'bg-amber-100 text-amber-700' :
+                                                                                    a?.ber_purpose?.toLowerCase().includes('selling') ? 'bg-purple-100 text-purple-700' :
+                                                                                        'bg-gray-100 text-gray-600'
+                                                                            }`}>
+                                                                            {a?.ber_purpose || '-'}
+                                                                        </span>
+                                                                    )}
+                                                                </td>
+                                                                <td className="py-3 px-3">
+                                                                    <span className={`px-2 py-1 rounded text-xs font-bold capitalize ${quote.status === 'accepted' ? 'bg-green-100 text-green-700' :
+                                                                        quote.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                                                                            'bg-amber-100 text-amber-700'
+                                                                        }`}>
+                                                                        {quote.status || '-'}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="py-3 px-3 text-gray-600">{a?.preferred_date || 'Flexible'}</td>
+                                                                <td className="py-3 px-3 text-gray-900 font-bold">€ {quote.lowestPrice?.toLocaleString() || '-'}</td>
+                                                                <td className={`py-3 px-3 font-bold ${isCompetitive ? 'text-green-700' : 'text-red-600'}`}>
+                                                                    €{quote.price.toLocaleString()}
+                                                                </td>
+                                                                <td className="py-3 px-3">
+                                                                    <button
+                                                                        onClick={() => handleReQuote(quote)}
+                                                                        disabled={quote.status === 'accepted'}
+                                                                        className="px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded text-xs font-bold transition-all"
+                                                                    >
+                                                                        Re-Quote
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
 
                                         {/* Mobile Card View */}
-                                        <div className="md:hidden space-y-4">
-                                            {myQuotes.map(quote => (
-                                                <div key={quote.id} className="bg-white border border-gray-200 rounded-2xl p-4">
-                                                    <div className="flex justify-between items-start mb-3">
-                                                        <div>
-                                                            <p className="font-bold text-gray-900">{quote.assessment?.town || '-'}, {quote.assessment?.county || '-'}</p>
-                                                            <p className="text-[10px] text-blue-600 font-bold">{quote.assessment?.eircode}</p>
-                                                            <p className="text-xs text-gray-500">{quote.assessment?.property_type || '-'} • {quote.assessment?.bedrooms || 0} beds</p>
+                                        <div className="md:hidden divide-y divide-gray-100">
+                                            {myQuotes.filter(q => {
+                                                if (!searchQuery.trim()) return true;
+                                                const s = searchQuery.toLowerCase();
+                                                const a = (q as any).assessment;
+                                                return (
+                                                    (a?.town?.toLowerCase().includes(s)) ||
+                                                    (a?.county?.toLowerCase().includes(s)) ||
+                                                    (a?.property_type?.toLowerCase().includes(s)) ||
+                                                    (a?.building_type?.toLowerCase().includes(s)) ||
+                                                    (a?.eircode?.toLowerCase().includes(s))
+                                                );
+                                            }).map(quote => {
+                                                const a = (quote as any).assessment;
+                                                const isCommercial = a?.job_type === 'commercial';
+                                                return (
+                                                    <div key={quote.id} className="p-4">
+                                                        <div className="flex justify-between items-start mb-3">
+                                                            <div>
+                                                                <p className="font-bold text-gray-900">{a?.town || '-'}, {a?.county || '-'}</p>
+                                                                <p className="text-[10px] text-blue-600 font-bold">{a?.eircode}</p>
+                                                                <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${isCommercial ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'}`}>
+                                                                    {isCommercial ? 'Commercial' : 'Domestic'}
+                                                                </span>
+                                                            </div>
+                                                            <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md ${quote.status === 'accepted' ? 'bg-green-100 text-green-700' : quote.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                                {quote.status}
+                                                            </span>
                                                         </div>
-                                                        <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md ${quote.status === 'accepted' ? 'bg-green-100 text-green-700' : quote.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
-                                                            {quote.status}
-                                                        </span>
+                                                        <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+                                                            <div>
+                                                                <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Type / Building</p>
+                                                                <p className="text-gray-700 font-medium">{isCommercial ? (a?.building_type || '-') : (a?.property_type || '-')}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Size / Area</p>
+                                                                <p className="text-gray-700 font-medium">{isCommercial ? (a?.floor_area || '-') : (a?.property_size || '-')}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">{isCommercial ? 'Complexity' : 'Bedrooms'}</p>
+                                                                <p className="text-gray-700 font-medium">{isCommercial ? (a?.building_complexity || '-') : (a?.bedrooms || '-')}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">{isCommercial ? 'Systems' : 'Heat Pump'}</p>
+                                                                <p className="text-gray-700 font-medium">{isCommercial ? (a?.heating_cooling_systems?.length ? a.heating_cooling_systems.join(', ') : '-') : (a?.heat_pump || 'None')}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Purpose</p>
+                                                                <p className="text-gray-700 font-medium">{isCommercial ? (a?.assessment_purpose || '-') : (a?.ber_purpose || '-')}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Survey Date</p>
+                                                                <p className="text-gray-700 font-medium">{a?.preferred_date || 'Flexible'}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-4 mb-4">
+                                                            <div>
+                                                                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Lowest Quote</p>
+                                                                <p className="text-lg font-bold text-[#8B0000]">€ {quote.lowestPrice?.toLocaleString() || '-'}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">My Quote</p>
+                                                                <p className="text-lg font-bold text-green-700">€{quote.price.toLocaleString()}</p>
+                                                            </div>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleReQuote(quote)}
+                                                            disabled={quote.status === 'accepted'}
+                                                            className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 disabled:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                                        >
+                                                            Re-Quote
+                                                        </button>
                                                     </div>
-                                                    <div className="grid grid-cols-2 gap-4 mb-4">
-                                                        <div>
-                                                            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Lowest Quote</p>
-                                                            <p className="text-lg font-bold text-[#8B0000]">€ {quote.lowestPrice?.toLocaleString() || '-'}</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">My Quote</p>
-                                                            <p className="text-lg font-bold text-green-700">€{quote.price.toLocaleString()}</p>
-                                                        </div>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => handleReQuote(quote)}
-                                                        disabled={quote.status === 'accepted'}
-                                                        className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 disabled:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                                                    >
-                                                        Re-Quote
-                                                    </button>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 </div>
@@ -940,6 +1061,7 @@ const ContractorDashboard = () => {
                                             <thead>
                                                 <tr className="bg-gray-50 border-b border-gray-200">
                                                     <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Date Accepted</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Job</th>
                                                     <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Town</th>
                                                     <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">County</th>
                                                     <th className="text-left py-3 px-3 text-xs font-bold text-blue-600 uppercase tracking-wider">Eircode</th>
@@ -953,7 +1075,7 @@ const ContractorDashboard = () => {
                                                     <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Addition</th>
                                                     <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Survey Date</th>
                                                     <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Contact</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Balance</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Payout</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -966,6 +1088,11 @@ const ContractorDashboard = () => {
                                                             <td className="py-3 px-3 text-gray-600 font-medium whitespace-nowrap">
                                                                 {new Date(job.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
                                                             </td>
+                                                            <td className="py-3 px-3">
+                                                                <span className={`px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider ${job.job_type === 'commercial' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                                                                    {job.job_type === 'commercial' ? 'Comm' : 'Dom'}
+                                                                </span>
+                                                            </td>
                                                             <td className="py-3 px-3 text-gray-900 font-bold">{job.town}</td>
                                                             <td className="py-3 px-3 text-gray-600">{job.county}</td>
                                                             <td className="py-3 px-3">
@@ -973,16 +1100,16 @@ const ContractorDashboard = () => {
                                                                     {job.eircode || '-'}
                                                                 </span>
                                                             </td>
-                                                            <td className="py-3 px-3 text-gray-600">{job.property_type}</td>
-                                                            <td className="py-3 px-3 text-gray-600">{job.property_size}</td>
-                                                            <td className="py-3 px-3 text-gray-600 font-bold">{job.bedrooms}</td>
+                                                            <td className="py-3 px-3 text-gray-600">{job.job_type === 'commercial' ? (job.building_type || '-') : job.property_type}</td>
+                                                            <td className="py-3 px-3 text-gray-600">{job.job_type === 'commercial' ? (job.floor_area || '-') : job.property_size}</td>
+                                                            <td className="py-3 px-3 text-gray-600 font-bold">{job.job_type === 'commercial' ? '-' : job.bedrooms}</td>
                                                             <td className="py-3 px-3 text-gray-600">{job.heat_pump || 'None'}</td>
                                                             <td className="py-3 px-3">
-                                                                <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${job.ber_purpose?.toLowerCase().includes('mortgage') ? 'bg-blue-100 text-blue-700' :
-                                                                    job.ber_purpose?.toLowerCase().includes('grant') ? 'bg-green-100 text-green-700' :
+                                                                <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${(job.ber_purpose || job.assessment_purpose || '')?.toLowerCase().includes('mortgage') ? 'bg-blue-100 text-blue-700' :
+                                                                    (job.ber_purpose || job.assessment_purpose || '')?.toLowerCase().includes('grant') || (job.ber_purpose || job.assessment_purpose || '')?.toLowerCase().includes('funding') ? 'bg-green-100 text-green-700' :
                                                                         'bg-gray-100 text-gray-600'
                                                                     }`}>
-                                                                    {job.ber_purpose || '-'}
+                                                                    {job.ber_purpose || job.assessment_purpose || '-'}
                                                                 </span>
                                                             </td>
                                                             <td className="py-3 px-3">
@@ -1042,7 +1169,7 @@ const ContractorDashboard = () => {
                                                                 )}
                                                             </td>
                                                             <td className="py-3 px-3 text-green-700 font-bold">
-                                                                €{job.quotes?.find(q => q.status === 'accepted')?.price?.toLocaleString() || job.quotes?.[0]?.price?.toLocaleString() || '-'}
+                                                                €{job.contractor_payout?.toLocaleString() || job.quotes?.find(q => q.status === 'accepted')?.price?.toLocaleString() || job.quotes?.[0]?.price?.toLocaleString() || '-'}
                                                             </td>
 
                                                         </tr>
@@ -1079,13 +1206,16 @@ const ContractorDashboard = () => {
                                                                     }`}>
                                                                     {job.status?.replace('_', ' ') || '-'}
                                                                 </span>
+                                                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter border ${job.job_type === 'commercial' ? 'bg-purple-50 text-purple-700 border-purple-100' : 'bg-blue-50 text-blue-700 border-blue-100'}`}>
+                                                                    {job.job_type === 'commercial' ? 'Comm' : 'Dom'}
+                                                                </span>
                                                             </div>
                                                             <h4 className="font-bold text-gray-900">{job.property_address}</h4>
                                                             <p className="text-xs text-gray-500">{job.town}, {job.county}</p>
                                                         </div>
                                                         <div className="text-right">
                                                             <p className="text-lg font-black text-green-700">
-                                                                €{job.quotes?.find(q => q.status === 'accepted')?.price?.toLocaleString() || job.quotes?.[0]?.price?.toLocaleString() || '-'}
+                                                                €{job.contractor_payout?.toLocaleString() || job.quotes?.find(q => q.status === 'accepted')?.price?.toLocaleString() || job.quotes?.[0]?.price?.toLocaleString() || '-'}
                                                             </p>
                                                             <p className="text-[10px] font-extrabold text-orange-600 uppercase">
                                                                 {job.payment_status || 'Unpaid'}

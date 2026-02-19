@@ -354,8 +354,8 @@ const Admin = () => {
                 body: {
                     fullName: u.full_name,
                     email: u.email,
-                    town: u.town || 'Your Business Profile',
-                    onboardingUrl: `${window.location.origin}/business-onboarding`
+                    town: u.company_name || u.town || 'Your Business Profile',
+                    onboardingUrl: `${window.location.origin}/business-onboarding?userId=${u.id}`
                 }
             });
 
@@ -971,7 +971,8 @@ const Admin = () => {
                         customerName: profile.full_name,
                         county: selectedLead.county,
                         town: selectedLead.town,
-                        assessmentId: assessment.id
+                        assessmentId: assessment.id,
+                        jobType: selectedLead.property_type?.toLowerCase().includes('commercial') ? 'commercial' : 'domestic'
                     }
                 });
             } catch (emailErr) {

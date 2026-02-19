@@ -323,7 +323,7 @@ const HomePage = () => {
             </section>
 
             {/* Selling Home Promotion */}
-            <section className="py-24 bg-white relative overflow-hidden">
+            {/* <section className="py-24 bg-white relative overflow-hidden">
                 <div className="container mx-auto px-6">
                     <div className="bg-gray-50 rounded-[3rem] p-8 md:p-16 border border-gray-100 relative overflow-hidden flex flex-col md:flex-row items-center gap-12">
                         <div className="absolute top-0 left-0 w-32 h-32 bg-[#007EF0]/5 rounded-full blur-3xl"></div>
@@ -357,7 +357,7 @@ const HomePage = () => {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section> */}
 
             {/* 6. HOME ENERGY CATALOG SECTION */}
             <section className="py-24 bg-gray-50 overflow-hidden relative border-t border-gray-100">

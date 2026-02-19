@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MapPin, Loader2, ChevronRight, Search, ChevronDown, CheckCircle2, Star, X, Map, List } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { MapPin, Loader2, ChevronRight, Search, ChevronDown, CheckCircle2, Star, Map, List } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
@@ -9,7 +8,6 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { supabase } from '../lib/supabase';
-import HireAgentDetails from '../components/HireAgentDetails';
 
 // Fix Leaflet marker icons icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -84,8 +82,6 @@ const RegionPage = () => {
     const [loading, setLoading] = useState(true);
     const [regionName, setRegionName] = useState('');
     const [mapCenter, setMapCenter] = useState<[number, number]>([53.3498, -6.2603]);
-    const [selectedListingForAgent, setSelectedListingForAgent] = useState<Listing | null>(null);
-    const [showAgentModal, setShowAgentModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [mobileView, setMobileView] = useState<'list' | 'map'>('list');
 
@@ -144,11 +140,6 @@ const RegionPage = () => {
         }
     };
 
-    const handleHireAgent = (e: React.MouseEvent, listing: Listing) => {
-        e.stopPropagation();
-        setSelectedListingForAgent(listing);
-        setShowAgentModal(true);
-    };
 
     if (loading) {
         return (
@@ -280,13 +271,6 @@ const RegionPage = () => {
                                                 View Business
                                                 <ChevronRight size={14} />
                                             </Link>
-                                            <button
-                                                onClick={(e) => handleHireAgent(e, listing)}
-                                                className="text-[10px] font-black text-white bg-[#007F00] hover:bg-[#006400] flex items-center gap-2 uppercase tracking-widest px-4 sm:px-5 py-2 sm:py-2.5 rounded-full transition-all border border-transparent"
-                                            >
-                                                Hire Agent
-                                                <Star size={10} fill="white" />
-                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -359,14 +343,6 @@ const RegionPage = () => {
                 </div>
             </div>
 
-            {/* Hire an Agent Modal */}
-            {showAgentModal && (
-                <AgentModal
-                    listing={selectedListingForAgent}
-                    onClose={() => setShowAgentModal(false)}
-                />
-            )}
-
             {/* Global style for clustering override and branded icon alignment */}
             <style>{`
                 .marker-cluster-small { background-color: rgba(0, 126, 167, 0.6); }
@@ -381,162 +357,6 @@ const RegionPage = () => {
                 .custom-map-popup .leaflet-popup-tip { display: none; }
                 .custom-map-popup .leaflet-popup-content a { color: white !important; }
             `}</style>
-        </div>
-    );
-};
-
-export const AgentModal = ({ listing, onClose }: {
-    listing: Listing | null,
-    onClose: () => void
-}) => {
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        message: '',
-        county: '',
-        town: '',
-        property_type: 'Detached'
-    });
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-
-        const categoriesList = listing?.categories?.map(c => c.name).join(', ') || 'General';
-        const fullMessage = `
---- HIRED AN AGENT ---
-Interested in: ${categoriesList}
-Target Provider: ${listing?.company_name || listing?.name || 'Any verified provider'}
-User Message: ${formData.message}
-        `.trim();
-
-        try {
-            const { error } = await supabase
-                .from('leads')
-                .insert([{
-                    name: formData.name,
-                    email: formData.email,
-                    phone: formData.phone,
-                    message: fullMessage,
-                    status: 'new',
-                    county: formData.county,
-                    town: formData.town,
-                    property_type: formData.property_type,
-                    purpose: categoriesList
-                }]);
-
-            if (error) throw error;
-
-            toast.success('Agent request submitted! We will contact you shortly.', {
-                duration: 5000,
-                icon: '🚀'
-            });
-            onClose();
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to submit request');
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    return (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
-                <div className="p-6 md:p-12 overflow-y-auto flex-1 custom-scrollbar">
-                    <div className="flex justify-between items-start mb-8 gap-4">
-                        <div className="flex-1 min-w-0">
-                            <span className="inline-block px-3 py-1 bg-blue-50 text-[#007EA7] text-[10px] font-black uppercase tracking-widest rounded-full mb-3 border border-blue-100">Concierge Request</span>
-                            <h2 className="text-2xl md:text-3xl font-black text-gray-900 uppercase tracking-tight leading-tight break-words">Hire your Agent</h2>
-                        </div>
-                        <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors shrink-0">
-                            <X size={24} className="text-gray-400" />
-                        </button>
-                    </div>
-
-                    <HireAgentDetails />
-
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
-                                <input
-                                    required
-                                    type="text"
-                                    placeholder="e.g. John Murphy"
-                                    value={formData.name}
-                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-[#007F00] focus:bg-white rounded-2xl outline-none font-bold text-sm transition-all"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
-                                <input
-                                    required
-                                    type="email"
-                                    placeholder="john@example.com"
-                                    value={formData.email}
-                                    onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-[#007F00] focus:bg-white rounded-2xl outline-none font-bold text-sm transition-all"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Phone Number</label>
-                                <input
-                                    required
-                                    type="tel"
-                                    placeholder="08X XXX XXXX"
-                                    value={formData.phone}
-                                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                    className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-[#007F00] focus:bg-white rounded-2xl outline-none font-bold text-sm transition-all"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">County</label>
-                                <input
-                                    required
-                                    type="text"
-                                    placeholder="e.g. Dublin"
-                                    value={formData.county}
-                                    onChange={e => setFormData({ ...formData, county: e.target.value })}
-                                    className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-[#007F00] focus:bg-white rounded-2xl outline-none font-bold text-sm transition-all"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Tell us about your project</label>
-                            <textarea
-                                required
-                                rows={4}
-                                placeholder="I'm interested in solar panels and possibly a battery storage system..."
-                                value={formData.message}
-                                onChange={e => setFormData({ ...formData, message: e.target.value })}
-                                className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent focus:border-[#007F00] focus:bg-white rounded-2xl outline-none font-bold text-sm transition-all resize-none"
-                            />
-                        </div>
-
-                        <div className="pt-4">
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="w-full bg-[#007F00] text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#006400] transition-all shadow-2xl shadow-green-100 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed active:scale-[0.98]"
-                            >
-                                {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : null}
-                                {isSubmitting ? 'Submitting...' : 'Submit Agent Request'}
-                            </button>
-                            <p className="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-6 flex items-center justify-center gap-2">
-                                <Star size={14} className="text-[#007F00]" />
-                                No upfront cost • No commitment • Expert advice
-                            </p>
-                        </div>
-                    </form>
-                </div>
-            </div>
         </div>
     );
 };

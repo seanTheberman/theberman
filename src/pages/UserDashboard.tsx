@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { LogOut, FileText, User, Home, AlertCircle, X, Menu, Trash2 } from 'lucide-react';
+import { LogOut, FileText, User, Home, AlertCircle, X, Menu, Trash2, Search } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import QuoteModal from '../components/QuoteModal';
@@ -48,6 +48,14 @@ interface Assessment {
     heat_pump?: string;
     ber_purpose?: string;
     additional_features?: string[];
+    job_type?: string;
+    building_type?: string;
+    floor_area?: string;
+    building_complexity?: string;
+    heating_cooling_systems?: string[];
+    assessment_purpose?: string;
+    existing_docs?: string[];
+    notes?: string;
 }
 
 const UserDashboard = () => {
@@ -58,6 +66,7 @@ const UserDashboard = () => {
 
     const [selectedDetailsQuote, setSelectedDetailsQuote] = useState<Quote | null>(null); // New state for quote details modal
     const [view, setView] = useState<'assessments' | 'quotes'>('assessments');
+    const [searchQuery, setSearchQuery] = useState('');
     const [verifyingQuote, setVerifyingQuote] = useState<{ assessmentId: string, quoteId: string, targetStatus: 'accepted' | 'rejected' } | null>(null);
     const [confirmReject, setConfirmReject] = useState<{ assessmentId: string, quoteId: string } | null>(null);
     const [verificationStep, setVerificationStep] = useState<1 | 2>(1);
@@ -158,7 +167,8 @@ const UserDashboard = () => {
                         customerName: assessment.profiles?.full_name || assessment.contact_name,
                         county: assessment.county,
                         town: assessment.town,
-                        assessmentId: id
+                        assessmentId: id,
+                        jobType: assessment.job_type
                     }
                 });
             } catch (emailErr) {
@@ -441,168 +451,436 @@ const UserDashboard = () => {
                         </div>
 
                         {view === 'assessments' ? (
-                            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                {/* Desktop Table View */}
-                                <div className="overflow-x-auto hidden md:block">
-                                    <table className="w-full text-sm">
-                                        <thead>
-                                            <tr className="bg-gray-50 border-b border-gray-200">
-                                                <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Posted</th>
-                                                <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Town</th>
-                                                <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">County</th>
-                                                <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Type</th>
-                                                <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Sq. Mt.</th>
-                                                <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Beds</th>
-                                                <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Heat Pump</th>
-                                                <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Purpose</th>
-                                                <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Addition</th>
-                                                <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Preferred Date</th>
-                                                <th className="text-right py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {assessments.map((assessment, index) => (
-                                                <tr
-                                                    key={assessment.id}
-                                                    className={`border-b border-gray-50 hover:bg-green-50/20 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/10'}`}
-                                                >
-                                                    <td className="py-4 px-6">
-                                                        <div className="text-xs font-bold text-gray-400 whitespace-nowrap">
-                                                            {new Date(assessment.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
+                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                {/* Search Bar */}
+                                <div className="relative">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                    <input
+                                        type="text"
+                                        placeholder="Search by town, county, type, or address..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full pl-11 pr-4 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] transition-all shadow-sm"
+                                    />
+                                    {searchQuery && (
+                                        <button
+                                            onClick={() => setSearchQuery('')}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                        >
+                                            <X size={16} />
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* ===== DOMESTIC JOBS TABLE ===== */}
+                                {assessments.filter(a => a.job_type !== 'commercial').filter(a => {
+                                    if (!searchQuery.trim()) return true;
+                                    const q = searchQuery.toLowerCase();
+                                    return (
+                                        (a.town?.toLowerCase().includes(q)) ||
+                                        (a.county?.toLowerCase().includes(q)) ||
+                                        (a.property_type?.toLowerCase().includes(q)) ||
+                                        (a.property_address?.toLowerCase().includes(q)) ||
+                                        (a.ber_purpose?.toLowerCase().includes(q)) ||
+                                        (a.heat_pump?.toLowerCase().includes(q))
+                                    );
+                                }).length > 0 && (
+                                        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                                            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+
+                                                <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Domestic BER Assessments</h3>
+                                                <span className="ml-auto text-xs font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-full">{assessments.filter(a => a.job_type !== 'commercial').length}</span>
+                                            </div>
+                                            {/* Desktop Table View */}
+                                            <div className="overflow-x-auto overflow-y-auto max-h-[500px] hidden md:block">
+                                                <table className="w-full text-sm">
+                                                    <thead>
+                                                        <tr className="bg-gray-50 border-b border-gray-200">
+                                                            <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Posted</th>
+                                                            <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Town</th>
+                                                            <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">County</th>
+                                                            <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Type</th>
+                                                            <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Sq. Mt.</th>
+                                                            <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Beds</th>
+                                                            <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Heat Pump</th>
+                                                            <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Purpose</th>
+                                                            <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Addition</th>
+                                                            <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Preferred Date</th>
+                                                            <th className="text-right py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {assessments.filter(a => a.job_type !== 'commercial').filter(a => {
+                                                            if (!searchQuery.trim()) return true;
+                                                            const q = searchQuery.toLowerCase();
+                                                            return (
+                                                                (a.town?.toLowerCase().includes(q)) ||
+                                                                (a.county?.toLowerCase().includes(q)) ||
+                                                                (a.property_type?.toLowerCase().includes(q)) ||
+                                                                (a.property_address?.toLowerCase().includes(q)) ||
+                                                                (a.ber_purpose?.toLowerCase().includes(q)) ||
+                                                                (a.heat_pump?.toLowerCase().includes(q))
+                                                            );
+                                                        }).map((assessment, index) => (
+                                                            <tr
+                                                                key={assessment.id}
+                                                                className={`border-b border-gray-50 hover:bg-green-50/20 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/10'}`}
+                                                            >
+                                                                <td className="py-4 px-6">
+                                                                    <div className="text-xs font-bold text-gray-400 whitespace-nowrap">
+                                                                        {new Date(assessment.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
+                                                                    </div>
+                                                                </td>
+                                                                <td className="py-4 px-6 font-bold text-gray-900 whitespace-nowrap">
+                                                                    <div className="flex items-center gap-2">
+                                                                        {assessment.town}
+                                                                        {assessment.quotes && assessment.quotes.some(q => q.status === 'pending') && (
+                                                                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-sm shadow-green-200" title="New Quote"></span>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                                <td className="py-4 px-6 text-gray-600 font-medium whitespace-nowrap">
+                                                                    {assessment.county}
+                                                                </td>
+                                                                <td className="py-4 px-6 text-gray-400 font-bold text-xs uppercase tracking-tight whitespace-nowrap">
+                                                                    {assessment.property_type || '-'}
+                                                                </td>
+                                                                <td className="py-4 px-6 text-gray-600 text-xs whitespace-nowrap">
+                                                                    {assessment.property_size || '-'}
+                                                                </td>
+                                                                <td className="py-4 px-6 text-gray-600 text-xs whitespace-nowrap">
+                                                                    {assessment.bedrooms || '-'}
+                                                                </td>
+                                                                <td className="py-4 px-6 text-gray-600 text-xs whitespace-nowrap">
+                                                                    {assessment.heat_pump || '-'}
+                                                                </td>
+                                                                <td className="py-4 px-6">
+                                                                    <span className="px-2 py-0.5 bg-gray-100 rounded text-[10px] font-bold text-gray-600 whitespace-nowrap">
+                                                                        {assessment.ber_purpose || '-'}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="py-4 px-6 text-gray-500 text-xs max-w-[150px] truncate" title={assessment.additional_features?.join(', ')}>
+                                                                    {assessment.additional_features?.join(', ') || 'None'}
+                                                                </td>
+                                                                <td className="py-4 px-6 text-gray-600 text-xs whitespace-nowrap">
+                                                                    {assessment.preferred_date || 'Flexible'}
+                                                                </td>
+                                                                <td className="py-4 px-6 text-right whitespace-nowrap">
+                                                                    <div className="flex justify-end items-center gap-3">
+                                                                        {assessment.status === 'draft' ? (
+                                                                            <button
+                                                                                onClick={() => handleSubmitAssessment(assessment.id)}
+                                                                                className="px-3 py-1.5 bg-[#007F00] text-white rounded-lg text-xs font-bold hover:bg-[#006600] transition-all"
+                                                                            >
+                                                                                Submit
+                                                                            </button>
+                                                                        ) : assessment.status === 'completed' && assessment.certificate_url ? (
+                                                                            <a
+                                                                                href={assessment.certificate_url}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                                className="px-4 py-2 border border-green-100 text-[#007F00] bg-green-50/50 rounded-xl text-xs font-black hover:bg-[#007F00] hover:text-white transition-all"
+                                                                            >
+                                                                                View Certificate
+                                                                            </a>
+                                                                        ) : null}
+                                                                        {assessment.status !== 'completed' && (
+                                                                            <button
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    setDeletingAssessmentId(assessment.id);
+                                                                                }}
+                                                                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                                                title="Delete Assessment"
+                                                                            >
+                                                                                <Trash2 size={16} />
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            {/* Mobile Card View - Domestic */}
+                                            <div className="md:hidden divide-y divide-gray-100">
+                                                {assessments.filter(a => a.job_type !== 'commercial').filter(a => {
+                                                    if (!searchQuery.trim()) return true;
+                                                    const q = searchQuery.toLowerCase();
+                                                    return (
+                                                        (a.town?.toLowerCase().includes(q)) ||
+                                                        (a.county?.toLowerCase().includes(q)) ||
+                                                        (a.property_type?.toLowerCase().includes(q)) ||
+                                                        (a.property_address?.toLowerCase().includes(q)) ||
+                                                        (a.ber_purpose?.toLowerCase().includes(q)) ||
+                                                        (a.heat_pump?.toLowerCase().includes(q))
+                                                    );
+                                                }).map((assessment) => (
+                                                    <div key={assessment.id} className="p-5">
+                                                        <div className="flex justify-between items-start mb-4">
+                                                            <div>
+                                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                                                                    {new Date(assessment.created_at).toLocaleDateString()}
+                                                                </p>
+                                                                <h4 className="font-bold text-gray-900">{assessment.property_address}</h4>
+                                                                <p className="text-xs text-gray-500">{assessment.town}, {assessment.county}</p>
+                                                            </div>
+                                                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusStyles(assessment.status)}`}>
+                                                                {assessment.status.replace('_', ' ')}
+                                                            </span>
                                                         </div>
-                                                    </td>
-                                                    <td className="py-4 px-6 font-bold text-gray-900 whitespace-nowrap">
-                                                        <div className="flex items-center gap-2">
-                                                            {assessment.town}
+
+                                                        <div className="flex items-center gap-4 mb-4">
+                                                            <div className="text-xs font-bold text-gray-600 bg-gray-50 px-2 py-1 rounded">
+                                                                {assessment.property_type || '-'}
+                                                            </div>
                                                             {assessment.quotes && assessment.quotes.some(q => q.status === 'pending') && (
-                                                                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-sm shadow-green-200" title="New Quote"></span>
+                                                                <div className="text-[10px] font-black text-[#007F00] flex items-center gap-1">
+                                                                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                                                                    NEW QUOTES
+                                                                </div>
                                                             )}
                                                         </div>
-                                                    </td>
-                                                    <td className="py-4 px-6 text-gray-600 font-medium whitespace-nowrap">
-                                                        {assessment.county}
-                                                    </td>
-                                                    <td className="py-4 px-6 text-gray-400 font-bold text-xs uppercase tracking-tight whitespace-nowrap">
-                                                        {assessment.property_type}
-                                                    </td>
-                                                    <td className="py-4 px-6 text-gray-600 text-xs whitespace-nowrap">
-                                                        {assessment.property_size}
-                                                    </td>
-                                                    <td className="py-4 px-6 text-gray-600 text-xs whitespace-nowrap">
-                                                        {assessment.bedrooms}
-                                                    </td>
-                                                    <td className="py-4 px-6 text-gray-600 text-xs whitespace-nowrap">
-                                                        {assessment.heat_pump}
-                                                    </td>
-                                                    <td className="py-4 px-6">
-                                                        <span className="px-2 py-0.5 bg-gray-100 rounded text-[10px] font-bold text-gray-600 whitespace-nowrap">
-                                                            {assessment.ber_purpose || '-'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="py-4 px-6 text-gray-500 text-xs max-w-[150px] truncate" title={assessment.additional_features?.join(', ')}>
-                                                        {assessment.additional_features?.join(', ') || 'None'}
-                                                    </td>
-                                                    <td className="py-4 px-6 text-gray-600 text-xs whitespace-nowrap">
-                                                        {assessment.preferred_date || 'Flexible'}
-                                                    </td>
-                                                    <td className="py-4 px-6 text-right whitespace-nowrap">
-                                                        <div className="flex justify-end items-center gap-3">
-                                                            {assessment.status === 'draft' ? (
-                                                                <button
-                                                                    onClick={() => handleSubmitAssessment(assessment.id)}
-                                                                    className="px-3 py-1.5 bg-[#007F00] text-white rounded-lg text-xs font-bold hover:bg-[#006600] transition-all"
-                                                                >
-                                                                    Submit
-                                                                </button>
-                                                            ) : assessment.status === 'completed' && assessment.certificate_url ? (
-                                                                <a
-                                                                    href={assessment.certificate_url}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="px-4 py-2 border border-green-100 text-[#007F00] bg-green-50/50 rounded-xl text-xs font-black hover:bg-[#007F00] hover:text-white transition-all"
-                                                                >
-                                                                    View Certificate
-                                                                </a>
-                                                            ) : null}
-                                                            {assessment.status !== 'completed' && (
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        setDeletingAssessmentId(assessment.id);
-                                                                    }}
-                                                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                                                    title="Delete Assessment"
-                                                                >
-                                                                    <Trash2 size={16} />
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
 
-                                {/* Mobile Card View */}
-                                <div className="md:hidden divide-y divide-gray-100">
-                                    {assessments.map((assessment) => (
-                                        <div key={assessment.id} className="p-5">
-                                            <div className="flex justify-between items-start mb-4">
-                                                <div>
-                                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                                                        {new Date(assessment.created_at).toLocaleDateString()}
-                                                    </p>
-                                                    <h4 className="font-bold text-gray-900">{assessment.property_address}</h4>
-                                                    <p className="text-xs text-gray-500">{assessment.town}, {assessment.county}</p>
-                                                </div>
-                                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusStyles(assessment.status)}`}>
-                                                    {assessment.status.replace('_', ' ')}
-                                                </span>
-                                            </div>
+                                                        {assessment.status === 'draft' ? (
+                                                            <button
+                                                                onClick={() => handleSubmitAssessment(assessment.id)}
+                                                                className="w-full py-3 bg-[#007F00] text-white rounded-xl font-black text-xs hover:bg-[#006600] transition-all mb-3"
+                                                            >
+                                                                Submit
+                                                            </button>
+                                                        ) : assessment.status === 'completed' && assessment.certificate_url ? (
+                                                            <a
+                                                                href={assessment.certificate_url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="w-full py-3 bg-[#007F00] text-white rounded-xl font-black text-xs hover:bg-[#006600] transition-all shadow-md shadow-green-100 mb-3 block text-center"
+                                                            >
+                                                                View Certificate
+                                                            </a>
+                                                        ) : null}
 
-                                            <div className="flex items-center gap-4 mb-4">
-                                                <div className="text-xs font-bold text-gray-600 bg-gray-50 px-2 py-1 rounded">
-                                                    {assessment.property_type}
-                                                </div>
-                                                {assessment.quotes && assessment.quotes.some(q => q.status === 'pending') && (
-                                                    <div className="text-[10px] font-black text-[#007F00] flex items-center gap-1">
-                                                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-                                                        NEW QUOTES
+                                                        {assessment.status !== 'completed' && (
+                                                            <button
+                                                                onClick={() => setDeletingAssessmentId(assessment.id)}
+                                                                className="w-full py-3 border border-red-50 text-red-400 rounded-xl font-black text-xs hover:bg-red-50 hover:text-red-500 transition-all flex items-center justify-center gap-2"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                                Delete Assessment
+                                                            </button>
+                                                        )}
                                                     </div>
-                                                )}
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                {/* ===== COMMERCIAL JOBS TABLE ===== */}
+                                {assessments.filter(a => a.job_type === 'commercial').filter(a => {
+                                    if (!searchQuery.trim()) return true;
+                                    const q = searchQuery.toLowerCase();
+                                    return (
+                                        (a.town?.toLowerCase().includes(q)) ||
+                                        (a.county?.toLowerCase().includes(q)) ||
+                                        (a.building_type?.toLowerCase().includes(q)) ||
+                                        (a.property_address?.toLowerCase().includes(q)) ||
+                                        (a.assessment_purpose?.toLowerCase().includes(q)) ||
+                                        (a.building_complexity?.toLowerCase().includes(q))
+                                    );
+                                }).length > 0 && (
+                                        <div className="bg-white rounded-3xl border border-purple-100 shadow-sm overflow-hidden">
+                                            <div className="px-6 py-4 border-b border-purple-100 bg-purple-50/30 flex items-center gap-3">
+
+                                                <h3 className="text-sm font-black text-purple-900 uppercase tracking-widest">Commercial BER Assessments</h3>
+                                                <span className="ml-auto text-xs font-bold text-purple-500 bg-purple-100 px-2 py-1 rounded-full">{assessments.filter(a => a.job_type === 'commercial').length}</span>
+                                            </div>
+                                            {/* Desktop Table View */}
+                                            <div className="overflow-x-auto overflow-y-auto max-h-[500px] hidden md:block">
+                                                <table className="w-full text-sm">
+                                                    <thead>
+                                                        <tr className="bg-purple-50/50 border-b border-purple-100">
+                                                            <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Posted</th>
+                                                            <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Town</th>
+                                                            <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">County</th>
+                                                            <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Building Type</th>
+                                                            <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Floor Area</th>
+                                                            <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Complexity</th>
+                                                            <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Heating/Cooling</th>
+                                                            <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Purpose</th>
+                                                            <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Existing Docs</th>
+                                                            <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Preferred Date</th>
+                                                            <th className="text-right py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {assessments.filter(a => a.job_type === 'commercial').filter(a => {
+                                                            if (!searchQuery.trim()) return true;
+                                                            const q = searchQuery.toLowerCase();
+                                                            return (
+                                                                (a.town?.toLowerCase().includes(q)) ||
+                                                                (a.county?.toLowerCase().includes(q)) ||
+                                                                (a.building_type?.toLowerCase().includes(q)) ||
+                                                                (a.property_address?.toLowerCase().includes(q)) ||
+                                                                (a.assessment_purpose?.toLowerCase().includes(q)) ||
+                                                                (a.building_complexity?.toLowerCase().includes(q))
+                                                            );
+                                                        }).map((assessment, index) => (
+                                                            <tr
+                                                                key={assessment.id}
+                                                                className={`border-b border-gray-50 hover:bg-purple-50/20 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-purple-50/10'}`}
+                                                            >
+                                                                <td className="py-4 px-6">
+                                                                    <div className="text-xs font-bold text-gray-400 whitespace-nowrap">
+                                                                        {new Date(assessment.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
+                                                                    </div>
+                                                                </td>
+                                                                <td className="py-4 px-6 font-bold text-gray-900 whitespace-nowrap">
+                                                                    <div className="flex items-center gap-2">
+                                                                        {assessment.town}
+                                                                        {assessment.quotes && assessment.quotes.some(q => q.status === 'pending') && (
+                                                                            <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse shadow-sm shadow-purple-200" title="New Quote"></span>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                                <td className="py-4 px-6 text-gray-600 font-medium whitespace-nowrap">
+                                                                    {assessment.county}
+                                                                </td>
+                                                                <td className="py-4 px-6 text-purple-700 font-bold text-xs uppercase tracking-tight whitespace-nowrap">
+                                                                    {assessment.building_type || '-'}
+                                                                </td>
+                                                                <td className="py-4 px-6 text-gray-600 text-xs whitespace-nowrap">
+                                                                    {assessment.floor_area || '-'}
+                                                                </td>
+                                                                <td className="py-4 px-6 text-gray-600 text-xs whitespace-nowrap">
+                                                                    {assessment.building_complexity || '-'}
+                                                                </td>
+                                                                <td className="py-4 px-6 text-gray-500 text-xs max-w-[150px] truncate" title={assessment.heating_cooling_systems?.join(', ')}>
+                                                                    {assessment.heating_cooling_systems?.join(', ') || '-'}
+                                                                </td>
+                                                                <td className="py-4 px-6">
+                                                                    <span className="px-2 py-0.5 bg-purple-100 rounded text-[10px] font-bold text-purple-700 whitespace-nowrap">
+                                                                        {assessment.assessment_purpose || '-'}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="py-4 px-6 text-gray-500 text-xs max-w-[150px] truncate" title={assessment.existing_docs?.join(', ')}>
+                                                                    {assessment.existing_docs?.join(', ') || '-'}
+                                                                </td>
+                                                                <td className="py-4 px-6 text-gray-600 text-xs whitespace-nowrap">
+                                                                    {assessment.preferred_date || 'Flexible'}
+                                                                </td>
+                                                                <td className="py-4 px-6 text-right whitespace-nowrap">
+                                                                    <div className="flex justify-end items-center gap-3">
+                                                                        {assessment.status === 'draft' ? (
+                                                                            <button
+                                                                                onClick={() => handleSubmitAssessment(assessment.id)}
+                                                                                className="px-3 py-1.5 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700 transition-all"
+                                                                            >
+                                                                                Submit
+                                                                            </button>
+                                                                        ) : assessment.status === 'completed' && assessment.certificate_url ? (
+                                                                            <a
+                                                                                href={assessment.certificate_url}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                                className="px-4 py-2 border border-purple-100 text-purple-600 bg-purple-50/50 rounded-xl text-xs font-black hover:bg-purple-600 hover:text-white transition-all"
+                                                                            >
+                                                                                View Certificate
+                                                                            </a>
+                                                                        ) : null}
+                                                                        {assessment.status !== 'completed' && (
+                                                                            <button
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    setDeletingAssessmentId(assessment.id);
+                                                                                }}
+                                                                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                                                title="Delete Assessment"
+                                                                            >
+                                                                                <Trash2 size={16} />
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
                                             </div>
 
-                                            {assessment.status === 'draft' ? (
-                                                <button
-                                                    onClick={() => handleSubmitAssessment(assessment.id)}
-                                                    className="w-full py-3 bg-[#007F00] text-white rounded-xl font-black text-xs hover:bg-[#006600] transition-all mb-3"
-                                                >
-                                                    Submit
-                                                </button>
-                                            ) : assessment.status === 'completed' && assessment.certificate_url ? (
-                                                <a
-                                                    href={assessment.certificate_url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="w-full py-3 bg-[#007F00] text-white rounded-xl font-black text-xs hover:bg-[#006600] transition-all shadow-md shadow-green-100 mb-3 block text-center"
-                                                >
-                                                    View Certificate
-                                                </a>
-                                            ) : null}
+                                            {/* Mobile Card View - Commercial */}
+                                            <div className="md:hidden divide-y divide-purple-50">
+                                                {assessments.filter(a => a.job_type === 'commercial').filter(a => {
+                                                    if (!searchQuery.trim()) return true;
+                                                    const q = searchQuery.toLowerCase();
+                                                    return (
+                                                        (a.town?.toLowerCase().includes(q)) ||
+                                                        (a.county?.toLowerCase().includes(q)) ||
+                                                        (a.building_type?.toLowerCase().includes(q)) ||
+                                                        (a.property_address?.toLowerCase().includes(q)) ||
+                                                        (a.assessment_purpose?.toLowerCase().includes(q)) ||
+                                                        (a.building_complexity?.toLowerCase().includes(q))
+                                                    );
+                                                }).map((assessment) => (
+                                                    <div key={assessment.id} className="p-5">
+                                                        <div className="flex justify-between items-start mb-4">
+                                                            <div>
+                                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                                                                    {new Date(assessment.created_at).toLocaleDateString()}
+                                                                </p>
+                                                                <h4 className="font-bold text-gray-900">{assessment.property_address}</h4>
+                                                                <p className="text-xs text-gray-500">{assessment.town}, {assessment.county}</p>
+                                                            </div>
+                                                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusStyles(assessment.status)}`}>
+                                                                {assessment.status.replace('_', ' ')}
+                                                            </span>
+                                                        </div>
 
-                                            {assessment.status !== 'completed' && (
-                                                <button
-                                                    onClick={() => setDeletingAssessmentId(assessment.id)}
-                                                    className="w-full py-3 border border-red-50 text-red-400 rounded-xl font-black text-xs hover:bg-red-50 hover:text-red-500 transition-all flex items-center justify-center gap-2"
-                                                >
-                                                    <Trash2 size={14} />
-                                                    Delete Assessment
-                                                </button>
-                                            )}
+                                                        <div className="flex items-center gap-4 mb-4">
+                                                            <div className="text-xs font-bold text-purple-700 bg-purple-50 px-2 py-1 rounded">
+                                                                {assessment.building_type || '-'}
+                                                            </div>
+                                                            {assessment.quotes && assessment.quotes.some(q => q.status === 'pending') && (
+                                                                <div className="text-[10px] font-black text-purple-600 flex items-center gap-1">
+                                                                    <div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse"></div>
+                                                                    NEW QUOTES
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        {assessment.status === 'draft' ? (
+                                                            <button
+                                                                onClick={() => handleSubmitAssessment(assessment.id)}
+                                                                className="w-full py-3 bg-purple-600 text-white rounded-xl font-black text-xs hover:bg-purple-700 transition-all mb-3"
+                                                            >
+                                                                Submit
+                                                            </button>
+                                                        ) : assessment.status === 'completed' && assessment.certificate_url ? (
+                                                            <a
+                                                                href={assessment.certificate_url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="w-full py-3 bg-purple-600 text-white rounded-xl font-black text-xs hover:bg-purple-700 transition-all shadow-md shadow-purple-100 mb-3 block text-center"
+                                                            >
+                                                                View Certificate
+                                                            </a>
+                                                        ) : null}
+
+                                                        {assessment.status !== 'completed' && (
+                                                            <button
+                                                                onClick={() => setDeletingAssessmentId(assessment.id)}
+                                                                className="w-full py-3 border border-red-50 text-red-400 rounded-xl font-black text-xs hover:bg-red-50 hover:text-red-500 transition-all flex items-center justify-center gap-2"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                                Delete Assessment
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
-                                    ))}
-                                </div>
+                                    )}
                             </div>
 
                         ) : (

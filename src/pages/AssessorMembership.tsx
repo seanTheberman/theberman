@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { CheckCircle2, Shield, Star, Crown, Layout, User, Globe, MapPin, Zap } from 'lucide-react';
 import PaymentModal from '../components/PaymentModal';
+import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 
 const AssessorMembership = () => {
     const navigate = useNavigate();
+    const { refreshProfile } = useAuth();
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [finalizing, setFinalizing] = useState(false);
 
@@ -27,6 +29,9 @@ const AssessorMembership = () => {
             });
 
             if (error) throw error;
+
+            // Refresh profile to update role and seai_number client-side
+            await refreshProfile();
 
             toast.success('Registration finalized successfully!');
             sessionStorage.removeItem('pending_assessor_registration');

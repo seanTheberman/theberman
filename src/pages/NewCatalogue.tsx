@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, MapPin, Star, Loader2, ChevronDown, Zap } from 'lucide-react';
+import { Search, MapPin, Star, Loader2, ChevronDown, Zap, Sparkles, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
 
@@ -50,9 +50,15 @@ interface CatalogueListing {
     };
 }
 
-
-
-
+// Deterministic daily spotlight: picks one business per day based on day-of-year
+const getDailySpotlight = (listings: CatalogueListing[]): CatalogueListing | null => {
+    if (!listings || listings.length === 0) return null;
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 0);
+    const diff = now.getTime() - start.getTime();
+    const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+    return listings[dayOfYear % listings.length];
+};
 
 const NewCatalogue = () => {
     const [listings, setListings] = useState<CatalogueListing[]>([]);
@@ -279,6 +285,58 @@ const NewCatalogue = () => {
                     </div>
                 </div>
             </section>
+
+            {/* ============ FEATURED SPOTLIGHT BAR ============ */}
+            {(() => {
+                const spotlight = getDailySpotlight(listings);
+                if (!spotlight || loading) return null;
+                return (
+                    <div className="container mx-auto px-6 max-w-7xl -mt-8 relative z-20 mb-6">
+                        <Link
+                            to={`/catalogue/${spotlight.slug}`}
+                            className="group block relative overflow-hidden rounded-2xl shadow-2xl border border-white/10"
+                        >
+                            {/* Background gradient */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#0c121d] via-[#1a2a3a] to-[#007F00]/90" />
+                            {/* Animated shine effect */}
+                            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_30%_50%,rgba(255,255,255,0.3),transparent_70%)]" />
+
+                            <div className="relative z-10 flex flex-col md:flex-row items-center gap-5 md:gap-8 px-6 md:px-10 py-5 md:py-6">
+                                {/* Spotlight badge */}
+                                <div className="flex items-center gap-2 bg-yellow-400/15 backdrop-blur-sm border border-yellow-400/30 px-4 py-1.5 rounded-full shrink-0">
+                                    <Sparkles size={14} className="text-yellow-400" />
+                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-300">Today's Spotlight</span>
+                                </div>
+
+                                {/* Logo */}
+                                <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl overflow-hidden border-2 border-white/20 shadow-lg shrink-0 bg-white/10">
+                                    <img
+                                        src={spotlight.logo_url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=200'}
+                                        alt={spotlight.company_name || spotlight.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+
+                                {/* Business info */}
+                                <div className="flex-1 text-center md:text-left min-w-0">
+                                    <h3 className="text-lg md:text-xl font-black text-white truncate">
+                                        {spotlight.company_name || spotlight.name}
+                                    </h3>
+                                    <p className="text-white/60 text-xs md:text-sm font-medium truncate max-w-lg">
+                                        {spotlight.description}
+                                    </p>
+                                </div>
+
+                                {/* CTA */}
+                                <div className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/15 px-6 py-3 rounded-xl transition-all duration-300 group-hover:bg-[#007F00] group-hover:border-[#007F00] group-hover:shadow-lg shrink-0">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-white">View Profile</span>
+                                    <ArrowRight size={14} className="text-white transition-transform duration-300 group-hover:translate-x-1" />
+                                </div>
+                            </div>
+                        </Link>
+                    </div>
+                );
+            })()}
 
             <div className="container mx-auto px-6 max-w-7xl">
 

@@ -2,8 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { useNavigate, Link } from 'react-router-dom';
-import { Loader2, Building2, CheckCircle, ArrowRight, ArrowLeft } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Loader2, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { geocodeAddress, COUNTY_COORDINATES } from '../lib/geocoding';
 
@@ -27,45 +27,67 @@ const IRISH_COUNTIES = [
     'Wexford', 'Wicklow'
 ];
 
+const CERTIFICATIONS = ['SafePass', 'SEAI Registered', 'RECI Certified', 'NSAI Certified', 'FQAI Registered', 'Safe Electric'];
+
 const BusinessOnboarding = () => {
     const { user, profile } = useAuth();
     const navigate = useNavigate();
-    const [step, setStep] = useState(1);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [searchParams] = useSearchParams();
+    const userIdParam = searchParams.get('userId');
+    const [loading, setLoading] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
     const [locations, setLocations] = useState<Location[]>([]);
 
-    // Form state
-    const [companyName, setCompanyName] = useState('');
-    const [phone, setPhone] = useState('');
-    const [email, setEmail] = useState('');
-    const [businessAddress, setBusinessAddress] = useState('');
-    const [county, setCounty] = useState('');
-    const [website, setWebsite] = useState('');
-    const [description, setDescription] = useState('');
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-    const [facebook, setFacebook] = useState('');
-    const [instagram, setInstagram] = useState('');
-    const [linkedin, setLinkedin] = useState('');
-    const [twitter, setTwitter] = useState('');
-
-    // Compliance fields (Stage 3)
-    const [tradingName, setTradingName] = useState('');
-    const [companyNumber, setCompanyNumber] = useState('');
-    const [vatNumber, setVatNumber] = useState('');
-    const [insuranceExpiry, setInsuranceExpiry] = useState('');
-    const [certifications, setCertifications] = useState<string[]>([]);
+    // Consolidated form state
+    const [formData, setFormData] = useState({
+        companyName: '',
+        tradingName: '',
+        email: '',
+        phone: '',
+        businessAddress: '',
+        county: '',
+        website: '',
+        description: '',
+        companyNumber: '',
+        vatNumber: '',
+        insuranceExpiry: '',
+        certifications: [] as string[],
+        selectedCategories: [] as string[],
+        facebook: '',
+        instagram: '',
+        linkedin: '',
+        twitter: '',
+    });
 
     useEffect(() => {
-        if (profile?.full_name) {
-            setCompanyName(profile.full_name);
-        }
-        if (user?.email) {
-            setEmail(user.email);
-        }
+        const initializeForm = async () => {
+            if (userIdParam) {
+                const { data: targetProfile } = await supabase
+                    .from('profiles')
+                    .select('full_name, email')
+                    .eq('id', userIdParam)
+                    .single();
+
+                if (targetProfile) {
+                    setFormData(prev => ({
+                        ...prev,
+                        companyName: targetProfile.full_name || '',
+                        email: targetProfile.email || '',
+                    }));
+                }
+            } else {
+                setFormData(prev => ({
+                    ...prev,
+                    companyName: profile?.full_name || '',
+                    email: user?.email || '',
+                }));
+            }
+        };
+
+        initializeForm();
         fetchCategories();
         fetchLocations();
-    }, [profile, user]);
+    }, [profile, user, userIdParam]);
 
     const fetchCategories = async () => {
         const { data } = await supabase
@@ -84,44 +106,65 @@ const BusinessOnboarding = () => {
     };
 
     const toggleCategory = (categoryId: string) => {
-        setSelectedCategories(prev =>
-            prev.includes(categoryId)
-                ? prev.filter(id => id !== categoryId)
-                : [...prev, categoryId]
-        );
+        setFormData(prev => ({
+            ...prev,
+            selectedCategories: prev.selectedCategories.includes(categoryId)
+                ? prev.selectedCategories.filter(id => id !== categoryId)
+                : [...prev.selectedCategories, categoryId]
+        }));
+    };
+
+    const toggleCertification = (cert: string) => {
+        setFormData(prev => ({
+            ...prev,
+            certifications: prev.certifications.includes(cert)
+                ? prev.certifications.filter(c => c !== cert)
+                : [...prev.certifications, cert]
+        }));
     };
 
     const generateSlug = (name: string) => {
         return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
         if (!user) return;
 
-        setIsSubmitting(true);
+        if (!formData.companyName.trim() || !formData.email.trim() || !formData.businessAddress.trim() || !formData.county) {
+            toast.error('Please fill in all required fields');
+            return;
+        }
+
+        if (formData.selectedCategories.length === 0) {
+            toast.error('Please select at least one service category');
+            return;
+        }
+
+        setLoading(true);
         try {
-            const slug = generateSlug(companyName) + '-' + Date.now().toString(36);
-            const fullAddress = businessAddress + (county ? `, Co. ${county}` : '');
+            const slug = generateSlug(formData.companyName) + '-' + Date.now().toString(36);
+            const fullAddress = formData.businessAddress + (formData.county ? `, Co. ${formData.county}` : '');
 
             // 1. Create catalogue listing
             const { data: listing, error: listingError } = await supabase
                 .from('catalogue_listings')
                 .insert({
-                    name: companyName,
+                    name: formData.companyName,
                     slug,
-                    company_name: companyName,
-                    description: description || `${companyName} - Professional services provider.`,
-                    email,
-                    phone,
+                    company_name: formData.companyName,
+                    description: formData.description || `${formData.companyName} - Professional services provider.`,
+                    email: formData.email,
+                    phone: formData.phone,
                     address: fullAddress,
-                    website,
+                    website: formData.website,
                     owner_id: user.id,
                     is_active: true,
                     social_media: {
-                        facebook: facebook || undefined,
-                        instagram: instagram || undefined,
-                        linkedin: linkedin || undefined,
-                        twitter: twitter || undefined,
+                        facebook: formData.facebook || undefined,
+                        instagram: formData.instagram || undefined,
+                        linkedin: formData.linkedin || undefined,
+                        twitter: formData.twitter || undefined,
                     },
                     latitude: null as number | null,
                     longitude: null as number | null,
@@ -133,8 +176,8 @@ const BusinessOnboarding = () => {
 
             // 1.1 Geocode address
             let coords = await geocodeAddress(fullAddress);
-            if (!coords && county) {
-                coords = COUNTY_COORDINATES[county];
+            if (!coords && formData.county) {
+                coords = COUNTY_COORDINATES[formData.county];
             }
 
             if (coords && listing) {
@@ -148,8 +191,8 @@ const BusinessOnboarding = () => {
             }
 
             // 2. Map selected categories
-            if (selectedCategories.length > 0 && listing) {
-                const categoryMappings = selectedCategories.map(categoryId => ({
+            if (formData.selectedCategories.length > 0 && listing) {
+                const categoryMappings = formData.selectedCategories.map(categoryId => ({
                     listing_id: listing.id,
                     category_id: categoryId,
                 }));
@@ -162,9 +205,9 @@ const BusinessOnboarding = () => {
             }
 
             // 3. Map county location
-            if (county && listing) {
+            if (formData.county && listing) {
                 const countyLocation = locations.find(
-                    l => l.name.toLowerCase() === county.toLowerCase()
+                    l => l.name.toLowerCase() === formData.county.toLowerCase()
                 );
                 if (countyLocation) {
                     await supabase
@@ -176,15 +219,15 @@ const BusinessOnboarding = () => {
                 }
             }
 
-            // 4. Store compliance data in user metadata (Fallback for restricted schema modification)
+            // 4. Store compliance data in user metadata
             const { error: metadataError } = await supabase.auth.updateUser({
                 data: {
                     compliance_data: {
-                        trading_name: tradingName,
-                        company_number: companyNumber,
-                        vat_number: vatNumber,
-                        insurance_expiry: insuranceExpiry,
-                        certifications: certifications,
+                        trading_name: formData.tradingName,
+                        company_number: formData.companyNumber,
+                        vat_number: formData.vatNumber,
+                        insurance_expiry: formData.insuranceExpiry,
+                        certifications: formData.certifications,
                     }
                 }
             });
@@ -197,357 +240,295 @@ const BusinessOnboarding = () => {
             console.error('Onboarding error:', error);
             toast.error(error.message || 'Failed to create business profile');
         } finally {
-            setIsSubmitting(false);
+            setLoading(false);
         }
     };
 
-    const canProceedStep1 = companyName.trim() && email.trim() && businessAddress.trim() && county;
-    const canProceedStep2 = selectedCategories.length > 0;
-
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-            <div className="w-full max-w-2xl">
-                {/* Header */}
-                <div className="text-center mb-8">
-                    <Link to="/" className="inline-block mb-6">
-                        <img src="/logo.svg" alt="The Berman" className="h-8 w-auto mx-auto" />
-                    </Link>
-                    <div className="w-16 h-16 bg-[#007F00]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Building2 size={32} className="text-[#007F00]" />
-                    </div>
-                    <h1 className="text-3xl font-black text-gray-900 mb-2">Set Up Your Business Profile</h1>
-                    <p className="text-gray-500 font-medium">Complete your profile to appear in the Business Catalogue.</p>
+        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl mx-auto">
+                <div className="text-center mb-10">
+                    <h1 className="text-3xl font-extrabold text-gray-900 font-serif">
+                        Business Registration
+                    </h1>
+                    <p className="mt-2 text-gray-600">
+                        Complete your profile to appear in the Home Energy Catalogue.
+                    </p>
                 </div>
 
-                {/* Progress */}
-                <div className="flex items-center justify-center gap-3 mb-10">
-                    {[1, 2, 3].map(s => (
-                        <div key={s} className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-black transition-all ${step > s ? 'bg-[#007F00] text-white' :
-                                step === s ? 'bg-[#007F00] text-white shadow-lg shadow-green-200' :
-                                    'bg-gray-200 text-gray-500'
-                                }`}>
-                                {step > s ? <CheckCircle size={18} /> : s}
+                <div className="bg-white py-8 px-4 shadow rounded-lg sm:px-10">
+                    <form className="space-y-6" onSubmit={handleSubmit}>
+
+                        {/* READ ONLY INFO */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-md border border-gray-100 mb-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Account Name</label>
+                                <div className="mt-1 text-gray-900 font-medium">{user?.user_metadata?.full_name || '-'}</div>
                             </div>
-                            {s < 3 && <div className={`w-16 h-1 rounded-full ${step > s ? 'bg-[#007F00]' : 'bg-gray-200'}`} />}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Email Address</label>
+                                <div className="mt-1 text-gray-900 font-medium">{user?.email}</div>
+                            </div>
                         </div>
-                    ))}
-                </div>
 
-                <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
-                    <div className="p-8 md:p-10">
+                        {/* BUSINESS DETAILS */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label htmlFor="companyName" className="block text-sm font-bold text-gray-700">Full Business Name *</label>
+                                <input
+                                    type="text"
+                                    id="companyName"
+                                    required
+                                    className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
+                                    value={formData.companyName}
+                                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                                    placeholder="Acme Energy Solutions"
+                                />
+                            </div>
 
-                        {/* Step 1: Business Details */}
-                        {step === 1 && (
-                            <div className="space-y-6">
+                            <div>
+                                <label htmlFor="tradingName" className="block text-sm font-bold text-gray-700">Trading Name <span className="text-gray-400 font-normal">(if different)</span></label>
+                                <input
+                                    type="text"
+                                    id="tradingName"
+                                    className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
+                                    value={formData.tradingName}
+                                    onChange={(e) => setFormData({ ...formData, tradingName: e.target.value })}
+                                    placeholder="Acme Renewables"
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="email" className="block text-sm font-bold text-gray-700">Business Email *</label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    required
+                                    className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    placeholder="info@acme.ie"
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="phone" className="block text-sm font-bold text-gray-700">Phone Number</label>
+                                <input
+                                    type="tel"
+                                    id="phone"
+                                    className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
+                                    value={formData.phone}
+                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    placeholder="+353 1 234 5678"
+                                />
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label htmlFor="businessAddress" className="block text-sm font-bold text-gray-700">Business Address *</label>
+                                <input
+                                    type="text"
+                                    id="businessAddress"
+                                    required
+                                    className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
+                                    value={formData.businessAddress}
+                                    onChange={(e) => setFormData({ ...formData, businessAddress: e.target.value })}
+                                    placeholder="123 Main Street, Town"
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="county" className="block text-sm font-bold text-gray-700 mb-1">County *</label>
+                                <select
+                                    id="county"
+                                    required
+                                    className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors bg-white"
+                                    value={formData.county}
+                                    onChange={(e) => setFormData({ ...formData, county: e.target.value })}
+                                >
+                                    <option value="">Select County</option>
+                                    {IRISH_COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label htmlFor="website" className="block text-sm font-bold text-gray-700">Website</label>
+                                <input
+                                    type="url"
+                                    id="website"
+                                    className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
+                                    value={formData.website}
+                                    onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                                    placeholder="https://www.acme.ie"
+                                />
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label htmlFor="description" className="block text-sm font-bold text-gray-700">Business Description</label>
+                                <textarea
+                                    id="description"
+                                    rows={4}
+                                    className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors resize-none"
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    placeholder="Describe your business and services..."
+                                />
+                            </div>
+                        </div>
+
+                        {/* COMPLIANCE DETAILS */}
+                        <div className="pt-8 border-t border-gray-100">
+                            <label className="block text-lg font-bold text-gray-900 mb-4">
+                                Compliance Details
+                            </label>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
-                                    <h2 className="text-xl font-black text-gray-900 mb-1">Business Details</h2>
-                                    <p className="text-sm text-gray-500">Tell us about your business.</p>
+                                    <label htmlFor="companyNumber" className="block text-sm font-bold text-gray-700 mb-1">Company Number</label>
+                                    <input
+                                        type="text"
+                                        id="companyNumber"
+                                        className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
+                                        value={formData.companyNumber}
+                                        onChange={(e) => setFormData({ ...formData, companyNumber: e.target.value })}
+                                        placeholder="123456"
+                                    />
                                 </div>
-
-                                <div className="grid md:grid-cols-2 gap-5">
-                                    <div className="md:col-span-1">
-                                        <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Full Business Name *</label>
-                                        <input
-                                            type="text"
-                                            value={companyName}
-                                            onChange={e => setCompanyName(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-3.5 font-medium text-gray-900 focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                            placeholder="Acme Energy Solutions"
-                                        />
-                                    </div>
-
-                                    <div className="md:col-span-1">
-                                        <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Trading Name (if different)</label>
-                                        <input
-                                            type="text"
-                                            value={tradingName}
-                                            onChange={e => setTradingName(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-3.5 font-medium text-gray-900 focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                            placeholder="Acme Renewables"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Business Email *</label>
-                                        <input
-                                            type="email"
-                                            value={email}
-                                            onChange={e => setEmail(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-3.5 font-medium text-gray-900 focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                            placeholder="info@acme.ie"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Phone Number</label>
-                                        <input
-                                            type="tel"
-                                            value={phone}
-                                            onChange={e => setPhone(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-3.5 font-medium text-gray-900 focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                            placeholder="+353 1 234 5678"
-                                        />
-                                    </div>
-
-                                    <div className="md:col-span-2">
-                                        <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Business Address *</label>
-                                        <input
-                                            type="text"
-                                            value={businessAddress}
-                                            onChange={e => setBusinessAddress(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-3.5 font-medium text-gray-900 focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                            placeholder="123 Main Street, Town"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">County *</label>
-                                        <select
-                                            value={county}
-                                            onChange={e => setCounty(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-3.5 font-medium text-gray-900 focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                        >
-                                            <option value="">Select County</option>
-                                            {IRISH_COUNTIES.map(c => (
-                                                <option key={c} value={c}>{c}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Website</label>
-                                        <input
-                                            type="url"
-                                            value={website}
-                                            onChange={e => setWebsite(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-3.5 font-medium text-gray-900 focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                            placeholder="https://www.acme.ie"
-                                        />
-                                    </div>
-
-                                    <div className="md:col-span-2">
-                                        <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Business Description</label>
-                                        <textarea
-                                            value={description}
-                                            onChange={e => setDescription(e.target.value)}
-                                            rows={4}
-                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-3.5 font-medium text-gray-900 focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all resize-none"
-                                            placeholder="Describe your business and services..."
-                                        />
-                                    </div>
-
-                                    <div className="md:col-span-2">
-                                        <div className="grid md:grid-cols-3 gap-5">
-                                            <div>
-                                                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Company Number</label>
-                                                <input
-                                                    type="text"
-                                                    value={companyNumber}
-                                                    onChange={e => setCompanyNumber(e.target.value)}
-                                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-3.5 font-medium text-gray-900 focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                                    placeholder="123456"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">VAT Number</label>
-                                                <input
-                                                    type="text"
-                                                    value={vatNumber}
-                                                    onChange={e => setVatNumber(e.target.value)}
-                                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-3.5 font-medium text-gray-900 focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                                    placeholder="IE1234567A"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Insurance Expiry</label>
-                                                <input
-                                                    type="date"
-                                                    value={insuranceExpiry}
-                                                    onChange={e => setInsuranceExpiry(e.target.value)}
-                                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-3.5 font-medium text-gray-900 focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                                />
-                                            </div>
-                                            <div className="md:col-span-2">
-                                                <div className="bg-gray-50/50 border border-gray-100 rounded-2xl p-6">
-                                                    <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-4">Professional Certifications</label>
-                                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                                        {['SafePass', 'SEAI Registered', 'RECI Certified', 'NSAI Certified', 'FQAI Registered', 'Safe Electric'].map(cert => (
-                                                            <label key={cert} className="flex items-center gap-3 p-3 bg-white border border-gray-100 rounded-xl cursor-pointer hover:border-[#007F00] transition-all group shadow-sm">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    checked={certifications.includes(cert)}
-                                                                    onChange={e => {
-                                                                        if (e.target.checked) setCertifications([...certifications, cert]);
-                                                                        else setCertifications(certifications.filter(c => c !== cert));
-                                                                    }}
-                                                                    className="w-4 h-4 rounded border-gray-300 text-[#007F00] focus:ring-[#007F00]"
-                                                                />
-                                                                <span className="text-sm font-bold text-gray-700 group-hover:text-[#007F00]">{cert}</span>
-                                                            </label>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div>
+                                    <label htmlFor="vatNumber" className="block text-sm font-bold text-gray-700 mb-1">VAT Number</label>
+                                    <input
+                                        type="text"
+                                        id="vatNumber"
+                                        className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
+                                        value={formData.vatNumber}
+                                        onChange={(e) => setFormData({ ...formData, vatNumber: e.target.value })}
+                                        placeholder="IE1234567A"
+                                    />
                                 </div>
-
-                                <div className="flex justify-end pt-4">
-                                    <button
-                                        onClick={() => setStep(2)}
-                                        disabled={!canProceedStep1}
-                                        className="bg-[#007F00] text-white px-8 py-4 rounded-xl font-black text-sm uppercase tracking-wider shadow-lg shadow-green-900/10 hover:bg-green-800 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        Next: Service Categories <ArrowRight size={18} />
-                                    </button>
+                                <div>
+                                    <label htmlFor="insuranceExpiry" className="block text-sm font-bold text-gray-700 mb-1">Insurance Expiry</label>
+                                    <input
+                                        type="date"
+                                        id="insuranceExpiry"
+                                        className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
+                                        value={formData.insuranceExpiry}
+                                        onChange={(e) => setFormData({ ...formData, insuranceExpiry: e.target.value })}
+                                    />
                                 </div>
                             </div>
-                        )}
+                        </div>
 
-                        {/* Step 2: Service Categories */}
-                        {step === 2 && (
-                            <div className="space-y-6">
+                        {/* CERTIFICATIONS */}
+                        <div className="pt-6">
+                            <label className="block text-sm font-bold text-gray-700 mb-3">Professional Certifications <span className="text-gray-400 font-normal">(optional)</span></label>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                {CERTIFICATIONS.map(cert => (
+                                    <div
+                                        key={cert}
+                                        onClick={() => toggleCertification(cert)}
+                                        className={`
+                                            cursor-pointer p-3 rounded-xl border flex items-center justify-between transition-all select-none
+                                            ${formData.certifications.includes(cert)
+                                                ? 'bg-green-50/50 border-[#007F00] text-[#007F00] shadow-sm'
+                                                : 'bg-white border-gray-200 hover:border-green-300 text-gray-600'}
+                                        `}
+                                    >
+                                        <span className="font-medium text-sm">{cert}</span>
+                                        {formData.certifications.includes(cert) && <Check size={16} className="text-[#007F00]" />}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* SERVICE CATEGORIES */}
+                        <div className="pt-8 border-t border-gray-100">
+                            <label className="block text-lg font-bold text-gray-900 mb-2">
+                                Select the categories that best describe your services: *
+                            </label>
+                            <p className="text-sm text-gray-500 mb-6">These help customers find you in the catalogue.</p>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                {categories.map(cat => (
+                                    <div
+                                        key={cat.id}
+                                        onClick={() => toggleCategory(cat.id)}
+                                        className={`
+                                            cursor-pointer p-3 rounded-xl border flex items-center justify-between transition-all select-none
+                                            ${formData.selectedCategories.includes(cat.id)
+                                                ? 'bg-green-50/50 border-[#007F00] text-[#007F00] shadow-sm'
+                                                : 'bg-white border-gray-200 hover:border-green-300 text-gray-600'}
+                                        `}
+                                    >
+                                        <span className="font-medium text-sm">{cat.name}</span>
+                                        {formData.selectedCategories.includes(cat.id) && <Check size={16} className="text-[#007F00]" />}
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-2 text-right">{formData.selectedCategories.length} categor{formData.selectedCategories.length === 1 ? 'y' : 'ies'} selected</p>
+                        </div>
+
+                        {/* SOCIAL MEDIA */}
+                        <div className="pt-6">
+                            <label className="block text-sm font-bold text-gray-700 mb-3">Social Media <span className="text-gray-400 font-normal">(optional)</span></label>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <h2 className="text-xl font-black text-gray-900 mb-1">Service Categories</h2>
-                                    <p className="text-sm text-gray-500">Select the categories that best describe your services.</p>
+                                    <label className="block text-xs text-gray-500 mb-1 ml-1">Facebook</label>
+                                    <input
+                                        type="url"
+                                        className="block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors text-sm"
+                                        value={formData.facebook}
+                                        onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
+                                        placeholder="https://facebook.com/..."
+                                    />
                                 </div>
-
-                                <div className="grid grid-cols-2 gap-3">
-                                    {categories.map(cat => (
-                                        <button
-                                            key={cat.id}
-                                            type="button"
-                                            onClick={() => toggleCategory(cat.id)}
-                                            className={`p-4 rounded-xl border-2 text-left text-sm font-bold transition-all ${selectedCategories.includes(cat.id)
-                                                ? 'border-[#007F00] bg-[#007F00]/5 text-[#007F00]'
-                                                : 'border-gray-100 bg-gray-50 text-gray-700 hover:border-gray-300'
-                                                }`}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${selectedCategories.includes(cat.id)
-                                                    ? 'border-[#007F00] bg-[#007F00]'
-                                                    : 'border-gray-300'
-                                                    }`}>
-                                                    {selectedCategories.includes(cat.id) && (
-                                                        <CheckCircle size={14} className="text-white" />
-                                                    )}
-                                                </div>
-                                                {cat.name}
-                                            </div>
-                                        </button>
-                                    ))}
+                                <div>
+                                    <label className="block text-xs text-gray-500 mb-1 ml-1">Instagram</label>
+                                    <input
+                                        type="url"
+                                        className="block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors text-sm"
+                                        value={formData.instagram}
+                                        onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
+                                        placeholder="https://instagram.com/..."
+                                    />
                                 </div>
-
-                                <div className="flex justify-between pt-4">
-                                    <button
-                                        onClick={() => setStep(1)}
-                                        className="text-gray-500 font-bold text-sm flex items-center gap-2 hover:text-gray-700 transition-all"
-                                    >
-                                        <ArrowLeft size={18} /> Back
-                                    </button>
-                                    <button
-                                        onClick={() => setStep(3)}
-                                        disabled={!canProceedStep2}
-                                        className="bg-[#007F00] text-white px-8 py-4 rounded-xl font-black text-sm uppercase tracking-wider shadow-lg shadow-green-900/10 hover:bg-green-800 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        Next: Social Media <ArrowRight size={18} />
-                                    </button>
+                                <div>
+                                    <label className="block text-xs text-gray-500 mb-1 ml-1">LinkedIn</label>
+                                    <input
+                                        type="url"
+                                        className="block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors text-sm"
+                                        value={formData.linkedin}
+                                        onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
+                                        placeholder="https://linkedin.com/company/..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-gray-500 mb-1 ml-1">Twitter / X</label>
+                                    <input
+                                        type="url"
+                                        className="block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors text-sm"
+                                        value={formData.twitter}
+                                        onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
+                                        placeholder="https://x.com/..."
+                                    />
                                 </div>
                             </div>
-                        )}
+                        </div>
 
-                        {/* Step 3: Social Media & Submit */}
-                        {step === 3 && (
-                            <div className="space-y-6">
-                                <div>
-                                    <h2 className="text-xl font-black text-gray-900 mb-1">Social Media</h2>
-                                    <p className="text-sm text-gray-500">Add your social media links (optional).</p>
-                                </div>
-
-                                <div className="grid md:grid-cols-2 gap-5">
-                                    <div>
-                                        <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Facebook</label>
-                                        <input
-                                            type="url"
-                                            value={facebook}
-                                            onChange={e => setFacebook(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-3.5 font-medium text-gray-900 focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                            placeholder="https://facebook.com/..."
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Instagram</label>
-                                        <input
-                                            type="url"
-                                            value={instagram}
-                                            onChange={e => setInstagram(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-3.5 font-medium text-gray-900 focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                            placeholder="https://instagram.com/..."
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">LinkedIn</label>
-                                        <input
-                                            type="url"
-                                            value={linkedin}
-                                            onChange={e => setLinkedin(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-3.5 font-medium text-gray-900 focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                            placeholder="https://linkedin.com/..."
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Twitter / X</label>
-                                        <input
-                                            type="url"
-                                            value={twitter}
-                                            onChange={e => setTwitter(e.target.value)}
-                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-3.5 font-medium text-gray-900 focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                            placeholder="https://x.com/..."
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Summary */}
-                                <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 mt-6">
-                                    <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-4">Summary</h3>
-                                    <div className="grid grid-cols-2 gap-y-3 text-sm">
-                                        <span className="text-gray-500 font-bold">Business Name</span>
-                                        <span className="text-gray-900 font-medium">{companyName}</span>
-                                        <span className="text-gray-500 font-bold">Address</span>
-                                        <span className="text-gray-900 font-medium">{businessAddress}, Co. {county}</span>
-                                        <span className="text-gray-500 font-bold">Categories</span>
-                                        <span className="text-gray-900 font-medium">
-                                            {selectedCategories.map(id => categories.find(c => c.id === id)?.name).join(', ')}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="flex justify-between pt-4">
-                                    <button
-                                        onClick={() => setStep(2)}
-                                        className="text-gray-500 font-bold text-sm flex items-center gap-2 hover:text-gray-700 transition-all"
-                                    >
-                                        <ArrowLeft size={18} /> Back
-                                    </button>
-                                    <button
-                                        onClick={handleSubmit}
-                                        disabled={isSubmitting}
-                                        className="bg-[#007F00] text-white px-10 py-4 rounded-xl font-black text-sm uppercase tracking-wider shadow-lg shadow-green-900/10 hover:bg-green-800 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {isSubmitting ? (
-                                            <>
-                                                <Loader2 size={18} className="animate-spin" />
-                                                Creating Profile...
-                                            </>
-                                        ) : (
-                                            'Create Business Profile'
-                                        )}
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                        {/* SUBMIT */}
+                        <div className="pt-8">
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className={`w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-lg font-bold text-white bg-[#007F00] hover:bg-[#006600] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#007F00] transition-all transform active:scale-95 ${loading ? 'opacity-75 cursor-not-allowed' : ''}`}
+                            >
+                                {loading ? (
+                                    <>
+                                        <Loader2 size={20} className="animate-spin mr-2" />
+                                        Creating Profile...
+                                    </>
+                                ) : (
+                                    'Create Business Profile'
+                                )}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

@@ -14,6 +14,7 @@ interface AuthContextType {
     resetPassword: (email: string) => Promise<{ data: any, error: any }>;
     updateUserPassword: (password: string) => Promise<{ data: { user: User | null }, error: any }>;
     signOut: () => Promise<void>;
+    refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -138,8 +139,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(null);
     };
 
+    const refreshProfile = async () => {
+        if (user) {
+            await fetchProfile(user.id);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, session, profile, loading, role, signIn, signUp, resetPassword, updateUserPassword, signOut }}>
+        <AuthContext.Provider value={{ user, session, profile, loading, role, signIn, signUp, resetPassword, updateUserPassword, signOut, refreshProfile }}>
             {isInitialCheckDone ? children : (
                 <div className="min-h-screen flex items-center justify-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007F00]"></div>

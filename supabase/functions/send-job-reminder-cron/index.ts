@@ -138,41 +138,46 @@ Deno.serve(async (req: Request) => {
         await client.authenticate(smtpUsername, smtpPassword);
 
         let sentCount = 0;
+        console.log(`[INFO] Processing reminders for ${contractors.length} contractors and ${assessments.length} potential jobs.`);
 
         for (const contractor of contractors) {
             // Filter jobs for this contractor
             const quotedIds = new Set(allQuotes?.filter(q => q.created_by === contractor.id).map(q => q.assessment_id) || []);
 
+            // Start with jobs not already quoted
             let matchingJobs = assessments?.filter(j => !quotedIds.has(j.id)) || [];
 
-            // Apply county filtering
+            // 1. County filtering
             if (contractor.preferred_counties && contractor.preferred_counties.length > 0) {
                 matchingJobs = matchingJobs.filter(job =>
                     contractor.preferred_counties.includes(job.county)
                 );
             }
 
-            // Apply Assessor Type filtering (Domestic vs Commercial)
-            const assessorType = contractor.assessor_type || '';
+            // 2. Assessor Type filtering (Domestic vs Commercial)
+            // Default to 'Domestic Assessor' if none set to ensure they get something
+            const assessorType = contractor.assessor_type || 'Domestic Assessor';
             const isDomesticAssessor = assessorType.includes('Domestic');
             const isCommercialAssessor = assessorType.includes('Commercial');
 
             matchingJobs = matchingJobs.filter(job => {
-                const commercialTypes = ['Commercial', 'Office', 'Retail', 'Industrial', 'Warehouse', 'Unit', 'Retail Unit'];
-                const isCommercialJob = commercialTypes.some(type =>
-                    job.property_type?.toLowerCase().includes(type.toLowerCase()) ||
-                    job.property_address?.toLowerCase().includes(type.toLowerCase())
-                );
+                // Use the explicit job_type column if available, fallback to property_type heuristics
+                const isCommercialJob = job.job_type === 'commercial' ||
+                    ['commercial', 'office', 'retail', 'industrial', 'warehouse'].some(type =>
+                        job.property_type?.toLowerCase().includes(type)
+                    );
 
                 if (isCommercialJob) return isCommercialAssessor;
+                // If it's not explicitly commercial, we treat it as domestic
                 return isDomesticAssessor;
             });
 
             if (matchingJobs.length > 0) {
                 try {
+                    console.log(`[SMTP] Attempting to send ${matchingJobs.length} jobs to ${contractor.email} (Type: ${assessorType})`);
                     const emailHtml = generateJobReminderEmail(contractor.full_name, matchingJobs, promoHtml, websiteUrl);
                     await client.send(smtpFrom, contractor.email, `${matchingJobs.length}x Jobs Still Available to Quote`, emailHtml);
-                    console.log(`[SMTP] Sent reminder to ${contractor.email}`);
+                    console.log(`[SMTP] SUCCESS: Sent reminder to ${contractor.email}`);
                     sentCount++;
                 } catch (err) {
                     console.error(`[SMTP ERROR] Failed to send reminder to ${contractor.email}:`, err);

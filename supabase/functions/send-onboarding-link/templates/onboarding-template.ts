@@ -56,7 +56,7 @@ export const generateOnboardingHtml = (fullName: string, town: string, onboardin
 
                 <div class="promo-box">
                     <h4>Considering Solar Panels?</h4>
-                    <p>Compare the Best Solar Deals at <a href="https://GetSolarQuotes.ie">GetSolarQuotes.ie</a></p>
+                    <p>Compare the Best Solar Deals at <a href="https://solarquotesireland.com/">SolarQuotesIreland.com</a></p>
                 </div>
             </div>
             <div class="footer">

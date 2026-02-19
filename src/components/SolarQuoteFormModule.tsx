@@ -177,7 +177,8 @@ const SolarQuoteFormModule = ({ onClose }: SolarQuoteFormModuleProps) => {
                         customerName: formData.fullName,
                         county: formData.county,
                         town: formData.county, // Using county as town
-                        assessmentId: newAssessmentId
+                        assessmentId: newAssessmentId,
+                        jobType: formData.propertyType === 'Commercial' ? 'commercial' : 'domestic'
                     }
                 });
                 setEmailError(null);

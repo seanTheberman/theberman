@@ -92,7 +92,7 @@ Deno.serve(async (req: Request) => {
     const responseHeaders = { ...corsHeaders, 'Content-Type': 'application/json' };
 
     try {
-        const { email, customerName, county, town, assessmentId } = await req.json();
+        const { email, customerName, county, town, assessmentId, jobType } = await req.json();
         const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
         const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
         const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
@@ -172,8 +172,8 @@ Deno.serve(async (req: Request) => {
 
                 for (const contractor of relevantContractors) {
                     try {
-                        const contractorHtml = generateContractorEmail(county, town, contractor.full_name, promoHtml, websiteUrl);
-                        await client.send(smtpFrom, contractor.email, `New BER Job in ${town || county}`, contractorHtml);
+                        const contractorHtml = generateContractorEmail(county, town, contractor.full_name, promoHtml, websiteUrl, jobType);
+                        await client.send(smtpFrom, contractor.email, `New ${jobType === 'commercial' ? 'Commercial' : 'Domestic'} BER Job in ${town || county}`, contractorHtml);
                         console.log(`[SMTP] Notified contractor: ${contractor.email}`);
                     } catch (err) {
                         console.error(`[SMTP ERROR] Failed to notify contractor ${contractor.email}:`, err);
