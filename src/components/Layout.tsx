@@ -340,11 +340,19 @@ const Layout = () => {
                                         Assessor Membership
                                     </Link>
                                 </li>
+
+                                <li>
+                                    <Link to="/signup?role=business" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
+                                        Business Catalogue Registration
+                                    </Link>
+                                </li>
+
                                 <li>
                                     <Link to="/faq" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
                                         FAQ
                                     </Link>
                                 </li>
+
 
                             </ul>
                         </div>

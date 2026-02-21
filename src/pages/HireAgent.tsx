@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase';
 import {
     Loader2, Send,
     CheckCircle2, Shield, Zap as ZapIcon,
-    Mail, MapPin, Clock
+    Mail, Globe
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
@@ -158,28 +158,20 @@ const HireAgent = () => {
                                     value="info@theberman.eu"
                                     href="mailto:info@theberman.eu"
                                 />
-                                <div className="space-y-3">
-                                    <InfoItem
-                                        icon={<MapPin size={20} />}
-                                        title="Visit Us"
-                                        value="Dublin, Ireland - D04 W7K5"
-                                        onClick={() => {
-                                            window.open('https://www.google.com/maps/search/?api=1&query=13+Upper+Baggot+Street,+Dublin+4+D04+W7K5', '_blank');
-                                        }}
-                                    />
-                                    <button
-                                        onClick={() => window.open('https://www.google.com/maps/search/?api=1&query=13+Upper+Baggot+Street,+Dublin+4+D04+W7K5', '_blank')}
-                                        className="ml-0 md:ml-15 px-4 py-1.5 bg-green-50 text-[#007F00] text-[10px] font-black rounded-lg hover:bg-[#007F00] hover:text-white transition-all flex items-center justify-center md:justify-start gap-2 border border-green-100 cursor-pointer w-full md:w-auto"
-                                    >
-                                        View in Map <MapPin size={10} />
-                                    </button>
-                                </div>
-
-                                <div className="pt-6 border-t border-gray-50">
+                                {/* <div className="pt-6 border-t border-gray-50">
                                     <InfoItem
                                         icon={<Clock size={20} />}
                                         title="Office Hours"
                                         value="Mon - Fri: 9:00 AM - 5:30 PM"
+                                    />
+                                </div> */}
+
+
+                                <div className="pt-6 border-t border-gray-50">
+                                    <InfoItem
+                                        icon={<Globe size={20} />}
+                                        title="Website"
+                                        value="theberman.eu"
                                     />
                                 </div>
                             </div>
