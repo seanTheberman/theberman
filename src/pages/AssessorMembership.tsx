@@ -109,10 +109,10 @@ const AssessorMembership = () => {
 
                         <div className="mb-4">
                             <p className="text-2xl md:text-3xl font-black text-gray-900">
-                                Only <span className="text-[#007F00]">€369</span>
+                                Only <span className="text-[#007F00]">€338.25</span>
                             </p>
                             <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px] mt-1">
-                                for 12 months <span className="text-gray-400 font-medium">(€300 + VAT)</span>
+                                for 12 months <span className="text-gray-400 font-medium">(€275 + VAT)</span>
                             </p>
                         </div>
 
@@ -131,7 +131,7 @@ const AssessorMembership = () => {
             <PaymentModal
                 isOpen={isPaymentModalOpen}
                 onClose={() => setIsPaymentModalOpen(false)}
-                amount={369}
+                amount={338.25}
                 onSuccess={handlePaymentSuccess}
                 title="Assessor Membership"
             />

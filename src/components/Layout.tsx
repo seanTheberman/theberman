@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { Menu, X, Home, Mail, Facebook, Instagram, Linkedin, ChevronRight } from 'lucide-react';
+import { Menu, X, Mail, Facebook, Instagram, Linkedin, ChevronRight, Globe } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import QuoteModal from './QuoteModal';
@@ -313,9 +313,9 @@ const Layout = () => {
                                 Ireland's trusted partner for BER assessments and energy consultancy.
                             </p>
                             <div className="flex gap-4">
-                                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#007F00] hover:text-white transition cursor-pointer"><Facebook size={16} /></a>
-                                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#007F00] hover:text-white transition cursor-pointer"><Instagram size={16} /></a>
-                                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#007F00] hover:text-white transition cursor-pointer"><Linkedin size={16} /></a>
+                                <a href="https://www.facebook.com/share/1aN1GPgqKh/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#007F00] hover:text-white transition cursor-pointer"><Facebook size={16} /></a>
+                                <a href="https://www.instagram.com/thebermanireland?igsh=amtidXdjNmZrMWJz&utm_source=qr" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#007F00] hover:text-white transition cursor-pointer"><Instagram size={16} /></a>
+                                <a href="https://www.linkedin.com/company/the-ber-man/" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#007F00] hover:text-white transition cursor-pointer"><Linkedin size={16} /></a>
                                 <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#007F00] hover:text-white transition cursor-pointer">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                                         <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932L18.901 1.153zM17.61 20.644h2.039L6.486 3.24H4.298L17.61 20.644z" />
@@ -335,11 +335,11 @@ const Layout = () => {
                                         </Link>
                                     </li>
                                 ))}
-                                <li>
+                                {/* <li>
                                     <Link to="/assessor-membership" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
                                         Assessor Membership
                                     </Link>
-                                </li>
+                                </li> */}
 
                                 <li>
                                     <Link to="/signup?role=business" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
@@ -437,8 +437,8 @@ const Layout = () => {
                                     <a href="mailto:hello@theberman.eu" className="hover:text-white transition">support@theberman.eu</a>
                                 </li>
                                 <li className="flex items-start gap-3 text-gray-400 text-sm">
-                                    <Home className="text-[#9ACD32] mt-0.5" size={16} />
-                                    <span>Dublin 4, Ireland</span>
+                                    <Globe className="text-[#9ACD32] mt-0.5" size={16} />
+                                    <a href="https://theberman.eu" target='_blank' className="hover:text-white transition">theberman.eu</a>
                                 </li>
                             </ul>
                         </div>
