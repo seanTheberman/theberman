@@ -355,8 +355,8 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 user_id: currentUserId,
                 referred_by_listing_id: referredByListingId,
                 job_type: formData.jobType,
-                seai_fee: 30,
-                platform_fee: 50, // €30 visible to customer + €20 hidden margin
+                seai_fee: 25,
+                platform_fee: 45, // €25 visible to customer + €20 hidden margin
                 contractor_payout: 60, // What contractor receives
             };
 

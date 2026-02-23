@@ -1907,7 +1907,7 @@ const ContractorDashboard = () => {
                                             <div className="p-6 space-y-4">
                                                 <p className="text-sm text-green-700 text-center italic">Include SEAI fees.</p>
                                                 <p className="text-sm text-green-700 text-center italic">Include VAT (if registered).</p>
-                                                <p className="text-sm text-green-700 text-center italic">Include €30 platform fee.</p>
+                                                <p className="text-sm text-green-700 text-center italic">Include €25 platform fee.</p>
 
                                                 <div className="relative mt-4">
                                                     <input
@@ -1919,7 +1919,7 @@ const ContractorDashboard = () => {
                                                     />
                                                 </div>
                                                 <p className="text-sm text-center font-bold text-gray-600">
-                                                    You will receive: €{quotePrice ? (parseInt(quotePrice) - 30) : 0} (direct from customer)
+                                                    You will receive: €{quotePrice ? (parseInt(quotePrice) - 25) : 0} (direct from customer)
                                                 </p>
                                                 <p className="text-xs text-gray-400 text-center">Eg. 170, no euro sign or cents.</p>
 
