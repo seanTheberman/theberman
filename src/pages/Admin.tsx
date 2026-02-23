@@ -5,6 +5,15 @@ import { useAuth } from '../hooks/useAuth';
 import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2, Search, Newspaper } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { TOWNS_BY_COUNTY } from '../data/irishTowns';
+
+const IRISH_COUNTIES = [
+    'Carlow', 'Cavan', 'Clare', 'Cork', 'Donegal', 'Dublin', 'Galway',
+    'Kerry', 'Kildare', 'Kilkenny', 'Laois', 'Leitrim', 'Limerick',
+    'Longford', 'Louth', 'Mayo', 'Meath', 'Monaghan', 'Offaly',
+    'Roscommon', 'Sligo', 'Tipperary', 'Waterford', 'Westmeath',
+    'Wexford', 'Wicklow'
+];
 
 interface Lead {
     id: string;
@@ -134,6 +143,23 @@ const Admin = () => {
     const [editForm, setEditForm] = useState<Partial<Profile>>({});
     const [showAddUserModal, setShowAddUserModal] = useState(false);
     const [newUserRole, setNewUserRole] = useState<'contractor' | 'business'>('contractor');
+    const [newUserFormData, setNewUserFormData] = useState({
+        fullName: '',
+        email: '',
+        phone: '',
+        county: '',
+        town: '',
+        // Assessor-specific
+        seaiNumber: '',
+        assessorType: 'Domestic Assessor',
+        companyName: '',
+        // Business-specific
+        businessAddress: '',
+        website: '',
+        description: '',
+        companyNumber: '',
+        vatNumber: '',
+    });
     const [showQuoteModal, setShowQuoteModal] = useState(false);
     const [showAssignModal, setShowAssignModal] = useState(false); const [vLabels] = useState<Record<string, string>>({
         stats: 'Overview',
@@ -1042,27 +1068,50 @@ const Admin = () => {
         }
     };
 
+    const resetNewUserForm = () => {
+        setNewUserFormData({
+            fullName: '', email: '', phone: '', county: '', town: '',
+            seaiNumber: '', assessorType: 'Domestic Assessor', companyName: '',
+            businessAddress: '', website: '', description: '', companyNumber: '', vatNumber: '',
+        });
+    };
+
     const handleAddUser = async (e: React.FormEvent) => {
         e.preventDefault();
-        const formData = new FormData(e.target as HTMLFormElement);
-        const fullName = formData.get('fullName') as string;
-        const email = formData.get('email') as string;
-
         setIsUpdating(true);
         try {
-            // Note: Since we can't create auth users without service key easily in client,
-            // we create a profile entry. If the user eventually signs up with this email,
-            // their profile will be linked (if the identity provider matches or via some linking logic).
-            // For now, we manually insert into profiles.
+            // Build the profile row based on role
+            const profileData: Record<string, any> = {
+                full_name: newUserFormData.fullName,
+                email: newUserFormData.email,
+                role: newUserRole,
+                registration_status: 'active',
+                is_active: true,
+            };
+
+            // Add phone if provided
+            if (newUserFormData.phone) profileData.phone = newUserFormData.phone;
+            if (newUserFormData.county) profileData.county = newUserFormData.county;
+            if (newUserFormData.town) profileData.town = newUserFormData.town;
+
+            if (newUserRole === 'contractor') {
+                // Assessor-specific fields
+                if (newUserFormData.seaiNumber) profileData.seai_number = newUserFormData.seaiNumber;
+                if (newUserFormData.assessorType) profileData.assessor_type = newUserFormData.assessorType;
+                if (newUserFormData.companyName) profileData.company_name = newUserFormData.companyName;
+            } else {
+                // Business-specific fields
+                if (newUserFormData.businessAddress) profileData.business_address = newUserFormData.businessAddress;
+                if (newUserFormData.website) profileData.website = newUserFormData.website;
+                if (newUserFormData.description) profileData.description = newUserFormData.description;
+                if (newUserFormData.companyName) profileData.company_name = newUserFormData.companyName || newUserFormData.fullName;
+                if (newUserFormData.companyNumber) profileData.company_number = newUserFormData.companyNumber;
+                if (newUserFormData.vatNumber) profileData.vat_number = newUserFormData.vatNumber;
+            }
+
             const { data, error } = await supabase
                 .from('profiles')
-                .insert([{
-                    full_name: fullName,
-                    email: email,
-                    role: newUserRole,
-                    registration_status: 'active',
-                    is_active: true
-                }])
+                .insert([profileData])
                 .select()
                 .single();
 
@@ -1071,6 +1120,7 @@ const Admin = () => {
             setUsersList([data, ...users_list]);
             toast.success(`${newUserRole === 'contractor' ? 'Assessor' : 'Business'} added successfully`);
             setShowAddUserModal(false);
+            resetNewUserForm();
         } catch (error: any) {
             toast.error(error.message || 'Failed to add user');
         } finally {
@@ -3217,50 +3267,200 @@ const Admin = () => {
                 </div>
             )}
 
-            {/* ADD USER MODAL (MANUAL) */}
+            {/* ADD USER MODAL (MANUAL) — ENHANCED */}
             {showAddUserModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 animate-in zoom-in-95 duration-200">
-                        <div className="flex justify-between items-center mb-6">
-                            <div>
-                                <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">Manual Registration</h3>
-                                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Adding a new {newUserRole === 'contractor' ? 'Assessor' : 'Business'}</p>
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+                        <div className="p-8 pb-0 shrink-0">
+                            <div className="flex justify-between items-center mb-6">
+                                <div>
+                                    <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">Manual Registration</h3>
+                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Adding a new {newUserRole === 'contractor' ? 'Assessor' : 'Business'}</p>
+                                </div>
+                                <button onClick={() => { setShowAddUserModal(false); resetNewUserForm(); }} className="text-gray-400 hover:text-gray-600">
+                                    <X size={24} />
+                                </button>
                             </div>
-                            <button onClick={() => setShowAddUserModal(false)} className="text-gray-400 hover:text-gray-600">
-                                <X size={24} />
-                            </button>
                         </div>
 
-                        <form onSubmit={handleAddUser} className="space-y-4">
-                            <div>
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Full Name</label>
-                                <input
-                                    type="text"
-                                    name="fullName"
-                                    required
-                                    placeholder="e.g. John Doe"
-                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Email Address</label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    required
-                                    placeholder="john@example.com"
-                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
-                                />
+                        <form onSubmit={handleAddUser} className="flex flex-col flex-1 overflow-hidden">
+                            <div className="px-8 pb-8 overflow-y-auto space-y-6 flex-1">
+                                {/* SECTION: Personal Details */}
+                                <div>
+                                    <h4 className="text-[10px] font-black text-[#007F00] uppercase tracking-widest mb-4">Personal Details</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Full Name *</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                placeholder={newUserRole === 'contractor' ? 'e.g. John Doe' : 'e.g. Acme Energy'}
+                                                value={newUserFormData.fullName}
+                                                onChange={(e) => setNewUserFormData({ ...newUserFormData, fullName: e.target.value })}
+                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Email *</label>
+                                            <input
+                                                type="email"
+                                                required
+                                                placeholder="john@example.com"
+                                                value={newUserFormData.email}
+                                                onChange={(e) => setNewUserFormData({ ...newUserFormData, email: e.target.value })}
+                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Phone</label>
+                                            <input
+                                                type="tel"
+                                                placeholder="+353 8X XXX XXXX"
+                                                value={newUserFormData.phone}
+                                                onChange={(e) => setNewUserFormData({ ...newUserFormData, phone: e.target.value })}
+                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">County</label>
+                                            <select
+                                                value={newUserFormData.county}
+                                                onChange={(e) => setNewUserFormData({ ...newUserFormData, county: e.target.value, town: '' })}
+                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white"
+                                            >
+                                                <option value="">Select County</option>
+                                                {IRISH_COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {/* Town selector — only for assessors (uses TOWNS_BY_COUNTY) */}
+                                    {newUserRole === 'contractor' && newUserFormData.county && (
+                                        <div className="mt-4">
+                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Town</label>
+                                            <select
+                                                value={newUserFormData.town}
+                                                onChange={(e) => setNewUserFormData({ ...newUserFormData, town: e.target.value })}
+                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white"
+                                            >
+                                                <option value="">Select Town</option>
+                                                {(TOWNS_BY_COUNTY[newUserFormData.county] || []).map((t: string) => <option key={t} value={t}>{t}</option>)}
+                                            </select>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* SECTION: Assessor-Specific Fields */}
+                                {newUserRole === 'contractor' && (
+                                    <div>
+                                        <h4 className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest mb-4">Assessor Details</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">SEAI Registration #</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="e.g. 10XXX"
+                                                    value={newUserFormData.seaiNumber}
+                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, seaiNumber: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Assessor Type</label>
+                                                <select
+                                                    value={newUserFormData.assessorType}
+                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, assessorType: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white"
+                                                >
+                                                    <option value="Domestic Assessor">Domestic Assessor</option>
+                                                    <option value="Commercial Assessor">Commercial Assessor</option>
+                                                    <option value="Both">Both (Domestic & Commercial)</option>
+                                                </select>
+                                            </div>
+                                            <div className="md:col-span-2">
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Company Name <span className="text-gray-300">(optional)</span></label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="e.g. ABC Energy Assessments"
+                                                    value={newUserFormData.companyName}
+                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, companyName: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* SECTION: Business-Specific Fields */}
+                                {newUserRole === 'business' && (
+                                    <div>
+                                        <h4 className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest mb-4">Business Details</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="md:col-span-2">
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Business Address</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="123 Main Street, Town"
+                                                    value={newUserFormData.businessAddress}
+                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, businessAddress: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Website <span className="text-gray-300">(optional)</span></label>
+                                                <input
+                                                    type="url"
+                                                    placeholder="https://www.example.ie"
+                                                    value={newUserFormData.website}
+                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, website: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Company Number <span className="text-gray-300">(optional)</span></label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="123456"
+                                                    value={newUserFormData.companyNumber}
+                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, companyNumber: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">VAT Number <span className="text-gray-300">(optional)</span></label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="IE1234567A"
+                                                    value={newUserFormData.vatNumber}
+                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, vatNumber: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
+                                                />
+                                            </div>
+                                            <div className="md:col-span-2">
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Description <span className="text-gray-300">(optional)</span></label>
+                                                <textarea
+                                                    placeholder="Describe the business and services..."
+                                                    rows={3}
+                                                    value={newUserFormData.description}
+                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, description: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] resize-none"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Info Banner */}
+                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                    <p className="text-[10px] text-gray-500 font-bold leading-relaxed">
+                                        <AlertTriangle size={12} className="inline mr-1 text-amber-500" />
+                                        This will create a profile entry. If the user eventually signs up with this email, their dashboard will automatically link to this record.
+                                    </p>
+                                </div>
                             </div>
 
-                            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                                <p className="text-[10px] text-gray-500 font-bold leading-relaxed">
-                                    <AlertTriangle size={12} className="inline mr-1 text-amber-500" />
-                                    This will create a profile entry. If the user eventually signs up with this email, their dashboard will automatically link to this record.
-                                </p>
-                            </div>
-
-                            <div className="pt-4 flex gap-3">
+                            {/* Sticky footer */}
+                            <div className="px-8 py-6 border-t border-gray-100 flex gap-3 shrink-0 bg-white rounded-b-3xl">
                                 <button
                                     type="submit"
                                     disabled={isUpdating}
@@ -3271,7 +3471,7 @@ const Admin = () => {
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => setShowAddUserModal(false)}
+                                    onClick={() => { setShowAddUserModal(false); resetNewUserForm(); }}
                                     className="px-6 py-4 bg-gray-100 text-gray-600 font-bold rounded-2xl hover:bg-gray-200 transition-all text-sm"
                                 >
                                     Cancel
