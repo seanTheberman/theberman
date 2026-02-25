@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import SEOHead from '../components/SEOHead';
 
 interface FaqItem {
     id: string;
@@ -320,6 +321,23 @@ const FAQ = () => {
 
     return (
         <div className="bg-white min-h-screen pt-32 pb-24 font-sans">
+            <SEOHead
+                title="Frequently Asked Questions"
+                description="Find answers to common questions about BER assessments, energy ratings, costs, and home energy upgrades in Ireland."
+                canonical="/faq"
+                jsonLd={{
+                    '@context': 'https://schema.org',
+                    '@type': 'FAQPage',
+                    mainEntity: FAQ_DATA.map(item => ({
+                        '@type': 'Question',
+                        name: item.title,
+                        acceptedAnswer: {
+                            '@type': 'Answer',
+                            text: item.title
+                        }
+                    }))
+                }}
+            />
             <div className="container mx-auto px-6 max-w-7xl">
 
                 <div className="grid lg:grid-cols-12 gap-16 items-start">

@@ -27,6 +27,7 @@ interface Quote {
         vat_registered?: boolean;
     };
     assessment?: any;
+    is_loyalty_payout?: boolean;
 }
 
 interface Assessment {
@@ -129,7 +130,19 @@ const UserDashboard = () => {
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            setAssessments(data || []);
+
+            // Filter out jobs older than 5 days that haven't had a quote accepted
+            const filteredData = (data || []).filter(assessment => {
+                const createdAt = new Date(assessment.created_at);
+                const now = new Date();
+                const diffInDays = (now.getTime() - createdAt.getTime()) / (1000 * 3600 * 24);
+
+                // Keep if new (< 5 days) OR if it's already progressed beyond pending quotes
+                const isExpired = diffInDays > 5 && !['quote_accepted', 'scheduled', 'completed'].includes(assessment.status);
+                return !isExpired;
+            });
+
+            setAssessments(filteredData);
         } catch (error: any) {
             console.error('Error fetching assessments:', error);
             toast.error('Failed to load assessments');
@@ -209,18 +222,19 @@ const UserDashboard = () => {
     const handleUpdateQuoteStatus = async (assessmentId: string, quoteId: string, newStatus: 'accepted' | 'rejected') => {
         try {
             if (newStatus === 'accepted') {
-                // Fetch the quote to get the price
+                // Fetch the quote to get the price and loyalty status
                 const { data: quote, error: fetchError } = await supabase
                     .from('quotes')
-                    .select('price')
+                    .select('price, is_loyalty_payout')
                     .eq('id', quoteId)
                     .single();
 
                 if (fetchError) throw fetchError;
 
-                // Open Payment Modal with fixed €40 deposit and calculate balance
-                const balance = (quote.price + 10) - 40;
-                setPaymentQuote({ assessmentId, quoteId, amount: 40, balance });
+                // Open Payment Modal with appropriate deposit (fixed €40 or €10 if loyalty) and calculate balance
+                const depositAmount = quote.is_loyalty_payout ? 10 : 40;
+                const balance = (quote.price + 10) - depositAmount;
+                setPaymentQuote({ assessmentId, quoteId, amount: depositAmount, balance });
                 setPaymentModalOpen(true);
                 return;
             } else {
@@ -741,7 +755,7 @@ const UserDashboard = () => {
                                                                     <div className="flex flex-col">
                                                                         <div className="text-lg font-black text-gray-900">€{quote.price + 10}</div>
                                                                         <div className="text-[10px] text-gray-500 font-medium">
-                                                                            Deposit: €40 | Balance: €{quote.price + 10 - 40}
+                                                                            Deposit: €{quote.is_loyalty_payout ? '10' : '40'} | Balance: €{quote.price + 10 - (quote.is_loyalty_payout ? 10 : 40)}
                                                                         </div>
                                                                     </div>
                                                                 </td>

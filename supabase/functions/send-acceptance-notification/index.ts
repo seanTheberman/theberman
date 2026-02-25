@@ -1,4 +1,3 @@
-/// <reference lib="deno.ns" />
 // @ts-nocheck
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -43,7 +42,7 @@ Deno.serve(async (req: Request) => {
 
         const { data: quote, error: quoteError } = await supabase
             .from('quotes')
-            .select('price, created_by, profiles!quotes_created_by_fkey(full_name, email)')
+            .select('price, created_by, profiles!quotes_created_by_profile_fkey(full_name, email)')
             .eq('id', quoteId)
             .single();
 

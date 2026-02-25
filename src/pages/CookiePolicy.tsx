@@ -1,11 +1,15 @@
 import { HelpCircle, List, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SEOHead from '../components/SEOHead';
 
 const CookiePolicy = () => {
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen">
-            <title>Cookie Policy | The Berman</title>
-            <meta name="description" content="Cookie Policy for The Berman. Learn about how we use cookies on our website." />
+            <SEOHead
+                title="Cookie Policy"
+                description="Cookie Policy for The Berman. Learn about how we use cookies on our website."
+                canonical="/cookie-policy"
+            />
 
             {/* Hero Section */}
             <section className="pt-24 pb-16 bg-white border-b border-gray-100">

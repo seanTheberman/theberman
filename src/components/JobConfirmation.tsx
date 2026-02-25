@@ -107,7 +107,7 @@ const JobConfirmation = ({ customerName, county, email, emailError, hideNavigati
                     </li>
                     <li className="flex gap-3">
                         <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-200 text-green-800 flex items-center justify-center text-sm font-bold">3</span>
-                        <span>Compare quotes and choose the best {professionalSingular.toLowerCase()} for you</span>
+                        <span>Compare quotes and choose the best {professionalSingular.toLowerCase()} for you within 5 days. After 5 days, the job will expire.</span>
                     </li>
                 </ol>
             </div>

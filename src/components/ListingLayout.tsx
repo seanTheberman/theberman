@@ -86,13 +86,18 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
     const displayName = listing.company_name || listing.name;
 
     const dummyFeatures = [
-        "Aluminium Capping",
-        "Aluminium Flashings",
-        "Aluminium Window Cills",
-        "Complex & Bay Aluminium Cills",
-        "Custom Made",
-        "Measured and Designed"
+        "Professional Service",
+        "Expert Team",
+        "Quality Guaranteed",
+        "Dublin Based",
+        "Verified Partner"
     ];
+
+    const displayFeatures = (listing.features && listing.features.length > 0)
+        ? listing.features
+        : (listing.categories && listing.categories.length > 0)
+            ? listing.categories.map(c => c.name)
+            : dummyFeatures;
 
     useEffect(() => {
         const slideCount = (listing?.images?.length || 0) > 0
@@ -312,12 +317,11 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
                                         {listing.long_description}
                                     </div>
                                 </div>
-                            ) : (
+                            ) : listing.description ? (
                                 <div className="text-gray-600">
                                     <h2 className="text-2xl font-bold text-[#333] mb-4">{listing.description}</h2>
-                                    <p>Description placeholder...</p>
                                 </div>
-                            )}
+                            ) : null}
                         </div>
 
                         {/* Quick Contact Info specifically for Cills as per image */}
@@ -384,7 +388,7 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
                         <div>
                             <h2 className="text-xl font-bold text-[#333] mb-8">Features</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-8">
-                                {(listing.features && listing.features.length > 0 ? listing.features : dummyFeatures).map((feature) => (
+                                {displayFeatures.map((feature) => (
                                     <div key={feature} className="flex items-center gap-2">
                                         <div className="bg-[#007EA7] p-0.5 rounded-sm">
                                             <Check size={14} className="text-white" />

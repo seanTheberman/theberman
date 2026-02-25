@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /dashboard/
+Disallow: /assessor-onboarding
+Disallow: /business-onboarding
+Disallow: /update-password
+Disallow: /registration-pending
+
+Sitemap: https://theberman.eu/sitemap.xml

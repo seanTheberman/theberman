@@ -2,12 +2,16 @@
 import { Globe, ArrowRight, Shield, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import FaqItem from '../components/FaqItem';
+import SEOHead from '../components/SEOHead';
 
 const About = () => {
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen">
-            <title>About Us | The Berman - Expert BER Assessors</title>
-            <meta name="description" content="Learn about The Berman, Ireland's leading energy consultancy. Fast, accurate, and professional energy ratings." />
+            <SEOHead
+                title="About Us - Expert BER Assessors"
+                description="Learn about The Berman, Ireland's leading energy consultancy. Fast, accurate, and professional energy ratings."
+                canonical="/about"
+            />
 
             {/* 1. SIMPLE CENTERED HERO */}
             <section className="pt-32 pb-16 bg-white">

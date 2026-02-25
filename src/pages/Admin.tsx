@@ -2,10 +2,12 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2, Search, Newspaper } from 'lucide-react';
+import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2, Search, Newspaper, Plus, Star, Check, Edit2, ExternalLink, Image as ImageIcon, UploadCloud } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
+import { geocodeAddress, COUNTY_COORDINATES } from '../lib/geocoding';
+import { REGISTRATION_PRICES } from '../constants/pricing';
 
 const IRISH_COUNTIES = [
     'Carlow', 'Cavan', 'Clare', 'Cork', 'Donegal', 'Dublin', 'Galway',
@@ -40,6 +42,17 @@ interface Profile {
     subscription_status?: string;
     subscription_end_date?: string;
     manual_override_reason?: string;
+    phone?: string;
+    county?: string;
+    town?: string;
+    seai_number?: string;
+    assessor_type?: string;
+    company_name?: string;
+    business_address?: string;
+    website?: string;
+    description?: string;
+    company_number?: string;
+    vat_number?: string;
 }
 
 interface Assessment {
@@ -106,9 +119,14 @@ interface Payment {
 interface AppSettings {
     id: string;
     default_quote_price: number;
+    solar_quote_price: number;
     vat_rate: number;
     company_name: string;
     support_email: string;
+    domestic_assessor_price: number;
+    commercial_assessor_price: number;
+    bundle_assessor_price: number;
+    business_registration_price: number;
 }
 
 
@@ -133,7 +151,7 @@ const Admin = () => {
     const [sponsors, setSponsors] = useState<Sponsor[]>([]);
     const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
     const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
-    const [view, setView] = useState<'stats' | 'leads' | 'assessments' | 'homeowners' | 'businesses' | 'assessors' | 'payments' | 'settings' | 'news'>('stats');
+    const [view, setView] = useState<'stats' | 'leads' | 'assessments' | 'homeowners' | 'businesses' | 'assessors' | 'payments' | 'settings' | 'news' | 'add-to-catalogue' | 'catalogue'>('stats');
     const [listings, setListings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -146,6 +164,7 @@ const Admin = () => {
     const [newUserFormData, setNewUserFormData] = useState({
         fullName: '',
         email: '',
+        password: '',
         phone: '',
         county: '',
         town: '',
@@ -163,7 +182,7 @@ const Admin = () => {
     const [showQuoteModal, setShowQuoteModal] = useState(false);
     const [showAssignModal, setShowAssignModal] = useState(false); const [vLabels] = useState<Record<string, string>>({
         stats: 'Overview',
-        homeowners: 'Users/Homeowners',
+        homeowners: 'Homeowners',
         businesses: 'Businesses',
         assessors: 'BER Assessors',
         leads: 'Leads',
@@ -208,6 +227,27 @@ const Admin = () => {
     const [itemToSuspend, setItemToSuspend] = useState<{ id: string, name: string, currentStatus: boolean } | null>(null);
     const [showSuspendModal, setShowSuspendModal] = useState(false);
     const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
+    // Catalogue page state
+    const [catalogueCategories, setCatalogueCategories] = useState<{ id: string; name: string }[]>([]);
+    const [isSavingCatalogue, setIsSavingCatalogue] = useState(false);
+    const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+    const [selectedBusinessForCatalogue, setSelectedBusinessForCatalogue] = useState<Profile | null>(null);
+    const [selectedListingForEdit, setSelectedListingForEdit] = useState<any | null>(null);
+    const [catalogueFormData, setCatalogueFormData] = useState({
+        companyName: '',
+        description: '',
+        email: '',
+        phone: '',
+        address: '',
+        county: '',
+        website: '',
+        logoUrl: '',
+        featured: false,
+        selectedCategories: [] as string[],
+        companyNumber: '',
+        registrationNo: '',
+        vatNumber: '',
+    });
 
     const handleExportPayments = () => {
         if (payments.length === 0) {
@@ -308,12 +348,316 @@ const Admin = () => {
         try {
             const { data, error } = await supabase
                 .from('catalogue_listings')
-                .select('id, user_id, business_name, status');
+                .select('*');
 
             if (error) throw error;
             setListings(data || []);
         } catch (error) {
             console.error('Error fetching listings:', error);
+        }
+    };
+
+    const fetchCatalogueCategories = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('catalogue_categories')
+                .select('id, name')
+                .order('name');
+            if (error) throw error;
+            setCatalogueCategories(data || []);
+        } catch (error) {
+            console.error('Error fetching catalogue categories:', error);
+        }
+    };
+
+    const handleOpenCatalogueView = (business: Profile | null, existingListing?: any) => {
+        setSelectedBusinessForCatalogue(business);
+        setSelectedListingForEdit(existingListing || null);
+
+        if (existingListing) {
+            setCatalogueFormData({
+                companyName: existingListing.name || '',
+                description: existingListing.description || '',
+                email: existingListing.email || '',
+                phone: existingListing.phone || '',
+                address: existingListing.address || '',
+                county: existingListing.address?.split(', Co. ')[1] || '',
+                website: existingListing.website || '',
+                logoUrl: existingListing.logo_url || '',
+                featured: existingListing.featured || false,
+                selectedCategories: [],
+                companyNumber: existingListing.company_number || '',
+                registrationNo: existingListing.registration_no || '',
+                vatNumber: existingListing.vat_number || '',
+            });
+
+            // Fetch categories for this listing
+            const fetchExistingCategories = async () => {
+                const { data } = await supabase
+                    .from('catalogue_listing_categories')
+                    .select('category_id')
+                    .eq('listing_id', existingListing.id);
+
+                if (data) {
+                    setCatalogueFormData(prev => ({
+                        ...prev,
+                        selectedCategories: data.map(c => c.category_id)
+                    }));
+                }
+            };
+            fetchExistingCategories();
+        } else {
+            setCatalogueFormData({
+                companyName: business ? ((business as any).company_name || business.full_name || '') : '',
+                description: '',
+                email: business?.email || '',
+                phone: business ? ((business as any).phone || '') : '',
+                address: business ? ((business as any).business_address || '') : '',
+                county: business ? ((business as any).county || '') : '',
+                website: business ? ((business as any).website || '') : '',
+                logoUrl: '',
+                featured: false,
+                selectedCategories: [],
+                companyNumber: '',
+                registrationNo: '',
+                vatNumber: '',
+            });
+        }
+        setView('add-to-catalogue');
+    };
+
+    const toggleCatalogueStatus = async (id: string, currentStatus: boolean) => {
+        try {
+            const { error } = await supabase
+                .from('catalogue_listings')
+                .update({ is_active: !currentStatus })
+                .eq('id', id);
+
+            if (error) throw error;
+            setListings(prev => prev.map(l => l.id === id ? { ...l, is_active: !currentStatus } : l));
+            toast.success(`Listing ${!currentStatus ? 'activated' : 'deactivated'} successfully`);
+        } catch (error) {
+            console.error('Error toggling listing status:', error);
+            toast.error('Failed to update status');
+        }
+    };
+
+    const toggleCatalogueFeatured = async (id: string, currentFeatured: boolean) => {
+        try {
+            const { error } = await supabase
+                .from('catalogue_listings')
+                .update({ featured: !currentFeatured })
+                .eq('id', id);
+
+            if (error) throw error;
+            setListings(prev => prev.map(l => l.id === id ? { ...l, featured: !currentFeatured } : l));
+            toast.success(`Listing ${!currentFeatured ? 'featured' : 'unfeatured'} successfully`);
+        } catch (error) {
+            console.error('Error toggling featured status:', error);
+            toast.error('Failed to update featured status');
+        }
+    };
+
+    const handleDeleteListing = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this listing? This action cannot be undone.')) return;
+
+        try {
+            setIsSavingCatalogue(true);
+            // Delete relationships first due to FK constraints if any, though Supabase cascading usually handles it
+            await supabase.from('catalogue_listing_categories').delete().eq('listing_id', id);
+            await supabase.from('catalogue_listing_locations').delete().eq('listing_id', id);
+
+            const { error } = await supabase
+                .from('catalogue_listings')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            setListings(prev => prev.filter(l => l.id !== id));
+            toast.success('Listing deleted successfully');
+        } catch (error) {
+            console.error('Error deleting listing:', error);
+            toast.error('Failed to delete listing');
+        } finally {
+            setIsSavingCatalogue(false);
+        }
+    };
+
+    const toggleCatalogueCategory = (categoryId: string) => {
+        setCatalogueFormData(prev => ({
+            ...prev,
+            selectedCategories: prev.selectedCategories.includes(categoryId)
+                ? prev.selectedCategories.filter(id => id !== categoryId)
+                : [...prev.selectedCategories, categoryId]
+        }));
+    };
+
+    const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please upload an image file');
+            return;
+        }
+
+        // Validate file size (max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error('Image must be less than 2MB');
+            return;
+        }
+
+        try {
+            setIsUploadingLogo(true);
+            const fileExt = file.name.split('.').pop();
+            const fileName = `logos/${Date.now()}.${fileExt}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('uploads')
+                .upload(fileName, file);
+
+            if (uploadError) throw uploadError;
+
+            // Get public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('uploads')
+                .getPublicUrl(fileName);
+
+            setCatalogueFormData(prev => ({
+                ...prev,
+                logoUrl: publicUrl
+            }));
+            toast.success('Logo uploaded successfully');
+        } catch (error: any) {
+            console.error('Error uploading logo:', error);
+            toast.error(error.message || 'Failed to upload logo');
+        } finally {
+            setIsUploadingLogo(false);
+        }
+    };
+
+    const handleSaveCatalogueEntry = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!catalogueFormData.companyName.trim() || !catalogueFormData.email.trim()) {
+            toast.error('Company name and email are required');
+            return;
+        }
+        if (catalogueFormData.selectedCategories.length === 0) {
+            toast.error('Please select at least one category');
+            return;
+        }
+
+        setIsSavingCatalogue(true);
+        try {
+            const slug = selectedListingForEdit
+                ? selectedListingForEdit.slug
+                : catalogueFormData.companyName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now().toString(36);
+
+            const fullAddress = catalogueFormData.address + (catalogueFormData.county ? `, Co. ${catalogueFormData.county}` : '');
+
+            // Geocode address
+            let latitude = null;
+            let longitude = null;
+
+            if (catalogueFormData.address) {
+                const coords = await geocodeAddress(fullAddress);
+                if (coords) {
+                    latitude = coords.latitude;
+                    longitude = coords.longitude;
+                }
+            }
+
+            // Fallback to county center if geocoding fails or address is empty
+            if (!latitude && catalogueFormData.county) {
+                const countyCoords = COUNTY_COORDINATES[catalogueFormData.county];
+                if (countyCoords) {
+                    latitude = countyCoords.latitude;
+                    longitude = countyCoords.longitude;
+                }
+            }
+
+            const listingData = {
+                name: catalogueFormData.companyName,
+                slug,
+                company_name: catalogueFormData.companyName,
+                description: catalogueFormData.description || `${catalogueFormData.companyName} - Professional services provider.`,
+                email: catalogueFormData.email,
+                phone: catalogueFormData.phone || null,
+                address: fullAddress || null,
+                website: catalogueFormData.website || null,
+                logo_url: catalogueFormData.logoUrl || null,
+                owner_id: selectedBusinessForCatalogue?.id || selectedListingForEdit?.owner_id || null,
+                is_active: true,
+                featured: catalogueFormData.featured,
+                latitude,
+                longitude,
+                company_number: catalogueFormData.companyNumber || null,
+                registration_no: catalogueFormData.registrationNo || null,
+                vat_number: catalogueFormData.vatNumber || null,
+            };
+
+            let listingId = selectedListingForEdit?.id;
+
+            if (selectedListingForEdit) {
+                const { error: updateError } = await supabase
+                    .from('catalogue_listings')
+                    .update(listingData)
+                    .eq('id', selectedListingForEdit.id);
+                if (updateError) throw updateError;
+            } else {
+                const { data: newListing, error: insertError } = await supabase
+                    .from('catalogue_listings')
+                    .insert(listingData)
+                    .select('id')
+                    .single();
+                if (insertError) throw insertError;
+                listingId = newListing.id;
+            }
+
+            if (listingId) {
+                // For categories and locations, we clear and re-add if updating
+                if (selectedListingForEdit) {
+                    await supabase.from('catalogue_listing_categories').delete().eq('listing_id', listingId);
+                    await supabase.from('catalogue_listing_locations').delete().eq('listing_id', listingId);
+                }
+
+                // Map categories
+                if (catalogueFormData.selectedCategories.length > 0) {
+                    const categoryMappings = catalogueFormData.selectedCategories.map(categoryId => ({
+                        listing_id: listingId,
+                        category_id: categoryId,
+                    }));
+                    await supabase.from('catalogue_listing_categories').insert(categoryMappings);
+                }
+
+                // Map location (County)
+                if (catalogueFormData.county) {
+                    const { data: locData } = await supabase
+                        .from('catalogue_locations')
+                        .select('id')
+                        .eq('name', catalogueFormData.county)
+                        .maybeSingle();
+
+                    if (locData) {
+                        await supabase.from('catalogue_listing_locations').insert({
+                            listing_id: listingId,
+                            location_id: locData.id
+                        });
+                    }
+                }
+            }
+
+            toast.success(selectedListingForEdit ? 'Listing updated successfully!' : 'Business added to catalogue successfully!');
+            setView('catalogue');
+            setSelectedListingForEdit(null);
+            await fetchListings();
+        } catch (error: any) {
+            console.error('Error saving catalogue entry:', error);
+            toast.error(error.message || 'Failed to add business to catalogue');
+        } finally {
+            setIsSavingCatalogue(false);
         }
     };
 
@@ -391,7 +735,8 @@ const Admin = () => {
                     fullName: u.full_name,
                     email: u.email,
                     town: u.company_name || u.town || 'Your Business Profile',
-                    onboardingUrl: `${window.location.origin}/business-onboarding?userId=${u.id}`
+                    userId: u.id,
+                    role: 'business',
                 }
             });
 
@@ -707,6 +1052,14 @@ const Admin = () => {
                 else if (view === 'businesses') {
                     await fetchUsers();
                     await fetchListings();
+                    await fetchCatalogueCategories();
+                }
+                else if (view === 'catalogue') {
+                    await fetchListings();
+                    await fetchCatalogueCategories();
+                }
+                else if (view === 'add-to-catalogue') {
+                    await fetchCatalogueCategories();
                 }
                 else if (view === 'assessors') await fetchUsers();
                 else if (view === 'payments') await fetchPayments();
@@ -1070,7 +1423,7 @@ const Admin = () => {
 
     const resetNewUserForm = () => {
         setNewUserFormData({
-            fullName: '', email: '', phone: '', county: '', town: '',
+            fullName: '', email: '', password: '', phone: '', county: '', town: '',
             seaiNumber: '', assessorType: 'Domestic Assessor', companyName: '',
             businessAddress: '', website: '', description: '', companyNumber: '', vatNumber: '',
         });
@@ -1080,48 +1433,70 @@ const Admin = () => {
         e.preventDefault();
         setIsUpdating(true);
         try {
-            // Build the profile row based on role
-            const profileData: Record<string, any> = {
-                full_name: newUserFormData.fullName,
-                email: newUserFormData.email,
-                role: newUserRole,
-                registration_status: 'active',
-                is_active: true,
-            };
+            // Use server-side edge function for ALL roles (contractor, business, homeowner, user)
+            // This avoids replacing the admin's session with supabase.auth.signUp
+            const { data: fnData, error: fnError } = await supabase.functions.invoke('create-admin-user', {
+                body: {
+                    fullName: newUserFormData.fullName,
+                    email: newUserFormData.email,
+                    password: newUserFormData.password,
+                    phone: newUserFormData.phone || null,
+                    county: newUserFormData.county || null,
+                    town: newUserFormData.town || null,
+                    assessorType: newUserFormData.assessorType || null,
+                    companyName: newUserFormData.companyName || null,
+                    businessAddress: newUserFormData.businessAddress || null,
+                    website: newUserFormData.website || null,
+                    description: newUserFormData.description || null,
+                    companyNumber: newUserFormData.companyNumber || null,
+                    vatNumber: newUserFormData.vatNumber || null,
+                    role: newUserRole,
+                }
+            });
 
-            // Add phone if provided
-            if (newUserFormData.phone) profileData.phone = newUserFormData.phone;
-            if (newUserFormData.county) profileData.county = newUserFormData.county;
-            if (newUserFormData.town) profileData.town = newUserFormData.town;
+            console.log('[handleAddUser] Edge function response:', fnData, fnError);
 
-            if (newUserRole === 'contractor') {
-                // Assessor-specific fields
-                if (newUserFormData.seaiNumber) profileData.seai_number = newUserFormData.seaiNumber;
-                if (newUserFormData.assessorType) profileData.assessor_type = newUserFormData.assessorType;
-                if (newUserFormData.companyName) profileData.company_name = newUserFormData.companyName;
-            } else {
-                // Business-specific fields
-                if (newUserFormData.businessAddress) profileData.business_address = newUserFormData.businessAddress;
-                if (newUserFormData.website) profileData.website = newUserFormData.website;
-                if (newUserFormData.description) profileData.description = newUserFormData.description;
-                if (newUserFormData.companyName) profileData.company_name = newUserFormData.companyName || newUserFormData.fullName;
-                if (newUserFormData.companyNumber) profileData.company_number = newUserFormData.companyNumber;
-                if (newUserFormData.vatNumber) profileData.vat_number = newUserFormData.vatNumber;
+            if (fnError) {
+                console.error('[handleAddUser] Edge function error:', fnError);
+                throw new Error(fnError.message || 'Edge function failed');
+            }
+            if (!fnData?.success) throw new Error(fnData?.error || 'Failed to create user');
+
+            // Send welcome email with magic link (one-click login)
+            try {
+                const onboardingUrl = fnData.magicLink;
+                const { data: emailData, error: emailError } = await supabase.functions.invoke('send-onboarding-link', {
+                    body: {
+                        fullName: newUserFormData.fullName,
+                        email: newUserFormData.email,
+                        town: newUserFormData.town || '',
+                        onboardingUrl: onboardingUrl,
+                        role: newUserRole,
+                    }
+                });
+
+                console.log('[handleAddUser] Email function response:', emailData, emailError);
+
+                if (emailData?.success) {
+                    toast.success(`${newUserRole === 'contractor' ? 'Assessor' : 'Business'} created & login link sent via email!`);
+                } else {
+                    console.error('[handleAddUser] Email workflow failed:', emailData?.workflow);
+                    toast.success('User created but email failed. Please share the login link manually.');
+                }
+            } catch (err: any) {
+                console.error('Email send failed:', err);
+                toast.success('User created but email failed. Please share the login link manually.');
             }
 
-            const { data, error } = await supabase
-                .from('profiles')
-                .insert([profileData])
-                .select()
-                .single();
+            if (fnData.user) {
+                setUsersList([fnData.user, ...users_list]);
+            }
 
-            if (error) throw error;
-
-            setUsersList([data, ...users_list]);
-            toast.success(`${newUserRole === 'contractor' ? 'Assessor' : 'Business'} added successfully`);
             setShowAddUserModal(false);
             resetNewUserForm();
+            logAudit('create_user', 'user', fnData.user.id, { role: newUserRole });
         } catch (error: any) {
+            console.error('Error adding user:', error);
             toast.error(error.message || 'Failed to add user');
         } finally {
             setIsUpdating(false);
@@ -1196,16 +1571,17 @@ const Admin = () => {
                             {isMenuOpen && (
                                 <div className="absolute right-0 top-full mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
                                     <div className="p-2 space-y-1">
-                                        {(['stats', 'leads', 'homeowners', 'businesses', 'assessors', 'assessments', 'payments', 'settings', 'news'] as const).map((v) => (
+                                        {(['stats', 'leads', 'homeowners', 'businesses', 'catalogue', 'assessors', 'assessments', 'payments', 'settings', 'news'] as const).map((v) => (
                                             <button
                                                 key={v}
                                                 onClick={() => { setView(v); setIsMenuOpen(false); }}
                                                 className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] transition-all duration-200 ${view === v ? 'bg-[#5CB85C]/10 text-[#5CB85C]' : 'text-gray-600 hover:bg-gray-50'}`}
                                             >
                                                 {v === 'stats' ? 'Overview' :
-                                                    v === 'homeowners' ? 'Users/Homeowners' :
+                                                    v === 'homeowners' ? 'Homeowners' :
                                                         v === 'businesses' ? 'Businesses' :
-                                                            v === 'assessors' ? 'BER Assessors' : v}
+                                                            v === 'catalogue' ? 'Manage Catalogue' :
+                                                                v === 'assessors' ? 'BER Assessors' : v}
                                                 {view === v && <div className="w-1.5 h-1.5 rounded-full bg-[#5CB85C]"></div>}
                                             </button>
                                         ))}
@@ -1242,20 +1618,22 @@ const Admin = () => {
                                     view === 'leads' ? 'Leads & Inquiries' :
                                         view === 'assessments' ? 'BER Assessments' :
                                             view === 'businesses' ? 'Business Directory' :
-                                                view === 'assessors' ? 'BER Assessors' :
-                                                    view === 'homeowners' ? 'Users & Homeowners' :
-                                                        view === 'payments' ? 'Financials' :
-                                                            view === 'news' ? 'News & Updates' : 'Admin'}
+                                                view === 'catalogue' ? 'Business Catalogue' :
+                                                    view === 'assessors' ? 'BER Assessors' :
+                                                        view === 'homeowners' ? 'Homeowners' :
+                                                            view === 'payments' ? 'Financials' :
+                                                                view === 'news' ? 'News & Updates' : 'Admin'}
                             </h2>
                             <p className="text-gray-500 text-sm mt-1">
                                 {view === 'stats' ? 'Key metrics and business performance.' :
                                     view === 'leads' ? 'Manage your website submissions.' :
                                         view === 'assessments' ? 'Manage homeowner assessment requests.' :
                                             view === 'businesses' ? 'Review business interest and send onboarding links.' :
-                                                view === 'assessors' ? 'Manage BER Assessors and their jobs.' :
-                                                    view === 'homeowners' ? 'Manage homeowners and general users.' :
-                                                        view === 'payments' ? 'View and export payment records.' :
-                                                            view === 'settings' ? 'Configure global platform settings.' : ''}
+                                                view === 'catalogue' ? 'Manage and edit business catalogue listings.' :
+                                                    view === 'assessors' ? 'Manage BER Assessors and their jobs.' :
+                                                        view === 'homeowners' ? 'Manage homeowners.' :
+                                                            view === 'payments' ? 'View and export payment records.' :
+                                                                view === 'settings' ? 'Configure global platform settings.' : ''}
                             </p>
                         </div>
                     </div>
@@ -1272,6 +1650,395 @@ const Admin = () => {
                     <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
                         <RefreshCw className="animate-spin text-[#007F00] mb-4" size={32} />
                         <p className="text-gray-500 font-medium">Loading {view}...</p>
+                    </div>
+                ) : view === 'add-to-catalogue' ? (
+                    <div className="max-w-4xl mx-auto">
+                        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+                            <form onSubmit={handleSaveCatalogueEntry} className="flex flex-col">
+                                {/* Header */}
+                                <div className="flex items-center justify-between px-8 py-8 bg-gray-50/50 border-b border-gray-100">
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-gray-900">Add to Catalogue</h2>
+                                        <p className="text-sm text-gray-500 mt-1">
+                                            {selectedBusinessForCatalogue ? (
+                                                <>Create a listing for <span className="font-bold text-gray-700">{selectedBusinessForCatalogue.full_name}</span></>
+                                            ) : 'Create a new standalone business listing'}
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setView(selectedListingForEdit ? 'catalogue' : 'businesses')}
+                                        className="bg-white text-gray-600 hover:text-gray-900 px-4 py-2 rounded-xl text-sm font-bold border border-gray-200 hover:border-gray-300 transition-all flex items-center gap-2"
+                                    >
+                                        <X size={18} />
+                                        Cancel
+                                    </button>
+                                </div>
+
+                                {/* Body */}
+                                <div className="px-8 py-10 space-y-8">
+                                    {/* Business Details Section */}
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-3 pb-2 border-b border-gray-100">
+                                            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                                                <Briefcase size={18} />
+                                            </div>
+                                            <h3 className="text-base font-bold text-gray-900">{selectedListingForEdit ? 'Edit Business Details' : 'Business Details'}</h3>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-1.5">
+                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Company Name *</label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    value={catalogueFormData.companyName}
+                                                    onChange={(e) => setCatalogueFormData({ ...catalogueFormData, companyName: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
+                                                    placeholder="e.g. Acme Retrofitting Ltd"
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Email *</label>
+                                                <input
+                                                    type="email"
+                                                    required
+                                                    value={catalogueFormData.email}
+                                                    onChange={(e) => setCatalogueFormData({ ...catalogueFormData, email: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
+                                                    placeholder="info@business.ie"
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Phone <span className="text-gray-300 font-medium">(Optional)</span></label>
+                                                <input
+                                                    type="tel"
+                                                    value={catalogueFormData.phone}
+                                                    onChange={(e) => setCatalogueFormData({ ...catalogueFormData, phone: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
+                                                    placeholder="+353 1 234 5678"
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Website <span className="text-gray-300 font-medium">(Optional)</span></label>
+                                                <input
+                                                    type="url"
+                                                    value={catalogueFormData.website}
+                                                    onChange={(e) => setCatalogueFormData({ ...catalogueFormData, website: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
+                                                    placeholder="https://www.business.ie"
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Company Number <span className="text-gray-300 font-medium">(Optional)</span></label>
+                                                <input
+                                                    type="text"
+                                                    value={catalogueFormData.companyNumber}
+                                                    onChange={(e) => setCatalogueFormData({ ...catalogueFormData, companyNumber: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
+                                                    placeholder="e.g. 123456"
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">BER Assessor Registration <span className="text-gray-300 font-medium">(Optional)</span></label>
+                                                <input
+                                                    type="text"
+                                                    value={catalogueFormData.registrationNo}
+                                                    onChange={(e) => setCatalogueFormData({ ...catalogueFormData, registrationNo: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
+                                                    placeholder="e.g. BER-12345"
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">VAT Number <span className="text-gray-300 font-medium">(Optional)</span></label>
+                                                <input
+                                                    type="text"
+                                                    value={catalogueFormData.vatNumber}
+                                                    onChange={(e) => setCatalogueFormData({ ...catalogueFormData, vatNumber: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
+                                                    placeholder="e.g. IE1234567T"
+                                                />
+                                            </div>
+                                            <div className="md:col-span-2 space-y-1.5">
+                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Address <span className="text-gray-300 font-medium">(Optional)</span></label>
+                                                <input
+                                                    type="text"
+                                                    value={catalogueFormData.address}
+                                                    onChange={(e) => setCatalogueFormData({ ...catalogueFormData, address: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
+                                                    placeholder="123 Industrial Estate, Dublin 12"
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">County</label>
+                                                <select
+                                                    value={catalogueFormData.county}
+                                                    onChange={(e) => setCatalogueFormData({ ...catalogueFormData, county: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all bg-white"
+                                                >
+                                                    <option value="">Select County</option>
+                                                    {IRISH_COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                                </select>
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Logo</label>
+                                                <div className="mt-1 flex items-center gap-4">
+                                                    {catalogueFormData.logoUrl ? (
+                                                        <div className="relative w-20 h-20 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 flex-shrink-0 group shadow-sm">
+                                                            <img src={catalogueFormData.logoUrl} alt="Logo Preview" className="w-full h-full object-contain" />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setCatalogueFormData(prev => ({ ...prev, logoUrl: '' }))}
+                                                                className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            >
+                                                                <X size={20} className="text-white" />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-300 bg-gray-50/50">
+                                                            {isUploadingLogo ? <Loader2 size={24} className="animate-spin" /> : <ImageIcon size={24} />}
+                                                        </div>
+                                                    )}
+
+                                                    <div className="flex-1 space-y-2">
+                                                        <input
+                                                            type="file"
+                                                            id="catalogue-logo-upload"
+                                                            className="hidden"
+                                                            accept="image/*"
+                                                            onChange={handleLogoUpload}
+                                                            disabled={isUploadingLogo}
+                                                        />
+                                                        <label
+                                                            htmlFor="catalogue-logo-upload"
+                                                            className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer shadow-sm border ${isUploadingLogo ? 'bg-gray-50 text-gray-400 border-gray-100' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
+                                                        >
+                                                            {isUploadingLogo ? <Loader2 size={16} className="animate-spin" /> : <UploadCloud size={16} />}
+                                                            {isUploadingLogo ? 'Uploading...' : 'Click to Upload Logo'}
+                                                        </label>
+                                                        <p className="text-[10px] text-gray-400 font-medium">Recommended: Square PNG or JPG. Max size 2MB.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {catalogueFormData.logoUrl && (
+                                                <input type="hidden" value={catalogueFormData.logoUrl} />
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Description */}
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-3 pb-2 border-b border-gray-100">
+                                            <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+                                                <Newspaper size={18} />
+                                            </div>
+                                            <h3 className="text-base font-bold text-gray-900">About the Business</h3>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Company Description</label>
+                                            <textarea
+                                                value={catalogueFormData.description}
+                                                onChange={(e) => setCatalogueFormData({ ...catalogueFormData, description: e.target.value })}
+                                                rows={4}
+                                                className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all resize-none"
+                                                placeholder="Describe the services and expertise..."
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Categories Selection */}
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-3 pb-2 border-b border-gray-100">
+                                            <div className="w-8 h-8 rounded-lg bg-green-50 text-[#007F00] flex items-center justify-center">
+                                                <Plus size={18} />
+                                            </div>
+                                            <h3 className="text-base font-bold text-gray-900">Service Categories *</h3>
+                                        </div>
+                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                            {catalogueCategories.map(cat => (
+                                                <div
+                                                    key={cat.id}
+                                                    onClick={() => toggleCatalogueCategory(cat.id)}
+                                                    className={`cursor-pointer p-4 rounded-2xl border-2 flex items-center justify-between transition-all select-none ${catalogueFormData.selectedCategories.includes(cat.id)
+                                                        ? 'bg-green-50/50 border-[#007F00] text-[#007F00] shadow-sm'
+                                                        : 'bg-white border-gray-100 hover:border-green-200 text-gray-600'
+                                                        }`}
+                                                >
+                                                    <span className="text-xs font-bold leading-tight">{cat.name}</span>
+                                                    {catalogueFormData.selectedCategories.includes(cat.id) && <Check size={16} className="text-[#007F00]" />}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Premium Options */}
+                                    <div className="space-y-4 pt-4">
+                                        <div className="flex items-center gap-3 pb-2 border-b border-gray-100">
+                                            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                                                <Star size={18} />
+                                            </div>
+                                            <h3 className="text-base font-bold text-gray-900">Premium Placement</h3>
+                                        </div>
+                                        <div
+                                            onClick={() => setCatalogueFormData({ ...catalogueFormData, featured: !catalogueFormData.featured })}
+                                            className={`cursor-pointer flex items-center gap-4 p-5 rounded-2xl border-2 transition-all ${catalogueFormData.featured
+                                                ? 'bg-amber-50/50 border-amber-400'
+                                                : 'bg-white border-gray-100 hover:border-amber-200'
+                                                }`}
+                                        >
+                                            <div className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${catalogueFormData.featured ? 'bg-amber-500' : 'bg-gray-200'}`}>
+                                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${catalogueFormData.featured ? 'translate-x-7' : 'translate-x-1'}`} />
+                                            </div>
+                                            <div>
+                                                <span className="text-sm font-bold text-gray-900">Feature this listing</span>
+                                                <p className="text-[11px] text-gray-400 mt-0.5">Featured businesses appear at the top of search results and in the spotlight carousel.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Footer Actions */}
+                                <div className="px-8 py-8 bg-gray-50/50 border-t border-gray-100 flex items-center justify-end gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setView(selectedListingForEdit ? 'catalogue' : 'businesses')}
+                                        className="px-8 py-4 bg-white border border-gray-200 text-gray-600 font-bold rounded-2xl hover:bg-gray-50 transition-all text-sm"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSavingCatalogue}
+                                        className="px-10 py-4 bg-[#007F00] text-white font-bold rounded-2xl hover:bg-green-700 transition-all shadow-lg shadow-green-100 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isSavingCatalogue ? <Loader2 size={20} className="animate-spin" /> : <CheckCircle2 size={20} />}
+                                        {isSavingCatalogue ? 'Saving Listing...' : (selectedListingForEdit ? 'Update Listing' : 'Add to Catalogue')}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                ) : view === 'catalogue' ? (
+                    <div className="space-y-4">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 gap-4">
+                            <div className="relative w-full max-w-md">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                <input
+                                    type="text"
+                                    placeholder="Search catalogue by name or email..."
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] transition-all text-sm"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <button
+                                onClick={() => handleOpenCatalogueView(null)}
+                                className="flex items-center gap-2 bg-[#007F00] text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-md whitespace-nowrap"
+                            >
+                                <Plus size={18} />
+                                Add New Listing
+                            </button>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead>
+                                        <tr className="bg-gray-50 border-b border-gray-100 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                            <th className="px-6 py-4">Business</th>
+                                            <th className="px-6 py-4">Contact</th>
+                                            <th className="px-6 py-4">Status</th>
+                                            <th className="px-6 py-4">Featured</th>
+                                            <th className="px-6 py-4 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50">
+                                        {listings.filter(l =>
+                                            l.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                            l.email?.toLowerCase().includes(searchTerm.toLowerCase())
+                                        ).length === 0 ? (
+                                            <tr>
+                                                <td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">No listings found.</td>
+                                            </tr>
+                                        ) : (
+                                            listings.filter(l =>
+                                                l.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                                l.email?.toLowerCase().includes(searchTerm.toLowerCase())
+                                            ).map((l) => (
+                                                <tr key={l.id} className="hover:bg-gray-50/50 transition-colors group">
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex items-center gap-3">
+                                                            {l.logo_url ? (
+                                                                <img src={l.logo_url} className="w-10 h-10 rounded-lg object-cover border border-gray-100" alt="" />
+                                                            ) : (
+                                                                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
+                                                                    <Briefcase size={20} />
+                                                                </div>
+                                                            )}
+                                                            <div>
+                                                                <div className="font-bold text-gray-900 text-sm">{l.name}</div>
+                                                                <div className="text-[10px] text-gray-400 font-medium">Added {new Date(l.created_at).toLocaleDateString()}</div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="text-xs text-gray-600 font-medium">{l.email}</div>
+                                                        {l.phone && <div className="text-[10px] text-gray-400">{l.phone}</div>}
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <button
+                                                            onClick={() => toggleCatalogueStatus(l.id, l.is_active)}
+                                                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${l.is_active ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                                                }`}
+                                                        >
+                                                            <div className={`w-1.5 h-1.5 rounded-full ${l.is_active ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+                                                            {l.is_active ? 'Active' : 'Inactive'}
+                                                        </button>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <button
+                                                            onClick={() => toggleCatalogueFeatured(l.id, l.featured)}
+                                                            className={`p-2 rounded-lg transition-all ${l.featured ? 'text-amber-500 bg-amber-50' : 'text-gray-300 hover:text-gray-400'
+                                                                }`}
+                                                            title={l.featured ? 'Unfeature Listing' : 'Feature Listing'}
+                                                        >
+                                                            <Star size={18} fill={l.featured ? 'currentColor' : 'none'} />
+                                                        </button>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            <button
+                                                                onClick={() => handleOpenCatalogueView(null, l)}
+                                                                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                                                title="Edit Listing"
+                                                            >
+                                                                <Edit2 size={16} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeleteListing(l.id)}
+                                                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                                title="Delete Listing"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                            <a
+                                                                href={`/catalogue?search=${encodeURIComponent(l.name)}`}
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                className="p-2 text-gray-400 hover:text-[#007F00] hover:bg-green-50 rounded-lg transition-all"
+                                                                title="View Publicly"
+                                                            >
+                                                                <ExternalLink size={16} />
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 ) : view === 'stats' ? (
                     <div className="space-y-8">
@@ -1363,18 +2130,45 @@ const Admin = () => {
                                     onClick={() => setView('homeowners')}
                                     className="mt-6 w-full bg-white text-[#007F00] font-bold py-3 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
                                 >
-                                    Manage Users
+                                    Manage Homeowners
                                 </button>
                             </div>
                         </div>
                     </div>
-                ) : (view === 'leads' ? leads : view === 'assessments' ? assessments : view === 'homeowners' || view === 'assessors' ? users_list : []).length === 0 ? (
+                ) : (view === 'settings' || view === 'payments' ? [1] : view === 'leads' ? leads : view === 'assessments' ? assessments : view === 'news' ? newsArticles : (view === 'homeowners' || view === 'assessors' || view === 'businesses') ? users_list.filter(u => u.role === (view === 'homeowners' ? 'user' : view === 'assessors' ? 'contractor' : 'business')) : []).length === 0 ? (
                     <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
                         <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
-                            {view === 'leads' ? <MessageSquare size={32} /> : (view === 'businesses' || view === 'assessors') ? <Briefcase size={32} /> : <Home size={32} />}
+                            {view === 'leads' ? <MessageSquare size={32} /> : view === 'news' ? <Newspaper size={32} /> : (view === 'businesses' || view === 'assessors') ? <Briefcase size={32} /> : <Home size={32} />}
                         </div>
                         <h3 className="text-lg font-bold text-gray-900">No {vLabels[view] || view} yet</h3>
-                        <p className="text-gray-500">{view === 'leads' ? 'New form submissions will appear here.' : 'New records will appear here.'}</p>
+                        <p className="text-gray-500 mb-6">{view === 'leads' ? 'New form submissions will appear here.' : view === 'news' ? 'New articles will appear here.' : 'New records will appear here.'}</p>
+                        {view === 'businesses' && (
+                            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                                <button
+                                    onClick={() => { setNewUserRole('business'); setShowAddUserModal(true); }}
+                                    className="flex items-center gap-2 bg-[#007F00] text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-md whitespace-nowrap"
+                                >
+                                    <Briefcase size={18} />
+                                    Create Business Account
+                                </button>
+                                <button
+                                    onClick={() => handleOpenCatalogueView(null)}
+                                    className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-md whitespace-nowrap"
+                                >
+                                    <Plus size={18} />
+                                    Add Direct to Catalogue
+                                </button>
+                            </div>
+                        )}
+                        {view === 'news' && (
+                            <button
+                                onClick={() => navigate('/admin/news/new')}
+                                className="inline-flex items-center gap-2 bg-[#007F00] text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-md"
+                            >
+                                <Newspaper size={18} />
+                                Add New Article
+                            </button>
+                        )}
                     </div>
                 ) : view === 'homeowners' || view === 'assessors' ? (
                     /* HOMEOWNERS & ASSESSORS VIEW */
@@ -1391,13 +2185,15 @@ const Admin = () => {
                                 />
                             </div>
                             <div className="flex items-center gap-3 w-full md:w-auto">
-                                <button
-                                    onClick={() => { setNewUserRole('contractor'); setShowAddUserModal(true); }}
-                                    className="flex items-center gap-2 bg-[#007F00] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-700 transition-all shadow-sm whitespace-nowrap"
-                                >
-                                    <TrendingUp size={16} />
-                                    Add {view === 'assessors' ? 'BER Assessor' : 'User'}
-                                </button>
+                                {view === 'assessors' && (
+                                    <button
+                                        onClick={() => { setNewUserRole('contractor'); setShowAddUserModal(true); }}
+                                        className="flex items-center gap-2 bg-[#007F00] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-700 transition-all shadow-sm whitespace-nowrap"
+                                    >
+                                        <TrendingUp size={16} />
+                                        Add BER Assessor
+                                    </button>
+                                )}
                                 <div className="text-xs text-gray-400 font-medium hidden sm:block">
                                     Showing {users_list.filter(u => view === 'assessors' ? u.role === 'contractor' : (u.role === 'user' || u.role === 'homeowner')).filter(u => u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.email?.toLowerCase().includes(searchTerm.toLowerCase())).length} users
                                 </div>
@@ -1436,66 +2232,97 @@ const Admin = () => {
                                                     const matchSearch = u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.email?.toLowerCase().includes(searchTerm.toLowerCase());
                                                     return matchRole && matchSearch;
                                                 })
-                                                .map((u) => (
-                                                    <tr key={u.id} className="hover:bg-green-50/30 transition-colors group">
-                                                        <td className="px-6 py-4">
-                                                            <div className="flex items-center gap-2">
-                                                                <div className={`w-2 h-2 rounded-full ${u.is_active !== false ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                                                                <span className="text-xs font-bold uppercase tracking-tight text-gray-500">
-                                                                    {u.is_active !== false ? 'Active' : 'Suspended'}
-                                                                </span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-4 font-medium text-gray-900">
-                                                            {u.full_name}
-                                                            <div className="text-xs text-gray-400 font-normal">{u.email}</div>
-                                                        </td>
-                                                        <td className="px-6 py-4 text-gray-500">
-                                                            {new Date(u.created_at).toLocaleDateString()}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-gray-500 font-medium">
-                                                            {u.role === 'contractor' ? (
-                                                                <div className="flex items-center gap-1 text-blue-600">
-                                                                    <Briefcase size={14} />
-                                                                    <span>{assessments.filter(a => a.contractor_id === u.id).length} Jobs</span>
+                                                .map((u) => {
+                                                    const listing = listings.find(l => l.user_id === u.id || l.owner_id === u.id);
+                                                    const hasListing = !!listing;
+
+                                                    return (
+                                                        <tr key={u.id} className="hover:bg-green-50/30 transition-colors group">
+                                                            <td className="px-6 py-4">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className={`w-2 h-2 rounded-full ${u.registration_status === 'pending' ? 'bg-orange-500 animate-pulse' : u.is_active !== false ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                                                                    <span className={`text-xs font-bold uppercase tracking-tight ${u.registration_status === 'pending' ? 'text-orange-600' : u.is_active !== false ? 'text-gray-500' : 'text-red-500'}`}>
+                                                                        {u.registration_status === 'pending' ? 'Pending' : u.is_active !== false ? 'Active' : 'Suspended'}
+                                                                    </span>
                                                                 </div>
-                                                            ) : (
-                                                                <div className="flex items-center gap-1 text-green-600">
-                                                                    <Home size={14} />
-                                                                    <span>{assessments.filter(a => a.user_id === u.id).length} Requests</span>
+                                                            </td>
+                                                            <td className="px-6 py-4 font-medium text-gray-900">
+                                                                {u.full_name}
+                                                                <div className="text-xs text-gray-400 font-normal">{u.email}</div>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-gray-500">
+                                                                {new Date(u.created_at).toLocaleDateString()}
+                                                            </td>
+                                                            <td className="px-6 py-4 text-gray-500 font-medium">
+                                                                {u.role === 'contractor' ? (
+                                                                    <div className="flex items-center gap-1 text-blue-600">
+                                                                        <Briefcase size={14} />
+                                                                        <span>{assessments.filter(a => a.contractor_id === u.id).length} Jobs</span>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="flex items-center gap-1 text-green-600">
+                                                                        <Home size={14} />
+                                                                        <span>{assessments.filter(a => a.user_id === u.id).length} Requests</span>
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                            <td className="px-6 py-4 text-right">
+                                                                <div className="flex items-center justify-end gap-2">
+                                                                    {u.role === 'contractor' && (
+                                                                        hasListing ? (
+                                                                            <button
+                                                                                onClick={() => handleOpenCatalogueView(u, listing)}
+                                                                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                                                                title="Edit Catalogue Listing"
+                                                                            >
+                                                                                <Edit2 size={16} />
+                                                                            </button>
+                                                                        ) : (
+                                                                            <button
+                                                                                onClick={() => handleOpenCatalogueView(u)}
+                                                                                className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                                                                                title="Add to Catalogue"
+                                                                            >
+                                                                                <Plus size={16} />
+                                                                            </button>
+                                                                        )
+                                                                    )}
+                                                                    <button
+                                                                        onClick={() => setSelectedUser(u)}
+                                                                        className="text-gray-400 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition-all"
+                                                                        title="View/Edit User Details"
+                                                                    >
+                                                                        <Pencil size={16} />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setItemToSuspend({
+                                                                                id: u.id,
+                                                                                name: u.full_name,
+                                                                                currentStatus: u.is_active !== false
+                                                                            });
+                                                                            setShowSuspendModal(true);
+                                                                        }}
+                                                                        className={`p-2 rounded-lg transition-all ${u.is_active !== false
+                                                                            ? 'text-red-400 hover:text-red-600 hover:bg-red-50'
+                                                                            : 'text-green-400 hover:text-green-600 hover:bg-green-50'
+                                                                            }`}
+                                                                        title={u.is_active !== false ? 'Suspend User' : 'Activate User'}
+                                                                    >
+                                                                        <AlertTriangle size={16} />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleDeleteClick(u.id, 'user')}
+                                                                        className="text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-all"
+                                                                        title="Delete User"
+                                                                    >
+                                                                        <Trash2 size={16} />
+                                                                    </button>
                                                                 </div>
-                                                            )}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-right">
-                                                            <div className="flex items-center justify-end gap-2">
-                                                                <button
-                                                                    onClick={() => setSelectedUser(u)}
-                                                                    className="text-gray-400 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition-all"
-                                                                    title="View/Edit User Details"
-                                                                >
-                                                                    <Pencil size={16} />
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => {
-                                                                        setItemToSuspend({
-                                                                            id: u.id,
-                                                                            name: u.full_name,
-                                                                            currentStatus: u.is_active !== false
-                                                                        });
-                                                                        setShowSuspendModal(true);
-                                                                    }}
-                                                                    className={`p-2 rounded-lg transition-all ${u.is_active !== false
-                                                                        ? 'text-red-400 hover:text-red-600 hover:bg-red-50'
-                                                                        : 'text-green-400 hover:text-green-600 hover:bg-green-50'
-                                                                        }`}
-                                                                    title={u.is_active !== false ? 'Suspend User' : 'Activate User'}
-                                                                >
-                                                                    <AlertTriangle size={16} />
-                                                                </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
                                         )}
                                     </tbody>
                                 </table>
@@ -1612,7 +2439,7 @@ const Admin = () => {
                                                             </button>
                                                             <button
                                                                 onClick={() => handleDeleteClick(lead.id, 'lead')}
-                                                                className="text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
+                                                                className="text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-all"
                                                                 title="Delete Lead"
                                                             >
                                                                 <Trash2 size={16} />
@@ -1643,11 +2470,18 @@ const Admin = () => {
                             <div className="flex items-center gap-3 w-full md:w-auto">
                                 <button
                                     onClick={() => { setNewUserRole('business'); setShowAddUserModal(true); }}
-                                    className="flex items-center gap-2 bg-[#007F00] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-700 transition-all shadow-sm whitespace-nowrap"
+                                    className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-50 transition-all shadow-sm whitespace-nowrap"
                                 >
                                     <Briefcase size={16} />
                                     Add Business
                                 </button>
+                                {/* <button
+                                    onClick={() => handleOpenCatalogueView(null)}
+                                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-all shadow-sm whitespace-nowrap"
+                                >
+                                    <Plus size={16} />
+                                    Add to Catalogue
+                                </button> */}
                                 <div className="text-xs text-gray-400 font-medium hidden sm:block">
                                     Showing {filteredBusinessLeads.length} of {users_list.filter(u => u.role === 'business').length} businesses
                                 </div>
@@ -1675,7 +2509,8 @@ const Admin = () => {
                                             </tr>
                                         ) : (
                                             filteredBusinessLeads.map((u) => {
-                                                const hasListing = listings.some(l => l.user_id === u.id);
+                                                const listing = listings.find(l => l.user_id === u.id || l.owner_id === u.id);
+                                                const hasListing = !!listing;
 
                                                 return (
                                                     <tr key={u.id} className="hover:bg-green-50/30 transition-colors group">
@@ -1704,28 +2539,46 @@ const Admin = () => {
                                                             {new Date(u.created_at).toLocaleDateString()}
                                                         </td>
                                                         <td className="px-6 py-4">
-                                                            {u.registration_status === 'active' && !hasListing && (
-                                                                <button
-                                                                    onClick={() => handleSendOnboardingEmail(u)}
-                                                                    disabled={sendingEmailId === u.id}
-                                                                    className="flex items-center gap-1.5 bg-[#007F00] text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 transition-all shadow-sm disabled:opacity-50 w-fit animate-pulse hover:animate-none"
-                                                                >
-                                                                    {sendingEmailId === u.id ? (
-                                                                        <div className="w-14 h-4 flex items-center justify-center">
-                                                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                                                        </div>
-                                                                    ) : (
-                                                                        <>
-                                                                            <Mail size={14} />
-                                                                            Send Form
-                                                                        </>
-                                                                    )}
-                                                                </button>
+                                                            {u.registration_status === 'active' && u.subscription_status !== 'active' && !hasListing && (
+                                                                <div className="flex flex-col gap-2">
+                                                                    <button
+                                                                        onClick={() => handleSendOnboardingEmail(u)}
+                                                                        disabled={sendingEmailId === u.id}
+                                                                        className="flex items-center gap-1.5 bg-[#007F00] text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 transition-all shadow-sm disabled:opacity-50 w-fit animate-pulse hover:animate-none"
+                                                                    >
+                                                                        {sendingEmailId === u.id ? (
+                                                                            <div className="w-14 h-4 flex items-center justify-center">
+                                                                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <>
+                                                                                <Mail size={14} />
+                                                                                Send Form
+                                                                            </>
+                                                                        )}
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleOpenCatalogueView(u)}
+                                                                        className="flex items-center gap-1.5 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition-all shadow-sm w-fit"
+                                                                    >
+                                                                        <Plus size={14} />
+                                                                        Add to Catalogue
+                                                                    </button>
+                                                                </div>
                                                             )}
                                                             {u.registration_status === 'active' && hasListing && (
-                                                                <div className="flex items-center gap-1.5 text-green-600 font-bold text-xs">
-                                                                    <CheckCircle2 size={14} />
-                                                                    Registration Complete
+                                                                <div className="flex flex-col gap-2">
+                                                                    <div className="flex items-center gap-1.5 text-green-600 font-bold text-xs">
+                                                                        <CheckCircle2 size={14} />
+                                                                        Registration Complete
+                                                                    </div>
+                                                                    <button
+                                                                        onClick={() => handleOpenCatalogueView(u, listing)}
+                                                                        className="flex items-center gap-1.5 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition-all shadow-sm w-fit"
+                                                                    >
+                                                                        <Edit2 size={14} />
+                                                                        Edit Catalogue
+                                                                    </button>
                                                                 </div>
                                                             )}
                                                             {u.registration_status === 'pending' && (
@@ -1756,7 +2609,7 @@ const Admin = () => {
                                                                 )}
                                                                 <button
                                                                     onClick={() => handleDeleteClick(u.id, 'user')}
-                                                                    className="text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
+                                                                    className="text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-all"
                                                                     title="Delete Business"
                                                                 >
                                                                     <Trash2 size={16} />
@@ -2028,11 +2881,11 @@ const Admin = () => {
                 ) : view === 'settings' ? (
                     /* SETTINGS VIEW */
                     <div className="space-y-6">
-                        {/* Global Settings */}
+                        {/* General Settings */}
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                             <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                                 <TrendingUp size={20} className="text-[#007F00]" />
-                                Global Pricing & Config
+                                Platform Config
                             </h3>
                             <form
                                 onSubmit={async (e) => {
@@ -2042,12 +2895,13 @@ const Admin = () => {
                                         setIsSavingSettings(true);
                                         const { error } = await supabase.from('app_settings').update({
                                             default_quote_price: parseFloat(formData.get('default_quote_price') as string),
+                                            solar_quote_price: parseFloat(formData.get('solar_quote_price') as string),
                                             vat_rate: parseFloat(formData.get('vat_rate') as string),
                                             company_name: formData.get('company_name') as string,
-                                            support_email: formData.get('support_email') as string
+                                            support_email: formData.get('support_email') as string,
                                         }).eq('id', appSettings?.id);
                                         if (error) throw error;
-                                        toast.success('Settings updated!');
+                                        toast.success('Platform settings updated!');
                                         fetchAppSettings();
                                     } catch (err: any) {
                                         toast.error(err.message);
@@ -2070,6 +2924,10 @@ const Admin = () => {
                                     <input name="default_quote_price" type="number" step="0.01" defaultValue={appSettings?.default_quote_price} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                                 </div>
                                 <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Solar Quote Default Price (€)</label>
+                                    <input name="solar_quote_price" type="number" step="0.01" defaultValue={appSettings?.solar_quote_price} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                </div>
+                                <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">VAT Rate (%)</label>
                                     <input name="vat_rate" type="number" step="0.1" defaultValue={appSettings?.vat_rate} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                                 </div>
@@ -2080,7 +2938,67 @@ const Admin = () => {
                                         className="bg-[#007F00] text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                     >
                                         {isSavingSettings ? <Loader2 className="animate-spin" size={18} /> : null}
-                                        {isSavingSettings ? 'Saving...' : 'Save Configuration'}
+                                        {isSavingSettings ? 'Saving...' : 'Save Config'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        {/* Registration Fees Section */}
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <Briefcase size={20} className="text-blue-600" />
+                                Membership Registration Fees
+                            </h3>
+                            <form
+                                onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    const formData = new FormData(e.target as HTMLFormElement);
+                                    try {
+                                        setIsSavingSettings(true);
+                                        const { error } = await supabase.from('app_settings').update({
+                                            domestic_assessor_price: parseFloat(formData.get('domestic_assessor_price') as string),
+                                            commercial_assessor_price: parseFloat(formData.get('commercial_assessor_price') as string),
+                                            bundle_assessor_price: parseFloat(formData.get('bundle_assessor_price') as string),
+                                            business_registration_price: parseFloat(formData.get('business_registration_price') as string)
+                                        }).eq('id', appSettings?.id);
+                                        if (error) throw error;
+                                        toast.success('Registration fees updated!');
+                                        fetchAppSettings();
+                                    } catch (err: any) {
+                                        toast.error(err.message);
+                                    } finally {
+                                        setIsSavingSettings(false);
+                                    }
+                                }}
+                                className="space-y-6"
+                            >
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Domestic Assessor (€)</label>
+                                        <input name="domestic_assessor_price" type="number" step="1" defaultValue={appSettings?.domestic_assessor_price ?? REGISTRATION_PRICES.DOMESTIC_ASSESSOR} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Commercial Assessor (€)</label>
+                                        <input name="commercial_assessor_price" type="number" step="1" defaultValue={appSettings?.commercial_assessor_price ?? REGISTRATION_PRICES.COMMERCIAL_ASSESSOR} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Bundle Assessor (€)</label>
+                                        <input name="bundle_assessor_price" type="number" step="1" defaultValue={appSettings?.bundle_assessor_price ?? REGISTRATION_PRICES.BUNDLE_ASSESSOR} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Business Reg (€)</label>
+                                        <input name="business_registration_price" type="number" step="1" defaultValue={appSettings?.business_registration_price ?? REGISTRATION_PRICES.BUSINESS_REGISTRATION} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                    </div>
+                                </div>
+                                <div className="flex justify-end">
+                                    <button
+                                        type="submit"
+                                        disabled={isSavingSettings}
+                                        className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:bg-blue-700"
+                                    >
+                                        {isSavingSettings ? <Loader2 className="animate-spin" size={18} /> : null}
+                                        {isSavingSettings ? 'Saving...' : 'Update Registration Fees'}
                                     </button>
                                 </div>
                             </form>
@@ -3312,6 +4230,17 @@ const Admin = () => {
                                             />
                                         </div>
                                         <div>
+                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Password *</label>
+                                            <input
+                                                type="password"
+                                                required
+                                                placeholder="••••••••"
+                                                value={newUserFormData.password}
+                                                onChange={(e) => setNewUserFormData({ ...newUserFormData, password: e.target.value })}
+                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
+                                            />
+                                        </div>
+                                        <div>
                                             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Phone</label>
                                             <input
                                                 type="tel"
@@ -3321,33 +4250,33 @@ const Admin = () => {
                                                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
                                             />
                                         </div>
-                                        <div>
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">County</label>
-                                            <select
-                                                value={newUserFormData.county}
-                                                onChange={(e) => setNewUserFormData({ ...newUserFormData, county: e.target.value, town: '' })}
-                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white"
-                                            >
-                                                <option value="">Select County</option>
-                                                {IRISH_COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
-                                            </select>
+                                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">County</label>
+                                                <select
+                                                    value={newUserFormData.county}
+                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, county: e.target.value, town: '' })}
+                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white transition-all outline-none"
+                                                >
+                                                    <option value="">Select County</option>
+                                                    {IRISH_COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                                </select>
+                                            </div>
+                                            {newUserRole === 'contractor' && newUserFormData.county && (
+                                                <div className="animate-in slide-in-from-top-2 duration-200">
+                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Town</label>
+                                                    <select
+                                                        value={newUserFormData.town}
+                                                        onChange={(e) => setNewUserFormData({ ...newUserFormData, town: e.target.value })}
+                                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white transition-all outline-none"
+                                                    >
+                                                        <option value="">Select Town</option>
+                                                        {(TOWNS_BY_COUNTY[newUserFormData.county] || []).map((t: string) => <option key={t} value={t}>{t}</option>)}
+                                                    </select>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-
-                                    {/* Town selector — only for assessors (uses TOWNS_BY_COUNTY) */}
-                                    {newUserRole === 'contractor' && newUserFormData.county && (
-                                        <div className="mt-4">
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Town</label>
-                                            <select
-                                                value={newUserFormData.town}
-                                                onChange={(e) => setNewUserFormData({ ...newUserFormData, town: e.target.value })}
-                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white"
-                                            >
-                                                <option value="">Select Town</option>
-                                                {(TOWNS_BY_COUNTY[newUserFormData.county] || []).map((t: string) => <option key={t} value={t}>{t}</option>)}
-                                            </select>
-                                        </div>
-                                    )}
                                 </div>
 
                                 {/* SECTION: Assessor-Specific Fields */}
@@ -3393,57 +4322,57 @@ const Admin = () => {
 
                                 {/* SECTION: Business-Specific Fields */}
                                 {newUserRole === 'business' && (
-                                    <div>
+                                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
                                         <h4 className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest mb-4">Business Details</h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="md:col-span-2">
-                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Business Address</label>
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Business Address</label>
                                                 <input
                                                     type="text"
                                                     placeholder="123 Main Street, Town"
                                                     value={newUserFormData.businessAddress}
                                                     onChange={(e) => setNewUserFormData({ ...newUserFormData, businessAddress: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
+                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all"
                                                 />
                                             </div>
-                                            <div>
-                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Website <span className="text-gray-300">(optional)</span></label>
+                                            <div className="md:col-span-2">
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Website <span className="text-gray-300 font-medium">(optional)</span></label>
                                                 <input
                                                     type="url"
                                                     placeholder="https://www.example.ie"
                                                     value={newUserFormData.website}
                                                     onChange={(e) => setNewUserFormData({ ...newUserFormData, website: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
+                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Company Number <span className="text-gray-300">(optional)</span></label>
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Company Number <span className="text-gray-300 font-medium">(optional)</span></label>
                                                 <input
                                                     type="text"
                                                     placeholder="123456"
                                                     value={newUserFormData.companyNumber}
                                                     onChange={(e) => setNewUserFormData({ ...newUserFormData, companyNumber: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
+                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">VAT Number <span className="text-gray-300">(optional)</span></label>
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">VAT Number <span className="text-gray-300 font-medium">(optional)</span></label>
                                                 <input
                                                     type="text"
                                                     placeholder="IE1234567A"
                                                     value={newUserFormData.vatNumber}
                                                     onChange={(e) => setNewUserFormData({ ...newUserFormData, vatNumber: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
+                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all"
                                                 />
                                             </div>
                                             <div className="md:col-span-2">
-                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Description <span className="text-gray-300">(optional)</span></label>
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Description <span className="text-gray-300 font-medium">(optional)</span></label>
                                                 <textarea
                                                     placeholder="Describe the business and services..."
                                                     rows={3}
                                                     value={newUserFormData.description}
                                                     onChange={(e) => setNewUserFormData({ ...newUserFormData, description: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] resize-none"
+                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all resize-none"
                                                 />
                                             </div>
                                         </div>
@@ -3460,11 +4389,11 @@ const Admin = () => {
                             </div>
 
                             {/* Sticky footer */}
-                            <div className="px-8 py-6 border-t border-gray-100 flex gap-3 shrink-0 bg-white rounded-b-3xl">
+                            <div className="px-8 py-6 border-t border-gray-100 flex gap-3 shrink-0 bg-gray-50/50 rounded-b-3xl">
                                 <button
                                     type="submit"
                                     disabled={isUpdating}
-                                    className="flex-1 py-4 bg-[#007F00] text-white font-bold rounded-2xl hover:bg-green-700 transition-all shadow-lg shadow-green-100 flex items-center justify-center gap-2"
+                                    className="flex-[2] py-4 bg-[#007F00] text-white font-bold rounded-2xl hover:bg-green-700 transition-all shadow-lg shadow-green-100 flex items-center justify-center gap-2 disabled:opacity-50"
                                 >
                                     {isUpdating ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
                                     {isUpdating ? 'Adding...' : `Add ${newUserRole === 'contractor' ? 'Assessor' : 'Business'}`}
@@ -3472,7 +4401,7 @@ const Admin = () => {
                                 <button
                                     type="button"
                                     onClick={() => { setShowAddUserModal(false); resetNewUserForm(); }}
-                                    className="px-6 py-4 bg-gray-100 text-gray-600 font-bold rounded-2xl hover:bg-gray-200 transition-all text-sm"
+                                    className="flex-1 py-4 bg-white border border-gray-200 text-gray-500 font-bold rounded-2xl hover:bg-gray-50 hover:text-gray-700 transition-all text-sm"
                                 >
                                     Cancel
                                 </button>

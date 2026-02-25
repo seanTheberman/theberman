@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Loader2, ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import SEOHead from '../components/SEOHead';
 
 interface Location {
     id: string;
@@ -45,6 +46,11 @@ const Locations = () => {
 
     return (
         <div className="min-h-screen bg-white pt-24 pb-20 font-sans">
+            <SEOHead
+                title="BER Assessors by Location"
+                description="Find BER assessors and energy upgrade professionals in your area across Ireland. Browse by county and region."
+                canonical="/locations"
+            />
             {/* Header */}
             <div className="container mx-auto px-6 mb-16 text-center">
                 <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Browse by Location</h1>

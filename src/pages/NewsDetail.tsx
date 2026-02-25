@@ -4,6 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Calendar, User, Clock, ChevronLeft, Share2, Facebook, Twitter, Linkedin } from 'lucide-react';
 import toast from 'react-hot-toast';
+import SEOHead from '../components/SEOHead';
 
 interface NewsArticle {
     id: string;
@@ -14,6 +15,7 @@ interface NewsArticle {
     category: string;
     published_at: string;
     read_time: string;
+    content: string;
 }
 
 const NewsDetail = () => {
@@ -71,7 +73,13 @@ const NewsDetail = () => {
 
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen pt-32 pb-20">
-            <title>{article.title} | The Berman News</title>
+            <SEOHead
+                title={`${article.title} | The Berman News`}
+                description={article.excerpt || article.title}
+                canonical={`/news/${id}`}
+                ogType="article"
+                ogImage={article.image_url || undefined}
+            />
 
             <article className="container mx-auto px-6 max-w-4xl">
                 {/* Back Link */}
@@ -121,22 +129,42 @@ const NewsDetail = () => {
                         {article.excerpt}
                     </div>
 
-                    <div className="text-gray-800 leading-relaxed space-y-6">
-                        {/* 
-                            Note: For a real app, you'd likely have a 'content' field in Supabase 
-                            supporting Markdown or HTML. For now, since the current schema only has excerpt,
-                            we'll display the excerpt as the main content body or placeholders.
-                        */}
-                        <p>
-                            {article.excerpt}
-                        </p>
-                        <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                        </p>
-                        <p>
-                            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                        </p>
-                    </div>
+                    <div
+                        className="text-gray-800 leading-relaxed space-y-6 news-content-body"
+                        dangerouslySetInnerHTML={{ __html: article.content || article.excerpt }}
+                    />
+
+                    <style>{`
+                        .news-content-body h1, 
+                        .news-content-body h2, 
+                        .news-content-body h3 {
+                            font-weight: 800;
+                            margin-top: 2rem;
+                            margin-bottom: 1rem;
+                            color: #111827;
+                        }
+                        .news-content-body p {
+                            margin-bottom: 1.5rem;
+                        }
+                        .news-content-body ul, 
+                        .news-content-body ol {
+                            margin-bottom: 1.5rem;
+                            padding-left: 1.5rem;
+                        }
+                        .news-content-body ul {
+                            list-style-type: disc;
+                        }
+                        .news-content-body ol {
+                            list-style-type: decimal;
+                        }
+                        .news-content-body blockquote {
+                            border-left: 4px solid #007F00;
+                            padding-left: 1.5rem;
+                            font-style: italic;
+                            color: #4b5563;
+                            margin: 2rem 0;
+                        }
+                    `}</style>
 
                     {/* Social Share */}
                     <div className="mt-16 pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-6">

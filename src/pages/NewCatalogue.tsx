@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Search, MapPin, Star, Loader2, ChevronDown, Zap, Sparkles, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
+import SEOHead from '../components/SEOHead';
 
 const HERO_SLIDES = [
     { image: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=1600' },
@@ -186,7 +187,11 @@ const NewCatalogue = () => {
 
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen pt-24 pb-12">
-            <title>Catalogue | The Berman</title>
+            <SEOHead
+                title="Business Catalogue"
+                description="Browse The Berman's catalogue of verified home energy businesses. Find insulation, heat pumps, solar, and more."
+                canonical="/catalogue"
+            />
 
             {/* Hero Section with Background Image Carousel */}
             <section className="relative min-h-[70vh] md:min-h-[80vh] overflow-hidden flex items-center m-10 rounded-2xl">

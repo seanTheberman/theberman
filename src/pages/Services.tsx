@@ -1,12 +1,16 @@
 
 import { Truck, BarChart3, Cpu, Globe2, AlertTriangle, ArrowRight, Zap, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SEOHead from '../components/SEOHead';
 
 const Services = () => {
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen">
-            <title>Our Services | The Berman - Expert BER Assessments</title>
-            <meta name="description" content="Comprehensive energy rating services including BER certificates, provisional ratings, and energy audits." />
+            <SEOHead
+                title="Our Services - Expert BER Assessments"
+                description="Comprehensive energy rating services including BER certificates, provisional ratings, and energy audits."
+                canonical="/services"
+            />
 
             {/* 1. COMPACT HERO SECTION */}
             <section className="pt-32 pb-16 bg-white">

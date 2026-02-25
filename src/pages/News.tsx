@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
+import SEOHead from '../components/SEOHead';
 
 interface NewsArticle {
     id: string;
@@ -83,7 +84,11 @@ const NewsPage = () => {
 
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen pt-32">
-            <title>News | The Berman</title>
+            <SEOHead
+                title="News"
+                description="Stay updated with the latest energy efficiency news, BER tips, and sustainability insights from The Berman."
+                canonical="/news"
+            />
 
 
 

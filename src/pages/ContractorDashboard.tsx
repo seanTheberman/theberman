@@ -36,6 +36,7 @@ interface Quote {
         status: 'live' | 'submitted' | 'pending_quote' | 'quote_accepted' | 'scheduled' | 'completed';
         eircode?: string;
     };
+    is_loyalty_payout?: boolean;
 }
 
 interface Assessment {
@@ -190,6 +191,14 @@ const ContractorDashboard = () => {
 
             if (jobsError) throw jobsError;
 
+            // Filter out jobs older than 5 days
+            const activeJobs = (jobs || []).filter(job => {
+                const createdAt = new Date(job.created_at);
+                const now = new Date();
+                const diffInDays = (now.getTime() - createdAt.getTime()) / (1000 * 3600 * 24);
+                return diffInDays <= 5;
+            });
+
             // 3. Fetch My Quotes with assessment details
             const { data: quotes, error: quotesError } = await supabase
                 .from('quotes')
@@ -232,7 +241,15 @@ const ContractorDashboard = () => {
                     uniqueQuotesMap.set(q.assessment_id, q);
                 }
             });
-            const uniqueQuotes = Array.from(uniqueQuotesMap.values());
+
+            // Filter out quotes for expired assessments (unless accepted)
+            const uniqueQuotes = Array.from(uniqueQuotesMap.values()).filter((q: any) => {
+                if (q.status === 'accepted') return true;
+                const createdAt = new Date(q.assessment?.created_at || q.created_at);
+                const now = new Date();
+                const diffInDays = (now.getTime() - createdAt.getTime()) / (1000 * 3600 * 24);
+                return diffInDays <= 5;
+            });
 
             // 4. Fetch lowest quotes for these assessments
             const assessmentIds = uniqueQuotes.map(q => q.assessment_id);
@@ -261,7 +278,7 @@ const ContractorDashboard = () => {
             // Available jobs filtering:
             // 1. Exclude jobs already quoted for
             const quotedIds = new Set(quotes?.map(q => q.assessment_id) || []);
-            let filteredAvailableJobs = jobs?.filter(j => !quotedIds.has(j.id)) || [];
+            let filteredAvailableJobs = activeJobs?.filter(j => !quotedIds.has(j.id)) || [];
 
             // 2. Apply location preference filtering if configured
             if (profileData?.preferred_counties && profileData.preferred_counties.length > 0) {
@@ -388,12 +405,14 @@ const ContractorDashboard = () => {
                     .eq('id', existingQuote.id);
                 error = updateError;
             } else {
+                const isLoyaltyJob = (profile?.completed_jobs_count || 0) % 11 === 10;
                 const { error: insertError } = await supabase.from('quotes').insert({
                     assessment_id: selectedJob.id,
                     price: parseFloat(quotePrice),
                     notes: quoteNotes,
                     created_by: user?.id,
-                    status: 'pending'
+                    status: 'pending',
+                    is_loyalty_payout: isLoyaltyJob
                 });
                 error = insertError;
             }
@@ -510,7 +529,8 @@ const ContractorDashboard = () => {
         earnings: myQuotes.filter(q => q.status === 'accepted').reduce((sum, q) => sum + Number(q.price), 0),
         pending: myQuotes.filter(q => q.status === 'pending').length,
         completed: activeJobs.filter(j => j.status === 'completed').length,
-        totalQuotes: myQuotes.length
+        totalQuotes: myQuotes.length,
+        loyaltyJobs: profile?.completed_jobs_count || 0
     };
 
     return (
@@ -626,6 +646,40 @@ const ContractorDashboard = () => {
                             {stats.totalQuotes > 0 ? Math.round((stats.completed / stats.totalQuotes) * 100) : 0}%
                         </p>
                     </div>
+                </div>
+
+                {/* Loyalty Progress Banner */}
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 mb-8 text-white shadow-xl relative overflow-hidden">
+                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div className="flex-1 text-center md:text-left">
+                            <h2 className="text-2xl font-black mb-2 flex items-center justify-center md:justify-start gap-2">
+                                <TrendingUp className="text-blue-200" />
+                                Assessor Loyalty Program
+                            </h2>
+                            <p className="text-blue-100 font-medium">
+                                Complete 10 assessments and your 11th job's platform fee is on us!
+                                <span className="block text-sm text-blue-200 opacity-80 mt-1">Keep track of your progress toward your next free job.</span>
+                            </p>
+                        </div>
+                        <div className="flex flex-col items-center justify-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 min-w-[200px] w-full md:w-auto">
+                            <div className="text-4xl font-black mb-1">{(stats.loyaltyJobs % 11) > 10 ? 0 : (stats.loyaltyJobs % 11)}/10</div>
+                            <div className="text-[10px] font-black uppercase tracking-widest text-blue-200 mb-4">Jobs toward fee-free</div>
+                            <div className="w-full bg-white/20 h-2 rounded-full overflow-hidden">
+                                <div
+                                    className="bg-green-400 h-full transition-all duration-1000"
+                                    style={{ width: `${Math.min((stats.loyaltyJobs % 11) * 10, 100)}%` }}
+                                ></div>
+                            </div>
+                            {stats.loyaltyJobs % 11 === 10 && (
+                                <div className="mt-3 text-[10px] font-black bg-green-500 text-white px-3 py-1 rounded-full animate-bounce">
+                                    NEXT JOB IS FREE!
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    {/* Decorative Background Elements */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-400/10 rounded-full -ml-24 -mb-24 blur-3xl"></div>
                 </div>
 
                 {/* Main Content Area */}
@@ -1907,7 +1961,15 @@ const ContractorDashboard = () => {
                                             <div className="p-6 space-y-4">
                                                 <p className="text-sm text-green-700 text-center italic">Include SEAI fees.</p>
                                                 <p className="text-sm text-green-700 text-center italic">Include VAT (if registered).</p>
-                                                <p className="text-sm text-green-700 text-center italic">Include €25 platform fee.</p>
+                                                <p className="text-sm text-green-700 text-center font-bold">
+                                                    {(profile?.completed_jobs_count || 0) % 11 === 10 ? (
+                                                        <span className="flex items-center justify-center gap-1.5 text-blue-600 bg-blue-50 py-1 rounded-lg border border-blue-100 animate-pulse">
+                                                            <CheckCircle2 size={14} /> LOYALTY JOB: €0 PLATFORM FEE
+                                                        </span>
+                                                    ) : (
+                                                        <span className="italic">Include €25 platform fee.</span>
+                                                    )}
+                                                </p>
 
                                                 <div className="relative mt-4">
                                                     <input
@@ -1919,7 +1981,7 @@ const ContractorDashboard = () => {
                                                     />
                                                 </div>
                                                 <p className="text-sm text-center font-bold text-gray-600">
-                                                    You will receive: €{quotePrice ? (parseInt(quotePrice) - 25) : 0} (direct from customer)
+                                                    You will receive: €{quotePrice ? (parseInt(quotePrice) - ((profile?.completed_jobs_count || 0) % 11 === 10 ? 0 : 25)) : 0} (direct from customer)
                                                 </p>
                                                 <p className="text-xs text-gray-400 text-center">Eg. 170, no euro sign or cents.</p>
 

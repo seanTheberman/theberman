@@ -1,13 +1,17 @@
 
 import { Shield, Lock, Eye, FileText, Scale } from 'lucide-react';
+import SEOHead from '../components/SEOHead';
 
 const PrivacyPolicy = () => {
     const lastUpdated = "February 2, 2026";
 
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen">
-            <title>Privacy Policy | The Berman</title>
-            <meta name="description" content="Privacy Policy for The Berman. We are committed to protecting your personal data in accordance with Irish law and GDPR." />
+            <SEOHead
+                title="Privacy Policy"
+                description="Privacy Policy for The Berman. We are committed to protecting your personal data in accordance with Irish law and GDPR."
+                canonical="/privacy-policy"
+            />
 
             {/* Hero Section */}
             <section className="pt-24 pb-16 bg-white border-b border-gray-100">

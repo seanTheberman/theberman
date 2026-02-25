@@ -1,6 +1,7 @@
 
 import { ArrowRight, Zap, Thermometer, Sun, Wind, Droplets } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SEOHead from '../components/SEOHead';
 
 const CATEGORIES = [
     {
@@ -42,8 +43,11 @@ const CATEGORIES = [
 const Catalogue = () => {
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen">
-            <title>Energy Upgrade Catalogue | The Berman</title>
-            <meta name="description" content="Explore our curated collection of home energy upgrades. Professional solutions for thermal comfort and efficiency." />
+            <SEOHead
+                title="Energy Upgrade Catalogue"
+                description="Explore our curated collection of home energy upgrades. Professional solutions for thermal comfort and efficiency."
+                canonical="/catalogue"
+            />
 
             {/* 1. SIMPLE CENTERED HERO */}
             <section className="pt-24 pb-16 bg-white">

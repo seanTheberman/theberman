@@ -145,7 +145,7 @@ const Layout = () => {
                                                         setIsLocationsOpen(!isLocationsOpen);
                                                         if (!isLocationsOpen) setExpandedProvince(null);
                                                     }}
-                                                    className={`w-full px-5 py-3 text-left text-sm font-semibold uppercase tracking-wide border-b border-gray-100 flex justify-between items-center transition-colors ${isLocationsOpen ? 'bg-gray-50 text-[#007EA7]' : 'text-gray-700 hover:bg-gray-50'}`}
+                                                    className={`w-full px-5 py-3 text-left text-sm font-semibold uppercase tracking-wide border-b border-gray-100 flex justify-between items-center transition-colors ${isLocationsOpen ? 'bg-gray-50 text-[#007F00]' : 'text-gray-700 hover:bg-gray-50'}`}
                                                 >
                                                     Location
                                                     <ChevronRight size={16} className={`transition-transform duration-200 ${isLocationsOpen ? 'rotate-90' : ''}`} />

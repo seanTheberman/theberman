@@ -1,13 +1,17 @@
 
 import { Gavel, FileCheck, AlertCircle, Info, Bookmark } from 'lucide-react';
+import SEOHead from '../components/SEOHead';
 
 const TermsOfService = () => {
     const lastUpdated = "February 2, 2026";
 
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen">
-            <title>Terms of Service | The Berman</title>
-            <meta name="description" content="Terms and Conditions of Service for The Berman. Our agreement for building energy rating assessments in Ireland." />
+            <SEOHead
+                title="Terms of Service"
+                description="Terms and Conditions of Service for The Berman. Our agreement for building energy rating assessments in Ireland."
+                canonical="/terms-of-service"
+            />
 
             {/* Hero Section */}
             <section className="pt-24 pb-16 bg-white border-b border-gray-100">

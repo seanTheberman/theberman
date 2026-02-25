@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
+import SEOHead from '../components/SEOHead';
 
 const contactSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -75,7 +76,11 @@ const Contact = () => {
 
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen">
-            <title>Contact Us | The Berman</title>
+            <SEOHead
+                title="Contact Us"
+                description="Get in touch with The Berman for BER assessments, energy ratings, and home energy upgrades across Ireland."
+                canonical="/contact"
+            />
 
             {/* 1. COMPACT HERO */}
             <section className="pt-32 pb-8 bg-white">

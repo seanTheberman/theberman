@@ -1,12 +1,16 @@
 
 import { ArrowRight, X, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SEOHead from '../components/SEOHead';
 
 const Pricing = () => {
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen">
-            <title>Pricing | The Berman - Transparent BER Rating Costs</title>
-            <meta name="description" content="Clear, upfront pricing for Building Energy Ratings. Plans for apartments, houses, and commercial units." />
+            <SEOHead
+                title="Pricing - Transparent BER Rating Costs"
+                description="Clear, upfront pricing for Building Energy Ratings. Plans for apartments, houses, and commercial units."
+                canonical="/pricing"
+            />
 
             {/* 1. COMPACT HERO SECTION */}
             <section className="pt-32 pb-12 bg-white">

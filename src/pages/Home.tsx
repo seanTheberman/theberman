@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import SEOHead from '../components/SEOHead';
 
 interface PromoSettings {
     is_enabled: boolean;
@@ -36,8 +37,31 @@ const HomePage = () => {
 
     return (
         <div className="font-sans text-gray-900 overflow-x-hidden">
-            <title>Home | Berman Building Energy Ratings</title>
-            <meta name="description" content="Ireland's largest BER website. Fast, reliable, and hassle-free BER assessments. Get competitive quotes from local assessors today." />
+            <SEOHead
+                title="Home | Berman Building Energy Ratings"
+                description="Ireland's largest BER website. Fast, reliable, and hassle-free BER assessments. Get competitive quotes from local assessors today."
+                canonical="/"
+                jsonLd={[
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'Organization',
+                        name: 'The Berman',
+                        url: 'https://theberman.eu',
+                        logo: 'https://theberman.eu/logo.png',
+                        sameAs: ['https://www.facebook.com/theberman', 'https://www.instagram.com/theberman'],
+                        contactPoint: { '@type': 'ContactPoint', email: 'info@theberman.eu', contactType: 'customer service', areaServed: 'IE' }
+                    },
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'LocalBusiness',
+                        name: 'The Berman',
+                        description: "Ireland's largest BER website. Fast, reliable, and hassle-free BER assessments.",
+                        url: 'https://theberman.eu',
+                        address: { '@type': 'PostalAddress', addressCountry: 'IE', addressLocality: 'Dublin' },
+                        priceRange: '€€'
+                    }
+                ]}
+            />
 
             {/* 1. HERO SECTION - BERcert Conversion Style */}
             <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 bg-white overflow-hidden">

@@ -6,6 +6,7 @@ import PaymentModal from '../components/PaymentModal';
 import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 import { REGISTRATION_PRICES, VAT_RATE } from '../constants/pricing';
+import SEOHead from '../components/SEOHead';
 
 const MembershipPayment = () => {
     const navigate = useNavigate();
@@ -16,28 +17,66 @@ const MembershipPayment = () => {
     const [priceData, setPriceData] = useState<{ subtotal: number, vat: number, total: number } | null>(null);
 
     useEffect(() => {
-        const assessorData = sessionStorage.getItem('pending_assessor_registration');
-        const businessData = sessionStorage.getItem('pending_business_registration');
+        const fetchSettingsAndCalculate = async () => {
+            try {
+                // Fetch settings from DB
+                const { data: settings, error } = await supabase
+                    .from('app_settings')
+                    .select('*')
+                    .single();
 
-        if (assessorData) {
-            setRegistrationType('assessor');
-            const data = JSON.parse(assessorData);
-            const types = data.assessorTypes || [];
-            const subtotal = (types.includes('Domestic Assessor') && types.includes('Commercial Assessor'))
-                ? REGISTRATION_PRICES.BUNDLE_ASSESSOR
-                : REGISTRATION_PRICES.DOMESTIC_ASSESSOR;
+                if (error) throw error;
 
-            const vat = subtotal * VAT_RATE;
-            setPriceData({ subtotal, vat, total: subtotal + vat });
-        } else if (businessData) {
-            setRegistrationType('business');
-            const subtotal = REGISTRATION_PRICES.BUSINESS_REGISTRATION;
-            const vat = subtotal * VAT_RATE;
-            setPriceData({ subtotal, vat, total: subtotal + vat });
-        } else {
-            toast.error('Registration data not found. Please restart registration.');
-            navigate('/signup');
-        }
+                const assessorData = sessionStorage.getItem('pending_assessor_registration');
+                const businessData = sessionStorage.getItem('pending_business_registration');
+
+                if (assessorData) {
+                    setRegistrationType('assessor');
+                    const data = JSON.parse(assessorData);
+                    const types = data.assessorTypes || [];
+
+                    let subtotal = settings.domestic_assessor_price || REGISTRATION_PRICES.DOMESTIC_ASSESSOR;
+                    if (types.includes('Domestic Assessor') && types.includes('Commercial Assessor')) {
+                        subtotal = settings.bundle_assessor_price || REGISTRATION_PRICES.BUNDLE_ASSESSOR;
+                    }
+
+                    const vat = subtotal * (settings.vat_rate / 100);
+                    setPriceData({ subtotal, vat, total: subtotal + vat });
+                } else if (businessData) {
+                    setRegistrationType('business');
+                    const subtotal = settings.business_registration_price || REGISTRATION_PRICES.BUSINESS_REGISTRATION;
+                    const vat = subtotal * (settings.vat_rate / 100);
+                    setPriceData({ subtotal, vat, total: subtotal + vat });
+                } else {
+                    toast.error('Registration data not found. Please restart registration.');
+                    navigate('/signup');
+                }
+            } catch (error) {
+                console.error('Error fetching prices:', error);
+                // Fallback to constants if DB fetch fails
+                const assessorData = sessionStorage.getItem('pending_assessor_registration');
+                const businessData = sessionStorage.getItem('pending_business_registration');
+
+                if (assessorData) {
+                    setRegistrationType('assessor');
+                    const data = JSON.parse(assessorData);
+                    const types = data.assessorTypes || [];
+                    const subtotal = (types.includes('Domestic Assessor') && types.includes('Commercial Assessor'))
+                        ? REGISTRATION_PRICES.BUNDLE_ASSESSOR
+                        : REGISTRATION_PRICES.DOMESTIC_ASSESSOR;
+
+                    const vat = subtotal * VAT_RATE;
+                    setPriceData({ subtotal, vat, total: subtotal + vat });
+                } else if (businessData) {
+                    setRegistrationType('business');
+                    const subtotal = REGISTRATION_PRICES.BUSINESS_REGISTRATION;
+                    const vat = subtotal * VAT_RATE;
+                    setPriceData({ subtotal, vat, total: subtotal + vat });
+                }
+            }
+        };
+
+        fetchSettingsAndCalculate();
     }, [navigate]);
 
     const handlePaymentSuccess = async (paymentIntentId: string) => {
@@ -87,7 +126,11 @@ const MembershipPayment = () => {
 
     return (
         <div className="font-sans text-gray-900 bg-white h-screen flex flex-col justify-center items-center px-4">
-            <title>Membership Payment | The Berman</title>
+            <SEOHead
+                title="Membership Payment"
+                description="Complete your membership payment for The Berman platform."
+                noindex={true}
+            />
 
             <div className="w-full max-w-3xl">
                 {/* HEADER */}

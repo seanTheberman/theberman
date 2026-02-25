@@ -1,5 +1,4 @@
 // @ts-nocheck
-/// <reference lib="deno.ns" />
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { CustomSmtpClient } from "../shared/smtp.ts"
@@ -64,7 +63,8 @@ serve(async (req: Request) => {
             .update({
                 role: 'business',
                 company_name: companyName,
-                phone: phone
+                phone: phone,
+                subscription_status: 'active'
             })
             .eq('id', user_id)
         if (profileError) throw profileError

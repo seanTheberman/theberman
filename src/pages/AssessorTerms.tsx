@@ -1,9 +1,14 @@
 
+import SEOHead from '../components/SEOHead';
+
 const AssessorTerms = () => {
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen pt-24 pb-16">
-            <title>Assessor Terms of Use | The Berman</title>
-            <meta name="description" content="Terms of Use for BER Assessors registered on The Berman platform." />
+            <SEOHead
+                title="Assessor Terms of Use"
+                description="Terms of Use for BER Assessors registered on The Berman platform."
+                canonical="/assessor-terms"
+            />
 
             <div className="container mx-auto px-6 max-w-4xl">
                 <h1 className="text-4xl font-normal text-[#4CAF50] mb-8">
@@ -36,7 +41,7 @@ const AssessorTerms = () => {
                     </p>
 
                     <p>
-                        By using theberman.eu, you understand and agree that the theberman.eu fee of €30 is a referral fee for providing you with a confirmed job. You should incorporate this fee into all quotes you submit via the theberman.eu platform. This fee is not charged to you directly; instead, it is paid directly to theberman.eu by the client upon accepting a quote.
+                        By using theberman.eu, you understand and agree that the theberman.eu fee of €25 is a referral fee for providing you with a confirmed job. You should incorporate this fee into all quotes you submit via the theberman.eu platform. This fee is not charged to you directly; instead, it is paid directly to theberman.eu by the client upon accepting a quote.
                     </p>
 
                     <p>

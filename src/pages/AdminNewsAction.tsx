@@ -2,8 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { ChevronLeft, Save, X, Loader2, Newspaper, Eye } from 'lucide-react';
+import { ChevronLeft, Save, X, Loader2, Newspaper, Eye, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 
 interface NewsArticle {
     id: string;
@@ -16,6 +18,7 @@ interface NewsArticle {
     is_live: boolean;
     show_badge: boolean;
     read_time: string;
+    content: string;
 }
 
 const AdminNewsAction = () => {
@@ -23,13 +26,15 @@ const AdminNewsAction = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [article, setArticle] = useState<Partial<NewsArticle>>({
         author: 'The Berman Team',
         category: 'Company News',
         read_time: '3 min read',
         is_live: true,
         show_badge: false,
-        published_at: new Date().toISOString().slice(0, 16)
+        published_at: new Date().toISOString().slice(0, 16),
+        content: ''
     });
 
     useEffect(() => {
@@ -63,19 +68,68 @@ const AdminNewsAction = () => {
         }
     };
 
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please upload an image file');
+            return;
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Image size must be less than 5MB');
+            return;
+        }
+
+        setIsUploading(true);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+            const filePath = `news-articles/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('uploads')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('uploads')
+                .getPublicUrl(filePath);
+
+            setArticle(prev => ({ ...prev, image_url: publicUrl }));
+            toast.success('Image uploaded successfully');
+        } catch (error: any) {
+            console.error('Error uploading image:', error);
+            toast.error(`Error uploading image: ${error.message}`);
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!article.image_url) {
+            toast.error('Please upload a featured image');
+            return;
+        }
+
         const formData = new FormData(e.target as HTMLFormElement);
         const updates = {
             title: formData.get('title') as string,
             excerpt: formData.get('excerpt') as string,
             author: formData.get('author') as string,
-            image_url: formData.get('image_url') as string,
+            image_url: article.image_url,
             category: formData.get('category') as string,
             read_time: formData.get('read_time') as string,
             is_live: formData.get('is_live') === 'true',
             show_badge: formData.get('show_badge') === 'true',
-            published_at: new Date(formData.get('published_at') as string).toISOString()
+            published_at: new Date(formData.get('published_at') as string).toISOString(),
+            content: article.content || ''
         };
 
         setIsSaving(true);
@@ -168,6 +222,59 @@ const AdminNewsAction = () => {
                                 />
                             </div>
 
+                            <div className="md:col-span-2">
+                                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Article Body & Full Content *</label>
+                                <div className="quill-container bg-white border border-gray-100 rounded-2xl overflow-hidden min-h-[400px]">
+                                    <ReactQuill
+                                        theme="snow"
+                                        value={article.content}
+                                        onChange={(content) => setArticle(prev => ({ ...prev, content }))}
+                                        placeholder="Start writing your article here..."
+                                        modules={{
+                                            toolbar: [
+                                                [{ 'header': [1, 2, 3, false] }],
+                                                ['bold', 'italic', 'underline', 'strike'],
+                                                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                                                ['link', 'blockquote', 'code-block'],
+                                                ['clean']
+                                            ],
+                                        }}
+                                        className="h-[350px] mb-12"
+                                    />
+                                </div>
+                                <style>{`
+                                    .quill-container .ql-toolbar.ql-snow {
+                                        border: none;
+                                        border-bottom: 1px solid #f3f4f6;
+                                        padding: 1rem;
+                                        background: #f9fafb;
+                                    }
+                                    .quill-container .ql-container.ql-snow {
+                                        border: none;
+                                        padding: 0.5rem;
+                                        font-family: inherit;
+                                        font-size: 1rem;
+                                    }
+                                    .quill-container .ql-editor {
+                                        min-height: 350px;
+                                        line-height: 1.6;
+                                        color: #374151;
+                                    }
+                                    .quill-container .ql-editor.ql-blank::before {
+                                        color: #9ca3af;
+                                        font-style: normal;
+                                    }
+                                    .quill-container .ql-editor h1, 
+                                    .quill-container .ql-editor h2, 
+                                    .quill-container .ql-editor h3 {
+                                        font-weight: 800;
+                                        margin-top: 1.5rem;
+                                        margin-bottom: 0.75rem;
+                                        color: #111827;
+                                    }
+                                `}</style>
+                            </div>
+
                             <div>
                                 <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Author Name *</label>
                                 <input
@@ -215,19 +322,40 @@ const AdminNewsAction = () => {
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Featured Image URL *</label>
-                                <input
-                                    name="image_url"
-                                    required
-                                    defaultValue={article.image_url}
-                                    className="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 font-medium focus:ring-2 focus:ring-[#007F00]/20 transition-all outline-none"
-                                    placeholder="https://images.unsplash.com/..."
-                                />
-                                {article.image_url && (
-                                    <div className="mt-4 rounded-2xl overflow-hidden shadow-lg border border-gray-100 bg-gray-50">
-                                        <img src={article.image_url} alt="Preview" className="h-48 w-full object-cover" />
-                                    </div>
-                                )}
+                                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Featured Image *</label>
+                                <div className="flex flex-col gap-4">
+                                    {article.image_url ? (
+                                        <div className="relative group rounded-2xl overflow-hidden shadow-lg border border-gray-100 bg-gray-50 h-64">
+                                            <img src={article.image_url} alt="Preview" className="h-full w-full object-cover" />
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                                <label className="bg-white text-gray-900 px-4 py-2 rounded-xl text-sm font-bold cursor-pointer hover:bg-gray-50 transition-colors flex items-center gap-2">
+                                                    <Upload size={16} />
+                                                    Change Image
+                                                    <input type="file" className="hidden" onChange={handleFileChange} accept="image/*" disabled={isUploading} />
+                                                </label>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setArticle(prev => ({ ...prev, image_url: '' }))}
+                                                    className="bg-red-500 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-red-600 transition-colors flex items-center gap-2"
+                                                >
+                                                    <X size={16} />
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <label className="border-2 border-dashed border-gray-200 rounded-2xl p-12 flex flex-col items-center justify-center gap-3 hover:border-[#007F00] hover:bg-green-50/30 transition-all cursor-pointer group">
+                                            <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 group-hover:bg-white group-hover:text-[#007F00] transition-colors">
+                                                {isUploading ? <Loader2 className="animate-spin" size={32} /> : <Upload size={32} />}
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-sm font-bold text-gray-900">{isUploading ? 'Uploading...' : 'Click to upload image'}</p>
+                                                <p className="text-xs text-gray-400 mt-1">PNG, JPG or WEBP (Max. 5MB)</p>
+                                            </div>
+                                            <input type="file" className="hidden" onChange={handleFileChange} accept="image/*" disabled={isUploading} />
+                                        </label>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="md:col-span-2">

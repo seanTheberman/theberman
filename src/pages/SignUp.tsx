@@ -3,8 +3,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
-import { useEffect } from 'react';
+import { Loader2, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 const signupSchema = z.object({
@@ -21,11 +21,12 @@ const signupSchema = z.object({
 type SignUpFormData = z.infer<typeof signupSchema>;
 
 const SignUp = () => {
-    const { signUp, user, role, loading } = useAuth();
+    const { signUp, signOut, user, role, loading } = useAuth();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const roleParam = searchParams.get('role');
     const defaultRole = (roleParam === 'contractor' || roleParam === 'user' || roleParam === 'business') ? roleParam : 'user';
+    const [showThankYou, setShowThankYou] = useState(false);
 
     // Redirect if already authenticated
     useEffect(() => {
@@ -65,9 +66,10 @@ const SignUp = () => {
             if (error) throw error;
 
             if (authData?.user) {
-                // Handle business registration
+                // Handle business registration — just capture interest, don't start session
                 if (data.role === 'business') {
-                    navigate('/business-onboarding');
+                    await signOut(); // Sign out immediately so no session starts
+                    setShowThankYou(true);
                     return;
                 }
 
@@ -92,6 +94,39 @@ const SignUp = () => {
             toast.error(err.message || 'Failed to create account');
         }
     };
+
+    // Thank You screen for business registrations
+    if (showThankYou) {
+        return (
+            <div className="min-h-screen bg-white pt-24 pb-12 flex items-center justify-center">
+                <div className="container mx-auto px-6 max-w-lg">
+                    <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-xl overflow-hidden p-8 md:p-12 text-center">
+                        <div className="mb-6">
+                            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+                                <CheckCircle2 className="text-[#007F00]" size={40} />
+                            </div>
+                            <h2 className="text-3xl font-serif font-bold text-gray-900 mb-3">Thank You!</h2>
+                            <p className="text-gray-500 text-lg leading-relaxed">
+                                Thank you for showing your interest in joining our Home Energy Catalogue.
+                            </p>
+                            <p className="text-gray-500 mt-2 leading-relaxed">
+                                Our team will review your details and <strong className="text-gray-700">contact you shortly</strong> with the registration form to complete your setup.
+                            </p>
+                        </div>
+                        <div className="mt-8 pt-6 border-t border-gray-100">
+                            <Link
+                                to="/"
+                                className="inline-flex items-center gap-2 text-[#007F00] font-bold hover:underline transition-all"
+                            >
+                                <ArrowLeft size={16} />
+                                Back to Homepage
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-white pt-24 pb-12 flex items-center justify-center">
