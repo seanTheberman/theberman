@@ -228,7 +228,7 @@ const AdminNewsAction = () => {
                                     <ReactQuill
                                         theme="snow"
                                         value={article.content}
-                                        onChange={(content) => setArticle(prev => ({ ...prev, content }))}
+                                        onChange={(content: string) => setArticle(prev => ({ ...prev, content }))}
                                         placeholder="Start writing your article here..."
                                         modules={{
                                             toolbar: [
@@ -264,8 +264,8 @@ const AdminNewsAction = () => {
                                         color: #9ca3af;
                                         font-style: normal;
                                     }
-                                    .quill-container .ql-editor h1, 
-                                    .quill-container .ql-editor h2, 
+                                    .quill-container .ql-editor h1,
+                                    .quill-container .ql-editor h2,
                                     .quill-container .ql-editor h3 {
                                         font-weight: 800;
                                         margin-top: 1.5rem;

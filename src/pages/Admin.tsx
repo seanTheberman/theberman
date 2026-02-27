@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2, Search, Newspaper, Plus, Star, Check, Edit2, ExternalLink, Image as ImageIcon, UploadCloud, ArrowLeft, Users, DollarSign, Building2, CreditCard, ClipboardList, ArrowRight, Hourglass, Building } from 'lucide-react';
+import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2, Search, Newspaper, Plus, Star, Check, Edit2, ExternalLink, Image as ImageIcon, UploadCloud, ArrowLeft, Users, DollarSign, CreditCard, ClipboardList, ArrowRight, Hourglass, Building } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
@@ -2071,7 +2071,7 @@ const Admin = () => {
                     <div className="space-y-8">
                         {/* Stats Custom Layout */}
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                            
+
                             {/* LEFT COLUMN: Stacked Users Breakdown */}
                             <div className="lg:col-span-5 flex flex-col gap-3">
                                 {/* Homeowners */}
@@ -2140,7 +2140,7 @@ const Admin = () => {
 
                             {/* RIGHT COLUMN: 2x2 Grid for Other Stats */}
                             <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                
+
                                 {/* Total Revenue Card */}
                                 <button
                                     onClick={() => { setView('payments'); setSelectedStatView(null); }}
