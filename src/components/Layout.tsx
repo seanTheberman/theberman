@@ -13,7 +13,7 @@ const NAV_LINKS = [
     { label: 'Speak to an Energy Advisor', path: '/hire-agent' },
     { label: 'Book Ber Assessors', path: '/contact' },
     { label: 'Our News', path: '/news' },
-    // { label: 'Location', path: '/locations' },
+    { label: 'Location', path: '/locations' },
     { label: 'Contact', path: '/contact' },
 ];
 
