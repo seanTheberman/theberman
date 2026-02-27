@@ -101,6 +101,33 @@ const ContractorOnboarding = () => {
 
             sessionStorage.setItem('pending_assessor_registration', JSON.stringify(registrationData));
 
+            // 0. Update Profile with pending status and role
+            const { supabase } = await import('../lib/supabase');
+            const { error: profileUpdateError } = await supabase
+                .from('profiles')
+                .update({
+                    role: 'contractor',
+                    registration_status: 'pending',
+                    phone: formData.phone,
+                    home_county: formData.homeCounty,
+                    home_town: formData.homeTown
+                })
+                .eq('id', user?.id);
+
+            if (profileUpdateError) {
+                console.error('Failed to update initial profile:', profileUpdateError);
+            }
+
+            // Proactively notify admin of interest
+            try {
+                // Ensure supabase is available (already imported above)
+                await supabase.functions.invoke('notify-admin-interest', {
+                    body: { registrationData, type: 'assessor' }
+                });
+            } catch (err) {
+                console.error('Failed to send interest notification:', err);
+            }
+
             window.location.href = '/assessor-membership';
 
         } catch (error: any) {

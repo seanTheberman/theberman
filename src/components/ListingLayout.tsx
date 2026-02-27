@@ -30,7 +30,7 @@ export interface CatalogueListing {
     rating: number;
     categories?: Category[];
     locations?: Location[];
-    images?: { id: string, url: string, display_order: number }[];
+    images?: { id: string, url: string, description?: string, display_order: number }[];
     features?: string[];
     social_media?: {
         facebook?: string;
@@ -118,7 +118,6 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
 
             {/* Partner Hero Carousel */}
             <div className="relative h-[450px] md:h-[600px] w-full overflow-hidden mb-12 group">
-                {/* Database Images Slides */}
                 {listing.images && listing.images.length > 0 && listing.images.sort((a, b) => a.display_order - b.display_order).map((img, index) => (
                     <div
                         key={img.id}
@@ -129,7 +128,16 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
                             className="w-full h-full object-cover"
                             alt={`${displayName} hero ${index + 1}`}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                        {img.description && (
+                            <div className="absolute bottom-12 left-0 right-0 p-8 z-20 pointer-events-none">
+                                <div className="container mx-auto max-w-7xl text-center md:text-left">
+                                    <div className="bg-black/40 backdrop-blur-sm inline-block px-6 py-3 rounded-xl border border-white/10">
+                                        <p className="text-white text-sm md:text-lg font-medium drop-shadow-md">{img.description}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 ))}
 

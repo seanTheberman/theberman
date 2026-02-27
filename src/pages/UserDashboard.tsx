@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { LogOut, FileText, User, Home, AlertCircle, X, Menu, Trash2, Search } from 'lucide-react';
+import { LogOut, FileText, User, Home, AlertCircle, X, Menu, Trash2, Search, Clock } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import QuoteModal from '../components/QuoteModal';
@@ -151,6 +151,15 @@ const UserDashboard = () => {
         }
     };
 
+    const getQuoteExpiry = (quoteCreatedAt: string) => {
+        const created = new Date(quoteCreatedAt);
+        const expiry = new Date(created.getTime() + 5 * 24 * 60 * 60 * 1000);
+        const now = new Date();
+        const diffMs = expiry.getTime() - now.getTime();
+        const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        return { isExpired: daysLeft <= 0, daysLeft: Math.max(0, daysLeft) };
+    };
+
     const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
 
     const handleSubmitAssessment = async (id: string) => {
@@ -198,22 +207,18 @@ const UserDashboard = () => {
 
     const handleDeleteAssessment = async (id: string) => {
         try {
-            const assessment = assessments.find(a => a.id === id);
-            if (assessment?.status === 'completed') {
-                toast.error('Cannot delete a completed assessment');
-                return;
-            }
-
-            const { error } = await supabase
-                .from('assessments')
-                .delete()
-                .eq('id', id);
+            const { data, error } = await supabase.functions.invoke('delete-assessment', {
+                body: { assessmentId: id }
+            });
 
             if (error) throw error;
-            toast.success('Assessment deleted successfully');
+            if (data && !data.success) throw new Error(data.error || 'Failed to delete job');
+
+            toast.success('Job deleted successfully');
             fetchAssessments();
         } catch (error: any) {
-            toast.error(error.message || 'Failed to delete assessment');
+            console.error('Delete assessment error:', error);
+            toast.error(error.message || 'Failed to delete job');
         } finally {
             setDeletingAssessmentId(null);
         }
@@ -432,7 +437,7 @@ const UserDashboard = () => {
                             </div>
 
                             <button
-                                onClick={() => setIsQuoteModalOpen(true)}
+                                onClick={() => navigate('/get-quote')}
                                 className="mt-12 inline-flex items-center gap-2 bg-[#007F00] text-white px-8 py-4 rounded-full font-bold hover:bg-[#006600] transition-all shadow-lg shadow-green-100 hover:shadow-green-200 hover:-translate-y-0.5 active:translate-y-0"
                             >
                                 Schedule a BER Assessment
@@ -454,7 +459,7 @@ const UserDashboard = () => {
                                         </p>
                                     </div>
                                     <button
-                                        onClick={() => setIsQuoteModalOpen(true)}
+                                        onClick={() => navigate('/get-quote')}
                                         className="bg-[#007F00] text-white px-8 py-4 rounded-full font-bold hover:bg-[#006600] transition-all shadow-lg shadow-green-100 hover:shadow-green-200 hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
                                     >
                                         <Home size={20} />
@@ -736,89 +741,116 @@ const UserDashboard = () => {
                                                         <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">Quote</th>
                                                         <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">Earliest Availability</th>
                                                         <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">Assessor ID</th>
+                                                        <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">Expires</th>
                                                         <th className="text-right py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     {assessments.flatMap(a => (a.quotes || []).map(q => ({ ...q, assessment: a })))
                                                         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                                                        .map((quote, index) => (
-                                                            <tr
-                                                                key={quote.id}
-                                                                className={`border-b border-gray-50 hover:bg-green-50/30 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/20'}`}
-                                                            >
-                                                                <td className="py-4 px-6">
-                                                                    <div className="font-bold text-gray-900 line-clamp-1">{quote.assessment.property_address}</div>
-                                                                    <div className="text-[10px] text-gray-500 font-medium">{quote.assessment.town}</div>
-                                                                </td>
-                                                                <td className="py-4 px-6">
-                                                                    <div className="flex flex-col">
-                                                                        <div className="text-lg font-black text-gray-900">€{quote.price + 10}</div>
-                                                                        <div className="text-[10px] text-gray-500 font-medium">
-                                                                            Deposit: €{quote.is_loyalty_payout ? '10' : '40'} | Balance: €{quote.price + 10 - (quote.is_loyalty_payout ? 10 : 40)}
-                                                                        </div>
-                                                                    </div>
-                                                                </td>
-                                                                <td className="py-4 px-6 text-gray-600 font-medium whitespace-nowrap">
-                                                                    {quote.estimated_date ? new Date(quote.estimated_date).toLocaleDateString('en-IE', { weekday: 'short', day: 'numeric', month: 'short' }) : 'TBC'}
-                                                                </td>
-                                                                <td className="py-4 px-6">
-                                                                    {quote.contractor ? (
+                                                        .map((quote, index) => {
+                                                            const { isExpired, daysLeft } = getQuoteExpiry(quote.created_at);
+                                                            return (
+                                                                <tr
+                                                                    key={quote.id}
+                                                                    className={`border-b border-gray-50 hover:bg-green-50/30 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/20'}`}
+                                                                >
+                                                                    <td className="py-4 px-6">
+                                                                        <div className="font-bold text-gray-900 line-clamp-1">{quote.assessment.property_address}</div>
+                                                                        <div className="text-[10px] text-gray-500 font-medium">{quote.assessment.town}</div>
+                                                                    </td>
+                                                                    <td className="py-4 px-6">
                                                                         <div className="flex flex-col">
-                                                                            <span className="font-bold text-gray-700">#{quote.contractor.seai_number || quote.created_by.slice(0, 6)}</span>
-                                                                            <Link
-                                                                                to={`/profiles/${quote.created_by}`}
-                                                                                className="text-[10px] text-green-500 hover:text-green-600 font-bold hover:underline"
-                                                                            >
-                                                                                View Profile
-                                                                            </Link>
+                                                                            <div className="text-lg font-black text-gray-900">€{quote.price + 10}</div>
+                                                                            <div className="text-[10px] text-gray-500 font-medium">
+                                                                                Deposit: €{quote.is_loyalty_payout ? '10' : '40'} | Balance: €{quote.price + 10 - (quote.is_loyalty_payout ? 10 : 40)}
+                                                                            </div>
                                                                         </div>
-                                                                    ) : <span className="text-gray-400">-</span>}
-                                                                </td>
-                                                                <td className="py-4 px-6 text-right">
-                                                                    {quote.status === 'pending' ? (
-                                                                        (quote.assessment.quotes && quote.assessment.quotes.some(q => q.status === 'accepted')) ? (
-                                                                            <div className="flex flex-col items-end">
-                                                                                <span className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-gray-100 text-gray-500 border border-gray-200">
-                                                                                    Quote Closed
-                                                                                </span>
-                                                                                <span className="mt-1 text-[9px] font-bold text-gray-500 italic">
-                                                                                    Job Awarded
+                                                                    </td>
+                                                                    <td className="py-4 px-6 text-gray-600 font-medium whitespace-nowrap">
+                                                                        {quote.estimated_date ? new Date(quote.estimated_date).toLocaleDateString('en-IE', { weekday: 'short', day: 'numeric', month: 'short' }) : 'TBC'}
+                                                                    </td>
+                                                                    <td className="py-4 px-6">
+                                                                        {quote.contractor ? (
+                                                                            <div className="flex flex-col">
+                                                                                <span className="font-bold text-gray-700">#{quote.contractor.seai_number || quote.created_by.slice(0, 6)}</span>
+                                                                                <Link
+                                                                                    to={`/profiles/${quote.created_by}`}
+                                                                                    className="text-[10px] text-green-500 hover:text-green-600 font-bold hover:underline"
+                                                                                >
+                                                                                    View Profile
+                                                                                </Link>
+                                                                            </div>
+                                                                        ) : <span className="text-gray-400">-</span>}
+                                                                    </td>
+                                                                    <td className="py-4 px-6 whitespace-nowrap">
+                                                                        {quote.status === 'pending' && !isExpired ? (
+                                                                            <div className="flex items-center gap-1.5">
+                                                                                <Clock size={14} className={daysLeft <= 1 ? 'text-red-500' : daysLeft <= 2 ? 'text-amber-500' : 'text-green-500'} />
+                                                                                <span className={`text-xs font-bold ${daysLeft <= 1 ? 'text-red-600' : daysLeft <= 2 ? 'text-amber-600' : 'text-gray-600'}`}>
+                                                                                    {daysLeft} day{daysLeft !== 1 ? 's' : ''} left
                                                                                 </span>
                                                                             </div>
+                                                                        ) : quote.status === 'pending' && isExpired ? (
+                                                                            <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-red-50 text-red-600 border border-red-100">Expired</span>
                                                                         ) : (
-                                                                            <div className="flex justify-end gap-3">
-                                                                                <button
-                                                                                    onClick={() => setConfirmReject({ assessmentId: quote.assessment_id || quote.assessment.id, quoteId: quote.id })}
-                                                                                    className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                                                                    title="Reject Quote"
-                                                                                >
-                                                                                    <X size={18} />
-                                                                                </button>
-                                                                                <button
-                                                                                    onClick={() => {
-                                                                                        // Show details modal first
-                                                                                        setSelectedDetailsQuote(quote);
-                                                                                    }}
-                                                                                    className="px-6 py-2.5 bg-[#007F00] text-white rounded-lg font-black text-xs hover:bg-[#006600] transition-all shadow-sm active:scale-95 leading-tight text-center"
-                                                                                >
-                                                                                    Accept<br />Quote
-                                                                                </button>
+                                                                            <span className="text-xs text-gray-400">—</span>
+                                                                        )}
+                                                                    </td>
+                                                                    <td className="py-4 px-6 text-right">
+                                                                        {quote.status === 'pending' ? (
+                                                                            isExpired ? (
+                                                                                <div className="flex flex-col items-end">
+                                                                                    <span className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-red-50 text-red-500 border border-red-100">
+                                                                                        Expired
+                                                                                    </span>
+                                                                                    <span className="mt-1 text-[9px] font-bold text-gray-400 italic">
+                                                                                        5-day window elapsed
+                                                                                    </span>
+                                                                                </div>
+                                                                            ) : (quote.assessment.quotes && quote.assessment.quotes.some(q => q.status === 'accepted')) ? (
+                                                                                <div className="flex flex-col items-end">
+                                                                                    <span className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-gray-100 text-gray-500 border border-gray-200">
+                                                                                        Quote Closed
+                                                                                    </span>
+                                                                                    <span className="mt-1 text-[9px] font-bold text-gray-500 italic">
+                                                                                        Job Awarded
+                                                                                    </span>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <div className="flex justify-end gap-3">
+                                                                                    <button
+                                                                                        onClick={() => setConfirmReject({ assessmentId: quote.assessment_id || quote.assessment.id, quoteId: quote.id })}
+                                                                                        className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                                                        title="Reject Quote"
+                                                                                    >
+                                                                                        <X size={18} />
+                                                                                    </button>
+                                                                                    <button
+                                                                                        onClick={() => {
+                                                                                            // Show details modal first
+                                                                                            setSelectedDetailsQuote(quote);
+                                                                                        }}
+                                                                                        className="px-6 py-2.5 bg-[#007F00] text-white rounded-lg font-black text-xs hover:bg-[#006600] transition-all shadow-sm active:scale-95 leading-tight text-center"
+                                                                                    >
+                                                                                        Accept<br />Quote
+                                                                                    </button>
+                                                                                </div>
+                                                                            )
+                                                                        ) : (
+                                                                            <div className="flex flex-col items-end">
+                                                                                <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${quote.status === 'accepted' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
+                                                                                    {quote.status}
+                                                                                </span>
+                                                                                <span className="mt-1 text-[9px] font-bold text-gray-400 italic">
+                                                                                    {new Date(quote.created_at).toLocaleDateString()}
+                                                                                </span>
                                                                             </div>
-                                                                        )
-                                                                    ) : (
-                                                                        <div className="flex flex-col items-end">
-                                                                            <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${quote.status === 'accepted' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
-                                                                                {quote.status}
-                                                                            </span>
-                                                                            <span className="mt-1 text-[9px] font-bold text-gray-400 italic">
-                                                                                {new Date(quote.created_at).toLocaleDateString()}
-                                                                            </span>
-                                                                        </div>
-                                                                    )}
-                                                                </td>
-                                                            </tr>
-                                                        ))}
+                                                                        )}
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })}
                                                 </tbody>
                                             </table>
                                         </div>
@@ -863,33 +895,57 @@ const UserDashboard = () => {
                                                             </div>
                                                         )}
 
-                                                        {quote.status === 'pending' ? (
-                                                            quote.assessment.status === 'quote_accepted' ? (
-                                                                <div className="text-center py-2 bg-gray-50 rounded-xl text-[10px] font-bold text-gray-500 border border-gray-100">
-                                                                    Quote Closed - Job Awarded
+                                                        {(() => {
+                                                            const { isExpired, daysLeft } = getQuoteExpiry(quote.created_at);
+                                                            if (quote.status === 'pending') {
+                                                                if (isExpired) {
+                                                                    return (
+                                                                        <div className="text-center py-3 bg-red-50 rounded-xl border border-red-100">
+                                                                            <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">Quote Expired</span>
+                                                                            <p className="text-[9px] text-red-400 mt-0.5">5-day acceptance window has elapsed</p>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                if (quote.assessment.status === 'quote_accepted') {
+                                                                    return (
+                                                                        <div className="text-center py-2 bg-gray-50 rounded-xl text-[10px] font-bold text-gray-500 border border-gray-100">
+                                                                            Quote Closed - Job Awarded
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                return (
+                                                                    <>
+                                                                        <div className="flex items-center justify-center gap-1.5 mb-3">
+                                                                            <Clock size={12} className={daysLeft <= 1 ? 'text-red-500' : daysLeft <= 2 ? 'text-amber-500' : 'text-green-500'} />
+                                                                            <span className={`text-[10px] font-bold ${daysLeft <= 1 ? 'text-red-600' : daysLeft <= 2 ? 'text-amber-600' : 'text-gray-500'}`}>
+                                                                                {daysLeft} day{daysLeft !== 1 ? 's' : ''} left to respond
+                                                                            </span>
+                                                                        </div>
+                                                                        <div className="grid grid-cols-2 gap-3">
+                                                                            <button
+                                                                                onClick={() => setConfirmReject({ assessmentId: quote.assessment_id || quote.assessment.id, quoteId: quote.id })}
+                                                                                className="w-full py-3 border border-red-100 text-red-600 rounded-xl font-black text-xs hover:bg-red-50 transition-all"
+                                                                            >
+                                                                                Reject
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    setSelectedDetailsQuote(quote);
+                                                                                }}
+                                                                                className="w-full py-3 bg-[#80FF80] text-white rounded-xl font-black text-xs hover:bg-[#66E666] transition-all shadow-md shadow-green-100"
+                                                                            >
+                                                                                Accept Quote
+                                                                            </button>
+                                                                        </div>
+                                                                    </>
+                                                                );
+                                                            }
+                                                            return (
+                                                                <div className="text-center py-2 bg-gray-50 rounded-xl text-[10px] font-bold text-gray-400">
+                                                                    Processed on {new Date(quote.created_at).toLocaleDateString()}
                                                                 </div>
-                                                            ) : (
-                                                                <div className="grid grid-cols-2 gap-3">
-                                                                    <button
-                                                                        onClick={() => setConfirmReject({ assessmentId: quote.assessment_id || quote.assessment.id, quoteId: quote.id })}
-                                                                        className="w-full py-3 border border-red-100 text-red-600 rounded-xl font-black text-xs hover:bg-red-50 transition-all"
-                                                                    >
-                                                                        Reject
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            setSelectedDetailsQuote(quote);
-                                                                        }}
-                                                                        className="w-full py-3 bg-[#80FF80] text-white rounded-xl font-black text-xs hover:bg-[#66E666] transition-all shadow-md shadow-green-100"
-                                                                    >
-                                                                        Accept Quote
-                                                                    </button>
-                                                                </div>
-                                                            )
-                                                        ) : (<div className="text-center py-2 bg-gray-50 rounded-xl text-[10px] font-bold text-gray-400">
-                                                            Processed on {new Date(quote.created_at).toLocaleDateString()}
-                                                        </div>
-                                                        )}
+                                                            );
+                                                        })()}
                                                     </div>
                                                 ))}
                                         </div>

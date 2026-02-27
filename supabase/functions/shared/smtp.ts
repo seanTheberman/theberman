@@ -11,7 +11,7 @@ export class CustomSmtpClient {
         this.reader = this.conn.readable.getReader();
         await this.readResponse();
 
-        await this.command("EHLO localhost");
+        await this.command("EHLO theberman.eu");
 
         if (port !== 465) {
             console.log("[SMTP] Issuing STARTTLS...");
@@ -21,7 +21,7 @@ export class CustomSmtpClient {
             const tlsConn = await Deno.startTls(this.conn as any, { hostname });
             this.conn = tlsConn;
             this.reader = this.conn.readable.getReader();
-            await this.command("EHLO localhost");
+            await this.command("EHLO theberman.eu");
         }
     }
 
@@ -34,11 +34,14 @@ export class CustomSmtpClient {
     }
 
     async send(from: string, to: string, subject: string, html: string) {
-        console.log(`[SMTP] Sending MAIL FROM:<${from}>`);
-        await this.command(`MAIL FROM:<${from.match(/<(.+)>/)?.[1] || from}>`);
+        const fromEmail = (from.match(/<(.+)>/)?.[1] || from).trim();
+        const toEmail = (to.match(/<(.+)>/)?.[1] || to).trim();
 
-        console.log(`[SMTP] Sending RCPT TO:<${to}>`);
-        await this.command(`RCPT TO:<${to.match(/<(.+)>/)?.[1] || to}>`);
+        console.log(`[SMTP] Sending MAIL FROM:<${fromEmail}>`);
+        await this.command(`MAIL FROM:<${fromEmail}>`);
+
+        console.log(`[SMTP] Sending RCPT TO:<${toEmail}>`);
+        await this.command(`RCPT TO:<${toEmail}>`);
 
         await this.command("DATA");
 
@@ -48,19 +51,26 @@ export class CustomSmtpClient {
         const message = [
             `From: ${from}`,
             `To: ${to}`,
+            `Reply-To: ${fromEmail}`,
             `Subject: ${subject}`,
             `Date: ${date}`,
             `Message-ID: ${messageId}`,
-            `Content-Type: text/html; charset=UTF-8`,
+            `X-Mailer: The Berman.eu Mailer`,
+            `Importance: normal`,
             `MIME-Version: 1.0`,
+            `Content-Type: text/html; charset=UTF-8`,
+            `Auto-Submitted: auto-generated`,
+            `X-Entity-Ref-ID: ${crypto.randomUUID()}`,
             "",
-            html,
-            "\r\n."
+            html
         ].join("\r\n");
 
+        console.log(`[SMTP] Headers prepared:\n${message.split('\r\n\r\n')[0]}`);
         console.log(`[SMTP] Writing message body (${message.length} bytes)...`);
-        await this.writeAll(this.encoder.encode(message + "\r\n"));
-        await this.readResponse();
+        await this.writeAll(this.encoder.encode(message + "\r\n.\r\n"));
+        const response = await this.readResponse();
+        console.log(`[SMTP] Server response after DATA: ${response.trim()}`);
+        console.log("[SMTP] Message data accepted by server");
     }
 
     private async writeAll(data: Uint8Array) {
@@ -110,6 +120,7 @@ export class CustomSmtpClient {
         }
 
         if (fullResponse.startsWith("4") || fullResponse.startsWith("5")) {
+            console.error(`[SMTP] SERVER ERROR RESPONSE: ${fullResponse}`);
             throw new Error(`SMTP Error: ${fullResponse.substring(0, 500)}`);
         }
         return fullResponse;

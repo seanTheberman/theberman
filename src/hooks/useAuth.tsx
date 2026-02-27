@@ -10,7 +10,7 @@ interface AuthContextType {
     loading: boolean;
     role: 'admin' | 'contractor' | 'user' | 'homeowner' | 'business' | null;
     signIn: (email: string, password: string) => Promise<{ data: { user: User | null, session: Session | null }, error: any }>;
-    signUp: (email: string, password: string, fullName: string, role: 'user' | 'contractor' | 'homeowner' | 'business') => Promise<{ data: { user: User | null, session: Session | null }, error: any }>;
+    signUp: (email: string, password: string, fullName: string, role: 'user' | 'contractor' | 'homeowner' | 'business', phone?: string) => Promise<{ data: { user: User | null, session: Session | null }, error: any }>;
     resetPassword: (email: string) => Promise<{ data: any, error: any }>;
     updateUserPassword: (password: string) => Promise<{ data: { user: User | null }, error: any }>;
     signOut: () => Promise<void>;
@@ -108,7 +108,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
-    const signUp = async (email: string, password: string, fullName: string, role: 'user' | 'contractor' | 'homeowner' | 'business') => {
+    const signUp = async (email: string, password: string, fullName: string, role: 'user' | 'contractor' | 'homeowner' | 'business', phone?: string) => {
         return await supabase.auth.signUp({
             email,
             password,
@@ -116,7 +116,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 data: {
                     full_name: fullName,
                     role: role,
-                    registration_status: role === 'business' ? 'pending' : 'active',
+                    phone: phone,
+                    registration_status: (role === 'business' || role === 'contractor') ? 'pending' : 'active',
                 },
             },
         });

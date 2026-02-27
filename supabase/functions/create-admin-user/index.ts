@@ -1,12 +1,10 @@
 // @ts-nocheck
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Max-Age': '86400',
 }
 
 Deno.serve(async (req: Request) => {
@@ -15,112 +13,95 @@ Deno.serve(async (req: Request) => {
     }
 
     try {
-        const body = await req.json();
-        const {
-            fullName, email, password, phone, county, town,
-            assessorType, companyName, role, redirectUrl,
-            businessAddress, website, description, companyNumber, vatNumber
-        } = body;
-
-        console.log(`[create-admin-user] Received request body:`, JSON.stringify(body));
-        console.log(`[create-admin-user] Creating user ${email} with role ${role || 'contractor'}`);
-
-        if (!email || !fullName || !password) {
-            throw new Error("Missing required fields: fullName, email, password");
-        }
-
         const supabaseAdmin = createClient(
-            Deno.env.get('SUPABASE_URL')!,
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-            { auth: { autoRefreshToken: false, persistSession: false } }
+            Deno.env.get('SUPABASE_URL') ?? '',
+            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         );
 
-        // 1. Create auth user
+        const body = await req.json();
+        const { fullName, email, password, phone, role, county, town, seaiNumber, assessorType, companyName, businessAddress, website, companyNumber, vatNumber, description } = body;
+
+        if (!email || !password || !fullName || !role) {
+            throw new Error('Missing required fields');
+        }
+
+        // 1. Create user in Auth
         const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-            email,
-            password,
+            email: email,
+            password: password,
             email_confirm: true,
-            user_metadata: { full_name: fullName, role: role || 'contractor' }
+            user_metadata: {
+                full_name: fullName,
+                role: role,
+                phone: phone,
+                is_admin_created: true
+            }
         });
 
         if (authError) throw authError;
-        if (!authData.user) throw new Error('Failed to create user');
 
-        console.log(`[create-admin-user] Auth user created: ${authData.user.id}`);
-
-        // 2. Upsert profile
-        const profileData: Record<string, any> = {
-            id: authData.user.id,
-            full_name: fullName,
-            email,
-            role: role || 'contractor',
-            registration_status: role === 'business' ? 'active' : 'pending',
-            is_active: true,
-        };
-
-        if (phone) profileData.phone = phone;
-        if (county) profileData.county = county;
-        if (town) profileData.town = town;
-        if (assessorType) profileData.assessor_type = assessorType;
-        if (companyName) profileData.company_name = companyName;
-
-        // Business specific fields
-        if (businessAddress) profileData.business_address = businessAddress;
-        if (website) profileData.website = website;
-        if (description) profileData.description = description;
-        if (companyNumber) profileData.company_number = companyNumber;
-        if (vatNumber) profileData.vat_number = vatNumber;
-
-        const { data: profileResult, error: profileError } = await supabaseAdmin
-            .from('profiles')
-            .upsert([profileData], { onConflict: 'id' })
-            .select()
-            .single();
-
-        if (profileError) throw profileError;
-
-        // 3. Generate a magic link so the user can log in with one click
-        let magicLink = null;
-        try {
-            const websiteUrl = Deno.env.get('PUBLIC_WEBSITE_URL')?.replace(/\/$/, '') || 'https://theberman.eu';
-
-            // Default redirects based on role
-            let defaultRedirect = `${websiteUrl}/assessor-onboarding`;
-            if (role === 'business') {
-                defaultRedirect = `${websiteUrl}/business-onboarding`;
-            } else if (role === 'user' || role === 'homeowner') {
-                defaultRedirect = `${websiteUrl}/dashboard/user`;
-            }
-
-            const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-                type: 'magiclink',
-                email: email,
-                options: {
-                    redirectTo: redirectUrl || defaultRedirect,
-                }
-            });
-
-            if (linkError) {
-                console.error('[create-admin-user] Magic link error:', linkError.message);
-            } else {
-                magicLink = linkData?.properties?.action_link || null;
-                console.log(`[create-admin-user] Magic link generated for ${email}`);
-            }
-        } catch (linkErr: any) {
-            console.error('[create-admin-user] Magic link generation failed:', linkErr?.message);
+        if (!authData.user) {
+            throw new Error('User created but no context returned');
         }
 
-        console.log(`[create-admin-user] Done: ${email}`);
+        const userId = authData.user.id;
+
+        // 2. Insert/Update Profile
+        // The trigger handle_new_user might have already inserted a row.
+        // We will try to update it, or upsert.
+        let profileData: any = {
+            id: userId,
+            full_name: fullName,
+            email: email,
+            role: role,
+            phone: phone,
+            county: county,
+            town: town,
+            is_admin_created: true,
+            registration_status: 'pending'
+        };
+
+        if (role === 'contractor') {
+            profileData = {
+                ...profileData,
+                seai_number: seaiNumber,
+                assessor_type: assessorType,
+                company_name: companyName,
+            };
+        } else if (role === 'business') {
+            profileData = {
+                ...profileData,
+                business_address: businessAddress,
+                website: website,
+                company_number: companyNumber,
+                vat_number: vatNumber,
+                company_name: companyName, // or some default logic
+            };
+        }
+
+        // Use upsert to handle the case where the DB trigger already created the profile
+        const { error: profileError } = await supabaseAdmin
+            .from('profiles')
+            .upsert(profileData, { onConflict: 'id' });
+
+        if (profileError) {
+            console.error('[create-admin-user] Profile update error:', profileError);
+            // We don't throw, since Auth creation succeeded, but we should log it.
+        }
 
         return new Response(
-            JSON.stringify({ success: true, user: profileResult, magicLink }),
+            JSON.stringify({
+                success: true,
+                message: "User created successfully",
+                user: authData.user
+            }),
             { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
         )
     } catch (err: any) {
-        console.error("[create-admin-user] ERROR:", err?.message);
+        console.error("[create-admin-user] Error:", err);
         return new Response(
-            JSON.stringify({ success: false, error: err?.message || 'Unknown error' }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+            JSON.stringify({ success: false, error: err.message }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
         )
     }
 })

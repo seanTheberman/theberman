@@ -112,8 +112,8 @@ const Contact = () => {
                                 <InfoItem
                                     icon={<Mail size={20} />}
                                     title="Email Us"
-                                    value="support@theberman.eu"
-                                    href="mailto:support@theberman.eu"
+                                    value="hello@theberman.eu"
+                                    href="mailto:hello@theberman.eu"
                                 />
                                 {/* <div className="space-y-3">
                                     <InfoItem

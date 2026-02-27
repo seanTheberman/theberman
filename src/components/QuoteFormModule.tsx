@@ -710,6 +710,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                         <IdentityAuth
                             email={formData.email}
                             fullName={formData.fullName}
+                            phone={formData.phone}
                             isExternalSubmitting={isSubmitting}
                             onAuthenticated={handleAuthenticated}
                             onBack={() => setCurrentStep(11)}

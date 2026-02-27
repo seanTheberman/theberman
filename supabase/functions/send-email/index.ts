@@ -27,7 +27,7 @@ serve(async (req: Request) => {
         const smtpUsername = Deno.env.get('SMTP_USERNAME')!;
         const smtpPassword = Deno.env.get('SMTP_PASSWORD')!;
         const smtpFromEnv = Deno.env.get('SMTP_FROM') || 'hello@theberman.eu';
-        const smtpFrom = smtpFromEnv.includes('<') ? smtpFromEnv : `Theberman.eu <${smtpFromEnv}>`;
+        const smtpFrom = smtpFromEnv.includes('<') ? smtpFromEnv : `The Berman.eu <${smtpFromEnv}>`;
 
         // Fetch sponsors
         const { data: sponsors } = await supabase

@@ -137,6 +137,30 @@ const BusinessOnboarding = () => {
 
             sessionStorage.setItem('pending_business_registration', JSON.stringify(registrationData));
 
+            // 0. Update Profile with pending status and role
+            const { error: profileUpdateError } = await supabase
+                .from('profiles')
+                .update({
+                    role: 'business',
+                    registration_status: 'pending',
+                    company_name: formData.companyName,
+                    phone: formData.phone
+                })
+                .eq('id', user.id);
+
+            if (profileUpdateError) {
+                console.error('Failed to update initial profile:', profileUpdateError);
+            }
+
+            // Proactively notify admin of interest
+            try {
+                await supabase.functions.invoke('notify-admin-interest', {
+                    body: { registrationData, type: 'business' }
+                });
+            } catch (err) {
+                console.error('Failed to send interest notification:', err);
+            }
+
             toast.success('Information saved! Please complete your registration payment.');
             navigate('/assessor-membership', { replace: true });
         } catch (error: any) {

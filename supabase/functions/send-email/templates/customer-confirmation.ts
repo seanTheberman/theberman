@@ -1,6 +1,6 @@
 
 export const generateCustomerEmail = (record: any, promoHtml: string) => {
-    return `
+  return `
                   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
                     <div style="background-color: #007F00; padding: 20px; text-align: center;">
                       <h1 style="color: white; margin: 0; font-size: 24px;">Thanks for contacting us!</h1>
@@ -23,7 +23,7 @@ export const generateCustomerEmail = (record: any, promoHtml: string) => {
                     </div>
                     <div style="text-align: center; padding: 10px; font-size: 12px; color: #999;">
                       &copy; 2026 The Berman. All rights reserved.<br/>
-                      <a href="https://theberman.netlify.app/" style="color: #007F00; text-decoration: none;">Visit Website</a>
+                      <a href="https://theberman.eu/" style="color: #007F00; text-decoration: none;">Visit Website</a>
                     </div>
                   </div>
                 `;

@@ -32,7 +32,7 @@ const ListingDetail = () => {
                     *,
                     categories:catalogue_listing_categories(catalogue_categories(*)),
                     locations:catalogue_listing_locations(catalogue_locations(*)),
-                    images:catalogue_listing_images(id, url, display_order)
+                    images:catalogue_listing_images(id, url, description, display_order)
                 `)
                 .eq('slug', slug)
                 .single();

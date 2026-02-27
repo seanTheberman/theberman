@@ -1,7 +1,7 @@
 import { useEffect, useState, Fragment } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, DollarSign, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, Settings, MessageCircle, User, Menu, Plus, Search } from 'lucide-react';
+import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, DollarSign, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, Settings, MessageCircle, User, Menu, Plus, Search, CreditCard } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { DatePicker } from '../components/ui/DatePicker';
 import { geocodeAddress } from '../lib/geocoding';
@@ -605,6 +605,31 @@ const ContractorDashboard = () => {
                 </div>
             </header>
 
+            {/* Registration Blocker Overlay */}
+            {profile?.registration_status === 'pending' && (
+                <div className="fixed inset-0 z-[10000] bg-[#0c121d]/90 backdrop-blur-xl flex items-center justify-center p-6 text-center">
+                    <div className="max-w-md w-full bg-white rounded-3xl p-10 shadow-2xl">
+                        <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <CreditCard size={40} className="text-amber-500" />
+                        </div>
+                        <h2 className="text-2xl font-black text-gray-900 mb-2">Registration Payment Required</h2>
+                        <p className="text-gray-500 mb-8 font-medium">To start receiving BER jobs and accessing the dashboard, please complete your registration payment.</p>
+                        <Link
+                            to="/assessor-membership"
+                            className="block w-full bg-[#007F00] text-white py-4 rounded-2xl font-black uppercase tracking-wider text-sm hover:bg-green-800 transition-all mb-4 shadow-lg shadow-green-500/20"
+                        >
+                            Complete Registration Payment
+                        </Link>
+                        <button
+                            onClick={handleSignOut}
+                            className="w-full text-gray-400 font-bold uppercase tracking-widest text-[10px] hover:text-gray-600 transition-colors"
+                        >
+                            Sign Out
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <main className="w-full px-6 py-8">
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -648,39 +673,7 @@ const ContractorDashboard = () => {
                     </div>
                 </div>
 
-                {/* Loyalty Progress Banner */}
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 mb-8 text-white shadow-xl relative overflow-hidden">
-                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div className="flex-1 text-center md:text-left">
-                            <h2 className="text-2xl font-black mb-2 flex items-center justify-center md:justify-start gap-2">
-                                <TrendingUp className="text-blue-200" />
-                                Assessor Loyalty Program
-                            </h2>
-                            <p className="text-blue-100 font-medium">
-                                Complete 10 assessments and your 11th job's platform fee is on us!
-                                <span className="block text-sm text-blue-200 opacity-80 mt-1">Keep track of your progress toward your next free job.</span>
-                            </p>
-                        </div>
-                        <div className="flex flex-col items-center justify-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 min-w-[200px] w-full md:w-auto">
-                            <div className="text-4xl font-black mb-1">{(stats.loyaltyJobs % 11) > 10 ? 0 : (stats.loyaltyJobs % 11)}/10</div>
-                            <div className="text-[10px] font-black uppercase tracking-widest text-blue-200 mb-4">Jobs toward fee-free</div>
-                            <div className="w-full bg-white/20 h-2 rounded-full overflow-hidden">
-                                <div
-                                    className="bg-green-400 h-full transition-all duration-1000"
-                                    style={{ width: `${Math.min((stats.loyaltyJobs % 11) * 10, 100)}%` }}
-                                ></div>
-                            </div>
-                            {stats.loyaltyJobs % 11 === 10 && (
-                                <div className="mt-3 text-[10px] font-black bg-green-500 text-white px-3 py-1 rounded-full animate-bounce">
-                                    NEXT JOB IS FREE!
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                    {/* Decorative Background Elements */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-400/10 rounded-full -ml-24 -mb-24 blur-3xl"></div>
-                </div>
+
 
                 {/* Main Content Area */}
                 <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden min-h-[600px] flex flex-col">
@@ -1337,6 +1330,39 @@ const ContractorDashboard = () => {
                             )
                         ) : view === 'settings' ? (
                             <div className="animate-in fade-in duration-700 bg-gray-100 min-h-screen pb-20">
+                                {/* Loyalty Progress Banner */}
+                                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 md:rounded-3xl p-8 text-white shadow-xl relative overflow-hidden md:m-6 md:mt-6">
+                                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                                        <div className="flex-1 text-center md:text-left">
+                                            <h2 className="text-2xl font-black mb-2 flex items-center justify-center md:justify-start gap-2">
+                                                <TrendingUp className="text-blue-200" />
+                                                Assessor Loyalty Program
+                                            </h2>
+                                            <p className="text-blue-100 font-medium">
+                                                Complete 10 assessments and your 11th job's platform fee is on us!
+                                                <span className="block text-sm text-blue-200 opacity-80 mt-1">Keep track of your progress toward your next free job.</span>
+                                            </p>
+                                        </div>
+                                        <div className="flex flex-col items-center justify-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 min-w-[200px] w-full md:w-auto">
+                                            <div className="text-4xl font-black mb-1">{(stats.loyaltyJobs % 11) > 10 ? 0 : (stats.loyaltyJobs % 11)}/10</div>
+                                            <div className="text-[10px] font-black uppercase tracking-widest text-blue-200 mb-4">Jobs toward fee-free</div>
+                                            <div className="w-full bg-white/20 h-2 rounded-full overflow-hidden">
+                                                <div
+                                                    className="bg-green-400 h-full transition-all duration-1000"
+                                                    style={{ width: `${Math.min((stats.loyaltyJobs % 11) * 10, 100)}%` }}
+                                                ></div>
+                                            </div>
+                                            {stats.loyaltyJobs % 11 === 10 && (
+                                                <div className="mt-3 text-[10px] font-black bg-green-500 text-white px-3 py-1 rounded-full animate-bounce">
+                                                    NEXT JOB IS FREE!
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    {/* Decorative Background Elements */}
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+                                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-400/10 rounded-full -ml-24 -mb-24 blur-3xl"></div>
+                                </div>
                                 {/* SMS Notifications Banner */}
                                 <div className="bg-[#E6F4EA] border-b border-gray-200 py-12 px-4 text-center">
                                     <div className="flex items-center justify-center gap-2 mb-2">

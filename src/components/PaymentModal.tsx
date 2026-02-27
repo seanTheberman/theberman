@@ -155,7 +155,7 @@ const PaymentModal = ({ isOpen, onClose, amount, currency = 'eur', onSuccess, me
                             <button onClick={onClose} className="mt-4 text-gray-500 underline font-medium">Close</button>
                         </div>
                     ) : clientSecret ? (
-                        <Elements options={{ clientSecret, appearance: { theme: 'stripe' } }} stripe={stripePromise}>
+                        <Elements key={clientSecret} options={{ clientSecret, appearance: { theme: 'stripe' } }} stripe={stripePromise}>
                             <CheckoutForm
                                 onSuccess={onSuccess}
                                 amount={amount}

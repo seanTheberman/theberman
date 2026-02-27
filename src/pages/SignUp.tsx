@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Loader2, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -10,12 +10,21 @@ import toast from 'react-hot-toast';
 const signupSchema = z.object({
     fullName: z.string().min(2, 'Full name must be at least 2 characters'),
     email: z.string().email('Invalid email address'),
+    phone: z.string().optional(),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z.string(),
     role: z.enum(['user', 'contractor', 'business']),
 }).refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
+}).refine((data) => {
+    if (data.role === 'user' && (!data.phone || data.phone.length < 7)) {
+        return false;
+    }
+    return true;
+}, {
+    message: "Phone number is required for homeowners",
+    path: ["phone"],
 });
 
 type SignUpFormData = z.infer<typeof signupSchema>;
@@ -23,10 +32,10 @@ type SignUpFormData = z.infer<typeof signupSchema>;
 const SignUp = () => {
     const { signUp, signOut, user, role, loading } = useAuth();
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-    const roleParam = searchParams.get('role');
-    const defaultRole = (roleParam === 'contractor' || roleParam === 'user' || roleParam === 'business') ? roleParam : 'user';
+    const location = useLocation();
+    const defaultRole = 'user';
     const [showThankYou, setShowThankYou] = useState(false);
+    const [isRoleFixed, setIsRoleFixed] = useState(false);
 
     // Redirect if already authenticated
     useEffect(() => {
@@ -51,18 +60,61 @@ const SignUp = () => {
         }
     });
 
-    const selectedRole = watch('role');
+    const activeRole = watch('role');
 
-    // Sync role from query param if it changes
+    // Handle role from query parameter
     useEffect(() => {
-        if (roleParam && (roleParam === 'contractor' || roleParam === 'user' || roleParam === 'business')) {
+        const params = new URLSearchParams(location.search);
+        const roleParam = params.get('role');
+        if (roleParam === 'contractor' || roleParam === 'business' || roleParam === 'user') {
             setValue('role', roleParam as any);
+            setIsRoleFixed(true);
         }
-    }, [roleParam, setValue]);
+    }, [location.search, setValue]);
+
+
+    const getHeaderContent = () => {
+        switch (activeRole) {
+            case 'contractor':
+                return {
+                    title: 'Assessor Registration',
+                    subtitle: 'Join our network of professional BER assessors.',
+                    nameLabel: 'Full Name',
+                    namePlaceholder: 'John Doe'
+                };
+            case 'business':
+                return {
+                    title: 'Business Registration',
+                    subtitle: 'Register your company in our Home Energy Catalogue.',
+                    nameLabel: 'Full Business Name',
+                    namePlaceholder: 'Acme Energy Solutions'
+                };
+            default:
+                return {
+                    title: 'Create Account',
+                    subtitle: 'Sign up to get started.',
+                    nameLabel: 'Full Name',
+                    namePlaceholder: 'John Doe'
+                };
+        }
+    };
+
+    const { title, subtitle, nameLabel, namePlaceholder } = getHeaderContent();
+
+
+
+
+
 
     const onSubmit = async (data: SignUpFormData) => {
         try {
-            const { error, data: authData } = await signUp(data.email.trim(), data.password, data.fullName, data.role);
+            const { error, data: authData } = await signUp(
+                data.email.trim(),
+                data.password,
+                data.fullName,
+                data.role,
+                data.phone // Pass phone number
+            );
             if (error) throw error;
 
             if (authData?.user) {
@@ -135,79 +187,85 @@ const SignUp = () => {
 
                     <div className="mb-8">
                         <h2 className="text-3xl font-serif font-bold text-gray-900 mb-2">
-                            {selectedRole === 'business' ? 'Business Registration' :
-                                selectedRole === 'contractor' ? 'Assessor Registration' :
-                                    'Create Account'}
+                            {title}
                         </h2>
                         <p className="text-gray-500">
-                            {selectedRole === 'business' ? 'Register your company in our Home Energy Catalogue.' :
-                                selectedRole === 'contractor' ? 'Join our network of professional BER assessors.' :
-                                    'Sign up to get started.'}
+                            {subtitle}
                         </p>
                     </div>
 
+                    {/* Role Tabs - only show if not arriving from a direct role-specific link */}
+                    {!isRoleFixed && (
+                        <div className="flex border-b border-gray-200 mb-8">
+                            <button
+                                type="button"
+                                onClick={() => setValue('role', 'user')}
+                                className={`py-3 px-6 text-sm font-bold transition-all border-b-2 -mb-px ${activeRole === 'user'
+                                    ? 'border-[#007F00] text-[#007F00]'
+                                    : 'border-transparent text-gray-400 hover:text-gray-600'
+                                    }`}
+                            >
+                                HOMEOWNER
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setValue('role', 'contractor')}
+                                className={`py-3 px-4 text-xs font-bold transition-all border-b-2 -mb-px ${activeRole === 'contractor'
+                                    ? 'border-[#007F00] text-[#007F00]'
+                                    : 'border-transparent text-gray-400 hover:text-gray-600'
+                                    }`}
+                            >
+                                ASSESSOR
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setValue('role', 'business')}
+                                className={`py-3 px-4 text-xs font-bold transition-all border-b-2 -mb-px ${activeRole === 'business'
+                                    ? 'border-[#007F00] text-[#007F00]'
+                                    : 'border-transparent text-gray-400 hover:text-gray-600'
+                                    }`}
+                            >
+                                BUSINESS CATALOGUE
+                            </button>
+                        </div>
+                    )}
+
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
-                        {/* Role Selection Tabs */}
-                        {!roleParam && (
-                            <div className="flex border-b border-gray-200 mb-8">
-                                <button
-                                    type="button"
-                                    onClick={() => setValue('role', 'user')}
-                                    className={`py - 3 px - 4 text - sm font - medium transition - all border - b - 2 - mb - px ${selectedRole === 'user'
-                                        ? 'border-gray-400 text-gray-700'
-                                        : 'border-transparent text-gray-400 hover:text-gray-600'
-                                        } `}
-                                >
-                                    Homeowner
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setValue('role', 'contractor')}
-                                    className={`py - 3 px - 4 text - sm font - medium transition - all border - b - 2 - mb - px ${selectedRole === 'contractor'
-                                        ? 'border-gray-400 text-gray-700'
-                                        : 'border-transparent text-gray-400 hover:text-gray-600'
-                                        } `}
-                                >
-                                    BER Assessor
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setValue('role', 'business')}
-                                    className={`py - 3 px - 4 text - sm font - medium transition - all border - b - 2 - mb - px ${selectedRole === 'business'
-                                        ? 'border-gray-400 text-gray-700'
-                                        : 'border-transparent text-gray-400 hover:text-gray-600'
-                                        } `}
-                                >
-                                    Business
-                                </button>
-                            </div>
-                        )}
-
-
                         <div className="space-y-1 text-left">
-                            <label className="text-sm font-bold text-gray-700 ml-1">
-                                {selectedRole === 'business' ? 'Full Business Name' : 'Full Name'}
-                            </label>
+                            <label className="text-sm font-bold text-gray-700 ml-1">{nameLabel}</label>
                             <input
                                 {...register('fullName')}
                                 type="text"
                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                placeholder={selectedRole === 'business' ? 'Acme Energy Solutions' : 'John Doe'}
+                                placeholder={namePlaceholder}
                             />
                             {errors.fullName && <p className="text-red-500 text-xs mt-1 font-medium ml-1">{errors.fullName.message}</p>}
                         </div>
-
                         <div className="space-y-1 text-left">
                             <label className="text-sm font-bold text-gray-700 ml-1">Email</label>
                             <input
                                 {...register('email')}
                                 type="email"
                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                placeholder="name@company.com"
+                                placeholder="name@email.com"
                             />
                             {errors.email && <p className="text-red-500 text-xs mt-1 font-medium ml-1">{errors.email.message}</p>}
                         </div>
+
+                        {activeRole === 'user' && (
+                            <div className="space-y-1 text-left">
+                                <label className="text-sm font-bold text-gray-700 ml-1">Phone Number</label>
+                                <input
+                                    {...register('phone')}
+                                    type="tel"
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
+                                    placeholder="087 123 4567"
+                                />
+                                {errors.phone && <p className="text-red-500 text-xs mt-1 font-medium ml-1">{errors.phone.message}</p>}
+                            </div>
+                        )}
+
 
                         <div className="grid md:grid-cols-2 gap-4">
                             <div className="space-y-1 text-left">

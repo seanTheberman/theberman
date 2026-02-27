@@ -15,7 +15,7 @@ Deno.serve(async (req: Request) => {
     }
 
     try {
-        const { fullName, email, onboardingUrl, role, userId } = await req.json();
+        const { fullName, email, password, onboardingUrl, role, userId } = await req.json();
 
         if (!email || !fullName) {
             throw new Error("Missing recipient details");
@@ -38,35 +38,36 @@ Deno.serve(async (req: Request) => {
 
         const isBusiness = role === 'business';
         const roleName = isBusiness ? 'Business Partner' : 'BER Assessor';
-        const loginUrl = `${websiteUrl}/login`;
-        const userIdParam = userId ? `?userId=${userId}` : '';
-        const defaultPath = isBusiness ? '/business-onboarding' : '/assessor-onboarding';
-        const finalOnboardingUrl = onboardingUrl || `${websiteUrl}${defaultPath}${userIdParam}`;
+
+        // Use the magic link if provided, otherwise fallback to login page
+        const actionUrl = onboardingUrl || `${websiteUrl}/login`;
 
         const subject = isBusiness
-            ? "Your Business Partner Login - The Berman"
-            : "Your BER Assessor Login Credentials - The Berman";
+            ? "Your Business Partner Onboarding - The Berman"
+            : "Your BER Assessor Onboarding - The Berman";
 
-        // Ultra-simple HTML to avoid spam filters + use user's preferred branding "The Berman"
         const html = `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee;">
-                <h2 style="color: #2e7d32;">Welcome to The Berman</h2>
-                <p>Hello ${fullName},</p>
-                <p>Your account as a ${roleName} has been created. Please use the button below to log in and complete your registration:</p>
+            <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+                <h2 style="color: #2e7d32; margin-top: 0;">Welcome to The Berman</h2>
+                <p>Hello <strong>${fullName}</strong>,</p>
+                <p>Your account as a <strong>${roleName}</strong> has been created. Please use the button below to log in automatically and complete your registration:</p>
+                
                 <div style="text-align: center; margin: 30px 0;">
-                    <!--[if mso]>
-                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="${loginUrl}" style="height:45px;v-text-anchor:middle;width:220px;" arcsize="10%" strokecolor="#2e7d32" fillcolor="#2e7d32">
-                    <center style="color:#ffffff;font-family:sans-serif;font-size:14px;font-weight:bold;">Login to Your Account</center>
-                    </v:roundrect>
-                    <![endif]-->
-                    <!--[if !mso]><!-->
-                    <a href="${loginUrl}" target="_blank" style="display:inline-block;background-color:#2e7d32;color:#ffffff;padding:12px 25px;text-decoration:none;border-radius:5px;font-weight:bold;font-size:14px;mso-hide:all;">Login to Your Account</a>
-                    <!--<![endif]-->
+                    <a href="${actionUrl}" target="_blank" style="display:inline-block;background-color:#2e7d32;color:#ffffff;padding:14px 30px;text-decoration:none;border-radius:5px;font-weight:bold;font-size:16px;">Complete Your Registration</a>
                 </div>
+
+                <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #2e7d32;">
+                    <h3 style="margin-top: 0; font-size: 14px; color: #333;">Your Login Credentials</h3>
+                    <p style="margin: 5px 0; font-size: 14px;"><strong>Email:</strong> ${email}</p>
+                    ${password ? `<p style="margin: 5px 0; font-size: 14px;"><strong>Password:</strong> ${password}</p>` : ''}
+                    <p style="margin: 10px 0 0 0; font-size: 11px; color: #666; font-style: italic;">Note: The button above will log you in automatically without needing your password.</p>
+                </div>
+
                 <p style="color: #666; font-size: 14px;">If the button doesn't work, copy and paste this link into your browser:</p>
-                <p style="word-break: break-all; font-size: 12px;"><a href="${loginUrl}" style="color: #2e7d32;">${loginUrl}</a></p>
+                <p style="word-break: break-all; font-size: 12px;"><a href="${actionUrl}" style="color: #2e7d32;">${actionUrl}</a></p>
+                
                 <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-                <p style="font-size: 12px; color: #999;">The Berman - Registration Team</p>
+                <p style="font-size: 12px; color: #999; margin-bottom: 0;">The Berman - Registration Team</p>
             </div>
         `;
 

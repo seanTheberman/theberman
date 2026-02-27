@@ -11,7 +11,7 @@ const NAV_LINKS = [
     { label: 'About', path: '/about' },
     { label: 'Home Energy Upgrade Catalogue', path: '/catalogue' },
     { label: 'Speak to an Energy Advisor', path: '/hire-agent' },
-    { label: 'Find BER Assessor', path: '/get-quote' },
+    { label: 'Book Ber Assessors', path: '/contact' },
     { label: 'Our News', path: '/news' },
     // { label: 'Location', path: '/locations' },
     { label: 'Contact', path: '/contact' },
@@ -137,7 +137,7 @@ const Layout = () => {
                                 <div className="py-2">
                                     {NAV_LINKS.map((link) => (
                                         link.label === 'Location' ? (
-                                            <div key={link.path}>
+                                            <div key={link.label}>
                                                 {/* Locations Button */}
                                                 <button
                                                     ref={locationsRef}
@@ -198,7 +198,7 @@ const Layout = () => {
                                             </div>
                                         ) : (
                                             <Link
-                                                key={link.path}
+                                                key={link.label}
                                                 to={link.path}
                                                 onClick={closeMenu}
                                                 className="block px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 uppercase tracking-wide border-b border-gray-100"
@@ -242,14 +242,14 @@ const Layout = () => {
                                                     onClick={closeMenu}
                                                     className="block px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 uppercase tracking-wide"
                                                 >
-                                                    Assessor Registration
+                                                    ASSESSOR REGISTRATION
                                                 </Link>
                                                 <Link
                                                     to="/signup?role=business"
                                                     onClick={closeMenu}
                                                     className="block px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 uppercase tracking-wide"
                                                 >
-                                                    Business Catalogue Registration
+                                                    BUSINESS CATALOGUE REGISTRATION
                                                 </Link>
                                             </>
                                         ) : (
@@ -258,7 +258,7 @@ const Layout = () => {
                                                     <p className="text-xs text-gray-500 font-medium">Signed in as</p>
                                                     <p className="text-sm font-bold text-gray-900 truncate">{user.email}</p>
                                                 </div>
-                                                {role && (role !== 'business' || profile?.registration_status === 'active') && (
+                                                {role && (role !== 'business' || profile?.registration_status === 'active' || profile?.registration_status === 'pending') && (
                                                     <Link
                                                         to={getDashboardLink()}
                                                         onClick={closeMenu}
@@ -343,7 +343,7 @@ const Layout = () => {
 
                                 <li>
                                     <Link to="/signup?role=business" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
-                                        Business Catalogue Registration
+                                        BUSINESS CATALOGUE REGISTRATION
                                     </Link>
                                 </li>
 
@@ -362,7 +362,7 @@ const Layout = () => {
                             <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">Account</h4>
                             <ul className="space-y-3">
                                 {NAV_LINKS.slice(4).map(link => (
-                                    <li key={link.path}>
+                                    <li key={link.label}>
                                         <Link to={link.path} className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
                                             {link.label}
                                         </Link>
@@ -434,7 +434,7 @@ const Layout = () => {
                             <ul className="space-y-4">
                                 <li className="flex items-start gap-3 text-gray-400 text-sm">
                                     <Mail className="text-[#9ACD32] mt-0.5" size={16} />
-                                    <a href="mailto:support@theberman.eu" className="hover:text-white transition">support@theberman.eu</a>
+                                    <a href="mailto:hello@theberman.eu" className="hover:text-white transition">hello@theberman.eu</a>
                                 </li>
                                 <li className="flex items-start gap-3 text-gray-400 text-sm">
                                     <Globe className="text-[#9ACD32] mt-0.5" size={16} />

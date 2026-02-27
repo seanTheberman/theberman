@@ -15,7 +15,8 @@ import {
     Tags,
     CheckCircle,
     Menu,
-    X
+    X,
+    CreditCard
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -42,7 +43,7 @@ interface CatalogueListing {
         linkedin?: string;
         twitter?: string;
     };
-    images?: { id: string, url: string, display_order: number }[];
+    images?: { id: string, url: string, description: string, display_order: number }[];
 }
 
 
@@ -68,12 +69,16 @@ const useDebounce = (callback: Function, delay: number) => {
 };
 
 const BusinessDashboard = () => {
-    const { user, signOut } = useAuth();
+    const { user, profile, signOut } = useAuth();
     const navigate = useNavigate();
     const [listing, setListing] = useState<CatalogueListing | null>(null);
     const [loading, setLoading] = useState(true);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [listingImages, setListingImages] = useState<string[]>(['', '', '']);
+    const [listingImages, setListingImages] = useState<{ url: string, description: string }[]>([
+        { url: '', description: '' },
+        { url: '', description: '' },
+        { url: '', description: '' }
+    ]);
 
     // Categories state
     const [allCategories, setAllCategories] = useState<Category[]>([]);
@@ -98,7 +103,7 @@ const BusinessDashboard = () => {
                 .from('catalogue_listings')
                 .select(`
                     *,
-                    images:catalogue_listing_images(id, url, display_order)
+                    images:catalogue_listing_images(id, url, description, display_order)
                 `)
                 .eq('owner_id', user?.id)
                 .maybeSingle();
@@ -108,10 +113,14 @@ const BusinessDashboard = () => {
             if (listingData) {
                 setListing(listingData);
                 // Set images state
-                const imgs = ['', '', ''];
+                const imgs = [
+                    { url: '', description: '' },
+                    { url: '', description: '' },
+                    { url: '', description: '' }
+                ];
                 (listingData.images || []).forEach((img: any) => {
                     if (img.display_order < 3) {
-                        imgs[img.display_order] = img.url;
+                        imgs[img.display_order] = { url: img.url, description: img.description || '' };
                     }
                 });
                 setListingImages(imgs);
@@ -232,7 +241,7 @@ const BusinessDashboard = () => {
         handleSaveCategories(newCategories);
     };
 
-    const saveGalleryData = async (newImages: string[]) => {
+    const saveGalleryData = async (newImages: { url: string, description: string }[]) => {
         if (!listing) return;
         setIsSavingGallery(true);
         try {
@@ -241,9 +250,10 @@ const BusinessDashboard = () => {
 
             // Insert new
             const finalImages = newImages
-                .map((url, index) => ({
+                .map((img, index) => ({
                     listing_id: listing.id,
-                    url: url.trim(),
+                    url: img.url.trim(),
+                    description: img.description.trim(),
                     display_order: index,
                 }))
                 .filter(img => img.url);
@@ -263,11 +273,52 @@ const BusinessDashboard = () => {
 
     const debouncedSaveGallery = useDebounce(saveGalleryData, 1500);
 
-    const handleGalleryChange = (index: number, value: string) => {
+    const handleGalleryDescriptionChange = (index: number, description: string) => {
         const newImages = [...listingImages];
-        newImages[index] = value;
+        newImages[index].description = description;
         setListingImages(newImages);
         debouncedSaveGallery(newImages);
+    };
+
+    const handleGalleryUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please upload an image file');
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error('Image must be less than 2MB');
+            return;
+        }
+
+        try {
+            setIsSavingGallery(true);
+            const fileExt = file.name.split('.').pop();
+            const fileName = `gallery/${listing?.id}-${Date.now()}-${index}.${fileExt}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('uploads')
+                .upload(fileName, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('uploads')
+                .getPublicUrl(fileName);
+
+            const newImages = [...listingImages];
+            newImages[index].url = publicUrl;
+            setListingImages(newImages);
+            saveGalleryData(newImages);
+            toast.success('Image uploaded successfully');
+        } catch (error: any) {
+            console.error('Error uploading gallery image:', error);
+            toast.error(error.message || 'Failed to upload image');
+            setIsSavingGallery(false);
+        }
     };
 
     const handleSignOut = async () => {
@@ -385,6 +436,31 @@ const BusinessDashboard = () => {
                     </div>
                 </div>
             </header>
+
+            {/* Registration Blocker Overlay */}
+            {profile?.registration_status === 'pending' && (
+                <div className="fixed inset-0 z-[10000] bg-[#0c121d]/90 backdrop-blur-xl flex items-center justify-center p-6 text-center">
+                    <div className="max-w-md w-full bg-white rounded-3xl p-10 shadow-2xl">
+                        <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <CreditCard size={40} className="text-amber-500" />
+                        </div>
+                        <h2 className="text-2xl font-black text-gray-900 mb-2">Catalogue Subscription Required</h2>
+                        <p className="text-gray-500 mb-8 font-medium">To activate your business profile and appear in the catalogue, please complete your subscription payment.</p>
+                        <Link
+                            to="/business-membership"
+                            className="block w-full bg-[#007F00] text-white py-4 rounded-2xl font-black uppercase tracking-wider text-sm hover:bg-green-800 transition-all mb-4 shadow-lg shadow-green-500/20"
+                        >
+                            Complete Subscription Payment
+                        </Link>
+                        <button
+                            onClick={handleSignOut}
+                            className="w-full text-gray-400 font-bold uppercase tracking-widest text-[10px] hover:text-gray-600 transition-colors"
+                        >
+                            Sign Out
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Main Content */}
             <main className="pt-20 min-h-screen">
@@ -627,21 +703,54 @@ const BusinessDashboard = () => {
                                 </div>
 
                                 <div className="space-y-6">
-                                    {listingImages.map((url, index) => (
-                                        <div key={index} className="flex gap-4 items-start">
-                                            <div className="flex-grow">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Photo {index + 1} URL</label>
-                                                <input
-                                                    type="text"
-                                                    value={url}
-                                                    onChange={(e) => handleGalleryChange(index, e.target.value)}
-                                                    placeholder={`e.g. https://your-website.com/images/gallery-${index + 1}.jpg`}
-                                                    className="w-full bg-gray-100 border-none rounded-xl px-4 py-3 text-sm font-bold text-gray-900 focus:ring-2 focus:ring-[#007F00] transition-all"
-                                                />
+                                    {listingImages.map((img, index) => (
+                                        <div key={index} className="flex gap-4 items-start border border-gray-100 p-6 rounded-2xl bg-gray-50/50">
+                                            <div className="flex-grow space-y-4">
+                                                <div>
+                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Upload Photo {index + 1}</label>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => handleGalleryUpload(index, e)}
+                                                        className="block w-full text-sm text-gray-500
+                                                        file:mr-4 file:py-2 file:px-4
+                                                        file:rounded-full file:border-0
+                                                        file:text-sm file:font-semibold
+                                                        file:bg-[#007F00]/10 file:text-[#007F00]
+                                                        hover:file:bg-[#007F00]/20
+                                                        transition-all"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Short Description</label>
+                                                    <textarea
+                                                        value={img.description}
+                                                        onChange={(e) => handleGalleryDescriptionChange(index, e.target.value)}
+                                                        placeholder="What's happening in this photo? (e.g. Recently completed solar panel installation in Dublin)"
+                                                        rows={2}
+                                                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-900 focus:ring-2 focus:ring-[#007F00] transition-all"
+                                                    />
+                                                </div>
                                             </div>
-                                            {url && (
-                                                <div className="w-20 h-20 rounded-xl overflow-hidden border border-gray-100 bg-gray-100 flex-shrink-0">
-                                                    <img src={url} alt={`Gallery ${index + 1}`} className="w-full h-full object-cover" />
+                                            {img.url ? (
+                                                <div className="w-32 h-32 rounded-xl overflow-hidden border border-gray-200 bg-gray-100 flex-shrink-0 shadow-sm relative group">
+                                                    <img src={img.url} alt={`Gallery ${index + 1}`} className="w-full h-full object-cover" />
+                                                    <button
+                                                        onClick={() => {
+                                                            const newImages = [...listingImages];
+                                                            newImages[index] = { url: '', description: '' };
+                                                            setListingImages(newImages);
+                                                            saveGalleryData(newImages);
+                                                        }}
+                                                        className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <X size={14} />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="w-32 h-32 rounded-xl border border-dashed border-gray-300 bg-white flex flex-col items-center justify-center flex-shrink-0 text-gray-400">
+                                                    <ImageIcon size={24} className="mb-2 opacity-50" />
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest">No Image</span>
                                                 </div>
                                             )}
                                         </div>

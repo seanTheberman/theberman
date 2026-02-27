@@ -1,8 +1,8 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2, Search, Newspaper, Plus, Star, Check, Edit2, ExternalLink, Image as ImageIcon, UploadCloud } from 'lucide-react';
+import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2, Search, Newspaper, Plus, Star, Check, Edit2, ExternalLink, Image as ImageIcon, UploadCloud, ArrowLeft, Users, DollarSign, Building2, CreditCard, ClipboardList, ArrowRight, Hourglass, Building } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
@@ -40,6 +40,7 @@ interface Profile {
     is_active?: boolean;
     registration_status?: 'pending' | 'active' | 'rejected';
     subscription_status?: string;
+    subscription_start_date?: string;
     subscription_end_date?: string;
     manual_override_reason?: string;
     phone?: string;
@@ -53,6 +54,8 @@ interface Profile {
     description?: string;
     company_number?: string;
     vat_number?: string;
+    stripe_payment_id?: string;
+    is_admin_created?: boolean;
 }
 
 interface Assessment {
@@ -83,6 +86,7 @@ interface Assessment {
     profiles?: {
         full_name: string;
         email: string;
+        phone: string;
     };
     referred_by_listing_id?: string | null;
     referred_by?: {
@@ -144,6 +148,12 @@ interface NewsArticle {
 }
 
 const Admin = () => {
+    const getFallbackPhone = (profile: Profile) => {
+        if (profile.phone && profile.phone !== 'N/A') return profile.phone;
+        const linkedAssessment = assessments.find(a => a.user_id === profile.id && (a.contact_phone || a.profiles?.phone));
+        return linkedAssessment?.contact_phone || linkedAssessment?.profiles?.phone || 'N/A';
+    };
+
     const [leads, setLeads] = useState<Lead[]>([]);
     const [assessments, setAssessments] = useState<Assessment[]>([]);
     const [users_list, setUsersList] = useState<Profile[]>([]);
@@ -157,7 +167,6 @@ const Admin = () => {
     const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
     const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
     const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
-    const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [editForm, setEditForm] = useState<Partial<Profile>>({});
     const [showAddUserModal, setShowAddUserModal] = useState(false);
     const [newUserRole, setNewUserRole] = useState<'contractor' | 'business'>('contractor');
@@ -199,6 +208,7 @@ const Admin = () => {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [isSavingSettings, setIsSavingSettings] = useState(false);
+    const [isSavingRegistrationFees, setIsSavingRegistrationFees] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredLeads = leads.filter(l =>
@@ -222,6 +232,23 @@ const Admin = () => {
     useEffect(() => {
         setSearchTerm('');
     }, [view]);
+
+    useEffect(() => {
+        if (selectedUser) {
+            setEditForm({
+                full_name: selectedUser.full_name || '',
+                email: selectedUser.email || '',
+                phone: getFallbackPhone(selectedUser) === 'N/A' ? '' : getFallbackPhone(selectedUser),
+                subscription_status: selectedUser.subscription_status || 'inactive',
+                subscription_start_date: selectedUser.subscription_start_date,
+                subscription_end_date: selectedUser.subscription_end_date,
+                manual_override_reason: selectedUser.manual_override_reason || '',
+                stripe_payment_id: selectedUser.stripe_payment_id || ''
+            });
+        } else {
+            setEditForm({});
+        }
+    }, [selectedUser]);
     const [isUpdatingBanner, setIsUpdatingBanner] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<{ id: string, type: 'lead' | 'sponsor' | 'assessment' | 'user' } | null>(null);
     const [itemToSuspend, setItemToSuspend] = useState<{ id: string, name: string, currentStatus: boolean } | null>(null);
@@ -248,6 +275,7 @@ const Admin = () => {
         registrationNo: '',
         vatNumber: '',
     });
+    const [selectedStatView, setSelectedStatView] = useState<'homeowners' | 'assessors' | 'businesses' | 'payments' | 'assessments' | 'leads' | null>('homeowners');
 
     const handleExportPayments = () => {
         if (payments.length === 0) {
@@ -288,7 +316,25 @@ const Admin = () => {
 
     const [selectedDate, setSelectedDate] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
     const [certUrl, setCertUrl] = useState('');
+
+    // Handle clicking outside of the mobile menu to close it
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setIsMenuOpen(false);
+            }
+        };
+
+        if (isMenuOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isMenuOpen]);
 
     // Quote Form State
     const [quoteData, setQuoteData] = useState({
@@ -668,7 +714,7 @@ const Admin = () => {
                 .from('assessments')
                 .select(`
                     *,
-                    profiles:user_id (full_name, email),
+                    profiles:user_id (full_name, email, phone),
                     referred_by:referred_by_listing_id (name, company_name)
                 `)
                 .order('created_at', { ascending: false });
@@ -872,38 +918,51 @@ const Admin = () => {
         if (!itemToDelete) return;
         setIsDeleting(true);
         try {
-            let table: 'leads' | 'sponsors' | 'assessments' = 'leads';
-            if (itemToDelete.type === 'lead') table = 'leads';
-            else if (itemToDelete.type === 'sponsor') table = 'sponsors';
-            else if (itemToDelete.type === 'assessment') table = 'assessments';
-            else if (itemToDelete.type === 'user') table = 'profiles' as any;
+            if (itemToDelete.type === 'user') {
+                // Delete user securely via Edge Function to remove from auth.users (and trigger cascade to profiles)
+                const { data: edgeData, error: edgeError } = await supabase.functions.invoke('delete-user', {
+                    body: { userId: itemToDelete.id }
+                });
 
-            const { error } = await supabase
-                .from(table)
-                .delete()
-                .eq('id', itemToDelete.id);
+                if (edgeError || edgeData?.error) {
+                    console.error('Edge Function Error:', edgeError || edgeData?.error);
+                    throw new Error((edgeData?.error || edgeError?.message) || 'Failed to delete user from Auth database');
+                }
 
-            if (error) throw error;
-
-            if (itemToDelete.type === 'lead') {
-                setLeads(leads.filter(lead => lead.id !== itemToDelete.id));
-                if (selectedLead?.id === itemToDelete.id) setSelectedLead(null);
-                toast.success('Lead deleted successfully');
-            } else if (itemToDelete.type === 'sponsor') {
-                setSponsors(sponsors.filter(s => s.id !== itemToDelete.id));
-                toast.success('Sponsor deleted successfully');
-            } else if (itemToDelete.type === 'assessment') {
-                setAssessments(assessments.filter(a => a.id !== itemToDelete.id));
-                if (selectedAssessment?.id === itemToDelete.id) setSelectedAssessment(null);
-                toast.success('Assessment deleted successfully');
-            } else if (itemToDelete.type === 'user') {
                 setUsersList(users_list.filter(u => u.id !== itemToDelete.id));
                 toast.success('User deleted successfully');
+            } else {
+                // Delete non-user entities directly from appropriate table
+                let table: 'leads' | 'sponsors' | 'assessments' = 'leads';
+                if (itemToDelete.type === 'lead') table = 'leads';
+                else if (itemToDelete.type === 'sponsor') table = 'sponsors';
+                else if (itemToDelete.type === 'assessment') table = 'assessments';
+
+                const { error } = await supabase
+                    .from(table)
+                    .delete()
+                    .eq('id', itemToDelete.id);
+
+                if (error) throw error;
+
+                if (itemToDelete.type === 'lead') {
+                    setLeads(leads.filter(lead => lead.id !== itemToDelete.id));
+                    if (selectedLead?.id === itemToDelete.id) setSelectedLead(null);
+                    toast.success('Lead deleted successfully');
+                } else if (itemToDelete.type === 'sponsor') {
+                    setSponsors(sponsors.filter(s => s.id !== itemToDelete.id));
+                    toast.success('Sponsor deleted successfully');
+                } else if (itemToDelete.type === 'assessment') {
+                    setAssessments(assessments.filter(a => a.id !== itemToDelete.id));
+                    if (selectedAssessment?.id === itemToDelete.id) setSelectedAssessment(null);
+                    toast.success('Assessment deleted successfully');
+                }
             }
+
             setShowDeleteModal(false);
         } catch (error: any) {
             console.error(`Error deleting ${itemToDelete.type}:`, error);
-            toast.error(`Failed to delete ${itemToDelete.type}`);
+            toast.error(error.message || `Failed to delete ${itemToDelete.type}`);
         } finally {
             setIsDeleting(false);
             setItemToDelete(null);
@@ -1320,106 +1379,13 @@ const Admin = () => {
         }
     };
 
-    const handleConvertLead = async (): Promise<string | null> => {
-        if (!selectedLead) return null;
-
-        setIsUpdating(true);
-        try {
-            const { data: profile, error: profileError } = await supabase
-                .from('profiles')
-                .select('id, full_name, email')
-                .eq('email', selectedLead.email)
-                .maybeSingle();
-
-            if (profileError) throw profileError;
-
-            if (!profile) {
-                toast.error(`${selectedLead.name} does not have an account yet. They must register using ${selectedLead.email} first.`);
-                return null;
-            }
-
-            const { data: assessment, error: assessmentError } = await supabase
-                .from('assessments')
-                .insert({
-                    user_id: profile.id,
-                    property_address: selectedLead.town || 'Details pending',
-                    town: selectedLead.town,
-                    county: selectedLead.county,
-                    property_type: selectedLead.property_type,
-                    status: 'live' // Make it live immediately
-                })
-                .select()
-                .single();
-
-            if (assessmentError) throw assessmentError;
-
-            // Trigger notification for converted lead
-            try {
-                await supabase.functions.invoke('send-job-live-email', {
-                    body: {
-                        email: profile.email,
-                        customerName: profile.full_name,
-                        county: selectedLead.county,
-                        town: selectedLead.town,
-                        assessmentId: assessment.id,
-                        jobType: selectedLead.property_type?.toLowerCase().includes('commercial') ? 'commercial' : 'domestic'
-                    }
-                });
-            } catch (emailErr) {
-                console.error('Failed to trigger live email for converted lead:', emailErr);
-            }
-
-            const { error: leadUpdateError } = await supabase
-                .from('leads')
-                .update({ status: 'contacted' })
-                .eq('id', selectedLead.id);
-
-            if (leadUpdateError) throw leadUpdateError;
-
-            toast.success('Lead converted and assessors notified!');
-            fetchLeads();
-            fetchAssessments();
-            logAudit('convert_lead', 'lead', selectedLead.id, { assessmentId: assessment.id });
-
-            return assessment.id;
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to convert lead');
-            return null;
-        } finally {
-            setIsUpdating(false);
-        }
-    };
 
     const handleSignOut = async () => {
         await signOut();
         navigate('/login');
     };
 
-    const handleSaveProfile = async () => {
-        if (!selectedUser) return;
-        setIsUpdating(true);
-        try {
-            const { error } = await supabase
-                .from('profiles')
-                .update(editForm)
-                .eq('id', selectedUser.id);
 
-            if (error) throw error;
-
-            setUsersList(users_list.map(u =>
-                u.id === selectedUser.id ? { ...u, ...editForm } : u
-            ));
-
-            toast.success('Profile updated successfully');
-            setIsEditingProfile(false);
-            setSelectedUser({ ...selectedUser, ...editForm } as Profile);
-        } catch (error: any) {
-            console.error('Error saving profile:', error);
-            toast.error(error.message || 'Failed to save profile');
-        } finally {
-            setIsUpdating(false);
-        }
-    };
 
     const resetNewUserForm = () => {
         setNewUserFormData({
@@ -1469,9 +1435,11 @@ const Admin = () => {
                     body: {
                         fullName: newUserFormData.fullName,
                         email: newUserFormData.email,
+                        password: newUserFormData.password, // Pass password for the email template
                         town: newUserFormData.town || '',
                         onboardingUrl: onboardingUrl,
                         role: newUserRole,
+                        userId: fnData.user.id
                     }
                 });
 
@@ -1488,16 +1456,64 @@ const Admin = () => {
                 toast.success('User created but email failed. Please share the login link manually.');
             }
 
-            if (fnData.user) {
+            if (fnData?.user) {
                 setUsersList([fnData.user, ...users_list]);
+                logAudit('create_user', 'user', fnData.user.id, { role: newUserRole });
             }
 
             setShowAddUserModal(false);
             resetNewUserForm();
-            logAudit('create_user', 'user', fnData.user.id, { role: newUserRole });
         } catch (error: any) {
             console.error('Error adding user:', error);
             toast.error(error.message || 'Failed to add user');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleUpdateSubscription = async () => {
+        if (!selectedUser) return;
+        setIsUpdating(true);
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    subscription_status: editForm.subscription_status,
+                    subscription_start_date: editForm.subscription_start_date,
+                    subscription_end_date: editForm.subscription_end_date,
+                    manual_override_reason: editForm.manual_override_reason,
+                    stripe_payment_id: editForm.stripe_payment_id || null,
+                })
+                .eq('id', selectedUser.id);
+
+            if (error) throw error;
+
+            setUsersList(users_list.map(u =>
+                u.id === selectedUser.id ? {
+                    ...u,
+                    subscription_status: editForm.subscription_status,
+                    subscription_start_date: editForm.subscription_start_date,
+                    subscription_end_date: editForm.subscription_end_date,
+                    manual_override_reason: editForm.manual_override_reason,
+                    stripe_payment_id: editForm.stripe_payment_id,
+                } : u
+            ));
+
+            // Also update selectedUser to reflect changes in UI
+            setSelectedUser({
+                ...selectedUser,
+                subscription_status: editForm.subscription_status!,
+                subscription_start_date: editForm.subscription_start_date!,
+                subscription_end_date: editForm.subscription_end_date!,
+                manual_override_reason: editForm.manual_override_reason!,
+                stripe_payment_id: editForm.stripe_payment_id!,
+            });
+
+            toast.success('Subscription updated successfully');
+            // setIsEditingProfile removed
+        } catch (error: any) {
+            console.error('Error updating subscription:', error);
+            toast.error('Failed to update subscription');
         } finally {
             setIsUpdating(false);
         }
@@ -1559,7 +1575,7 @@ const Admin = () => {
                         </div>
                     </div>
                     <div className="flex items-center gap-6">
-                        <div className="relative">
+                        <div className="relative" ref={menuRef}>
                             <button
                                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                                 className="bg-white/5 p-2.5 rounded-xl hover:bg-white/10 transition-colors border border-white/10 flex items-center gap-2 text-white/70"
@@ -1637,13 +1653,24 @@ const Admin = () => {
                             </p>
                         </div>
                     </div>
-                    <button
-                        onClick={view === 'leads' ? fetchLeads : fetchAssessments}
-                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm text-gray-700 hover:text-[#007F00] hover:border-[#007F00]"
-                    >
-                        <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
-                        Refresh Data
-                    </button>
+                    <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+                        {view !== 'stats' && (
+                            <button
+                                onClick={() => { setView('stats'); setSelectedStatView('homeowners'); }}
+                                className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm text-gray-700 hover:text-[#007F00]"
+                            >
+                                <ArrowLeft size={16} />
+                                Back to Overview
+                            </button>
+                        )}
+                        <button
+                            onClick={view === 'leads' ? fetchLeads : fetchAssessments}
+                            className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm text-gray-700 hover:text-[#007F00] hover:border-[#007F00]"
+                        >
+                            <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
+                            Refresh Data
+                        </button>
+                    </div>
                 </div>
 
                 {loading ? (
@@ -2042,98 +2069,378 @@ const Admin = () => {
                     </div>
                 ) : view === 'stats' ? (
                     <div className="space-y-8">
-                        {/* Stats Cards Row 1 */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total Users</p>
-                                <div className="flex items-end justify-between">
-                                    <h3 className="text-3xl font-bold text-gray-900">{stats.totalUsers}</h3>
-                                    <div className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded">
-                                        {stats.homeowners} Users / {stats.contractors} Assessors / {stats.businessLeads} Businesses
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total Revenue</p>
-                                <div className="flex items-end justify-between">
-                                    <h3 className="text-3xl font-bold text-gray-900">
-                                        {new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' }).format(stats.totalRevenue)}
-                                    </h3>
-                                    <div className="bg-green-100 p-2 rounded-lg text-green-700">
-                                        <span className="font-bold text-xs">EUR</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Active Jobs</p>
-                                <div className="flex items-end justify-between">
-                                    <h3 className="text-3xl font-bold text-gray-900">{stats.activeAssessments}</h3>
-                                    <div className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                                        Pending Complete
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Business Leads</p>
-                                <div className="flex items-end justify-between">
-                                    <h3 className="text-3xl font-bold text-gray-900">{stats.businessLeads}</h3>
-                                    <div className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded">
-                                        {stats.pendingOnboarding} Pending
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Conversion</p>
-                                <div className="flex items-end justify-between">
-                                    <h3 className="text-3xl font-bold text-gray-900">
-                                        {stats.totalLeads > 0 ? Math.round((stats.acceptedQuotes / stats.totalLeads) * 100) : 0}%
-                                    </h3>
-                                    <TrendingUp size={20} className="text-green-600 mb-1" />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Recent Activity / Secondary Stats */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                                <h3 className="text-sm font-bold text-gray-900 mb-4">Assessment Pipeline</h3>
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-500">Unquoted Requests</span>
-                                        <span className="text-sm font-bold text-yellow-600 bg-yellow-50 px-2 py-1 rounded">{stats.pendingQuotes}</span>
-                                    </div>
-                                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                                        <div
-                                            className="bg-yellow-400 h-full"
-                                            style={{ width: `${stats.totalLeads > 0 ? (stats.pendingQuotes / stats.totalLeads) * 100 : 0}%` }}
-                                        ></div>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-500">Completed Projects</span>
-                                        <span className="text-sm font-bold text-green-600 bg-green-50 px-2 py-1 rounded">{stats.completedAssessments}</span>
-                                    </div>
-                                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                                        <div
-                                            className="bg-green-500 h-full"
-                                            style={{ width: `${assessments.length > 0 ? (stats.completedAssessments / assessments.length) * 100 : 0}%` }}
-                                        ></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="bg-[#007F00] rounded-2xl shadow-lg shadow-green-900/10 p-6 text-white flex flex-col justify-between">
-                                <div>
-                                    <h3 className="text-sm font-bold opacity-80 uppercase tracking-widest mb-4">Quick View</h3>
-                                    <p className="text-2xl font-bold leading-tight mb-2">Manage your BER Assessors and homeowners from one place.</p>
-                                    <p className="text-sm opacity-70">Expand your system by adding new partners and tracking every step of the certification.</p>
-                                </div>
+                        {/* Stats Custom Layout */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                            
+                            {/* LEFT COLUMN: Stacked Users Breakdown */}
+                            <div className="lg:col-span-5 flex flex-col gap-3">
+                                {/* Homeowners */}
                                 <button
-                                    onClick={() => setView('homeowners')}
-                                    className="mt-6 w-full bg-white text-[#007F00] font-bold py-3 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
+                                    onClick={() => setSelectedStatView('homeowners')}
+                                    className={`w-full bg-white p-4 rounded-xl border-2 text-left hover:shadow-md transition-all relative overflow-hidden group ${selectedStatView === 'homeowners' ? 'border-green-300 shadow-green-100/50 shadow-lg' : 'border-green-100'}`}
                                 >
-                                    Manage Homeowners
+                                    <div className="flex justify-between items-start mb-1">
+                                        <div className="bg-[#4b5563] text-white text-[11px] font-bold px-3 py-1.5 rounded-full inline-block">Homeowners</div>
+                                        <Home size={22} strokeWidth={2} className="text-green-500" />
+                                    </div>
+                                    <div className="flex items-baseline gap-2 mb-2 mt-2">
+                                        <h3 className="text-4xl font-black text-gray-900">{stats.homeowners}</h3>
+                                        <span className="text-sm font-medium text-gray-400">{stats.totalUsers > 0 ? Math.round((stats.homeowners / stats.totalUsers) * 100) : 0}% of {stats.totalUsers}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex-1 h-[6px] rounded-full bg-green-50 overflow-hidden">
+                                            <div className="bg-green-500 h-full transition-all rounded-full" style={{ width: `${stats.totalUsers > 0 ? (stats.homeowners / stats.totalUsers) * 100 : 0}%` }}></div>
+                                        </div>
+                                        <span className="text-xs text-gray-500 font-medium w-8 text-right">{stats.homeowners}/{stats.totalUsers}</span>
+                                    </div>
+                                </button>
+
+                                {/* Assessors */}
+                                <button
+                                    onClick={() => setSelectedStatView('assessors')}
+                                    className={`w-full bg-white p-4 rounded-xl border-2 text-left hover:shadow-md transition-all relative overflow-hidden group ${selectedStatView === 'assessors' ? 'border-blue-300 shadow-blue-100/50 shadow-lg' : 'border-blue-100'}`}
+                                >
+                                    <div className="flex justify-between items-start mb-1">
+                                        <div className="bg-[#4b5563] text-white text-[11px] font-bold px-3 py-1.5 rounded-full inline-block">Assessors</div>
+                                        <ClipboardList size={22} strokeWidth={2} className="text-blue-500" />
+                                    </div>
+                                    <div className="flex items-baseline gap-2 mb-2 mt-2">
+                                        <h3 className="text-4xl font-black text-gray-900">{stats.contractors}</h3>
+                                        <span className="text-sm font-medium text-gray-400">{stats.totalUsers > 0 ? Math.round((stats.contractors / stats.totalUsers) * 100) : 0}% of {stats.totalUsers}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex-1 h-[6px] rounded-full bg-blue-50 overflow-hidden">
+                                            <div className="bg-blue-500 h-full transition-all rounded-full" style={{ width: `${stats.totalUsers > 0 ? (stats.contractors / stats.totalUsers) * 100 : 0}%` }}></div>
+                                        </div>
+                                        <span className="text-xs text-gray-500 font-medium w-8 text-right">{stats.contractors}/{stats.totalUsers}</span>
+                                    </div>
+                                </button>
+
+                                {/* Businesses */}
+                                <button
+                                    onClick={() => setSelectedStatView('businesses')}
+                                    className={`w-full bg-white p-4 rounded-xl border-2 text-left hover:shadow-md transition-all relative overflow-hidden group ${selectedStatView === 'businesses' ? 'border-purple-300 shadow-purple-100/50 shadow-lg' : 'border-purple-100'}`}
+                                >
+                                    <div className="flex justify-between items-start mb-1">
+                                        <div className="bg-[#4b5563] text-white text-[11px] font-bold px-3 py-1.5 rounded-full inline-block">Businesses</div>
+                                        <Building size={22} strokeWidth={2} className="text-purple-500" />
+                                    </div>
+                                    <div className="flex items-baseline gap-2 mb-2 mt-2">
+                                        <h3 className="text-4xl font-black text-gray-900">{stats.businessLeads}</h3>
+                                        <span className="text-sm font-medium text-gray-400">{stats.totalUsers > 0 ? Math.round((stats.businessLeads / stats.totalUsers) * 100) : 0}% of {stats.totalUsers}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex-1 h-[6px] rounded-full bg-purple-50 overflow-hidden">
+                                            <div className="bg-[#a855f7] h-full transition-all rounded-full" style={{ width: `${stats.totalUsers > 0 ? (stats.businessLeads / stats.totalUsers) * 100 : 0}%` }}></div>
+                                        </div>
+                                        <span className="text-xs text-gray-500 font-medium w-8 text-right">{stats.businessLeads}/{stats.totalUsers}</span>
+                                    </div>
+                                </button>
+                            </div>
+
+                            {/* RIGHT COLUMN: 2x2 Grid for Other Stats */}
+                            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                
+                                {/* Total Revenue Card */}
+                                <button
+                                    onClick={() => { setView('payments'); setSelectedStatView(null); }}
+                                    className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 text-left hover:border-green-300 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between"
+                                >
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-green-500 opacity-80"></div>
+                                    <div>
+                                        <div className="flex justify-between items-start mb-1">
+                                            <p className="text-xs font-bold text-gray-500">Total Revenue</p>
+                                            <div className="w-7 h-7 rounded-md bg-green-50 flex items-center justify-center">
+                                                <DollarSign size={14} className="text-green-600" />
+                                            </div>
+                                        </div>
+                                        <h3 className="text-4xl font-black text-gray-1000 tracking-tight mt-1 mb-4">
+                                            {new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' }).format(stats.totalRevenue)}
+                                        </h3>
+                                    </div>
+                                    <div>
+                                        <div className="inline-flex items-center px-2.5 py-1 rounded bg-green-50 border border-green-100">
+                                            <span className="text-[11px] font-bold text-green-700">$ {payments.filter(p => p.status === 'completed').length} Payments</span>
+                                        </div>
+                                    </div>
+                                </button>
+
+                                {/* Active Jobs Card */}
+                                <button
+                                    onClick={() => { setView('assessments'); setSelectedStatView(null); }}
+                                    className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 text-left hover:border-blue-300 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between"
+                                >
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500 opacity-80"></div>
+                                    <div>
+                                        <div className="flex justify-between items-start mb-1">
+                                            <p className="text-xs font-bold text-gray-500">Active Jobs</p>
+                                            <div className="w-7 h-7 rounded-md bg-blue-50 flex items-center justify-center">
+                                                <Briefcase size={14} className="text-blue-600" />
+                                            </div>
+                                        </div>
+                                        <h3 className="text-4xl font-black text-gray-1000 tracking-tight mt-1 mb-4">{stats.activeAssessments}</h3>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="inline-flex items-center px-2.5 py-1 rounded bg-blue-50 border border-blue-100">
+                                            <span className="text-[11px] font-bold text-blue-700">{stats.pendingQuotes} Pending</span>
+                                        </div>
+                                        <div className="inline-flex items-center px-2.5 py-1 rounded bg-green-50 border border-green-100">
+                                            <span className="text-[11px] font-bold text-green-700">Done {stats.completedAssessments}</span>
+                                        </div>
+                                    </div>
+                                </button>
+
+                                {/* Conversion Card */}
+                                <button
+                                    onClick={() => { setView('leads'); setSelectedStatView(null); }}
+                                    className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 text-left hover:border-teal-300 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between"
+                                >
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-teal-500 opacity-80"></div>
+                                    <div>
+                                        <div className="flex justify-between items-start mb-1">
+                                            <p className="text-xs font-bold text-gray-500">Conversion</p>
+                                            <div className="w-7 h-7 rounded-md bg-teal-50 flex items-center justify-center">
+                                                <TrendingUp size={14} className="text-teal-600" />
+                                            </div>
+                                        </div>
+                                        <h3 className="text-4xl font-black text-gray-1000 tracking-tight mt-1 mb-4">
+                                            {stats.totalLeads > 0 ? Math.round((stats.acceptedQuotes / stats.totalLeads) * 100) : 0}%
+                                        </h3>
+                                    </div>
+                                    <div>
+                                        <div className="inline-flex items-center px-2.5 py-1 rounded bg-teal-50 border border-teal-100 gap-1.5">
+                                            <ArrowRight size={12} className="text-teal-600" />
+                                            <span className="text-[11px] font-bold text-teal-700">{stats.acceptedQuotes} of {stats.totalLeads} Leads</span>
+                                        </div>
+                                    </div>
+                                </button>
+
+                                {/* Business Leads Card */}
+                                <button
+                                    onClick={() => { setView('businesses'); setSelectedStatView(null); }}
+                                    className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 text-left hover:border-amber-300 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between"
+                                >
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-amber-500 opacity-80"></div>
+                                    <div>
+                                        <div className="flex justify-between items-start mb-1">
+                                            <p className="text-xs font-bold text-gray-500">Business Leads</p>
+                                            <div className="w-7 h-7 rounded-md bg-amber-50 flex items-center justify-center">
+                                                <ClipboardList size={14} className="text-amber-600" />
+                                            </div>
+                                        </div>
+                                        <h3 className="text-4xl font-black text-gray-1000 tracking-tight mt-1 mb-4">{stats.businessLeads}</h3>
+                                    </div>
+                                    <div>
+                                        {stats.pendingOnboarding > 0 ? (
+                                            <div className="inline-flex items-center px-2.5 py-1 rounded bg-amber-50 border border-amber-200 gap-1.5">
+                                                <Hourglass size={12} className="text-amber-600" />
+                                                <span className="text-[11px] font-bold text-amber-700">{stats.pendingOnboarding} Pending Onboarding</span>
+                                            </div>
+                                        ) : (
+                                            <div className="inline-flex items-center px-2.5 py-1 rounded bg-green-50 border border-green-100 gap-1.5">
+                                                <CheckCircle2 size={12} className="text-green-600" />
+                                                <span className="text-[11px] font-bold text-green-700">All Onboarded</span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </button>
                             </div>
                         </div>
+
+                        {selectedStatView === 'homeowners' || selectedStatView === 'assessors' || selectedStatView === 'businesses' ? (
+                            <div className="space-y-4">
+                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 gap-4">
+                                    <div className="relative w-full max-w-md">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                        <input
+                                            type="text"
+                                            placeholder={`Search by name or email...`}
+                                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] transition-all text-sm"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="flex items-center gap-3 w-full md:w-auto">
+                                        <div className="text-xs text-gray-400 font-medium hidden sm:block">
+                                            Showing {users_list.filter(u => selectedStatView === 'assessors' ? u.role === 'contractor' : selectedStatView === 'businesses' ? u.role === 'business' : (u.role === 'user' || u.role === 'homeowner')).filter(u => u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.email?.toLowerCase().includes(searchTerm.toLowerCase())).length} users
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left text-sm text-gray-600">
+                                            <thead className="bg-gray-50/50 text-gray-900 font-bold uppercase tracking-wider text-xs border-b border-gray-100">
+                                                <tr>
+                                                    <th className="px-6 py-4">Status</th>
+                                                    <th className="px-6 py-4">Details</th>
+                                                    <th className="px-6 py-4">Sign-Up Date</th>
+                                                    {selectedStatView !== 'businesses' && <th className="px-6 py-4">Activity</th>}
+                                                    <th className="px-6 py-4 text-right">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-50">
+                                                {users_list
+                                                    .filter(u => {
+                                                        const matchRole = selectedStatView === 'assessors' ? u.role === 'contractor' : selectedStatView === 'businesses' ? u.role === 'business' : (u.role === 'user' || u.role === 'homeowner');
+                                                        const matchSearch = u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.email?.toLowerCase().includes(searchTerm.toLowerCase());
+                                                        return matchRole && matchSearch;
+                                                    })
+                                                    .length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan={selectedStatView === 'businesses' ? 4 : 5} className="px-6 py-12 text-center text-gray-400 italic">
+                                                            No users found.
+                                                        </td>
+                                                    </tr>
+                                                ) : (
+                                                    users_list
+                                                        .filter(u => {
+                                                            const matchRole = selectedStatView === 'assessors' ? u.role === 'contractor' : selectedStatView === 'businesses' ? u.role === 'business' : (u.role === 'user' || u.role === 'homeowner');
+                                                            const matchSearch = u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.email?.toLowerCase().includes(searchTerm.toLowerCase());
+                                                            return matchRole && matchSearch;
+                                                        })
+                                                        .map((u) => {
+                                                            const listing = listings.find(l => l.user_id === u.id || l.owner_id === u.id);
+                                                            const hasListing = !!listing;
+
+                                                            return (
+                                                                <tr key={u.id} className="hover:bg-green-50/30 transition-colors group">
+                                                                    <td className="px-6 py-4">
+                                                                        <div className="flex flex-col gap-1">
+                                                                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${u.registration_status === 'active' ? 'bg-green-50 text-green-700 border-green-200' :
+                                                                                u.registration_status === 'rejected' ? 'bg-red-50 text-red-700 border-red-200' :
+                                                                                    'bg-amber-50 text-amber-700 border-amber-200'
+                                                                                }`}>
+                                                                                <div className={`w-1.5 h-1.5 rounded-full ${u.registration_status === 'active' ? 'bg-green-500' :
+                                                                                    u.registration_status === 'rejected' ? 'bg-red-500' :
+                                                                                        'bg-amber-500'
+                                                                                    }`} />
+                                                                                {u.registration_status || 'pending'}
+                                                                            </div>
+                                                                            {u.stripe_payment_id && (
+                                                                                <div className="flex flex-col mt-1">
+                                                                                    <span className="text-[9px] text-green-600 font-bold uppercase flex items-center gap-1">
+                                                                                        <CreditCard size={10} /> Paid
+                                                                                    </span>
+                                                                                    <span className="text-[10px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 mt-0.5 select-all" title="Stripe Payment ID">
+                                                                                        {u.stripe_payment_id}
+                                                                                    </span>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-6 py-4 font-medium text-gray-900">
+                                                                        {u.full_name}
+                                                                        <div className="text-xs text-gray-400 font-normal">{u.email}</div>
+                                                                    </td>
+                                                                    <td className="px-6 py-4 text-gray-500">
+                                                                        {new Date(u.created_at).toLocaleDateString()}
+                                                                    </td>
+                                                                    {selectedStatView !== 'businesses' && (
+                                                                        <td className="px-6 py-4 text-gray-500 font-medium">
+                                                                            {u.role === 'contractor' ? (
+                                                                                <div className="flex items-center gap-1 text-blue-600">
+                                                                                    <Briefcase size={14} />
+                                                                                    <span>{assessments.filter(a => a.contractor_id === u.id).length} Jobs</span>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <div className="flex items-center gap-1 text-green-600">
+                                                                                    <Home size={14} />
+                                                                                    <span>{assessments.filter(a => a.user_id === u.id).length} Requests</span>
+                                                                                </div>
+                                                                            )}
+                                                                        </td>
+                                                                    )}
+                                                                    <td className="px-6 py-4 text-right">
+                                                                        <div className="flex items-center justify-end gap-2">
+                                                                            {u.role === 'contractor' && (
+                                                                                hasListing ? (
+                                                                                    <button
+                                                                                        onClick={() => handleOpenCatalogueView(u, listing)}
+                                                                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                                                                        title="Edit Catalogue Listing"
+                                                                                    >
+                                                                                        <Edit2 size={16} />
+                                                                                    </button>
+                                                                                ) : (
+                                                                                    <button
+                                                                                        onClick={() => handleOpenCatalogueView(u)}
+                                                                                        className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                                                                                        title="Add to Catalogue"
+                                                                                    >
+                                                                                        <Plus size={16} />
+                                                                                    </button>
+                                                                                )
+                                                                            )}
+                                                                            <button
+                                                                                onClick={() => setSelectedUser(u)}
+                                                                                className="text-gray-400 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition-all"
+                                                                                title="View/Edit User Details"
+                                                                            >
+                                                                                <Pencil size={16} />
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    setItemToSuspend({
+                                                                                        id: u.id,
+                                                                                        name: u.full_name,
+                                                                                        currentStatus: u.is_active !== false
+                                                                                    });
+                                                                                    setShowSuspendModal(true);
+                                                                                }}
+                                                                                className={`p-2 rounded-lg transition-all ${u.is_active !== false
+                                                                                    ? 'text-red-400 hover:text-red-600 hover:bg-red-50'
+                                                                                    : 'text-green-400 hover:text-green-600 hover:bg-green-50'
+                                                                                    }`}
+                                                                                title={u.is_active !== false ? 'Suspend User' : 'Activate User'}
+                                                                            >
+                                                                                <AlertTriangle size={16} />
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => handleDeleteClick(u.id, 'user')}
+                                                                                className="text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-all"
+                                                                                title="Delete User"
+                                                                            >
+                                                                                <Trash2 size={16} />
+                                                                            </button>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : selectedStatView === 'payments' ? (
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                                <div className="p-4 border-b border-gray-100">
+                                    <h3 className="font-bold text-gray-900">Recent Revenue</h3>
+                                </div>
+                            </div>
+                        ) : selectedStatView === 'assessments' ? (
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                                <div className="p-4 border-b border-gray-100">
+                                    <h3 className="font-bold text-gray-900">Active Jobs</h3>
+                                </div>
+                            </div>
+                        ) : selectedStatView === 'leads' ? (
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                                <div className="p-4 border-b border-gray-100">
+                                    <h3 className="font-bold text-gray-900">Recent Conversions</h3>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+                                <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                    <Users size={24} className="text-gray-300" />
+                                </div>
+                                <h3 className="text-base font-bold text-gray-900 mb-1">Select a user type above</h3>
+                                <p className="text-sm text-gray-400">Click Homeowners, Assessors, or Businesses in the Total Users card to view details.</p>
+                            </div>
+                        )}
                     </div>
                 ) : (view === 'settings' || view === 'payments' ? [1] : view === 'leads' ? leads : view === 'assessments' ? assessments : view === 'news' ? newsArticles : (view === 'homeowners' || view === 'assessors' || view === 'businesses') ? users_list.filter(u => u.role === (view === 'homeowners' ? 'user' : view === 'assessors' ? 'contractor' : 'business')) : []).length === 0 ? (
                     <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
@@ -2290,9 +2597,9 @@ const Admin = () => {
                                                                     <button
                                                                         onClick={() => setSelectedUser(u)}
                                                                         className="text-gray-400 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition-all"
-                                                                        title="View/Edit User Details"
+                                                                        title="View User Details"
                                                                     >
-                                                                        <Pencil size={16} />
+                                                                        <Eye size={16} />
                                                                     </button>
                                                                     <button
                                                                         onClick={() => {
@@ -2496,6 +2803,7 @@ const Admin = () => {
                                             <th className="px-6 py-4">Status</th>
                                             <th className="px-6 py-4">Business Details</th>
                                             <th className="px-6 py-4">Signup Date</th>
+                                            <th className="px-6 py-4">Subscription</th>
                                             <th className="px-6 py-4">Registration</th>
                                             <th className="px-6 py-4 text-right">Actions</th>
                                         </tr>
@@ -2503,7 +2811,7 @@ const Admin = () => {
                                     <tbody className="divide-y divide-gray-50">
                                         {filteredBusinessLeads.length === 0 ? (
                                             <tr>
-                                                <td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">
+                                                <td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic">
                                                     No business leads found.
                                                 </td>
                                             </tr>
@@ -2523,11 +2831,18 @@ const Admin = () => {
                                                                     <div className={`w-1.5 h-1.5 rounded-full ${u.registration_status === 'active' ? 'bg-green-500' :
                                                                         u.registration_status === 'rejected' ? 'bg-red-500' :
                                                                             'bg-amber-500'
-                                                                        }`}></div>
+                                                                        }`} />
                                                                     {u.registration_status || 'pending'}
                                                                 </div>
-                                                                {hasListing && (
-                                                                    <span className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">Listing Created</span>
+                                                                {u.stripe_payment_id && (
+                                                                    <div className="flex flex-col mt-1">
+                                                                        <span className="text-[9px] text-green-600 font-bold uppercase flex items-center gap-1">
+                                                                            <CreditCard size={10} /> Paid
+                                                                        </span>
+                                                                        <span className="text-[10px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 mt-0.5 select-all" title="Stripe Payment ID">
+                                                                            {u.stripe_payment_id}
+                                                                        </span>
+                                                                    </div>
                                                                 )}
                                                             </div>
                                                         </td>
@@ -2539,7 +2854,50 @@ const Admin = () => {
                                                             {new Date(u.created_at).toLocaleDateString()}
                                                         </td>
                                                         <td className="px-6 py-4">
-                                                            {u.registration_status === 'active' && u.subscription_status !== 'active' && !hasListing && (
+                                                            {(() => {
+                                                                const subStatus = u.subscription_status || 'inactive';
+                                                                const endDate = u.subscription_end_date ? new Date(u.subscription_end_date) : null;
+                                                                const startDate = u.subscription_start_date ? new Date(u.subscription_start_date) : null;
+                                                                const now = new Date();
+                                                                const daysLeft = endDate ? Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : null;
+                                                                const isExpired = daysLeft !== null && daysLeft <= 0;
+                                                                const isExpiringSoon = daysLeft !== null && daysLeft > 0 && daysLeft <= 30;
+
+                                                                return (
+                                                                    <div className="flex flex-col gap-1.5">
+                                                                        <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider w-fit ${subStatus === 'active' && !isExpired
+                                                                            ? 'bg-green-50 text-green-700 border border-green-200'
+                                                                            : isExpired
+                                                                                ? 'bg-red-50 text-red-700 border border-red-200'
+                                                                                : 'bg-gray-50 text-gray-500 border border-gray-200'
+                                                                            }`}>
+                                                                            <div className={`w-1.5 h-1.5 rounded-full ${subStatus === 'active' && !isExpired ? 'bg-green-500' : isExpired ? 'bg-red-500' : 'bg-gray-400'
+                                                                                }`}></div>
+                                                                            {isExpired ? 'Expired' : subStatus}
+                                                                        </div>
+                                                                        {startDate && (
+                                                                            <div className="text-[10px] text-gray-400">
+                                                                                <span className="font-semibold text-gray-500">Start:</span> {startDate.toLocaleDateString()}
+                                                                            </div>
+                                                                        )}
+                                                                        {endDate && (
+                                                                            <div className={`text-[10px] ${isExpired ? 'text-red-500 font-bold' : isExpiringSoon ? 'text-amber-600 font-bold' : 'text-gray-400'
+                                                                                }`}>
+                                                                                <span className="font-semibold">{isExpired ? 'Expired:' : 'Expires:'}</span> {endDate.toLocaleDateString()}
+                                                                                {isExpiringSoon && !isExpired && (
+                                                                                    <span className="ml-1 text-amber-500">({daysLeft}d left)</span>
+                                                                                )}
+                                                                            </div>
+                                                                        )}
+                                                                        {!startDate && !endDate && (
+                                                                            <span className="text-[10px] text-gray-300 italic">No subscription</span>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })()}
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            {(u.registration_status === 'active' || u.registration_status === 'pending') && u.subscription_status !== 'active' && !hasListing && (
                                                                 <div className="flex flex-col gap-2">
                                                                     <button
                                                                         onClick={() => handleSendOnboardingEmail(u)}
@@ -2581,23 +2939,24 @@ const Admin = () => {
                                                                     </button>
                                                                 </div>
                                                             )}
-                                                            {u.registration_status === 'pending' && (
-                                                                <span className="text-[10px] text-gray-400 font-medium italic">Pending Approval</span>
+                                                            {u.registration_status === 'pending' && !hasListing && (
+                                                                <span className="text-[10px] text-gray-400 font-medium italic">Sent Link/Waiting</span>
                                                             )}
                                                         </td>
                                                         <td className="px-6 py-4 text-right">
                                                             <div className="flex items-center justify-end gap-2">
-                                                                {u.registration_status !== 'active' && (
+                                                                {u.registration_status !== 'active' && !u.is_admin_created && (
                                                                     <button
                                                                         onClick={() => updateRegistrationStatus(u.id, 'active')}
                                                                         disabled={isUpdating}
                                                                         className="flex items-center gap-1.5 bg-white border border-green-200 text-green-600 hover:bg-green-50 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 shadow-sm"
+                                                                        title="Manually activate this business (bypassing payment requirements)"
                                                                     >
                                                                         <CheckCircle2 size={14} />
                                                                         Approve
                                                                     </button>
                                                                 )}
-                                                                {u.registration_status === 'pending' && (
+                                                                {u.registration_status === 'pending' && !u.is_admin_created && (
                                                                     <button
                                                                         onClick={() => updateRegistrationStatus(u.id, 'rejected')}
                                                                         disabled={isUpdating}
@@ -2895,7 +3254,6 @@ const Admin = () => {
                                         setIsSavingSettings(true);
                                         const { error } = await supabase.from('app_settings').update({
                                             default_quote_price: parseFloat(formData.get('default_quote_price') as string),
-                                            solar_quote_price: parseFloat(formData.get('solar_quote_price') as string),
                                             vat_rate: parseFloat(formData.get('vat_rate') as string),
                                             company_name: formData.get('company_name') as string,
                                             support_email: formData.get('support_email') as string,
@@ -2923,10 +3281,7 @@ const Admin = () => {
                                     <label className="block text-sm font-bold text-gray-700 mb-1">Default Quote Price (€)</label>
                                     <input name="default_quote_price" type="number" step="0.01" defaultValue={appSettings?.default_quote_price} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Solar Quote Default Price (€)</label>
-                                    <input name="solar_quote_price" type="number" step="0.01" defaultValue={appSettings?.solar_quote_price} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-                                </div>
+
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">VAT Rate (%)</label>
                                     <input name="vat_rate" type="number" step="0.1" defaultValue={appSettings?.vat_rate} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
@@ -2938,7 +3293,7 @@ const Admin = () => {
                                         className="bg-[#007F00] text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                     >
                                         {isSavingSettings ? <Loader2 className="animate-spin" size={18} /> : null}
-                                        {isSavingSettings ? 'Saving...' : 'Save Config'}
+                                        {isSavingSettings ? 'Saving...' : 'Save Configurations'}
                                     </button>
                                 </div>
                             </form>
@@ -2955,7 +3310,7 @@ const Admin = () => {
                                     e.preventDefault();
                                     const formData = new FormData(e.target as HTMLFormElement);
                                     try {
-                                        setIsSavingSettings(true);
+                                        setIsSavingRegistrationFees(true);
                                         const { error } = await supabase.from('app_settings').update({
                                             domestic_assessor_price: parseFloat(formData.get('domestic_assessor_price') as string),
                                             commercial_assessor_price: parseFloat(formData.get('commercial_assessor_price') as string),
@@ -2968,7 +3323,7 @@ const Admin = () => {
                                     } catch (err: any) {
                                         toast.error(err.message);
                                     } finally {
-                                        setIsSavingSettings(false);
+                                        setIsSavingRegistrationFees(false);
                                     }
                                 }}
                                 className="space-y-6"
@@ -2994,11 +3349,11 @@ const Admin = () => {
                                 <div className="flex justify-end">
                                     <button
                                         type="submit"
-                                        disabled={isSavingSettings}
+                                        disabled={isSavingRegistrationFees}
                                         className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:bg-blue-700"
                                     >
-                                        {isSavingSettings ? <Loader2 className="animate-spin" size={18} /> : null}
-                                        {isSavingSettings ? 'Saving...' : 'Update Registration Fees'}
+                                        {isSavingRegistrationFees ? <Loader2 className="animate-spin" size={18} /> : null}
+                                        {isSavingRegistrationFees ? 'Saving...' : 'Update Registration Fees'}
                                     </button>
                                 </div>
                             </form>
@@ -3061,7 +3416,7 @@ const Admin = () => {
 
             {/* ASSIGN ASSESSOR MODAL */}
             {showAssignModal && selectedAssessmentForAssignment && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-gray-900">Assign BER Assessor</h3>
@@ -3113,7 +3468,7 @@ const Admin = () => {
 
             {/* PROMO SETTINGS MODAL */}
             {showPromoModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-gray-900">Partner Promo Settings</h3>
@@ -3209,8 +3564,8 @@ const Admin = () => {
 
             {/* LEAL DETAILS MODAL */}
             {selectedLead && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
                         {/* Modal Header */}
                         <div className="bg-white border-b border-gray-100 p-6 flex justify-between items-start shrink-0">
                             <div>
@@ -3270,11 +3625,11 @@ const Admin = () => {
                                     <div className="border-t border-dashed border-gray-200 my-5"></div>
 
                                     <div className="space-y-4">
-                                        <div className="flex items-center gap-3 text-sm text-gray-600 font-medium p-2 hover:bg-gray-50 rounded-lg transition-colors -mx-2 break-all">
+                                        <div className="flex items-center gap-3 text-sm text-gray-600 font-medium p-2 hover:bg-gray-50 rounded-lg transition-colors -mx-2">
                                             <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-[#007F00]/10 group-hover:text-[#007F00] transition-colors shrink-0">
                                                 <Mail size={16} />
                                             </div>
-                                            {selectedLead.email}
+                                            <span className="truncate flex-1" title={selectedLead.email}>{selectedLead.email}</span>
                                         </div>
                                         <div className="flex items-center gap-3 text-sm text-gray-600 font-medium p-2 hover:bg-gray-50 rounded-lg transition-colors -mx-2">
                                             <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-[#007F00]/10 group-hover:text-[#007F00] transition-colors shrink-0">
@@ -3327,43 +3682,9 @@ const Admin = () => {
                             </div>
 
                             {/* Conversion Action */}
-                            <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                                <div>
-                                    <h4 className="text-sm font-bold text-blue-900">Process as Official Assessment?</h4>
-                                    <p className="text-xs text-blue-700 mt-1">Convert this lead into a trackable BER assessment with internal messaging and portal access.</p>
-                                </div>
-                                <button
-                                    onClick={handleConvertLead}
-                                    disabled={isUpdating}
-                                    className="bg-[#007EA7] text-white px-6 py-2 rounded-xl text-sm font-bold shadow-sm hover:shadow-md transition-all whitespace-nowrap active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isUpdating ? <Loader2 className="animate-spin" size={16} /> : null}
-                                    {isUpdating ? 'Converting...' : 'Convert to Assessment'}
-                                </button>
-                            </div>
 
                             <div className="flex flex-col gap-3 pt-4 border-t border-gray-50">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
-                                    <button
-                                        onClick={async () => {
-                                            const id = await handleConvertLead();
-                                            if (id) {
-                                                setView('assessments');
-                                                setSelectedLead(null);
-                                                // Give a small delay for state update
-                                                setTimeout(() => {
-                                                    const newAsm = assessments.find(a => a.id === id);
-                                                    if (newAsm) setSelectedAssessment(newAsm);
-                                                    setShowQuoteModal(true);
-                                                }, 500);
-                                            }
-                                        }}
-                                        disabled={isUpdating}
-                                        className="w-full bg-[#007F00] text-white font-bold text-sm py-4 rounded-2xl hover:bg-green-800 transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {isUpdating ? <Loader2 className="animate-spin" size={18} /> : <MessageSquare size={18} />}
-                                        {isUpdating ? 'Wait...' : 'Formal Quote (Portal)'}
-                                    </button>
+                                <div className="grid grid-cols-1 gap-4 relative z-10">
                                     <a
                                         target="_blank"
                                         rel="noopener noreferrer"
@@ -3383,7 +3704,7 @@ const Admin = () => {
 
             {/* GENERATE QUOTE MODAL */}
             {showQuoteModal && selectedAssessment && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-gray-900">Generate Quote</h3>
@@ -3416,11 +3737,14 @@ const Admin = () => {
                                 <h4 className="text-[10px] font-bold text-[#007F00] uppercase tracking-widest mb-2">Client Information</h4>
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-full bg-green-100 text-[#007F00] flex items-center justify-center font-bold text-xs">
-                                        {selectedAssessment.profiles?.full_name.charAt(0)}
+                                        {(selectedAssessment.profiles?.full_name || selectedAssessment.contact_name || 'U').charAt(0)}
                                     </div>
                                     <div>
-                                        <p className="text-xs font-bold text-gray-900">{selectedAssessment.profiles?.full_name}</p>
-                                        <p className="text-[10px] text-gray-500">{selectedAssessment.profiles?.email}</p>
+                                        <p className="text-xs font-bold text-gray-900">{selectedAssessment.profiles?.full_name || selectedAssessment.contact_name || 'Unknown Client'}</p>
+                                        <p className="text-[10px] text-gray-500">{selectedAssessment.profiles?.email || selectedAssessment.contact_email}</p>
+                                        {(selectedAssessment.profiles?.phone || selectedAssessment.contact_phone) && (
+                                            <p className="text-[10px] text-gray-400 font-medium mt-0.5">{selectedAssessment.profiles?.phone || selectedAssessment.contact_phone}</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -3484,7 +3808,7 @@ const Admin = () => {
 
             {/* MESSAGE CLIENT MODAL */}
             {showMessageModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-gray-900">Message Client</h3>
@@ -3521,7 +3845,7 @@ const Admin = () => {
 
             {/* SCHEDULE MODAL */}
             {showScheduleModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-gray-900">Schedule Assessment</h3>
@@ -3558,7 +3882,7 @@ const Admin = () => {
 
             {/* COMPLETE MODAL */}
             {showCompleteModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-gray-900">Complete Assessment</h3>
@@ -3598,7 +3922,7 @@ const Admin = () => {
             )}
             {/* ASSESSMENT DETAILS MODAL */}
             {showAssessmentDetailModal && selectedAssessment && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
                         <div className="bg-white border-b border-gray-100 p-6 flex justify-between items-center shrink-0">
                             <div>
@@ -3701,15 +4025,18 @@ const Admin = () => {
                             <div className="bg-[#007F00]/5 border border-[#007F00]/10 rounded-2xl p-6 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-full bg-[#007F00] text-white flex items-center justify-center font-black text-lg shadow-lg shadow-green-900/10">
-                                        {selectedAssessment.profiles?.full_name.charAt(0)}
+                                        {(selectedAssessment.profiles?.full_name || selectedAssessment.contact_name || 'U').charAt(0)}
                                     </div>
                                     <div>
-                                        <p className="text-sm font-black text-gray-900">{selectedAssessment.profiles?.full_name}</p>
-                                        <p className="text-xs text-gray-500 font-medium">{selectedAssessment.profiles?.email}</p>
+                                        <p className="text-sm font-black text-gray-900">{selectedAssessment.profiles?.full_name || selectedAssessment.contact_name || 'Unknown Client'}</p>
+                                        <p className="text-xs text-gray-500 font-medium">{selectedAssessment.profiles?.email || selectedAssessment.contact_email}</p>
+                                        {(selectedAssessment.profiles?.phone || selectedAssessment.contact_phone) && (
+                                            <p className="text-[10px] text-gray-400 font-medium mt-0.5">{selectedAssessment.profiles?.phone || selectedAssessment.contact_phone}</p>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
-                                    <a href={`mailto:${selectedAssessment.profiles?.email}`} className="p-2.5 bg-white border border-gray-100 text-[#007F00] rounded-xl hover:bg-green-50 transition-all shadow-sm">
+                                    <a href={`mailto:${selectedAssessment.profiles?.email || selectedAssessment.contact_email}`} className="p-2.5 bg-white border border-gray-100 text-[#007F00] rounded-xl hover:bg-green-50 transition-all shadow-sm">
                                         <Mail size={18} />
                                     </a>
                                 </div>
@@ -3770,7 +4097,7 @@ const Admin = () => {
                                     )}
                                     <button
                                         onClick={() => {
-                                            const name = selectedAssessment.profiles?.full_name || 'there';
+                                            const name = selectedAssessment.profiles?.full_name || selectedAssessment.contact_name || 'there';
                                             setMessageContent(`Hi ${name},\n\nI'm writing to you regarding your BER assessment for ${selectedAssessment.property_address}.\n\n[Type your message here]\n\nBest regards,\nThe Berman Team`);
                                             setShowMessageModal(true);
                                             setShowAssessmentDetailModal(false);
@@ -3788,7 +4115,7 @@ const Admin = () => {
             )}
             {/* SPONSOR MODAL */}
             {showSponsorModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[90vh]">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-gray-900">Manage Sponsors</h3>
@@ -3886,7 +4213,7 @@ const Admin = () => {
             )}
             {/* DELETE CONFIRMATION MODAL */}
             {showDeleteModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 animate-in zoom-in-95 duration-200 text-center">
                         <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-100">
                             <AlertTriangle size={32} />
@@ -3924,7 +4251,7 @@ const Admin = () => {
 
             {/* USER DETAILS / EDIT MODAL */}
             {selectedUser && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
                         <div className="p-8 overflow-y-auto">
                             <div className="flex justify-between items-start mb-6">
@@ -3937,202 +4264,102 @@ const Admin = () => {
                                         <p className="text-sm text-gray-500">{selectedUser.email}</p>
                                     </div>
                                 </div>
-                                <button onClick={() => { setSelectedUser(null); setIsEditingProfile(false); }} className="text-gray-400 hover:text-gray-600">
+                                <button onClick={() => setSelectedUser(null)} className="text-gray-400 hover:text-gray-600">
                                     <X size={24} />
                                 </button>
                             </div>
 
-                            {!isEditingProfile ? (
-                                <div className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Account Role</p>
-                                            <p className="text-sm font-bold text-gray-900 capitalize">{selectedUser.role}</p>
-                                        </div>
-                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Status</p>
-                                            <p className={`text-sm font-bold capitalize ${selectedUser.is_active !== false ? 'text-green-600' : 'text-red-600'}`}>
-                                                {selectedUser.is_active !== false ? 'Active' : 'Suspended'}
-                                            </p>
-                                        </div>
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Account Role</p>
+                                        <p className="text-sm font-bold text-gray-900 capitalize">{selectedUser.role}</p>
                                     </div>
-
-                                    {/* Subscription Section */}
-                                    {(selectedUser.role === 'contractor' || selectedUser.role === 'business') && (
-                                        <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100/50">
-                                            <h4 className="text-xs font-bold text-blue-900 uppercase tracking-widest mb-4">Subscription Management</h4>
-                                            <div className="flex justify-between items-center mb-4">
-                                                <div>
-                                                    <p className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">Status</p>
-                                                    <p className="text-sm font-black text-blue-900 capitalize">{selectedUser.subscription_status || 'Inactive'}</p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">Ends On</p>
-                                                    <p className="text-sm font-black text-blue-900">
-                                                        {selectedUser.subscription_end_date ? new Date(selectedUser.subscription_end_date).toLocaleDateString() : 'N/A'}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            {selectedUser.manual_override_reason && (
-                                                <div className="mb-4 p-2 bg-white rounded-lg border border-blue-100">
-                                                    <p className="text-[10px] text-gray-400 uppercase font-bold mb-1">Override Reason</p>
-                                                    <p className="text-xs text-gray-600 italic">"{selectedUser.manual_override_reason}"</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    <div className="space-y-4">
-                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">User ID</p>
-                                            <p className="text-xs font-mono text-gray-600 break-all">{selectedUser.id}</p>
-                                        </div>
-                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Member Since</p>
-                                            <p className="text-sm font-bold text-gray-900">{new Date(selectedUser.created_at).toLocaleDateString()}</p>
-                                        </div>
+                                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Phone Number</p>
+                                        <p className="text-sm font-bold text-gray-900">{getFallbackPhone(selectedUser)}</p>
                                     </div>
-
-                                    <div className="flex flex-col gap-3">
-                                        <button
-                                            onClick={() => {
-                                                setEditForm({
-                                                    full_name: selectedUser.full_name,
-                                                    email: selectedUser.email,
-                                                    subscription_status: selectedUser.subscription_status || 'inactive',
-                                                    subscription_end_date: selectedUser.subscription_end_date,
-                                                    manual_override_reason: selectedUser.manual_override_reason || ''
-                                                });
-                                                setIsEditingProfile(true);
-                                            }}
-                                            className="w-full py-4 bg-[#007F00] text-white font-bold rounded-2xl hover:bg-green-700 transition-all shadow-lg shadow-green-100 flex items-center justify-center gap-2"
-                                        >
-                                            <Pencil size={18} />
-                                            Edit Profile & Subscription
-                                        </button>
-                                        <div className="flex gap-3">
-                                            <button
-                                                className={`flex-1 py-3 font-bold rounded-xl transition-colors text-sm border ${selectedUser.is_active !== false
-                                                    ? 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100'
-                                                    : 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100'
-                                                    }`}
-                                                onClick={() => {
-                                                    setItemToSuspend({
-                                                        id: selectedUser.id,
-                                                        name: selectedUser.full_name,
-                                                        currentStatus: selectedUser.is_active !== false
-                                                    });
-                                                    setShowSuspendModal(true);
-                                                }}
-                                            >
-                                                {selectedUser.is_active !== false ? 'Suspend Account' : 'Activate Account'}
-                                            </button>
-                                            <button
-                                                className="flex-1 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors text-sm"
-                                                onClick={() => setSelectedUser(null)}
-                                            >
-                                                Close
-                                            </button>
-                                        </div>
+                                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 col-span-2">
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Status</p>
+                                        <p className={`text-sm font-bold capitalize ${selectedUser.is_active !== false ? 'text-green-600' : 'text-red-600'}`}>
+                                            {selectedUser.is_active !== false ? 'Active' : 'Suspended'}
+                                        </p>
                                     </div>
                                 </div>
-                            ) : (
-                                <div className="space-y-6">
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Full Name</label>
-                                            <input
-                                                type="text"
-                                                value={editForm.full_name || ''}
-                                                onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
-                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
-                                            />
+
+                                {/* Subscription Section */}
+                                {(selectedUser.role === 'contractor' || selectedUser.role === 'business') && (
+                                    <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100/50">
+                                        <h4 className="text-xs font-bold text-blue-900 uppercase tracking-widest mb-4">Subscription Management</h4>
+                                        <div className="flex justify-between items-center mb-4">
+                                            <div>
+                                                <p className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">Status</p>
+                                                <p className="text-sm font-black text-blue-900 capitalize">{selectedUser.subscription_status || 'Inactive'}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">Ends On</p>
+                                                <p className="text-sm font-black text-blue-900">
+                                                    {selectedUser.subscription_end_date ? new Date(selectedUser.subscription_end_date).toLocaleDateString() : 'N/A'}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Email Address</label>
-                                            <input
-                                                type="email"
-                                                value={editForm.email || ''}
-                                                onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
-                                            />
-                                        </div>
-
-                                        {(selectedUser.role === 'contractor' || selectedUser.role === 'business') && (
-                                            <>
-                                                <div className="p-4 bg-blue-50/30 rounded-2xl border border-blue-100/50 space-y-4">
-                                                    <h4 className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Subscription Override</h4>
-
-                                                    <div>
-                                                        <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Status</label>
-                                                        <select
-                                                            value={editForm.subscription_status || 'inactive'}
-                                                            onChange={(e) => setEditForm({ ...editForm, subscription_status: e.target.value })}
-                                                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#007F00]/10"
-                                                        >
-                                                            <option value="active">Active</option>
-                                                            <option value="inactive">Inactive</option>
-                                                            <option value="trial">Trial Period</option>
-                                                            <option value="lifetime">Lifetime Access</option>
-                                                        </select>
-                                                    </div>
-
-                                                    <div>
-                                                        <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Expiry Date</label>
-                                                        <div className="flex gap-2">
-                                                            <input
-                                                                type="date"
-                                                                value={editForm.subscription_end_date ? new Date(editForm.subscription_end_date).toISOString().split('T')[0] : ''}
-                                                                onChange={(e) => setEditForm({ ...editForm, subscription_end_date: new Date(e.target.value).toISOString() })}
-                                                                className="flex-grow border border-gray-200 rounded-lg px-3 py-2 text-sm"
-                                                            />
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    const date = new Date();
-                                                                    date.setMonth(date.getMonth() + 3);
-                                                                    setEditForm({ ...editForm, subscription_end_date: date.toISOString(), subscription_status: 'active' });
-                                                                }}
-                                                                className="px-3 py-2 bg-blue-600 text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 whitespace-nowrap"
-                                                            >
-                                                                +3 Months Free
-                                                            </button>
-                                                        </div>
-                                                    </div>
-
-                                                    <div>
-                                                        <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Reason for Adjustment</label>
-                                                        <textarea
-                                                            value={editForm.manual_override_reason || ''}
-                                                            onChange={(e) => setEditForm({ ...editForm, manual_override_reason: e.target.value })}
-                                                            placeholder="e.g., Manual upgrade for partnership..."
-                                                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-20 focus:ring-2 focus:ring-[#007F00]/10"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </>
+                                        {selectedUser.manual_override_reason && (
+                                            <div className="mb-4 p-2 bg-white rounded-lg border border-blue-100">
+                                                <p className="text-[10px] text-gray-400 uppercase font-bold mb-1">Override Reason</p>
+                                                <p className="text-xs text-gray-600 italic">"{selectedUser.manual_override_reason}"</p>
+                                            </div>
                                         )}
                                     </div>
+                                )}
 
-                                    <div className="flex gap-3">
-                                        <button
-                                            disabled={isUpdating}
-                                            onClick={handleSaveProfile}
-                                            className="flex-1 py-4 bg-[#007F00] text-white font-bold rounded-2xl hover:bg-green-700 transition-all shadow-lg shadow-green-100 flex items-center justify-center gap-2"
-                                        >
-                                            {isUpdating ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle2 size={18} />}
-                                            {isUpdating ? 'Saving...' : 'Save Changes'}
-                                        </button>
-                                        <button
-                                            disabled={isUpdating}
-                                            onClick={() => setIsEditingProfile(false)}
-                                            className="px-6 py-4 bg-gray-100 text-gray-600 font-bold rounded-2xl hover:bg-gray-200 transition-all text-sm"
-                                        >
-                                            Cancel
-                                        </button>
+                                <div className="space-y-4">
+                                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">User ID</p>
+                                        <p className="text-xs font-mono text-gray-600 break-all">{selectedUser.id}</p>
+                                    </div>
+                                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Member Since</p>
+                                        <p className="text-sm font-bold text-gray-900">{new Date(selectedUser.created_at).toLocaleDateString()}</p>
                                     </div>
                                 </div>
-                            )}
+
+                                <div className="flex gap-3 mt-8">
+                                    <button
+                                        className={`flex-1 py-3 font-bold rounded-xl transition-colors text-sm border ${selectedUser.is_active !== false
+                                            ? 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100'
+                                            : 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100'
+                                            }`}
+                                        onClick={() => {
+                                            setItemToSuspend({
+                                                id: selectedUser.id,
+                                                name: selectedUser.full_name,
+                                                currentStatus: selectedUser.is_active !== false
+                                            });
+                                            setShowSuspendModal(true);
+                                        }}
+                                    >
+                                        {selectedUser.is_active !== false ? 'Suspend Account' : 'Activate Account'}
+                                    </button>
+
+                                    {user?.role === 'admin' && (selectedUser.role === 'contractor' || selectedUser.role === 'business') && (
+                                        <button
+                                            onClick={handleUpdateSubscription}
+                                            disabled={isUpdating}
+                                            className="flex-[2] py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all text-sm shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
+                                        >
+                                            {isUpdating && <Loader2 size={16} className="animate-spin" />}
+                                            Save Subscription Status
+                                        </button>
+                                    )}
+
+                                    <button
+                                        className="flex-[1] py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors text-sm"
+                                        onClick={() => setSelectedUser(null)}
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -4140,7 +4367,7 @@ const Admin = () => {
 
             {/* SUSPEND USER MODAL */}
             {showSuspendModal && itemToSuspend && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
                         <div className="flex items-center gap-4 mb-6 text-amber-600">
                             <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center">
@@ -4187,12 +4414,12 @@ const Admin = () => {
 
             {/* ADD USER MODAL (MANUAL) — ENHANCED */}
             {showAddUserModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-                        <div className="p-8 pb-0 shrink-0">
-                            <div className="flex justify-between items-center mb-6">
+                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-lg animate-in zoom-in-95 duration-200 flex flex-col max-h-[95vh] sm:max-h-[90vh]">
+                        <div className="p-5 sm:p-8 pb-0 shrink-0">
+                            <div className="flex justify-between items-center mb-4 sm:mb-6">
                                 <div>
-                                    <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">Manual Registration</h3>
+                                    <h3 className="text-lg sm:text-xl font-black text-gray-900 uppercase tracking-tight">Manual Registration</h3>
                                     <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Adding a new {newUserRole === 'contractor' ? 'Assessor' : 'Business'}</p>
                                 </div>
                                 <button onClick={() => { setShowAddUserModal(false); resetNewUserForm(); }} className="text-gray-400 hover:text-gray-600">
@@ -4202,11 +4429,11 @@ const Admin = () => {
                         </div>
 
                         <form onSubmit={handleAddUser} className="flex flex-col flex-1 overflow-hidden">
-                            <div className="px-8 pb-8 overflow-y-auto space-y-6 flex-1">
+                            <div className="px-5 sm:px-8 pb-5 sm:pb-8 overflow-y-auto space-y-5 sm:space-y-6 flex-1 custom-scrollbar">
                                 {/* SECTION: Personal Details */}
                                 <div>
-                                    <h4 className="text-[10px] font-black text-[#007F00] uppercase tracking-widest mb-4">Personal Details</h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <h4 className="text-[10px] font-black text-[#007F00] uppercase tracking-widest mb-3 sm:mb-4">Personal Details</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                                         <div>
                                             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Full Name *</label>
                                             <input
@@ -4389,11 +4616,11 @@ const Admin = () => {
                             </div>
 
                             {/* Sticky footer */}
-                            <div className="px-8 py-6 border-t border-gray-100 flex gap-3 shrink-0 bg-gray-50/50 rounded-b-3xl">
+                            <div className="px-5 sm:px-8 py-4 sm:py-6 border-t border-gray-100 flex gap-3 shrink-0 bg-gray-50/50 rounded-b-2xl sm:rounded-b-3xl">
                                 <button
                                     type="submit"
                                     disabled={isUpdating}
-                                    className="flex-[2] py-4 bg-[#007F00] text-white font-bold rounded-2xl hover:bg-green-700 transition-all shadow-lg shadow-green-100 flex items-center justify-center gap-2 disabled:opacity-50"
+                                    className="flex-[2] py-3 sm:py-4 bg-[#007F00] text-white font-bold rounded-xl sm:rounded-2xl hover:bg-green-700 transition-all shadow-lg shadow-green-100 flex items-center justify-center gap-2 disabled:opacity-50"
                                 >
                                     {isUpdating ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
                                     {isUpdating ? 'Adding...' : `Add ${newUserRole === 'contractor' ? 'Assessor' : 'Business'}`}

@@ -7,12 +7,13 @@ import { supabase } from '../lib/supabase';
 interface IdentityAuthProps {
     email: string;
     fullName: string;
+    phone?: string;
     isExternalSubmitting?: boolean;
     onAuthenticated: () => void;
     onBack: () => void;
 }
 
-const IdentityAuth = ({ email, fullName, isExternalSubmitting = false, onAuthenticated, onBack }: IdentityAuthProps) => {
+const IdentityAuth = ({ email, fullName, phone, isExternalSubmitting = false, onAuthenticated, onBack }: IdentityAuthProps) => {
     const [password, setPassword] = useState('');
     const [isExistingUser, setIsExistingUser] = useState<boolean | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -54,7 +55,7 @@ const IdentityAuth = ({ email, fullName, isExternalSubmitting = false, onAuthent
                 if (error) throw error;
                 toast.success('Signed in successfully!');
             } else {
-                const { error } = await signUp(email, password, fullName, 'user');
+                const { error } = await signUp(email, password, fullName, 'user', phone);
                 if (error) throw error;
                 toast.success('Account created successfully!');
             }
