@@ -271,9 +271,16 @@ const Admin = () => {
         logoUrl: '',
         featured: false,
         selectedCategories: [] as string[],
+        additionalAddresses: [] as string[],
         companyNumber: '',
         registrationNo: '',
         vatNumber: '',
+        bannerUrl: '',
+        galleryImages: [
+            { url: '', description: '' },
+            { url: '', description: '' },
+            { url: '', description: '' }
+        ],
     });
     const [selectedStatView, setSelectedStatView] = useState<'homeowners' | 'assessors' | 'businesses' | 'payments' | 'assessments' | 'leads' | null>('homeowners');
 
@@ -432,26 +439,52 @@ const Admin = () => {
                 logoUrl: existingListing.logo_url || '',
                 featured: existingListing.featured || false,
                 selectedCategories: [],
+                additionalAddresses: existingListing.additional_addresses || [],
                 companyNumber: existingListing.company_number || '',
                 registrationNo: existingListing.registration_no || '',
                 vatNumber: existingListing.vat_number || '',
+                bannerUrl: existingListing.banner_url || '',
+                galleryImages: [
+                    { url: '', description: '' },
+                    { url: '', description: '' },
+                    { url: '', description: '' }
+                ],
             });
 
             // Fetch categories for this listing
-            const fetchExistingCategories = async () => {
-                const { data } = await supabase
+            const fetchExistingCategoriesAndImages = async () => {
+                const { data: catData } = await supabase
                     .from('catalogue_listing_categories')
                     .select('category_id')
                     .eq('listing_id', existingListing.id);
 
-                if (data) {
-                    setCatalogueFormData(prev => ({
+                const { data: imgData } = await supabase
+                    .from('catalogue_listing_images')
+                    .select('*')
+                    .eq('listing_id', existingListing.id);
+
+                setCatalogueFormData(prev => {
+                    const newImages = [
+                        { url: '', description: '' },
+                        { url: '', description: '' },
+                        { url: '', description: '' }
+                    ];
+                    if (imgData) {
+                        imgData.forEach((img: any) => {
+                            if (img.display_order < 3) {
+                                newImages[img.display_order] = { url: img.url, description: img.description || '' };
+                            }
+                        });
+                    }
+
+                    return {
                         ...prev,
-                        selectedCategories: data.map(c => c.category_id)
-                    }));
-                }
+                        selectedCategories: catData ? catData.map(c => c.category_id) : [],
+                        galleryImages: newImages
+                    };
+                });
             };
-            fetchExistingCategories();
+            fetchExistingCategoriesAndImages();
         } else {
             setCatalogueFormData({
                 companyName: business ? ((business as any).company_name || business.full_name || '') : '',
@@ -464,9 +497,16 @@ const Admin = () => {
                 logoUrl: '',
                 featured: false,
                 selectedCategories: [],
+                additionalAddresses: [],
                 companyNumber: '',
                 registrationNo: '',
                 vatNumber: '',
+                bannerUrl: '',
+                galleryImages: [
+                    { url: '', description: '' },
+                    { url: '', description: '' },
+                    { url: '', description: '' }
+                ],
             });
         }
         setView('add-to-catalogue');
@@ -556,19 +596,8 @@ const Admin = () => {
 
         try {
             setIsUploadingLogo(true);
-            const fileExt = file.name.split('.').pop();
-            const fileName = `logos/${Date.now()}.${fileExt}`;
-
-            const { error: uploadError } = await supabase.storage
-                .from('uploads')
-                .upload(fileName, file);
-
-            if (uploadError) throw uploadError;
-
-            // Get public URL
-            const { data: { publicUrl } } = supabase.storage
-                .from('uploads')
-                .getPublicUrl(fileName);
+            const { uploadImageToCloudinary } = await import('../lib/cloudinary');
+            const publicUrl = await uploadImageToCloudinary(file);
 
             setCatalogueFormData(prev => ({
                 ...prev,
@@ -580,6 +609,69 @@ const Admin = () => {
             toast.error(error.message || 'Failed to upload logo');
         } finally {
             setIsUploadingLogo(false);
+        }
+    };
+
+    const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please upload an image file');
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Banner image must be less than 5MB');
+            return;
+        }
+
+        try {
+            setIsUpdatingBanner(true); // Re-using existing isUpdatingBanner state if possible, or we could add a new one, but let's use isUpdatingBanner
+            const { uploadImageToCloudinary } = await import('../lib/cloudinary');
+            const publicUrl = await uploadImageToCloudinary(file);
+
+            setCatalogueFormData(prev => ({
+                ...prev,
+                bannerUrl: publicUrl
+            }));
+            toast.success('Banner uploaded successfully');
+        } catch (error: any) {
+            console.error('Error uploading banner:', error);
+            toast.error(error.message || 'Failed to upload banner');
+        } finally {
+            setIsUpdatingBanner(false);
+        }
+    };
+
+    const handleGalleryUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please upload an image file');
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error('Image must be less than 2MB');
+            return;
+        }
+
+        try {
+            toast.loading('Uploading gallery image...', { id: 'gallery-upload' });
+            const { uploadImageToCloudinary } = await import('../lib/cloudinary');
+            const publicUrl = await uploadImageToCloudinary(file);
+
+            setCatalogueFormData(prev => {
+                const newImages = [...prev.galleryImages];
+                newImages[index].url = publicUrl;
+                return { ...prev, galleryImages: newImages };
+            });
+            toast.success('Gallery image uploaded successfully', { id: 'gallery-upload' });
+        } catch (error: any) {
+            console.error('Error uploading gallery image:', error);
+            toast.error(error.message || 'Failed to upload gallery image', { id: 'gallery-upload' });
         }
     };
 
@@ -601,7 +693,11 @@ const Admin = () => {
                 ? selectedListingForEdit.slug
                 : catalogueFormData.companyName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now().toString(36);
 
-            const fullAddress = catalogueFormData.address + (catalogueFormData.county ? `, Co. ${catalogueFormData.county}` : '');
+            const fullAddress = catalogueFormData.address.trim() + (
+                catalogueFormData.county && !catalogueFormData.address.includes(catalogueFormData.county)
+                    ? `, Co. ${catalogueFormData.county}`
+                    : ''
+            );
 
             // Geocode address
             let latitude = null;
@@ -642,6 +738,8 @@ const Admin = () => {
                 company_number: catalogueFormData.companyNumber || null,
                 registration_no: catalogueFormData.registrationNo || null,
                 vat_number: catalogueFormData.vatNumber || null,
+                banner_url: catalogueFormData.bannerUrl || null,
+                additional_addresses: catalogueFormData.additionalAddresses.filter(a => a.trim() !== ''),
             };
 
             let listingId = selectedListingForEdit?.id;
@@ -692,6 +790,23 @@ const Admin = () => {
                             location_id: locData.id
                         });
                     }
+                }
+
+                // Handle Gallery Images
+                if (selectedListingForEdit) {
+                    await supabase.from('catalogue_listing_images').delete().eq('listing_id', listingId);
+                }
+                const validImages = catalogueFormData.galleryImages
+                    .map((img, index) => ({
+                        listing_id: listingId,
+                        url: img.url.trim(),
+                        description: img.description.trim(),
+                        display_order: index,
+                    }))
+                    .filter(img => img.url);
+
+                if (validImages.length > 0) {
+                    await supabase.from('catalogue_listing_images').insert(validImages);
                 }
             }
 
@@ -1786,8 +1901,8 @@ const Admin = () => {
                                                     placeholder="e.g. IE1234567T"
                                                 />
                                             </div>
-                                            <div className="md:col-span-2 space-y-1.5">
-                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Address <span className="text-gray-300 font-medium">(Optional)</span></label>
+                                            <div className="space-y-1.5 md:col-span-2">
+                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Primary Address <span className="text-gray-300 font-medium">(Optional)</span></label>
                                                 <input
                                                     type="text"
                                                     value={catalogueFormData.address}
@@ -1796,7 +1911,7 @@ const Admin = () => {
                                                     placeholder="123 Industrial Estate, Dublin 12"
                                                 />
                                             </div>
-                                            <div className="space-y-1.5">
+                                            <div className="space-y-1.5 md:col-span-2">
                                                 <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">County</label>
                                                 <select
                                                     value={catalogueFormData.county}
@@ -1807,7 +1922,46 @@ const Admin = () => {
                                                     {IRISH_COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
                                                 </select>
                                             </div>
-                                            <div className="space-y-1.5">
+
+                                            <div className="md:col-span-2 space-y-3">
+                                                <div className="flex justify-between items-center px-1">
+                                                    <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Alternate Locations</label>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setCatalogueFormData({ ...catalogueFormData, additionalAddresses: [...catalogueFormData.additionalAddresses, ''] })}
+                                                        className="text-xs text-[#007F00] hover:text-[#005c00] font-bold flex items-center gap-1"
+                                                    >
+                                                        <Plus size={14} /> Add Address
+                                                    </button>
+                                                </div>
+                                                {catalogueFormData.additionalAddresses.map((addr, idx) => (
+                                                    <div key={idx} className="flex gap-2">
+                                                        <input
+                                                            type="text"
+                                                            value={addr}
+                                                            onChange={(e) => {
+                                                                const newAddrs = [...catalogueFormData.additionalAddresses];
+                                                                newAddrs[idx] = e.target.value;
+                                                                setCatalogueFormData({ ...catalogueFormData, additionalAddresses: newAddrs });
+                                                            }}
+                                                            className="flex-1 border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
+                                                            placeholder="Additional location address..."
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const newAddrs = catalogueFormData.additionalAddresses.filter((_, i) => i !== idx);
+                                                                setCatalogueFormData({ ...catalogueFormData, additionalAddresses: newAddrs });
+                                                            }}
+                                                            className="px-4 text-red-500 hover:bg-red-50 rounded-2xl transition-colors"
+                                                        >
+                                                            <Trash2 size={20} />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="space-y-1.5 mt-4">
                                                 <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Logo</label>
                                                 <div className="mt-1 flex items-center gap-4">
                                                     {catalogueFormData.logoUrl ? (
@@ -1850,6 +2004,115 @@ const Admin = () => {
                                             {catalogueFormData.logoUrl && (
                                                 <input type="hidden" value={catalogueFormData.logoUrl} />
                                             )}
+
+                                            <div className="space-y-1.5 md:col-span-2 mt-4">
+                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Banner Image</label>
+                                                <div className="mt-1 flex items-center gap-4">
+                                                    {catalogueFormData.bannerUrl ? (
+                                                        <div className="relative w-40 h-20 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 flex-shrink-0 group shadow-sm">
+                                                            <img src={catalogueFormData.bannerUrl} alt="Banner Preview" className="w-full h-full object-cover" />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setCatalogueFormData(prev => ({ ...prev, bannerUrl: '' }))}
+                                                                className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            >
+                                                                <X size={20} className="text-white" />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="w-40 h-20 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-300 bg-gray-50/50">
+                                                            {isUpdatingBanner ? <Loader2 size={24} className="animate-spin" /> : <ImageIcon size={24} />}
+                                                        </div>
+                                                    )}
+
+                                                    <div className="flex-1 space-y-2">
+                                                        <input
+                                                            type="file"
+                                                            id="catalogue-banner-upload"
+                                                            className="hidden"
+                                                            accept="image/*"
+                                                            onChange={handleBannerUpload}
+                                                            disabled={isUpdatingBanner}
+                                                        />
+                                                        <label
+                                                            htmlFor="catalogue-banner-upload"
+                                                            className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer shadow-sm border ${isUpdatingBanner ? 'bg-gray-50 text-gray-400 border-gray-100' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
+                                                        >
+                                                            {isUpdatingBanner ? <Loader2 size={16} className="animate-spin" /> : <UploadCloud size={16} />}
+                                                            {isUpdatingBanner ? 'Uploading...' : 'Click to Upload Banner'}
+                                                        </label>
+                                                        <p className="text-[10px] text-gray-400 font-medium">Recommended: 1920x600. Max size 5MB.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Photo Gallery Section */}
+                                            <div className="md:col-span-2 mt-8 pt-8 border-t border-gray-100">
+                                                <div className="mb-6">
+                                                    <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm flex items-center gap-2">
+                                                        <ImageIcon size={16} /> Manage Gallery Photos
+                                                    </h3>
+                                                    <p className="text-[11px] text-gray-500 font-medium mt-1">Add up to 3 high-quality photos with short descriptions (Max 2MB per image)</p>
+                                                </div>
+
+                                                <div className="space-y-6">
+                                                    {catalogueFormData.galleryImages.map((img, index) => (
+                                                        <div key={index} className="flex flex-col md:flex-row gap-6 items-start border border-gray-100 p-6 rounded-2xl bg-gray-50/50">
+                                                            <div className="flex-grow space-y-4 w-full">
+                                                                <div>
+                                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Upload Photo {index + 1}</label>
+                                                                    <input
+                                                                        type="file"
+                                                                        accept="image/*"
+                                                                        onChange={(e) => handleGalleryUpload(index, e)}
+                                                                        className="block w-full text-sm text-gray-500
+                                                                        file:mr-4 file:py-2 file:px-4
+                                                                        file:rounded-full file:border-0
+                                                                        file:text-sm file:font-semibold
+                                                                        file:bg-[#007EA7]/10 file:text-[#007EA7]
+                                                                        hover:file:bg-[#007EA7]/20
+                                                                        transition-all"
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Short Description</label>
+                                                                    <textarea
+                                                                        value={img.description}
+                                                                        onChange={(e) => {
+                                                                            const newImages = [...catalogueFormData.galleryImages];
+                                                                            newImages[index].description = e.target.value;
+                                                                            setCatalogueFormData({ ...catalogueFormData, galleryImages: newImages });
+                                                                        }}
+                                                                        placeholder="What's happening in this photo?"
+                                                                        rows={2}
+                                                                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-900 focus:ring-4 focus:ring-[#007EA7]/10 focus:border-[#007EA7] transition-all"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                            {img.url ? (
+                                                                <div className="w-32 h-32 rounded-xl overflow-hidden border border-gray-200 bg-gray-100 flex-shrink-0 shadow-sm relative group">
+                                                                    <img src={img.url} alt={`Gallery ${index + 1}`} className="w-full h-full object-cover" />
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            const newImages = [...catalogueFormData.galleryImages];
+                                                                            newImages[index].url = '';
+                                                                            setCatalogueFormData({ ...catalogueFormData, galleryImages: newImages });
+                                                                        }}
+                                                                        className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                    >
+                                                                        <X size={20} className="text-white" />
+                                                                    </button>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="w-32 h-32 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-300 bg-white flex-shrink-0 shadow-sm">
+                                                                    <ImageIcon size={24} />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
                                         </div>
                                     </div>
 

@@ -31,8 +31,9 @@ interface CatalogueListing {
     phone: string;
     description: string;
     address: string;
-    website: string;
-    logo_url: string;
+    website: string | null;
+    logo_url: string | null;
+    additional_addresses?: string[];
     features: string[];
     is_verified: boolean;
     featured: boolean;
@@ -44,6 +45,7 @@ interface CatalogueListing {
         twitter?: string;
     };
     images?: { id: string, url: string, description: string, display_order: number }[];
+    banner_url?: string;
 }
 
 
@@ -86,6 +88,7 @@ const BusinessDashboard = () => {
     const [isSavingCategories, setIsSavingCategories] = useState(false);
     const [isSavingProfile, setIsSavingProfile] = useState(false);
     const [isSavingGallery, setIsSavingGallery] = useState(false);
+    const [isUploadingBanner, setIsUploadingBanner] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -296,18 +299,8 @@ const BusinessDashboard = () => {
 
         try {
             setIsSavingGallery(true);
-            const fileExt = file.name.split('.').pop();
-            const fileName = `gallery/${listing?.id}-${Date.now()}-${index}.${fileExt}`;
-
-            const { error: uploadError } = await supabase.storage
-                .from('uploads')
-                .upload(fileName, file);
-
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('uploads')
-                .getPublicUrl(fileName);
+            const { uploadImageToCloudinary } = await import('../lib/cloudinary');
+            const publicUrl = await uploadImageToCloudinary(file);
 
             const newImages = [...listingImages];
             newImages[index].url = publicUrl;
@@ -318,6 +311,39 @@ const BusinessDashboard = () => {
             console.error('Error uploading gallery image:', error);
             toast.error(error.message || 'Failed to upload image');
             setIsSavingGallery(false);
+        }
+    };
+
+    const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please upload an image file');
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Banner image must be less than 5MB');
+            return;
+        }
+
+        try {
+            setIsUploadingBanner(true);
+            const { uploadImageToCloudinary } = await import('../lib/cloudinary');
+            const publicUrl = await uploadImageToCloudinary(file);
+
+            setListing(prev => {
+                const updated = { ...prev!, banner_url: publicUrl };
+                saveProfileData({ banner_url: publicUrl });
+                return updated;
+            });
+            toast.success('Banner uploaded successfully');
+        } catch (error: any) {
+            console.error('Error uploading banner:', error);
+            toast.error(error.message || 'Failed to upload banner');
+        } finally {
+            setIsUploadingBanner(false);
         }
     };
 
@@ -520,6 +546,48 @@ const BusinessDashboard = () => {
                                         />
                                     </div>
 
+                                    <div className="md:col-span-2 space-y-3 mt-4">
+                                        <div className="flex justify-between items-center px-1">
+                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Alternate Business Locations</label>
+                                            <button
+                                                type="button"
+                                                onClick={() => setListing(prev => ({ ...prev!, additional_addresses: [...(prev?.additional_addresses || []), ''] }))}
+                                                className="text-xs text-[#007F00] hover:text-[#005c00] font-bold flex items-center gap-1 bg-[#007F00]/5 px-3 py-1.5 rounded-full"
+                                            >
+                                                <Plus size={14} /> Add Alternate Address
+                                            </button>
+                                        </div>
+                                        {(listing.additional_addresses || []).map((addr, idx) => (
+                                            <div key={idx} className="flex gap-2 items-center">
+                                                <input
+                                                    type="text"
+                                                    value={addr}
+                                                    onChange={(e) => {
+                                                        const newAddrs = [...(listing.additional_addresses || [])];
+                                                        newAddrs[idx] = e.target.value;
+                                                        setListing(prev => ({ ...prev!, additional_addresses: newAddrs }));
+                                                        // Debounce save logic explicitly here since it's a deep field update
+                                                        const formEvent = { target: { name: 'additional_addresses', value: newAddrs } } as any;
+                                                        handleProfileChange(formEvent);
+                                                    }}
+                                                    className="flex-1 bg-gray-100 border-none rounded-2xl px-6 py-4 font-bold text-gray-900 focus:ring-2 focus:ring-[#007F00] transition-all"
+                                                    placeholder="Additional branch location..."
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const newAddrs = (listing.additional_addresses || []).filter((_, i) => i !== idx);
+                                                        setListing(prev => ({ ...prev!, additional_addresses: newAddrs }));
+                                                        saveProfileData({ additional_addresses: newAddrs });
+                                                    }}
+                                                    className="p-4 text-red-500 hover:bg-red-50 rounded-2xl transition-colors"
+                                                >
+                                                    <Trash2 size={24} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+
                                     <div>
                                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Website URL</label>
                                         <input
@@ -540,6 +608,49 @@ const BusinessDashboard = () => {
                                             placeholder="e.g. https://your-logo-link.com/logo.png"
                                             className="w-full bg-gray-100 border-none rounded-2xl px-6 py-4 font-bold text-gray-900 focus:ring-2 focus:ring-[#007F00] transition-all"
                                         />
+                                    </div>
+
+                                    <div>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Banner Image</label>
+                                        <div className="flex items-center gap-4">
+                                            {listing.banner_url ? (
+                                                <div className="relative h-14 w-32 rounded-lg overflow-hidden border border-gray-100 group flex-shrink-0">
+                                                    <img src={listing.banner_url} alt="Banner Preview" className="h-full w-full object-cover" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setListing(prev => ({ ...prev!, banner_url: '' }));
+                                                            saveProfileData({ banner_url: null });
+                                                        }}
+                                                        className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <X size={16} className="text-white" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="h-14 w-32 rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-300 bg-gray-50/50 flex-shrink-0">
+                                                    {isUploadingBanner ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} />}
+                                                </div>
+                                            )}
+                                            <div className="flex-1 space-y-1">
+                                                <input
+                                                    type="file"
+                                                    id="banner-upload"
+                                                    className="hidden"
+                                                    accept="image/*"
+                                                    onChange={handleBannerUpload}
+                                                    disabled={isUploadingBanner}
+                                                />
+                                                <label
+                                                    htmlFor="banner-upload"
+                                                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${isUploadingBanner ? 'bg-gray-50 text-gray-400 border-gray-100' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
+                                                >
+                                                    {isUploadingBanner ? <Loader2 size={14} className="animate-spin" /> : <ImageIcon size={14} />}
+                                                    {isUploadingBanner ? 'Uploading...' : 'Upload Banner'}
+                                                </label>
+                                                <p className="text-[9px] text-gray-400 font-medium">Recommended: 1920x600. Max 5MB.</p>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div className="md:col-span-2">

@@ -328,32 +328,20 @@ const Layout = () => {
                         <div>
                             <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">Quick Links</h4>
                             <ul className="space-y-3">
-                                {NAV_LINKS.slice(0, 4).map(link => (
+                                {[
+                                    { label: 'Home', path: '/' },
+                                    { label: 'About Us', path: '/about' },
+                                    { label: 'Energy Upgrade Catalogue', path: '/catalogue' },
+                                    { label: 'Speak to an Energy Advisor', path: '/hire-agent' },
+                                    { label: 'Business Registration', path: '/signup?role=business' },
+                                    { label: 'FAQ', path: '/faq' }
+                                ].map(link => (
                                     <li key={link.path}>
                                         <Link to={link.path} className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
                                             {link.label}
                                         </Link>
                                     </li>
                                 ))}
-                                {/* <li>
-                                    <Link to="/assessor-membership" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
-                                        Assessor Membership
-                                    </Link>
-                                </li> */}
-
-                                <li>
-                                    <Link to="/signup?role=business" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
-                                        BUSINESS CATALOGUE REGISTRATION
-                                    </Link>
-                                </li>
-
-                                <li>
-                                    <Link to="/faq" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
-                                        FAQ
-                                    </Link>
-                                </li>
-
-
                             </ul>
                         </div>
 
@@ -361,23 +349,20 @@ const Layout = () => {
                         <div>
                             <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">Account</h4>
                             <ul className="space-y-3">
-                                {NAV_LINKS.slice(4).map(link => (
+                                {[
+                                    { label: 'Book BER Assessors', path: '/' },
+                                    { label: 'Locations', path: '/locations' },
+                                    { label: 'Our News', path: '/news' },
+                                    { label: 'Contact Us', path: '/contact' },
+                                    { label: 'Login to Portal', path: '/login' },
+                                    { label: 'Sign Up', path: '/signup' }
+                                ].map(link => (
                                     <li key={link.label}>
                                         <Link to={link.path} className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
                                             {link.label}
                                         </Link>
                                     </li>
                                 ))}
-                                <li>
-                                    <Link to="/login" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
-                                        Login
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link to="/signup" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
-                                        Sign Up
-                                    </Link>
-                                </li>
                                 <li>
                                     <button
                                         onClick={() => {

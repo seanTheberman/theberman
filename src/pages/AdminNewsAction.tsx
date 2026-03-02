@@ -86,19 +86,8 @@ const AdminNewsAction = () => {
 
         setIsUploading(true);
         try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
-            const filePath = `news-articles/${fileName}`;
-
-            const { error: uploadError } = await supabase.storage
-                .from('uploads')
-                .upload(filePath, file);
-
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('uploads')
-                .getPublicUrl(filePath);
+            const { uploadImageToCloudinary } = await import('../lib/cloudinary');
+            const publicUrl = await uploadImageToCloudinary(file);
 
             setArticle(prev => ({ ...prev, image_url: publicUrl }));
             toast.success('Image uploaded successfully');

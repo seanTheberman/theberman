@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
     ArrowLeft, MapPin, Mail, Phone, Globe, Loader2,
-    CheckCircle2, Facebook, Instagram,
+    CheckCircle2, Facebook, Instagram, X,
     Check, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
@@ -38,6 +38,12 @@ export interface CatalogueListing {
         linkedin?: string;
         twitter?: string;
     };
+    banner_url?: string;
+    address?: string;
+    additional_addresses?: string[];
+    company_number?: string;
+    vat_number?: string;
+    registration_no?: string;
 }
 
 interface ListingLayoutProps {
@@ -83,6 +89,7 @@ const DEFAULT_HERO_IMAGE = "https://images.unsplash.com/photo-1497366216548-3752
 
 const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmitting }: ListingLayoutProps) => {
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const displayName = listing.company_name || listing.name;
 
     const dummyFeatures = [
@@ -112,172 +119,23 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
         }
     }, [listing]);
 
+    const formatAddress = (addressStr?: string) => {
+        if (!addressStr) return '';
+        const parts = addressStr.split(',').map(s => s.trim()).filter(Boolean);
+        return [...new Set(parts)].join(', ');
+    };
+
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen pb-20">
             <title>{displayName} | The Berman Catalogue</title>
 
-            {/* Partner Hero Carousel */}
-            <div className="relative h-[450px] md:h-[600px] w-full overflow-hidden mb-12 group">
-                {listing.images && listing.images.length > 0 && listing.images.sort((a, b) => a.display_order - b.display_order).map((img, index) => (
-                    <div
-                        key={img.id}
-                        className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-                    >
-                        <img
-                            src={img.url}
-                            className="w-full h-full object-cover"
-                            alt={`${displayName} hero ${index + 1}`}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                        {img.description && (
-                            <div className="absolute bottom-12 left-0 right-0 p-8 z-20 pointer-events-none">
-                                <div className="container mx-auto max-w-7xl text-center md:text-left">
-                                    <div className="bg-black/40 backdrop-blur-sm inline-block px-6 py-3 rounded-xl border border-white/10">
-                                        <p className="text-white text-sm md:text-lg font-medium drop-shadow-md">{img.description}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                ))}
-
-                {/* Hardcoded Cills.ie Slides (Legacy Fallback) */}
-                {(!listing.images || listing.images.length === 0) && listing.slug === 'cills-ie' && HERO_SLIDES.map((slide, index) => (
-                    <div
-                        key={index}
-                        className={`absolute inset-0 transition-opacity duration-1000 flex items-center ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'} ${slide.bg}`}
-                    >
-                        {slide.type === 'intro' && (
-                            <>
-                                <div className="absolute inset-0">
-                                    <img src={slide.image} className="w-full h-full object-cover opacity-40 mix-blend-overlay" alt="" />
-                                    <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
-                                </div>
-                                <div className="container mx-auto px-6 relative z-10 text-white max-w-7xl">
-                                    <div className="max-w-2xl">
-                                        <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight leading-tight uppercase">
-                                            {slide.title}
-                                        </h2>
-                                        <div className="bg-[#1b6cb5]/30 backdrop-blur-sm px-4 py-2 rounded-sm inline-block mb-6 border border-white/10">
-                                            <p className="text-sm font-medium tracking-wide uppercase">{slide.subtitle}</p>
-                                        </div>
-                                        <p className="text-lg md:text-xl text-white/80 mb-8 font-light leading-relaxed">
-                                            {slide.description}
-                                        </p>
-                                        <button className="flex items-center gap-3 bg-[#1b6cb5] hover:bg-[#155a96] text-white px-8 py-4 rounded-sm font-bold tracking-widest text-xs transition-all">
-                                            {slide.cta}
-                                            <ArrowLeft className="rotate-180" size={16} />
-                                        </button>
-                                    </div>
-                                </div>
-                            </>
-                        )}
-
-                        {slide.type === 'mockup' && (
-                            <div className="container mx-auto px-6 relative z-10 max-w-7xl h-full flex items-center justify-between gap-12">
-                                <div className="max-w-lg mb-12">
-                                    <h2 className="text-4xl md:text-6xl font-normal text-gray-400 mb-8 leading-tight">
-                                        {slide.title}
-                                    </h2>
-                                    <div className="bg-white px-6 py-4 rounded-full shadow-lg inline-block">
-                                        <p className="text-lg font-medium text-gray-800">{slide.subtitle}</p>
-                                    </div>
-                                </div>
-                                <div className="hidden lg:block relative h-full w-1/2 overflow-hidden py-12">
-                                    <div className="bg-white rounded-[2.5rem] shadow-2xl h-full w-[300px] mx-auto border-[8px] border-black/5 flex flex-col items-center justify-center p-8 text-center gap-6">
-                                        <div className="text-4xl font-black text-[#007EA7]">C</div>
-                                        <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Ireland's Only Digital Platform</p>
-                                        <div className="w-full h-1 bg-gray-100 rounded-full" />
-                                        <p className="text-[10px] text-gray-500">Measure, Order, Deliver. Accuracy on every site.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {slide.type === 'app' && (
-                            <div className="container mx-auto px-6 relative z-10 max-w-7xl text-center md:text-left">
-                                <div className="flex flex-col md:flex-row items-center justify-between gap-12">
-                                    <div className="flex-1">
-                                        <h2 className="text-4xl md:text-6xl font-light text-white mb-6 leading-tight">
-                                            {slide.title}
-                                        </h2>
-                                        <p className="text-xl text-white/70 mb-10">{slide.subtitle}</p>
-                                        <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                                            <div className="flex items-center gap-3 bg-black text-white px-6 py-3 rounded-xl border border-white/20 hover:scale-105 transition-transform cursor-pointer">
-                                                <div className="text-2xl"></div>
-                                                <div className="text-left">
-                                                    <p className="text-[8px] font-medium opacity-60">Download on the</p>
-                                                    <p className="text-sm font-bold">App Store</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-3 bg-black text-white px-6 py-3 rounded-xl border border-white/20 hover:scale-105 transition-transform cursor-pointer">
-                                                <div className="text-2xl text-green-500">▶</div>
-                                                <div className="text-left">
-                                                    <p className="text-[8px] font-medium opacity-60">GET IT ON</p>
-                                                    <p className="text-sm font-bold">Google Play</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="hidden md:block w-1/3">
-                                        <div className="text-[240px] font-black text-white/5 select-none text-center">C</div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                ))}
-
-                {/* Navigation Dots */}
-                {((listing.images && listing.images.length > 1) || (!listing.images?.length && listing.slug === 'cills-ie' && HERO_SLIDES.length > 1)) && (
-                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20">
-                        {Array.from({ length: (listing.images && listing.images.length > 0) ? listing.images.length : HERO_SLIDES.length }).map((_, i) => (
-                            <button
-                                key={i}
-                                onClick={() => setCurrentSlide(i)}
-                                className={`h-2 rounded-full transition-all duration-300 ${i === currentSlide
-                                    ? 'w-8 bg-white'
-                                    : 'w-2 bg-white/40 hover:bg-white/60'
-                                    }`}
-                            />
-                        ))}
-                    </div>
-                )}
-
-                {/* Arrow Navigation */}
-                {((listing.images && listing.images.length > 1) || (!listing.images?.length && listing.slug === 'cills-ie' && HERO_SLIDES.length > 1)) && (
-                    <>
-                        <button
-                            onClick={() => setCurrentSlide(prev => (prev - 1 + ((listing.images && listing.images.length > 0) ? listing.images.length : HERO_SLIDES.length)) % ((listing.images && listing.images.length > 0) ? listing.images.length : HERO_SLIDES.length))}
-                            className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/20 hover:bg-black/40 text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-20"
-                        >
-                            <ChevronLeft size={24} />
-                        </button>
-                        <button
-                            onClick={() => setCurrentSlide(prev => (prev + 1) % ((listing.images && listing.images.length > 0) ? listing.images.length : HERO_SLIDES.length))}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/20 hover:bg-black/40 text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-20"
-                        >
-                            <ChevronRight size={24} />
-                        </button>
-                    </>
-                )}
-
-                {/* Default Fallback Image */}
-                {(!listing.images || listing.images.length === 0) && listing.slug !== 'cills-ie' && (
-                    <div className="absolute inset-0 z-10">
-                        <img
-                            src={DEFAULT_HERO_IMAGE}
-                            className="w-full h-full object-cover"
-                            alt="The Berman Catalogue"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12 bg-gradient-to-t from-black/60 to-transparent">
-                            <div className="container mx-auto max-w-7xl text-center md:text-left">
-                                <h1 className="text-4xl md:text-6xl font-black text-white mb-2 shadow-sm drop-shadow-lg uppercase tracking-tight">{displayName}</h1>
-                            </div>
-                        </div>
-                    </div>
-                )}
+            {/* Single Banner Hero */}
+            <div className="relative h-[350px] md:h-[500px] w-full mb-12 bg-gray-900 border-b border-gray-100 shadow-sm">
+                <img
+                    src={listing.banner_url || DEFAULT_HERO_IMAGE}
+                    className="w-full h-full object-cover opacity-80"
+                    alt={`${displayName} banner cover`}
+                />
             </div>
 
             <div className="container mx-auto px-6 max-w-7xl">
@@ -286,50 +144,81 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
                     <div className="lg:col-span-8">
                         {/* Header Area */}
                         <div className="mb-10">
-                            <div className="flex flex-wrap gap-2 mb-4">
+                            <div className="flex flex-wrap gap-2 mb-6">
                                 {listing.categories?.map(cat => (
                                     <span key={cat.id} className="px-4 py-1.5 bg-[#E8F4FD] text-[#007EA7] text-xs font-medium rounded-full">
                                         {cat.name}
                                     </span>
                                 ))}
                             </div>
-                            {/* Title moved to Hero for default layout, kept here for structure but maybe hidden if default? Keeping consistent.*/}
-                            {/* If default hero is used, title is in hero. If custom images used, title is here. Refinement: keeping it simple for now, maybe duplicate title isn't bad if styled right or we hide this one when default is active. Let's hide this H1 if default hero is active to avoid duplication. */}
-                            {listing.images && listing.images.length > 0 && (
-                                <h1 className="text-4xl md:text-5xl font-bold text-[#333] mb-2">{displayName}</h1>
-                            )}
-                            {listing.slug === 'cills-ie' && (
-                                <h1 className="text-4xl md:text-5xl font-bold text-[#333] mb-2">{displayName}</h1>
-                            )}
-                            <div className="flex items-center gap-1.5 text-gray-400">
-                                <MapPin size={18} />
-                                <span className="text-sm font-medium">{listing.locations?.[0]?.name || 'Co. Dublin'}</span>
-                            </div>
-                        </div>
-
-                        {/* Tabs */}
-                        <div className="mb-12">
-                            <div className="flex gap-8 border-b border-gray-100">
-                                <button className="pb-4 border-b-4 border-[#007EA7] text-[#007EA7] font-bold text-sm">Overview</button>
-                            </div>
-                        </div>
-
-                        {/* Description Content */}
-                        <div className="mb-12">
-                            {listing.long_description ? (
-                                <div className="space-y-6">
-                                    <h2 className="text-2xl font-bold text-[#333] leading-snug">
+                            
+                            <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-5 tracking-tight leading-tight">{displayName}</h1>
+                            
+                            {/* Description Content */}
+                            {listing.description && (
+                                <div className="mb-6">
+                                    <h2 className="text-xl md:text-2xl font-medium text-gray-600 leading-snug">
                                         {listing.description}
                                     </h2>
-                                    <div className="text-gray-600 font-normal leading-relaxed text-base whitespace-pre-wrap">
-                                        {listing.long_description}
+                                </div>
+                            )}
+                            {listing.long_description && (
+                                <div className="text-gray-600 font-normal leading-relaxed text-[15px] whitespace-pre-wrap mb-10">
+                                    {listing.long_description}
+                                </div>
+                            )}
+
+                            {/* Addresses Content */}
+                            <div className="bg-white border border-gray-100/80 rounded-2xl p-6 md:p-8 mb-10 shadow-[0_2px_20px_rgba(0,0,0,0.03)]">
+                                <div className="flex items-start gap-4 md:gap-5">
+                                    <div className="mt-0.5 bg-[#E8F4FD]/50 text-[#007EA7] p-2.5 rounded-xl flex-shrink-0">
+                                        <MapPin size={22} className="stroke-[2]" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="text-[10px] font-black text-[#007EA7] uppercase tracking-[0.15em] mb-2 opacity-80">Primary Location</h3>
+                                        <div className="text-base font-bold text-gray-800 leading-relaxed mb-3">
+                                            {formatAddress(listing.address) || 'Address not provided'}
+                                        </div>
+                                        <div className="inline-flex items-center px-2.5 py-1 bg-gray-50 text-gray-500 rounded-md text-xs font-semibold border border-gray-100">
+                                            {listing.locations?.[0]?.name || 'Co. Dublin'}
+                                        </div>
                                     </div>
                                 </div>
-                            ) : listing.description ? (
-                                <div className="text-gray-600">
-                                    <h2 className="text-2xl font-bold text-[#333] mb-4">{listing.description}</h2>
+
+                                {listing.additional_addresses && listing.additional_addresses.length > 0 && listing.additional_addresses.map((addr, idx) => (
+                                    <div key={idx} className="flex items-start gap-4 md:gap-5 mt-6 pt-6 border-t border-gray-100/60">
+                                        <div className="mt-0.5 bg-gray-50 text-gray-400 p-2.5 rounded-xl flex-shrink-0 border border-gray-100/50">
+                                            <MapPin size={22} className="stroke-[2]" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] mb-2">Alternate Branch</h3>
+                                            <div className="text-base font-bold text-gray-700 leading-relaxed">
+                                                {formatAddress(addr)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            {(listing.company_number || listing.vat_number || listing.registration_no) && (
+                                <div className="mb-8 pt-4 border-t border-gray-100 flex flex-wrap gap-x-6 gap-y-2 text-xs text-gray-500">
+                                    {listing.company_number && (
+                                        <div className="flex items-center gap-1.5"><span className="font-semibold text-gray-700">Company No:</span> {listing.company_number}</div>
+                                    )}
+                                    {listing.vat_number && (
+                                        <div className="flex items-center gap-1.5"><span className="font-semibold text-gray-700">VAT Reg:</span> {listing.vat_number}</div>
+                                    )}
+                                    {listing.registration_no && (
+                                        <div className="flex items-center gap-1.5"><span className="font-semibold text-gray-700">BER Reg:</span> {listing.registration_no}</div>
+                                    )}
                                 </div>
-                            ) : null}
+                            )}
+                        </div>
+
+                        {/* Additional Info Tab for overview */}
+                        <div className="mb-8">
+                            <div className="border-b border-gray-100 mb-6">
+                                <h2 className="text-[#007EA7] font-bold text-[15px] inline-block border-b-2 border-[#007EA7] pb-3">Contact & Details</h2>
+                            </div>
                         </div>
 
                         {/* Quick Contact Info specifically for Cills as per image */}
@@ -478,6 +367,64 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
                     </div>
                 </div>
             </div>
+
+            {/* Works Gallery - Full Width Outside Main Context */}
+            {listing.images && listing.images.length > 0 && (
+                <div className="container mx-auto px-6 max-w-7xl mt-16 border-t border-gray-100 pt-16">
+                    <div className="flex flex-col items-center justify-center text-center mb-10">
+                        <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-4">Our Work Gallery</h3>
+                        <div className="w-20 h-1.5 bg-[#007EA7] rounded-full mx-auto" />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {listing.images.sort((a, b) => a.display_order - b.display_order).map((img) => (
+                            <div 
+                                key={img.id} 
+                                onClick={() => setSelectedImage(img.url)}
+                                className="group relative rounded-2xl overflow-hidden shadow-sm aspect-[4/3] bg-gray-50 border border-gray-100 cursor-zoom-in"
+                            >
+                                <img
+                                    src={img.url}
+                                    alt={img.description || `Work sample ${img.display_order + 1}`}
+                                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                                />
+                                {img.description && (
+                                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-6 pt-16 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                                        <p className="text-sm font-medium text-white line-clamp-2 leading-relaxed opacity-90">
+                                            {img.description}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Lightbox Modal */}
+            {selectedImage && (
+                <div 
+                    className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 md:p-8"
+                    onClick={() => setSelectedImage(null)}
+                >
+                    <button 
+                        className="absolute top-6 right-6 md:top-10 md:right-10 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors z-[10000]"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedImage(null);
+                        }}
+                    >
+                        <X size={24} />
+                    </button>
+                    
+                    <img 
+                        src={selectedImage} 
+                        className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl scale-100 animate-in fade-in zoom-in duration-300"
+                        alt="Gallery HD Preview" 
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                </div>
+            )}
         </div>
     );
 };
