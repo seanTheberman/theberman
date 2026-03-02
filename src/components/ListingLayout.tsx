@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
-    ArrowLeft, MapPin, Mail, Phone, Globe, Loader2,
+     MapPin, Mail, Phone, Globe, Loader2,
     CheckCircle2, Facebook, Instagram, X,
-    Check, ChevronLeft, ChevronRight
+    Check
 } from 'lucide-react';
 
 export interface Category {
@@ -59,36 +59,11 @@ interface ListingLayoutProps {
     isSubmitting: boolean;
 }
 
-const HERO_SLIDES = [
-    {
-        title: "The New Way To Measure Aluminium Window Cills",
-        subtitle: "Ireland's Only Digital Platform for Aluminium Fabrication",
-        description: "Measure, Order, Deliver. Cills.ie provides engineered aluminium window cills, flashings & cappings on-site using your phone. Accuracy — zero errors, zero delays.",
-        cta: "CREATE FREE ACCOUNT",
-        bg: "bg-[#2A3B45]",
-        image: "https://images.unsplash.com/photo-1590069230002-70cc3bc432bb?q=80&w=1200",
-        type: "intro"
-    },
-    {
-        title: "Ordering cills used to be complicated",
-        subtitle: "Not anymore - Cills.ie makes it simple.",
-        image: "https://images.unsplash.com/photo-1556740758-90de374c12ad?q=80&w=800",
-        bg: "bg-[#E3E7E9]",
-        type: "mockup"
-    },
-    {
-        title: "Stop losing money on preventable mistakes",
-        subtitle: "Download the CILL5 app today and start working with precision.",
-        bg: "bg-[#C4CDD2]",
-        type: "app",
-        stores: true
-    }
-];
+
 
 const DEFAULT_HERO_IMAGE = "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2000";
 
 const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmitting }: ListingLayoutProps) => {
-    const [currentSlide, setCurrentSlide] = useState(0);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const displayName = listing.company_name || listing.name;
 
@@ -106,18 +81,7 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
             ? listing.categories.map(c => c.name)
             : dummyFeatures;
 
-    useEffect(() => {
-        const slideCount = (listing?.images?.length || 0) > 0
-            ? listing!.images!.length
-            : (listing.slug === 'cills-ie' ? HERO_SLIDES.length : 0);
 
-        if (slideCount > 1) {
-            const timer = setInterval(() => {
-                setCurrentSlide(prev => (prev + 1) % slideCount);
-            }, 6000);
-            return () => clearInterval(timer);
-        }
-    }, [listing]);
 
     const formatAddress = (addressStr?: string) => {
         if (!addressStr) return '';
@@ -151,9 +115,9 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
                                     </span>
                                 ))}
                             </div>
-                            
+
                             <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-5 tracking-tight leading-tight">{displayName}</h1>
-                            
+
                             {/* Description Content */}
                             {listing.description && (
                                 <div className="mb-6">
@@ -375,11 +339,11 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
                         <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-4">Our Work Gallery</h3>
                         <div className="w-20 h-1.5 bg-[#007EA7] rounded-full mx-auto" />
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {listing.images.sort((a, b) => a.display_order - b.display_order).map((img) => (
-                            <div 
-                                key={img.id} 
+                            <div
+                                key={img.id}
                                 onClick={() => setSelectedImage(img.url)}
                                 className="group relative rounded-2xl overflow-hidden shadow-sm aspect-[4/3] bg-gray-50 border border-gray-100 cursor-zoom-in"
                             >
@@ -403,11 +367,11 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
 
             {/* Lightbox Modal */}
             {selectedImage && (
-                <div 
+                <div
                     className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 md:p-8"
                     onClick={() => setSelectedImage(null)}
                 >
-                    <button 
+                    <button
                         className="absolute top-6 right-6 md:top-10 md:right-10 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors z-[10000]"
                         onClick={(e) => {
                             e.stopPropagation();
@@ -416,11 +380,11 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
                     >
                         <X size={24} />
                     </button>
-                    
-                    <img 
-                        src={selectedImage} 
+
+                    <img
+                        src={selectedImage}
                         className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl scale-100 animate-in fade-in zoom-in duration-300"
-                        alt="Gallery HD Preview" 
+                        alt="Gallery HD Preview"
                         onClick={(e) => e.stopPropagation()}
                     />
                 </div>

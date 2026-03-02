@@ -16,7 +16,9 @@ import {
     CheckCircle,
     Menu,
     X,
-    CreditCard
+    CreditCard,
+    Plus,
+    Trash2
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
