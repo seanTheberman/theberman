@@ -152,17 +152,21 @@ const BusinessOnboarding = () => {
                 console.error('Failed to update initial profile:', profileUpdateError);
             }
 
-            // Proactively notify admin of interest
-            try {
-                await supabase.functions.invoke('notify-admin-interest', {
-                    body: { registrationData, type: 'business' }
-                });
-            } catch (err) {
-                console.error('Failed to send interest notification:', err);
+            // Check if user is already marked as paid (manual activation)
+            const { data: currentProfile } = await supabase
+                .from('profiles')
+                .select('stripe_payment_id, registration_status')
+                .eq('id', user.id)
+                .single();
+
+            if (currentProfile?.stripe_payment_id === 'MANUAL_BY_ADMIN') {
+                toast.success('Business profile updated! Your account is active.');
+                navigate('/dashboard/business', { replace: true });
+                return;
             }
 
             toast.success('Information saved! Please complete your registration payment.');
-            navigate('/business-membership', { replace: true });
+            navigate('/membership-payment', { replace: true });
         } catch (error: any) {
             console.error('Onboarding data saving error:', error);
             toast.error('Failed to save registration data');
