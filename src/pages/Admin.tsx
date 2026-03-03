@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2, Search, Newspaper, Plus, Star, Check, Edit2, ExternalLink, Image as ImageIcon, UploadCloud, ArrowLeft, Users, DollarSign, CreditCard, ClipboardList, ArrowRight, Hourglass, Building, XCircle } from 'lucide-react';
+import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, AlertCircle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2, Search, Newspaper, Plus, Star, Check, Edit2, ExternalLink, Image as ImageIcon, UploadCloud, ArrowLeft, Users, DollarSign, CreditCard, ClipboardList, ArrowRight, Hourglass, Building, XCircle } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
@@ -147,6 +147,129 @@ interface NewsArticle {
     read_time: string;
 }
 
+// Helper components for centralized status display
+const StatusBadge = ({ profile }: { profile: Profile }) => {
+    let statusLabel = profile.registration_status || (profile.is_active !== false ? 'active' : 'pending');
+    let bgColor = 'bg-amber-50 text-amber-700 border-amber-200';
+    let dotColor = 'bg-amber-500';
+
+    if (profile.stripe_payment_id === 'SUSPENDED') {
+        statusLabel = 'suspended' as any;
+        bgColor = 'bg-red-50 text-red-700 border-red-200';
+        dotColor = 'bg-red-500';
+    } else if (profile.registration_status === 'active') {
+        if (profile.is_active === false) {
+            statusLabel = 'inactive' as any;
+            bgColor = 'bg-gray-50 text-gray-700 border-gray-200';
+            dotColor = 'bg-gray-500';
+        } else {
+            statusLabel = 'active';
+            bgColor = 'bg-green-50 text-green-700 border-green-200';
+            dotColor = 'bg-green-500';
+        }
+    } else if (profile.registration_status === 'rejected') {
+        statusLabel = 'rejected';
+        bgColor = 'bg-red-50 text-red-700 border-red-200';
+        dotColor = 'bg-red-500';
+    }
+
+    return (
+        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${bgColor}`}>
+            <div className={`w-1.5 h-1.5 rounded-full ${dotColor} ${statusLabel === 'active' ? 'animate-pulse' : ''}`} />
+            {statusLabel}
+        </div>
+    );
+};
+
+const PaymentStatusBadge = ({ profile }: { profile: Profile }) => {
+    if (profile.stripe_payment_id === 'SUSPENDED') {
+        return (
+            <div className="flex flex-col">
+                <span className="text-[9px] font-bold uppercase flex items-center gap-1 text-red-500">
+                    <AlertTriangle size={10} /> Suspended
+                </span>
+                <span className="text-[10px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 mt-0.5 select-all">
+                    SUSPENDED
+                </span>
+            </div>
+        );
+    }
+
+    if (profile.stripe_payment_id === 'CANCELLED') {
+        return (
+            <div className="flex flex-col">
+                <span className="text-[9px] font-bold uppercase flex items-center gap-1 text-red-500">
+                    <XCircle size={10} /> Cancelled
+                </span>
+                <span className="text-[10px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 mt-0.5 select-all">
+                    CANCELLED
+                </span>
+            </div>
+        );
+    }
+
+    if (profile.stripe_payment_id) {
+        return (
+            <div className="flex flex-col">
+                <span className="text-[9px] font-bold uppercase flex items-center gap-1 text-green-600">
+                    <CreditCard size={10} /> Paid
+                </span>
+                <span className="text-[10px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 mt-0.5 select-all" title="Stripe Payment ID">
+                    {profile.stripe_payment_id}
+                </span>
+            </div>
+        );
+    }
+
+    return (
+        <span className="text-[9px] text-gray-400 font-bold uppercase flex items-center gap-1">
+            <AlertTriangle size={10} className="text-amber-500" /> Not Paid
+        </span>
+    );
+};
+
+const SubscriptionInfo = ({ profile }: { profile: Profile }) => {
+    if (profile.stripe_payment_id === 'SUSPENDED') {
+        return (
+            <div className="flex items-center gap-1.5 text-red-600 font-bold text-xs bg-red-50 p-2 rounded-lg border border-red-100">
+                <AlertTriangle size={14} /> Account Suspended
+            </div>
+        );
+    }
+
+    const subStatus = profile.subscription_status || 'inactive';
+    const endDate = profile.subscription_end_date ? new Date(profile.subscription_end_date) : null;
+    const now = new Date();
+    const daysLeft = endDate ? Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : null;
+    const isExpired = daysLeft !== null && daysLeft <= 0;
+    const isExpiringSoon = daysLeft !== null && daysLeft > 0 && daysLeft <= 30;
+
+    return (
+        <div className="flex flex-col gap-1.5 p-2 bg-gray-50/50 rounded-lg border border-gray-100">
+            <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase w-fit ${subStatus === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                {subStatus}
+            </div>
+            {endDate && (
+                <div className={`text-[10px] ${isExpired ? 'text-red-500 font-bold' : isExpiringSoon ? 'text-amber-600 font-bold' : 'text-gray-400'}`}>
+                    <span className="font-semibold">{isExpired ? 'Expired:' : 'Expires:'}</span> {endDate.toLocaleDateString('en-GB')}
+                    {isExpiringSoon && !isExpired && (
+                        <span className="ml-1 text-amber-500">({daysLeft}d left)</span>
+                    )}
+                </div>
+            )}
+            {isExpired && (
+                <div className="flex items-center gap-1 text-[9px] text-red-600 font-black animate-pulse uppercase mt-1">
+                    <AlertCircle size={10} />
+                    Account Disabled
+                </div>
+            )}
+            {!endDate && (
+                <span className="text-[10px] text-gray-300 italic">No subscription</span>
+            )}
+        </div>
+    );
+};
+
 const Admin = () => {
     const getFallbackPhone = (profile: Profile) => {
         if (profile.phone && profile.phone !== 'N/A') return profile.phone;
@@ -224,10 +347,15 @@ const Admin = () => {
         (a.profiles?.full_name || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const filteredBusinessLeads = users_list.filter(u => u.role === 'business').filter(u =>
-        u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.email?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredBusinessLeads = users_list.filter(u => u.role === 'business').filter(u => {
+        const query = searchTerm.toLowerCase();
+        return u.full_name?.toLowerCase().includes(query) ||
+            u.email?.toLowerCase().includes(query) ||
+            u.company_name?.toLowerCase().includes(query) ||
+            u.business_address?.toLowerCase().includes(query) ||
+            u.county?.toLowerCase().includes(query) ||
+            u.town?.toLowerCase().includes(query);
+    });
 
     useEffect(() => {
         setSearchTerm('');
@@ -1625,6 +1753,10 @@ const Admin = () => {
         if (!selectedUser) return;
         setIsUpdating(true);
         try {
+            const finalStripeId = (editForm.subscription_status === 'active' && !editForm.stripe_payment_id)
+                ? 'MANUAL_BY_ADMIN'
+                : (editForm.stripe_payment_id || null);
+
             const { error } = await supabase
                 .from('profiles')
                 .update({
@@ -1632,7 +1764,7 @@ const Admin = () => {
                     subscription_start_date: editForm.subscription_start_date,
                     subscription_end_date: editForm.subscription_end_date,
                     manual_override_reason: editForm.manual_override_reason,
-                    stripe_payment_id: editForm.stripe_payment_id || null,
+                    stripe_payment_id: finalStripeId,
                     role: editForm.role
                 })
                 .eq('id', selectedUser.id);
@@ -1646,7 +1778,7 @@ const Admin = () => {
                     subscription_start_date: editForm.subscription_start_date,
                     subscription_end_date: editForm.subscription_end_date,
                     manual_override_reason: editForm.manual_override_reason,
-                    stripe_payment_id: editForm.stripe_payment_id,
+                    stripe_payment_id: finalStripeId,
                     role: editForm.role as any
                 } : u
             ));
@@ -1658,7 +1790,7 @@ const Admin = () => {
                 subscription_start_date: editForm.subscription_start_date!,
                 subscription_end_date: editForm.subscription_end_date!,
                 manual_override_reason: editForm.manual_override_reason!,
-                stripe_payment_id: editForm.stripe_payment_id!,
+                stripe_payment_id: finalStripeId!,
                 role: editForm.role as any
             });
 
@@ -1735,9 +1867,9 @@ const Admin = () => {
             const { error } = await supabase
                 .from('profiles')
                 .update({
-                    subscription_status: 'expired',
+                    subscription_status: 'cancelled',
                     is_active: false,
-                    stripe_payment_id: null,
+                    stripe_payment_id: 'CANCELLED',
                     registration_status: 'pending'
                 })
                 .eq('id', userId);
@@ -1747,9 +1879,9 @@ const Admin = () => {
             setUsersList(users_list.map(u =>
                 u.id === userId ? {
                     ...u,
-                    subscription_status: 'expired',
+                    subscription_status: 'cancelled',
                     is_active: false,
-                    stripe_payment_id: null,
+                    stripe_payment_id: 'CANCELLED',
                     registration_status: 'pending'
                 } : u
             ));
@@ -1757,14 +1889,14 @@ const Admin = () => {
             if (selectedUser?.id === userId) {
                 setSelectedUser({
                     ...selectedUser,
-                    subscription_status: 'expired',
+                    subscription_status: 'cancelled',
                     is_active: false,
-                    stripe_payment_id: null,
+                    stripe_payment_id: 'CANCELLED',
                     registration_status: 'pending'
                 });
             }
 
-            toast.success('Subscription cancelled and payment reset.');
+            toast.success('Subscription cancelled and status updated.');
             fetchUsers();
         } catch (error: any) {
             console.error('Error cancelling subscription:', error);
@@ -1799,29 +1931,48 @@ const Admin = () => {
         setIsUpdating(true);
         try {
             const isSuspending = itemToSuspend.currentStatus === true;
+
+            // Updated status mapping
+            const updateData: any = {
+                is_active: !itemToSuspend.currentStatus,
+            };
+
+            if (isSuspending) {
+                updateData.stripe_payment_id = 'SUSPENDED';
+                updateData.registration_status = 'pending';
+            }
+
             const { error } = await supabase
                 .from('profiles')
-                .update({
-                    is_active: !itemToSuspend.currentStatus,
-                    // If suspending, reset payment/registration status
-                    ...(isSuspending ? {
-                        stripe_payment_id: null,
-                        registration_status: 'pending'
-                    } : {})
-                })
+                .update(updateData)
                 .eq('id', itemToSuspend.id);
 
             if (error) throw error;
+
+            // ALSO SYNC LISTINGS
+            const { error: listingError } = await supabase
+                .from('catalogue_listings')
+                .update({ is_active: !itemToSuspend.currentStatus })
+                .or(`user_id.eq.${itemToSuspend.id},owner_id.eq.${itemToSuspend.id}`);
+
+            if (listingError) console.error('Error syncing listings:', listingError);
 
             setUsersList(users_list.map(u =>
                 u.id === itemToSuspend.id ? {
                     ...u,
                     is_active: !itemToSuspend.currentStatus,
                     ...(isSuspending ? {
-                        stripe_payment_id: null,
+                        stripe_payment_id: 'SUSPENDED',
                         registration_status: 'pending'
                     } : {})
                 } : u
+            ));
+
+            // Update local listings state
+            setListings(prev => prev.map(l =>
+                (l.user_id === itemToSuspend.id || l.owner_id === itemToSuspend.id)
+                    ? { ...l, is_active: !itemToSuspend.currentStatus }
+                    : l
             ));
 
             if (selectedUser?.id === itemToSuspend.id) {
@@ -1829,20 +1980,20 @@ const Admin = () => {
                     ...selectedUser,
                     is_active: !itemToSuspend.currentStatus,
                     ...(isSuspending ? {
-                        stripe_payment_id: null,
+                        stripe_payment_id: 'SUSPENDED',
                         registration_status: 'pending'
                     } : {})
                 });
             }
 
-            toast.success(`User ${!itemToSuspend.currentStatus ? 'activated' : 'suspended & payment reset'} successfully`);
+            toast.success(`User ${isSuspending ? 'suspended' : 'activated'} successfully`);
             setShowSuspendModal(false);
+            setItemToSuspend(null);
         } catch (error: any) {
             console.error('Error toggling user status:', error);
-            toast.error('Failed to update user status');
+            toast.error(error.message || 'Failed to update user status');
         } finally {
             setIsUpdating(false);
-            setItemToSuspend(null);
         }
     };
 
@@ -2462,87 +2613,111 @@ const Admin = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-50">
-                                        {listings.filter(l =>
-                                            l.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                            l.email?.toLowerCase().includes(searchTerm.toLowerCase())
-                                        ).length === 0 ? (
+                                        {listings
+                                            .filter(l => {
+                                                const query = searchTerm.toLowerCase();
+                                                return (l.company_name || l.name || '').toLowerCase().includes(query) ||
+                                                    (l.email || '').toLowerCase().includes(query) ||
+                                                    (l.address || '').toLowerCase().includes(query) ||
+                                                    (l.county || '').toLowerCase().includes(query) ||
+                                                    (l.town || '').toLowerCase().includes(query) ||
+                                                    (l.additional_addresses || []).some((addr: string) => addr.toLowerCase().includes(query));
+                                            })
+                                            .length === 0 ? (
                                             <tr>
                                                 <td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">No listings found.</td>
                                             </tr>
                                         ) : (
-                                            listings.filter(l =>
-                                                l.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                                l.email?.toLowerCase().includes(searchTerm.toLowerCase())
-                                            ).map((l) => (
-                                                <tr key={l.id} className="hover:bg-gray-50/50 transition-colors group">
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-3">
-                                                            {l.logo_url ? (
-                                                                <img src={l.logo_url} className="w-10 h-10 rounded-lg object-cover border border-gray-100" alt="" />
-                                                            ) : (
-                                                                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
-                                                                    <Briefcase size={20} />
+                                            listings
+                                                .filter(l => {
+                                                    const query = searchTerm.toLowerCase();
+                                                    return (l.company_name || l.name || '').toLowerCase().includes(query) ||
+                                                        (l.email || '').toLowerCase().includes(query) ||
+                                                        (l.address || '').toLowerCase().includes(query) ||
+                                                        (l.county || '').toLowerCase().includes(query) ||
+                                                        (l.town || '').toLowerCase().includes(query) ||
+                                                        (l.additional_addresses || []).some((addr: string) => addr.toLowerCase().includes(query));
+                                                })
+                                                .map((l) => {
+                                                    const owner = users_list.find(u => u.id === l.user_id || u.id === l.owner_id);
+                                                    const isOwnerSuspended = owner?.stripe_payment_id === 'SUSPENDED';
+
+                                                    return (
+                                                        <tr key={l.id} className="hover:bg-gray-50/50 transition-colors group">
+                                                            <td className="px-6 py-4">
+                                                                <div className="flex items-center gap-3">
+                                                                    {l.logo_url ? (
+                                                                        <img src={l.logo_url} className="w-10 h-10 rounded-lg object-cover border border-gray-100" alt="" />
+                                                                    ) : (
+                                                                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
+                                                                            <Briefcase size={20} />
+                                                                        </div>
+                                                                    )}
+                                                                    <div>
+                                                                        <div className="font-bold text-gray-900 text-sm">{l.name}</div>
+                                                                        <div className="text-[10px] text-gray-400 font-medium">Added {new Date(l.created_at).toLocaleDateString()}</div>
+                                                                    </div>
                                                                 </div>
-                                                            )}
-                                                            <div>
-                                                                <div className="font-bold text-gray-900 text-sm">{l.name}</div>
-                                                                <div className="text-[10px] text-gray-400 font-medium">Added {new Date(l.created_at).toLocaleDateString()}</div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <div className="text-xs text-gray-600 font-medium">{l.email}</div>
-                                                        {l.phone && <div className="text-[10px] text-gray-400">{l.phone}</div>}
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <button
-                                                            onClick={() => toggleCatalogueStatus(l.id, l.is_active)}
-                                                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${l.is_active ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                                                                }`}
-                                                        >
-                                                            <div className={`w-1.5 h-1.5 rounded-full ${l.is_active ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
-                                                            {l.is_active ? 'Active' : 'Inactive'}
-                                                        </button>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <button
-                                                            onClick={() => toggleCatalogueFeatured(l.id, l.featured)}
-                                                            className={`p-2 rounded-lg transition-all ${l.featured ? 'text-amber-500 bg-amber-50' : 'text-gray-300 hover:text-gray-400'
-                                                                }`}
-                                                            title={l.featured ? 'Unfeature Listing' : 'Feature Listing'}
-                                                        >
-                                                            <Star size={18} fill={l.featured ? 'currentColor' : 'none'} />
-                                                        </button>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        <div className="flex items-center justify-end gap-2">
-                                                            <button
-                                                                onClick={() => handleOpenCatalogueView(null, l)}
-                                                                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                                                                title="Edit Listing"
-                                                            >
-                                                                <Edit2 size={16} />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleDeleteListing(l.id)}
-                                                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                                                title="Delete Listing"
-                                                            >
-                                                                <Trash2 size={16} />
-                                                            </button>
-                                                            <a
-                                                                href={`/catalogue/${l.slug}`}
-                                                                target="_blank"
-                                                                rel="noreferrer"
-                                                                className="p-2 text-gray-400 hover:text-[#007F00] hover:bg-green-50 rounded-lg transition-all"
-                                                                title="View Publicly"
-                                                            >
-                                                                <ExternalLink size={16} />
-                                                            </a>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))
+                                                            </td>
+                                                            <td className="px-6 py-4">
+                                                                <div className="text-xs text-gray-600 font-medium">{l.email}</div>
+                                                                {l.phone && <div className="text-[10px] text-gray-400">{l.phone}</div>}
+                                                            </td>
+                                                            <td className="px-6 py-4">
+                                                                {isOwnerSuspended ? (
+                                                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700">
+                                                                        <AlertTriangle size={12} /> Suspended
+                                                                    </div>
+                                                                ) : (
+                                                                    <button
+                                                                        onClick={() => toggleCatalogueStatus(l.id, l.is_active)}
+                                                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${l.is_active ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500'}`}
+                                                                    >
+                                                                        <div className={`w-1.5 h-1.5 rounded-full ${l.is_active ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+                                                                        {l.is_active ? 'Active' : 'Inactive'}
+                                                                    </button>
+                                                                )}
+                                                            </td>
+                                                            <td className="px-6 py-4">
+                                                                <button
+                                                                    onClick={() => toggleCatalogueFeatured(l.id, l.featured)}
+                                                                    className={`p-2 rounded-lg transition-all ${l.featured ? 'text-amber-500 bg-amber-50' : 'text-gray-300 hover:text-gray-400'
+                                                                        }`}
+                                                                    title={l.featured ? 'Unfeature Listing' : 'Feature Listing'}
+                                                                >
+                                                                    <Star size={18} fill={l.featured ? 'currentColor' : 'none'} />
+                                                                </button>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-right">
+                                                                <div className="flex items-center justify-end gap-2">
+                                                                    <button
+                                                                        onClick={() => handleOpenCatalogueView(null, l)}
+                                                                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                                                        title="Edit Listing"
+                                                                    >
+                                                                        <Edit2 size={16} />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleDeleteListing(l.id)}
+                                                                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                                        title="Delete Listing"
+                                                                    >
+                                                                        <Trash2 size={16} />
+                                                                    </button>
+                                                                    <a
+                                                                        href={`/catalogue/${l.slug}`}
+                                                                        target="_blank"
+                                                                        rel="noreferrer"
+                                                                        className="p-2 text-gray-400 hover:text-[#007F00] hover:bg-green-50 rounded-lg transition-all"
+                                                                        title="View Publicly"
+                                                                    >
+                                                                        <ExternalLink size={16} />
+                                                                    </a>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
                                         )}
                                     </tbody>
                                 </table>
@@ -2988,7 +3163,17 @@ const Admin = () => {
                                     </button>
                                 )}
                                 <div className="text-xs text-gray-400 font-medium hidden sm:block">
-                                    Showing {users_list.filter(u => view === 'assessors' ? u.role === 'contractor' : (u.role === 'user' || u.role === 'homeowner')).filter(u => u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.email?.toLowerCase().includes(searchTerm.toLowerCase())).length} users
+                                    Showing {users_list.filter(u => {
+                                        const matchRole = view === 'assessors' ? u.role === 'contractor' : (u.role === 'user' || u.role === 'homeowner');
+                                        const query = searchTerm.toLowerCase();
+                                        const matchSearch = u.full_name?.toLowerCase().includes(query) ||
+                                            u.email?.toLowerCase().includes(query) ||
+                                            u.company_name?.toLowerCase().includes(query) ||
+                                            u.business_address?.toLowerCase().includes(query) ||
+                                            u.county?.toLowerCase().includes(query) ||
+                                            u.town?.toLowerCase().includes(query);
+                                        return matchRole && matchSearch;
+                                    }).length} users
                                 </div>
                             </div>
                         </div>
@@ -3009,7 +3194,13 @@ const Admin = () => {
                                         {users_list
                                             .filter(u => {
                                                 const matchRole = view === 'assessors' ? u.role === 'contractor' : (u.role === 'user' || u.role === 'homeowner');
-                                                const matchSearch = u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.email?.toLowerCase().includes(searchTerm.toLowerCase());
+                                                const query = searchTerm.toLowerCase();
+                                                const matchSearch = u.full_name?.toLowerCase().includes(query) ||
+                                                    u.email?.toLowerCase().includes(query) ||
+                                                    u.company_name?.toLowerCase().includes(query) ||
+                                                    u.business_address?.toLowerCase().includes(query) ||
+                                                    u.county?.toLowerCase().includes(query) ||
+                                                    u.town?.toLowerCase().includes(query);
                                                 return matchRole && matchSearch;
                                             })
                                             .length === 0 ? (
@@ -3022,7 +3213,13 @@ const Admin = () => {
                                             users_list
                                                 .filter(u => {
                                                     const matchRole = view === 'assessors' ? u.role === 'contractor' : (u.role === 'user' || u.role === 'homeowner');
-                                                    const matchSearch = u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.email?.toLowerCase().includes(searchTerm.toLowerCase());
+                                                    const query = searchTerm.toLowerCase();
+                                                    const matchSearch = u.full_name?.toLowerCase().includes(query) ||
+                                                        u.email?.toLowerCase().includes(query) ||
+                                                        u.company_name?.toLowerCase().includes(query) ||
+                                                        u.business_address?.toLowerCase().includes(query) ||
+                                                        u.county?.toLowerCase().includes(query) ||
+                                                        u.town?.toLowerCase().includes(query);
                                                     return matchRole && matchSearch;
                                                 })
                                                 .map((u) => {
@@ -3033,30 +3230,8 @@ const Admin = () => {
                                                         <tr key={u.id} className="hover:bg-green-50/30 transition-colors group">
                                                             <td className="px-6 py-4">
                                                                 <div className="flex flex-col gap-1.5">
-                                                                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${u.registration_status === 'active' ? 'bg-green-50 text-green-700 border-green-200' :
-                                                                        u.registration_status === 'rejected' ? 'bg-red-50 text-red-700 border-red-200' :
-                                                                            'bg-amber-50 text-amber-700 border-amber-200'
-                                                                        }`}>
-                                                                        <div className={`w-1.5 h-1.5 rounded-full ${u.registration_status === 'active' ? 'bg-green-500' :
-                                                                            u.registration_status === 'rejected' ? 'bg-red-500' :
-                                                                                'bg-amber-500'
-                                                                            }`} />
-                                                                        {u.registration_status || (u.is_active !== false ? 'active' : 'pending')}
-                                                                    </div>
-                                                                    {u.stripe_payment_id ? (
-                                                                        <div className="flex flex-col">
-                                                                            <span className="text-[9px] text-green-600 font-bold uppercase flex items-center gap-1">
-                                                                                <CreditCard size={10} /> Paid
-                                                                            </span>
-                                                                            <span className="text-[10px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 mt-0.5 select-all" title="Stripe Payment ID">
-                                                                                {u.stripe_payment_id}
-                                                                            </span>
-                                                                        </div>
-                                                                    ) : (
-                                                                        <span className="text-[9px] text-gray-400 font-bold uppercase flex items-center gap-1">
-                                                                            <AlertTriangle size={10} className="text-amber-500" /> Not Paid
-                                                                        </span>
-                                                                    )}
+                                                                    <StatusBadge profile={u} />
+                                                                    <PaymentStatusBadge profile={u} />
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-4 font-medium text-gray-900">
@@ -3081,6 +3256,35 @@ const Admin = () => {
                                                             </td>
                                                             <td className="px-6 py-4 text-right">
                                                                 <div className="flex items-center justify-end gap-2">
+                                                                    {u.role === 'contractor' && (
+                                                                        <div className="flex items-center gap-1 bg-gray-50/50 p-1 rounded-lg border border-gray-100 mr-2">
+                                                                            <button
+                                                                                onClick={() => handleManualRenewal(u.id)}
+                                                                                disabled={isUpdating}
+                                                                                className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-all"
+                                                                                title="Manual Renew (1 Month)"
+                                                                            >
+                                                                                <RefreshCw size={14} />
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => handleSendRenewalReminder(u)}
+                                                                                className="p-1.5 text-amber-600 hover:bg-amber-50 rounded transition-all"
+                                                                                title="Send Renewal Reminder"
+                                                                            >
+                                                                                <Mail size={14} />
+                                                                            </button>
+                                                                            {u.subscription_status === 'active' && (
+                                                                                <button
+                                                                                    onClick={() => handleCancelSubscription(u.id)}
+                                                                                    disabled={isUpdating}
+                                                                                    className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-all"
+                                                                                    title="Cancel Subscription"
+                                                                                >
+                                                                                    <XCircle size={14} />
+                                                                                </button>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
                                                                     {u.role === 'contractor' && (
                                                                         hasListing ? (
                                                                             <button
@@ -3173,9 +3377,7 @@ const Admin = () => {
                                                     <p className="font-bold text-gray-900">{lead.name}</p>
                                                     <p className="text-xs text-gray-500">{new Date(lead.created_at).toLocaleDateString()}</p>
                                                 </div>
-                                                <div className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${getStatusColor(lead.status || 'new')}`}>
-                                                    {lead.status || 'new'}
-                                                </div>
+                                                <StatusBadge status={lead.status || 'new'} />
                                             </div>
                                             <div className="text-sm text-gray-600">
                                                 <p>{lead.email}</p>
@@ -3224,9 +3426,7 @@ const Admin = () => {
                                             filteredLeads.map((lead) => (
                                                 <tr key={lead.id} className="hover:bg-green-50/30 transition-colors group">
                                                     <td className="px-6 py-4">
-                                                        <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${getStatusColor(lead.status || 'new')}`}>
-                                                            {lead.status || 'new'}
-                                                        </div>
+                                                        <StatusBadge status={lead.status || 'new'} />
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-gray-500">
                                                         {new Date(lead.created_at).toLocaleDateString()}
@@ -3330,30 +3530,8 @@ const Admin = () => {
                                                     <tr key={u.id} className="hover:bg-green-50/30 transition-colors group">
                                                         <td className="px-6 py-4">
                                                             <div className="flex flex-col gap-1.5">
-                                                                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${u.registration_status === 'active' ? 'bg-green-50 text-green-700 border-green-200' :
-                                                                    u.registration_status === 'rejected' ? 'bg-red-50 text-red-700 border-red-200' :
-                                                                        'bg-amber-50 text-amber-700 border-amber-200'
-                                                                    }`}>
-                                                                    <div className={`w-1.5 h-1.5 rounded-full ${u.registration_status === 'active' ? 'bg-green-500' :
-                                                                        u.registration_status === 'rejected' ? 'bg-red-500' :
-                                                                            'bg-amber-500'
-                                                                        }`} />
-                                                                    {u.registration_status || 'pending'}
-                                                                </div>
-                                                                {u.stripe_payment_id ? (
-                                                                    <div className="flex flex-col">
-                                                                        <span className="text-[9px] text-green-600 font-bold uppercase flex items-center gap-1">
-                                                                            <CreditCard size={10} /> Paid
-                                                                        </span>
-                                                                        <span className="text-[10px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 mt-0.5 select-all" title="Stripe Payment ID">
-                                                                            {u.stripe_payment_id}
-                                                                        </span>
-                                                                    </div>
-                                                                ) : (
-                                                                    <span className="text-[9px] text-gray-400 font-bold uppercase flex items-center gap-1">
-                                                                        <AlertTriangle size={10} className="text-amber-500" /> Not Paid
-                                                                    </span>
-                                                                )}
+                                                                <StatusBadge profile={u} />
+                                                                <PaymentStatusBadge profile={u} />
                                                             </div>
                                                         </td>
                                                         <td className="px-6 py-4 font-medium text-gray-900">
@@ -3364,120 +3542,91 @@ const Admin = () => {
                                                             {new Date(u.created_at).toLocaleDateString('en-GB')}
                                                         </td>
                                                         <td className="px-6 py-4">
-                                                            {(() => {
-                                                                const subStatus = u.subscription_status || 'inactive';
-                                                                const endDate = u.subscription_end_date ? new Date(u.subscription_end_date) : null;
-                                                                const startDate = u.subscription_start_date ? new Date(u.subscription_start_date) : null;
-                                                                const now = new Date();
-                                                                const daysLeft = endDate ? Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : null;
-                                                                const isExpired = daysLeft !== null && daysLeft <= 0;
-                                                                const isExpiringSoon = daysLeft !== null && daysLeft > 0 && daysLeft <= 30;
-
-                                                                return (
-                                                                    <div className="flex flex-col gap-1.5">
-                                                                        <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider w-fit ${subStatus === 'active' && !isExpired
-                                                                            ? 'bg-green-50 text-green-700 border border-green-200'
-                                                                            : isExpired
-                                                                                ? 'bg-red-50 text-red-700 border border-red-200'
-                                                                                : 'bg-gray-50 text-gray-500 border border-gray-200'
-                                                                            }`}>
-                                                                            <div className={`w-1.5 h-1.5 rounded-full ${subStatus === 'active' && !isExpired ? 'bg-green-500' : isExpired ? 'bg-red-500' : 'bg-gray-400'
-                                                                                }`}></div>
-                                                                            {isExpired ? 'Expired' : subStatus}
-                                                                        </div>
-                                                                        {startDate && (
-                                                                            <div className="text-[10px] text-gray-400">
-                                                                                <span className="font-semibold text-gray-500">Start:</span> {startDate.toLocaleDateString('en-GB')}
-                                                                            </div>
-                                                                        )}
-                                                                        {endDate && (
-                                                                            <div className={`text-[10px] ${isExpired ? 'text-red-500 font-bold' : isExpiringSoon ? 'text-amber-600 font-bold' : 'text-gray-400'
-                                                                                }`}>
-                                                                                <span className="font-semibold">{isExpired ? 'Expired:' : 'Expires:'}</span> {endDate.toLocaleDateString('en-GB')}
-                                                                                {isExpiringSoon && !isExpired && (
-                                                                                    <span className="ml-1 text-amber-500">({daysLeft}d left)</span>
-                                                                                )}
-                                                                            </div>
-                                                                        )}
-                                                                        {isExpired && (
-                                                                            <div className="flex items-center gap-1 text-[9px] text-red-600 font-black animate-pulse uppercase mt-1">
-                                                                                <AlertCircle size={10} />
-                                                                                Account Disabled
-                                                                            </div>
-                                                                        )}
-                                                                        {!startDate && !endDate && (
-                                                                            <span className="text-[10px] text-gray-300 italic">No subscription</span>
-                                                                        )}
-                                                                    </div>
-                                                                );
-                                                            })()}
+                                                            <SubscriptionInfo profile={u} />
                                                         </td>
                                                         <td className="px-6 py-4">
-                                                            {(u.registration_status === 'active' || u.registration_status === 'pending') && u.subscription_status !== 'active' && !hasListing && (
-                                                                <div className="flex flex-col gap-2">
-                                                                    <button
-                                                                        onClick={() => handleSendOnboardingEmail(u)}
-                                                                        disabled={sendingEmailId === u.id}
-                                                                        className="flex items-center gap-1.5 bg-[#007F00] text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 transition-all shadow-sm disabled:opacity-50 w-fit animate-pulse hover:animate-none"
-                                                                    >
-                                                                        {sendingEmailId === u.id ? (
-                                                                            <div className="w-14 h-4 flex items-center justify-center">
-                                                                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                                            {u.stripe_payment_id === 'SUSPENDED' ? (
+                                                                <div className="flex items-center gap-1.5 text-red-600 font-bold text-xs">
+                                                                    <AlertTriangle size={14} /> Suspended
+                                                                </div>
+                                                            ) : (
+                                                                <>
+                                                                    {(u.registration_status === 'active' || u.registration_status === 'pending') && u.subscription_status !== 'active' && !hasListing && (
+                                                                        <div className="flex flex-col gap-2">
+                                                                            <button
+                                                                                onClick={() => handleSendOnboardingEmail(u)}
+                                                                                disabled={sendingEmailId === u.id}
+                                                                                className="flex items-center gap-1.5 bg-[#007F00] text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 transition-all shadow-sm disabled:opacity-50 w-fit animate-pulse hover:animate-none"
+                                                                            >
+                                                                                {sendingEmailId === u.id ? (
+                                                                                    <div className="w-14 h-4 flex items-center justify-center">
+                                                                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                                                                    </div>
+                                                                                ) : (
+                                                                                    <>
+                                                                                        <Mail size={14} />
+                                                                                        Send Form
+                                                                                    </>
+                                                                                )}
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => handleOpenCatalogueView(u)}
+                                                                                className="flex items-center gap-1.5 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition-all shadow-sm w-fit"
+                                                                            >
+                                                                                <Plus size={14} />
+                                                                                Add to Catalogue
+                                                                            </button>
+                                                                        </div>
+                                                                    )}
+                                                                    {u.registration_status === 'active' && hasListing && (
+                                                                        <div className="flex flex-col gap-2">
+                                                                            <div className="flex items-center gap-1.5 text-green-600 font-bold text-xs">
+                                                                                <CheckCircle2 size={14} />
+                                                                                Registration Complete
                                                                             </div>
-                                                                        ) : (
-                                                                            <>
-                                                                                <Mail size={14} />
-                                                                                Send Form
-                                                                            </>
-                                                                        )}
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => handleOpenCatalogueView(u)}
-                                                                        className="flex items-center gap-1.5 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition-all shadow-sm w-fit"
-                                                                    >
-                                                                        <Plus size={14} />
-                                                                        Add to Catalogue
-                                                                    </button>
-                                                                </div>
-                                                            )}
-                                                            {u.registration_status === 'active' && hasListing && (
-                                                                <div className="flex flex-col gap-2">
-                                                                    <div className="flex items-center gap-1.5 text-green-600 font-bold text-xs">
-                                                                        <CheckCircle2 size={14} />
-                                                                        Registration Complete
-                                                                    </div>
-                                                                    <button
-                                                                        onClick={() => handleOpenCatalogueView(u, listing)}
-                                                                        className="flex items-center gap-1.5 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition-all shadow-sm w-fit"
-                                                                    >
-                                                                        <Edit2 size={14} />
-                                                                        Edit Catalogue
-                                                                    </button>
-                                                                </div>
-                                                            )}
-                                                            {u.registration_status === 'pending' && !hasListing && (
-                                                                <span className="text-[10px] text-gray-400 font-medium italic">Sent Link/Waiting</span>
+                                                                            <button
+                                                                                onClick={() => handleOpenCatalogueView(u, listing)}
+                                                                                className="text-blue-600 hover:text-blue-700 font-bold text-xs flex items-center gap-1"
+                                                                            >
+                                                                                <Pencil size={12} /> Edit Catalogue
+                                                                            </button>
+                                                                        </div>
+                                                                    )}
+                                                                    {u.registration_status === 'pending' && !hasListing && (
+                                                                        <span className="text-[10px] text-gray-400 font-medium italic">Sent Link/Waiting</span>
+                                                                    )}
+                                                                </>
                                                             )}
                                                         </td>
                                                         <td className="px-6 py-4 text-right">
                                                             <div className="flex items-center justify-end gap-2">
-                                                                {(() => {
-                                                                    const endDate = u.subscription_end_date ? new Date(u.subscription_end_date) : null;
-                                                                    const isExpired = endDate && endDate < new Date();
-                                                                    const isExpiringSoon = endDate && !isExpired && (endDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24) <= 7;
-
-                                                                    return (isExpired || isExpiringSoon) && (
+                                                                <div className="flex items-center gap-1 bg-gray-50/50 p-1 rounded-lg border border-gray-100 mr-2">
+                                                                    <button
+                                                                        onClick={() => handleManualRenewal(u.id)}
+                                                                        disabled={isUpdating}
+                                                                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-all"
+                                                                        title="Manual Renew (1 Month)"
+                                                                    >
+                                                                        <RefreshCw size={14} />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleSendRenewalReminder(u)}
+                                                                        className="p-1.5 text-amber-600 hover:bg-amber-50 rounded transition-all"
+                                                                        title="Send Renewal Reminder"
+                                                                    >
+                                                                        <Mail size={14} />
+                                                                    </button>
+                                                                    {u.subscription_status === 'active' && (
                                                                         <button
-                                                                            onClick={() => handleSendRenewalReminder(u)}
-                                                                            disabled={sendingEmailId === u.id}
-                                                                            className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-600 hover:bg-amber-100 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 shadow-sm"
-                                                                            title="Send Renewal Reminder"
+                                                                            onClick={() => handleCancelSubscription(u.id)}
+                                                                            disabled={isUpdating}
+                                                                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-all"
+                                                                            title="Cancel Subscription"
                                                                         >
-                                                                            {sendingEmailId === u.id ? <Loader2 className="animate-spin" size={14} /> : <Mail size={14} />}
-                                                                            {isExpired ? 'Remind' : 'Expiring'}
+                                                                            <XCircle size={14} />
                                                                         </button>
-                                                                    );
-                                                                })()}
+                                                                    )}
+                                                                </div>
                                                                 <button
                                                                     onClick={() => {
                                                                         setSelectedUser(u);

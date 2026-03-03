@@ -107,19 +107,26 @@ export default function LocationsMenu({ open }: { open: boolean }) {
 
                 {/* Counties panel */}
                 {activeProvince && (
-                    <div className="w-72 bg-white py-4 max-h-[70vh] overflow-y-auto">
-                        <div className="px-6 mb-2">
-                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">{activeProvince.name} Counties</h3>
-                        </div>
-                        {activeProvince.counties.map((county) => (
+                    <div className="w-72 bg-white py-4 max-h-[80vh] overflow-y-auto shadow-inner">
+                        <div className="px-6 mb-3 flex justify-between items-center">
                             <Link
-                                key={county.id}
-                                to={`/region/${county.slug}`}
-                                className="block px-6 py-2.5 text-gray-700 hover:bg-[#007F00]/10 hover:text-[#007F00] transition-colors font-medium border-l-2 border-transparent hover:border-[#007F00]"
+                                to={`/region?province=${activeProvince.slug}`}
+                                className="text-xs font-black text-[#007F00] uppercase tracking-widest hover:underline cursor-pointer"
                             >
-                                {county.name}
+                                {activeProvince.name} Province
                             </Link>
-                        ))}
+                        </div>
+                        <div className="space-y-0.5">
+                            {activeProvince.counties.map((county) => (
+                                <Link
+                                    key={county.id}
+                                    to={`/region?county=${county.slug}`}
+                                    className="block px-6 py-2.5 text-gray-700 hover:bg-[#007F00]/10 hover:text-[#007F00] transition-colors font-medium border-l-2 border-transparent hover:border-[#007F00]"
+                                >
+                                    {county.name}
+                                </Link>
+                            ))}
+                        </div>
                     </div>
                 )}
             </div>

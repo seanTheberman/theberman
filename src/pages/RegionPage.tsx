@@ -20,7 +20,9 @@ const DefaultIcon = L.icon({
     iconAnchor: [12, 41]
 });
 
-(L.Marker.prototype.options as any).icon = DefaultIcon;
+L.Marker.mergeOptions({
+    icon: DefaultIcon
+});
 
 // Custom branded icon creator
 const createBrandedIcon = (logoUrl: string | undefined, highlighted: boolean = false) => {
@@ -45,6 +47,13 @@ interface Category {
     name: string;
 }
 
+interface Location {
+    catalogue_locations: {
+        slug: string;
+        name: string;
+    }
+}
+
 interface Listing {
     id: string;
     name: string;
@@ -65,7 +74,7 @@ interface Listing {
     logo_url?: string;
     rating?: number;
     categories?: Category[];
-    locations?: any[];
+    locations?: Location[];
 }
 
 const MapController = ({ center }: { center: [number, number] }) => {
@@ -76,9 +85,17 @@ const MapController = ({ center }: { center: [number, number] }) => {
     return null;
 };
 
+const PROVINCE_DATA: Record<string, { name: string, center: [number, number], counties: string[] }> = {
+    leinster: { name: 'Leinster', center: [53.3, -7.0], counties: ['carlow', 'dublin', 'kildare', 'kilkenny', 'laois', 'longford', 'louth', 'meath', 'offaly', 'westmeath', 'wexford', 'wicklow'] },
+    connacht: { name: 'Connacht', center: [53.8, -9.0], counties: ['galway', 'leitrim', 'mayo', 'roscommon', 'sligo'] },
+    munster: { name: 'Munster', center: [52.3, -8.6], counties: ['clare', 'cork', 'kerry', 'limerick', 'tipperary', 'waterford'] },
+    ulster: { name: 'Ulster', center: [54.6, -7.0], counties: ['antrim', 'armagh', 'cavan', 'derry', 'londonderry', 'donegal', 'down', 'fermanagh', 'monaghan', 'tyrone'] }
+};
+
 const RegionPage = () => {
     const [searchParams] = useSearchParams();
     const countySlug = searchParams.get('county');
+    const provinceSlug = searchParams.get('province');
     const [listings, setListings] = useState<Listing[]>([]);
     const [allListings, setAllListings] = useState<Listing[]>([]);
     const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
@@ -90,15 +107,22 @@ const RegionPage = () => {
     const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [mobileView, setMobileView] = useState<'list' | 'map'>('list');
 
+
     const fetchRegionData = useCallback(async () => {
-        if (!countySlug) {
+        if (!countySlug && !provinceSlug) {
             setLoading(false);
             return;
         }
         setLoading(true);
         try {
+            // Fetch based on county or province
+            let regionQuery = null;
+            if (countySlug) {
+                regionQuery = supabase.from('catalogue_locations').select('name, latitude, longitude').eq('slug', countySlug).single();
+            }
+
             const [regionRes, listingsRes, categoriesRes] = await Promise.all([
-                supabase.from('catalogue_locations').select('name, latitude, longitude').eq('slug', countySlug).single(),
+                regionQuery || Promise.resolve({ data: null }),
                 supabase.from('catalogue_listings').select(`
                     *,
                     categories:catalogue_listing_categories(catalogue_categories(*)),
@@ -107,11 +131,15 @@ const RegionPage = () => {
                 supabase.from('catalogue_categories').select('*').order('name')
             ]);
 
-            if (regionRes.data) {
+            if (countySlug && regionRes.data) {
                 setRegionName(regionRes.data.name);
                 if (regionRes.data.latitude && regionRes.data.longitude) {
                     setMapCenter([regionRes.data.latitude, regionRes.data.longitude]);
                 }
+            } else if (provinceSlug && PROVINCE_DATA[provinceSlug]) {
+                const prov = PROVINCE_DATA[provinceSlug];
+                setRegionName(prov.name);
+                setMapCenter(prov.center);
             }
 
             if (categoriesRes.data) {
@@ -119,21 +147,36 @@ const RegionPage = () => {
             }
 
             if (listingsRes.data) {
-                const allActive = (listingsRes.data || []).map(listing => ({
+                interface JoinedListing extends Omit<Listing, 'categories' | 'locations'> {
+                    categories: { catalogue_categories: Category }[];
+                    locations: { catalogue_locations: { slug: string; name: string } }[];
+                }
+
+                const rawListings = (listingsRes.data as unknown) as JoinedListing[];
+                const allActive: Listing[] = rawListings.map(listing => ({
                     ...listing,
-                    categories: listing.categories.map((c: any) => c.catalogue_categories),
+                    categories: (listing.categories || []).map(c => c.catalogue_categories),
+                    locations: (listing.locations || []).map(l => ({
+                        catalogue_locations: l.catalogue_locations
+                    }))
                 }));
 
                 const regionSpecific = allActive.filter(listing => {
-                    const matchesLocation = listing.locations?.some((loc: any) => loc.catalogue_locations?.slug === countySlug);
-
-                    const regSearch = regionRes.data?.name?.toLowerCase() || countySlug.replace(/-/g, ' ');
-                    const matchesAddress = listing.address?.toLowerCase().includes(regSearch);
-                    const matchesAdditional = (listing.additional_addresses || []).some((addr: string) =>
-                        addr.toLowerCase().includes(regSearch)
-                    );
-
-                    return matchesLocation || matchesAddress || matchesAdditional;
+                    if (countySlug) {
+                        const matchesLocation = listing.locations?.some((loc: { catalogue_locations: { slug: string } }) => loc.catalogue_locations?.slug === countySlug);
+                        const regSearch = regionRes.data?.name?.toLowerCase() || countySlug.replace(/-/g, ' ');
+                        const matchesAddress = listing.address?.toLowerCase().includes(regSearch);
+                        const matchesAdditional = (listing.additional_addresses || []).some((addr: string) =>
+                            addr.toLowerCase().includes(regSearch)
+                        );
+                        return matchesLocation || matchesAddress || matchesAdditional;
+                    } else if (provinceSlug && PROVINCE_DATA[provinceSlug]) {
+                        const provCounties = PROVINCE_DATA[provinceSlug].counties;
+                        return listing.locations?.some((loc: { catalogue_locations: { slug: string } }) => provCounties.includes(loc.catalogue_locations?.slug || '')) ||
+                            provCounties.some(c => (listing.address || '').toLowerCase().includes(c)) ||
+                            provCounties.some(c => (listing.additional_addresses || []).some((addr: string) => addr.toLowerCase().includes(c)));
+                    }
+                    return false;
                 });
 
                 setAllListings(allActive);
@@ -145,13 +188,13 @@ const RegionPage = () => {
         } finally {
             setLoading(false);
         }
-    }, [countySlug]);
+    }, [countySlug, provinceSlug]);
 
-    // Reset filters when county changes
+    // Reset filters when county or province changes
     useEffect(() => {
         setSelectedCategory('');
         setSearchQuery('');
-    }, [countySlug]);
+    }, [countySlug, provinceSlug]);
 
     const applyFilters = useCallback(() => {
         let filtered = [...listings];
@@ -368,7 +411,7 @@ const RegionPage = () => {
                             zoomToBoundsOnClick={true}
                         >
                             {allListings.map((listing) => {
-                                const isHighlighted = listing.locations?.some((loc: any) => loc.catalogue_locations?.slug === countySlug);
+                                const isHighlighted = listing.locations?.some(loc => loc.catalogue_locations?.slug === countySlug);
                                 return (
                                     listing.latitude && listing.longitude && (
                                         <Marker
