@@ -17,7 +17,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 const Login = () => {
-    const { signIn, signOut, user, role, loading } = useAuth();
+    const { signIn, signOut, user, role, profile, loading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [activeTab, setActiveTab] = useState<'homeowner' | 'assessor' | 'business'>('homeowner');
@@ -27,7 +27,21 @@ const Login = () => {
 
     // Redirect if already authenticated
     useEffect(() => {
-        if (!loading && user && role) {
+        if (!loading && user && role && profile) {
+            // Handle Blocked / Expired users (Exclude admins)
+            if (role === 'contractor' || role === 'business') {
+                if (profile.registration_status === 'pending') {
+                    const path = role === 'contractor' ? '/assessor-membership' : '/business-membership';
+                    navigate(path, { replace: true });
+                    return;
+                }
+
+                if (profile.subscription_status === 'expired' || profile.is_active === false) {
+                    navigate('/pricing', { replace: true });
+                    return;
+                }
+            }
+
             if (from) {
                 navigate(from, { replace: true });
             } else {
@@ -37,7 +51,7 @@ const Login = () => {
                 else navigate('/dashboard/user', { replace: true });
             }
         }
-    }, [user, role, loading, navigate, from]);
+    }, [user, role, profile, loading, navigate, from]);
 
     const {
         register,
@@ -67,11 +81,14 @@ const Login = () => {
             if (authData.user) {
                 const { data: profile } = await supabase
                     .from('profiles')
-                    .select('role')
+                    .select('role, registration_status, subscription_status, is_active')
                     .eq('id', authData.user.id)
                     .maybeSingle();
 
                 const userRole = profile?.role || 'user';
+                const regStatus = profile?.registration_status;
+                const subStatus = profile?.subscription_status;
+                const isActive = profile?.is_active;
 
                 // Role validation based on active tab
                 if (activeTab === 'homeowner') {
@@ -96,6 +113,22 @@ const Login = () => {
                     if (userRole !== 'business' && userRole !== 'admin') {
                         await signOut();
                         throw new Error('This account is not registered as a Business.');
+                    }
+                }
+
+                // 1. Handle Blocked / Expired users first (Redirect them to payment/pricing)
+                if (userRole === 'contractor' || userRole === 'business') {
+                    if (regStatus === 'pending') {
+                        // Redirect to initial payment
+                        const path = userRole === 'contractor' ? '/assessor-membership' : '/business-membership';
+                        navigate(path, { replace: true });
+                        return;
+                    }
+
+                    if (subStatus === 'expired' || isActive === false) {
+                        // Redirect to renewal page
+                        navigate('/pricing', { replace: true });
+                        return;
                     }
                 }
 

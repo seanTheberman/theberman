@@ -1,7 +1,7 @@
 import { useEffect, useState, Fragment } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, DollarSign, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, Settings, MessageCircle, User, Menu, Plus, Search, CreditCard } from 'lucide-react';
+import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, DollarSign, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, AlertCircle, Settings, MessageCircle, User, Menu, Plus, Search, CreditCard } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { DatePicker } from '../components/ui/DatePicker';
 import { geocodeAddress } from '../lib/geocoding';
@@ -449,7 +449,7 @@ const ContractorDashboard = () => {
 
         try {
             setIsSubmitting(true);
-            // Log rejection 
+            // Log rejection
             const { error } = await supabase.from('audit_logs').insert({
                 user_id: user?.id,
                 action: 'lead_rejected',
@@ -605,20 +605,27 @@ const ContractorDashboard = () => {
                 </div>
             </header>
 
-            {/* Registration Blocker Overlay */}
-            {profile?.registration_status === 'pending' && (
-                <div className="fixed inset-0 z-[10000] bg-[#0c121d]/90 backdrop-blur-xl flex items-center justify-center p-6 text-center">
-                    <div className="max-w-md w-full bg-white rounded-3xl p-10 shadow-2xl">
-                        <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <CreditCard size={40} className="text-amber-500" />
+            {/* Subscription Expired / Pending Payment Blocker Overlay */}
+            {((profile?.subscription_status === 'expired' || profile?.is_active === false) && profile?.registration_status === 'active') ||
+                (profile?.registration_status === 'pending') ? (
+                <div className="fixed inset-0 z-[10001] bg-[#0c121d]/95 backdrop-blur-2xl flex items-center justify-center p-6 text-center">
+                    <div className="max-w-md w-full bg-white rounded-3xl p-10 shadow-2xl border-t-8 border-red-500">
+                        <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <AlertCircle size={40} className={`text-red-500 ${profile?.registration_status === 'pending' ? 'animate-bounce' : 'animate-pulse'}`} />
                         </div>
-                        <h2 className="text-2xl font-black text-gray-900 mb-2">Registration Payment Required</h2>
-                        <p className="text-gray-500 mb-8 font-medium">To start receiving BER jobs and accessing the dashboard, please complete your registration payment.</p>
+                        <h2 className="text-2xl font-black text-gray-900 mb-2">
+                            {profile?.registration_status === 'pending' ? 'Payment Required' : 'Subscription Expired'}
+                        </h2>
+                        <p className="text-gray-500 mb-8 font-medium">
+                            {profile?.registration_status === 'pending'
+                                ? 'To access your dashboard and activate your listing, you must complete your payment.'
+                                : 'Your subscription has ended and your account is currently disabled. Please renew your subscription to reactivate your listing and access the portal.'}
+                        </p>
                         <Link
-                            to="/assessor-membership"
-                            className="block w-full bg-[#007F00] text-white py-4 rounded-2xl font-black uppercase tracking-wider text-sm hover:bg-green-800 transition-all mb-4 shadow-lg shadow-green-500/20"
+                            to={profile?.registration_status === 'pending' ? '/assessor-membership' : "/pricing"}
+                            className="block w-full bg-red-600 text-white py-4 rounded-2xl font-black uppercase tracking-wider text-sm hover:bg-red-700 transition-all mb-4 shadow-lg shadow-red-500/20"
                         >
-                            Complete Registration Payment
+                            {profile?.registration_status === 'pending' ? 'Complete Payment' : 'Renew Subscription'}
                         </Link>
                         <button
                             onClick={handleSignOut}
@@ -628,7 +635,7 @@ const ContractorDashboard = () => {
                         </button>
                     </div>
                 </div>
-            )}
+            ) : null}
 
             <main className="w-full px-6 py-8">
                 {/* Stats Grid */}

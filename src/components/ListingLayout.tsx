@@ -146,9 +146,11 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
                                         <div className="text-base font-bold text-gray-800 leading-relaxed mb-3">
                                             {formatAddress(listing.address) || 'Address not provided'}
                                         </div>
-                                        <div className="inline-flex items-center px-2.5 py-1 bg-gray-50 text-gray-500 rounded-md text-xs font-semibold border border-gray-100">
-                                            {listing.locations?.[0]?.name}
-                                        </div>
+                                        {listing.locations?.[0]?.name && (
+                                            <div className="inline-flex items-center px-2.5 py-1 bg-gray-50 text-gray-500 rounded-md text-xs font-semibold border border-gray-100">
+                                                {listing.locations[0].name}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 

@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2, Search, Newspaper, Plus, Star, Check, Edit2, ExternalLink, Image as ImageIcon, UploadCloud, ArrowLeft, Users, DollarSign, CreditCard, ClipboardList, ArrowRight, Hourglass, Building } from 'lucide-react';
+import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2, Search, Newspaper, Plus, Star, Check, Edit2, ExternalLink, Image as ImageIcon, UploadCloud, ArrowLeft, Users, DollarSign, CreditCard, ClipboardList, ArrowRight, Hourglass, Building, XCircle } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
@@ -243,7 +243,8 @@ const Admin = () => {
                 subscription_start_date: selectedUser.subscription_start_date,
                 subscription_end_date: selectedUser.subscription_end_date,
                 manual_override_reason: selectedUser.manual_override_reason || '',
-                stripe_payment_id: selectedUser.stripe_payment_id || ''
+                stripe_payment_id: selectedUser.stripe_payment_id || '',
+                role: selectedUser.role
             });
         } else {
             setEditForm({});
@@ -374,6 +375,34 @@ const Admin = () => {
         }
     };
 
+    const checkAndDisableExpiredSubscriptions = async (users: Profile[]) => {
+        const now = new Date();
+        const expiredUserIds = users
+            .filter(u => (u.role === 'business' || u.role === 'contractor') &&
+                u.is_active !== false &&
+                u.subscription_end_date &&
+                new Date(u.subscription_end_date) < now)
+            .map(u => u.id);
+
+        if (expiredUserIds.length > 0) {
+            console.log(`[Admin] Disabling ${expiredUserIds.length} expired subscriptions...`);
+            const { error } = await supabase
+                .from('profiles')
+                .update({ is_active: false, subscription_status: 'expired' })
+                .in('id', expiredUserIds);
+
+            if (error) {
+                console.error('Error disabling expired subscriptions:', error);
+            } else {
+                toast(`Auto-disabled ${expiredUserIds.length} expired accounts.`, {
+                    icon: 'ℹ️',
+                });
+                // We don't need to re-fetch as the status will be visually 'Expired' in the current list
+                // and real-time subscription will sync the state soon anyway.
+            }
+        }
+    };
+
     const fetchUsers = async () => {
         setLoading(true);
         try {
@@ -389,7 +418,11 @@ const Admin = () => {
                     throw error;
                 }
             }
-            setUsersList(data || []);
+            const users = data || [];
+            setUsersList(users);
+
+            // Run subscription check
+            checkAndDisableExpiredSubscriptions(users);
         } catch (error: any) {
             console.error('Error fetching users:', error);
             toast.error(error.message || 'Failed to load users');
@@ -1588,7 +1621,7 @@ const Admin = () => {
         }
     };
 
-    const handleUpdateSubscription = async () => {
+    const handleUpdateProfile = async () => {
         if (!selectedUser) return;
         setIsUpdating(true);
         try {
@@ -1600,6 +1633,7 @@ const Admin = () => {
                     subscription_end_date: editForm.subscription_end_date,
                     manual_override_reason: editForm.manual_override_reason,
                     stripe_payment_id: editForm.stripe_payment_id || null,
+                    role: editForm.role
                 })
                 .eq('id', selectedUser.id);
 
@@ -1613,6 +1647,7 @@ const Admin = () => {
                     subscription_end_date: editForm.subscription_end_date,
                     manual_override_reason: editForm.manual_override_reason,
                     stripe_payment_id: editForm.stripe_payment_id,
+                    role: editForm.role as any
                 } : u
             ));
 
@@ -1624,34 +1659,183 @@ const Admin = () => {
                 subscription_end_date: editForm.subscription_end_date!,
                 manual_override_reason: editForm.manual_override_reason!,
                 stripe_payment_id: editForm.stripe_payment_id!,
+                role: editForm.role as any
             });
 
-            toast.success('Subscription updated successfully');
-            // setIsEditingProfile removed
+            toast.success('Profile updated successfully');
         } catch (error: any) {
-            console.error('Error updating subscription:', error);
-            toast.error('Failed to update subscription');
+            console.error('Error updating profile:', error);
+            toast.error('Failed to update profile');
         } finally {
             setIsUpdating(false);
         }
     };
 
-    const toggleUserStatus = async () => {
-        if (!itemToSuspend) return;
+    const handleManualRenewal = async (userId: string) => {
+        setIsUpdating(true);
+        try {
+            const startDate = new Date();
+            const endDate = new Date();
+            endDate.setMonth(endDate.getMonth() + 1);
+
+            // If we're manually renewing, we should auto-activate registration too
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    subscription_status: 'active',
+                    subscription_start_date: startDate.toISOString(),
+                    subscription_end_date: endDate.toISOString(),
+                    is_active: true,
+                    registration_status: 'active',
+                    // Set a manual payment ID if one doesn't exist to remove "Not Paid" tag
+                    stripe_payment_id: selectedUser?.stripe_payment_id || 'MANUAL_BY_ADMIN'
+                })
+                .eq('id', userId);
+
+            if (error) throw error;
+
+            setUsersList(users_list.map(u =>
+                u.id === userId ? {
+                    ...u,
+                    subscription_status: 'active',
+                    subscription_start_date: startDate.toISOString(),
+                    subscription_end_date: endDate.toISOString(),
+                    is_active: true,
+                    registration_status: 'active',
+                    stripe_payment_id: u.stripe_payment_id || 'MANUAL_BY_ADMIN'
+                } : u
+            ));
+
+            if (selectedUser?.id === userId) {
+                setSelectedUser({
+                    ...selectedUser,
+                    subscription_status: 'active',
+                    subscription_start_date: startDate.toISOString(),
+                    subscription_end_date: endDate.toISOString(),
+                    is_active: true,
+                    registration_status: 'active',
+                    stripe_payment_id: selectedUser.stripe_payment_id || 'MANUAL_BY_ADMIN'
+                });
+            }
+
+            toast.success('Subscription renewed for 1 month & user activated!');
+            fetchUsers();
+        } catch (error: any) {
+            console.error('Error renewing subscription:', error);
+            toast.error('Failed to renew subscription');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleCancelSubscription = async (userId: string) => {
+        if (!confirm('Are you sure you want to cancel this subscription? The user will be instantly disabled.')) return;
         setIsUpdating(true);
         try {
             const { error } = await supabase
                 .from('profiles')
-                .update({ is_active: !itemToSuspend.currentStatus })
+                .update({
+                    subscription_status: 'expired',
+                    is_active: false,
+                    stripe_payment_id: null,
+                    registration_status: 'pending'
+                })
+                .eq('id', userId);
+
+            if (error) throw error;
+
+            setUsersList(users_list.map(u =>
+                u.id === userId ? {
+                    ...u,
+                    subscription_status: 'expired',
+                    is_active: false,
+                    stripe_payment_id: null,
+                    registration_status: 'pending'
+                } : u
+            ));
+
+            if (selectedUser?.id === userId) {
+                setSelectedUser({
+                    ...selectedUser,
+                    subscription_status: 'expired',
+                    is_active: false,
+                    stripe_payment_id: null,
+                    registration_status: 'pending'
+                });
+            }
+
+            toast.success('Subscription cancelled and payment reset.');
+            fetchUsers();
+        } catch (error: any) {
+            console.error('Error cancelling subscription:', error);
+            toast.error('Failed to cancel subscription');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleSendRenewalReminder = async (u: any) => {
+        setSendingEmailId(u.id);
+        try {
+            // Gmail Compose for manual renewal reminder
+            const expiryDate = u.subscription_end_date ? new Date(u.subscription_end_date).toLocaleDateString('en-GB') : 'Soon';
+            const subject = encodeURIComponent(`Your Subscription Expiry - The Berman`);
+            const body = encodeURIComponent(`Hi ${u.full_name || 'there'},\n\nYour subscription with The Berman has expired/is about to expire on ${expiryDate}.\n\nTo continue your membership and keep your listing active, please login and renew your subscription.\n\nBest regards,\nThe Berman Team`);
+            const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${u.email}&su=${subject}&body=${body}`;
+            window.open(gmailUrl, '_blank');
+
+            toast.success('Opening Gmail with renewal reminder...');
+        } catch (error: any) {
+            console.error('Error sending renewal reminder:', error);
+            toast.error('Failed to send renewal reminder');
+        } finally {
+            setSendingEmailId(null);
+        }
+    };
+
+
+    const toggleUserStatus = async () => {
+        if (!itemToSuspend) return;
+        setIsUpdating(true);
+        try {
+            const isSuspending = itemToSuspend.currentStatus === true;
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    is_active: !itemToSuspend.currentStatus,
+                    // If suspending, reset payment/registration status
+                    ...(isSuspending ? {
+                        stripe_payment_id: null,
+                        registration_status: 'pending'
+                    } : {})
+                })
                 .eq('id', itemToSuspend.id);
 
             if (error) throw error;
 
             setUsersList(users_list.map(u =>
-                u.id === itemToSuspend.id ? { ...u, is_active: !itemToSuspend.currentStatus } : u
+                u.id === itemToSuspend.id ? {
+                    ...u,
+                    is_active: !itemToSuspend.currentStatus,
+                    ...(isSuspending ? {
+                        stripe_payment_id: null,
+                        registration_status: 'pending'
+                    } : {})
+                } : u
             ));
 
-            toast.success(`User ${!itemToSuspend.currentStatus ? 'activated' : 'suspended'} successfully`);
+            if (selectedUser?.id === itemToSuspend.id) {
+                setSelectedUser({
+                    ...selectedUser,
+                    is_active: !itemToSuspend.currentStatus,
+                    ...(isSuspending ? {
+                        stripe_payment_id: null,
+                        registration_status: 'pending'
+                    } : {})
+                });
+            }
+
+            toast.success(`User ${!itemToSuspend.currentStatus ? 'activated' : 'suspended & payment reset'} successfully`);
             setShowSuspendModal(false);
         } catch (error: any) {
             console.error('Error toggling user status:', error);
@@ -1979,23 +2163,55 @@ const Admin = () => {
                                                     )
                                                 })}
                                             </div>
+                                        </div>
+                                    </div>
 
-                                            <div className="space-y-1.5 mt-4">
+                                    {/* Description (Moved up) */}
+                                    <div className="space-y-4 pt-6 border-t border-gray-100">
+                                        <div className="flex items-center gap-3 pb-2 border-b border-gray-100">
+                                            <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                                                <Newspaper size={18} />
+                                            </div>
+                                            <h3 className="text-base font-bold text-gray-900">About the Business</h3>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Company Description</label>
+                                            <textarea
+                                                value={catalogueFormData.description}
+                                                onChange={(e) => setCatalogueFormData({ ...catalogueFormData, description: e.target.value })}
+                                                rows={4}
+                                                className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all resize-none"
+                                                placeholder="Describe the services and expertise..."
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Branding & Media Section */}
+                                    <div className="md:col-span-2 mt-8 pt-8 border-t border-double border-gray-100">
+                                        <div className="flex items-center gap-3 mb-8">
+                                            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                                                <ImageIcon size={18} />
+                                            </div>
+                                            <h3 className="text-base font-bold text-gray-900 uppercase tracking-widest">Branding & Media</h3>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="space-y-1.5">
                                                 <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Logo</label>
                                                 <div className="mt-1 flex items-center gap-4">
                                                     {catalogueFormData.logoUrl ? (
-                                                        <div className="relative w-20 h-20 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 flex-shrink-0 group shadow-sm">
+                                                        <div className="relative w-24 h-24 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 flex-shrink-0 group shadow-sm transition-all hover:shadow-md">
                                                             <img src={catalogueFormData.logoUrl} alt="Logo Preview" className="w-full h-full object-contain" />
                                                             <button
                                                                 type="button"
-                                                                onClick={() => setCatalogueFormData(prev => ({ ...prev, logoUrl: '' }))}
+                                                                onClick={() => setCatalogueFormData(prev => ({ ...prev, logoUrl: ' ' }))}
                                                                 className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                                             >
                                                                 <X size={20} className="text-white" />
                                                             </button>
                                                         </div>
                                                     ) : (
-                                                        <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-300 bg-gray-50/50">
+                                                        <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-300 bg-gray-50/50">
                                                             {isUploadingLogo ? <Loader2 size={24} className="animate-spin" /> : <ImageIcon size={24} />}
                                                         </div>
                                                     )}
@@ -2014,21 +2230,18 @@ const Admin = () => {
                                                             className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer shadow-sm border ${isUploadingLogo ? 'bg-gray-50 text-gray-400 border-gray-100' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
                                                         >
                                                             {isUploadingLogo ? <Loader2 size={16} className="animate-spin" /> : <UploadCloud size={16} />}
-                                                            {isUploadingLogo ? 'Uploading...' : 'Click to Upload Logo'}
+                                                            {isUploadingLogo ? 'Uploading...' : 'Upload Logo'}
                                                         </label>
-                                                        <p className="text-[10px] text-gray-400 font-medium">Recommended: Square PNG or JPG. Max size 2MB.</p>
+                                                        <p className="text-[10px] text-gray-400 font-medium tracking-tight">Rec: Square PNG/JPG. Max 2MB.</p>
                                                     </div>
                                                 </div>
                                             </div>
-                                            {catalogueFormData.logoUrl && (
-                                                <input type="hidden" value={catalogueFormData.logoUrl} />
-                                            )}
 
-                                            <div className="space-y-1.5 md:col-span-2 mt-4">
+                                            <div className="space-y-1.5">
                                                 <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Banner Image</label>
                                                 <div className="mt-1 flex items-center gap-4">
                                                     {catalogueFormData.bannerUrl ? (
-                                                        <div className="relative w-40 h-20 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 flex-shrink-0 group shadow-sm">
+                                                        <div className="relative w-40 h-24 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 flex-shrink-0 group shadow-sm transition-all hover:shadow-md">
                                                             <img src={catalogueFormData.bannerUrl} alt="Banner Preview" className="w-full h-full object-cover" />
                                                             <button
                                                                 type="button"
@@ -2039,7 +2252,7 @@ const Admin = () => {
                                                             </button>
                                                         </div>
                                                     ) : (
-                                                        <div className="w-40 h-20 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-300 bg-gray-50/50">
+                                                        <div className="w-40 h-24 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-300 bg-gray-50/50">
                                                             {isUpdatingBanner ? <Loader2 size={24} className="animate-spin" /> : <ImageIcon size={24} />}
                                                         </div>
                                                     )}
@@ -2058,112 +2271,92 @@ const Admin = () => {
                                                             className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer shadow-sm border ${isUpdatingBanner ? 'bg-gray-50 text-gray-400 border-gray-100' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
                                                         >
                                                             {isUpdatingBanner ? <Loader2 size={16} className="animate-spin" /> : <UploadCloud size={16} />}
-                                                            {isUpdatingBanner ? 'Uploading...' : 'Click to Upload Banner'}
+                                                            {isUpdatingBanner ? 'Uploading...' : 'Upload Banner'}
                                                         </label>
-                                                        <p className="text-[10px] text-gray-400 font-medium">Recommended: 1920x600. Max size 5MB.</p>
+                                                        <p className="text-[10px] text-gray-400 font-medium tracking-tight">Rec: 1920x600. Max 5MB.</p>
                                                     </div>
                                                 </div>
                                             </div>
-
-                                            {/* Photo Gallery Section */}
-                                            <div className="md:col-span-2 mt-8 pt-8 border-t border-gray-100">
-                                                <div className="mb-6">
-                                                    <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm flex items-center gap-2">
-                                                        <ImageIcon size={16} /> Manage Gallery Photos
-                                                    </h3>
-                                                    <p className="text-[11px] text-gray-500 font-medium mt-1">Add up to 3 high-quality JPG or PNG photos with short descriptions</p>
-                                                </div>
-
-                                                <div className="space-y-6">
-                                                    {catalogueFormData.galleryImages.map((img, index) => (
-                                                        <div key={index} className="flex flex-col md:flex-row gap-6 items-start border border-gray-100 p-6 rounded-2xl bg-gray-50/50">
-                                                            <div className="flex-grow space-y-4 w-full">
-                                                                <div>
-                                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Upload Photo {index + 1}</label>
-                                                                    <div className="flex items-center gap-3">
-                                                                        <input
-                                                                            type="file"
-                                                                            accept="image/jpeg, image/png"
-                                                                            onChange={(e) => handleGalleryUpload(index, e)}
-                                                                            disabled={isUploadingGallery[index]}
-                                                                            className="block w-full text-sm text-gray-500
-                                                                        file:mr-4 file:py-2 file:px-4
-                                                                        file:rounded-full file:border-0
-                                                                        file:text-sm file:font-semibold
-                                                                        file:bg-[#007EA7]/10 file:text-[#007EA7]
-                                                                        hover:file:bg-[#007EA7]/20
-                                                                        disabled:opacity-50 disabled:cursor-not-allowed
-                                                                        transition-all"
-                                                                        />
-                                                                        {isUploadingGallery[index] && (
-                                                                            <Loader2 size={16} className="animate-spin text-[#007EA7] shrink-0" />
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                                <div>
-                                                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Short Description</label>
-                                                                    <textarea
-                                                                        value={img.description}
-                                                                        onChange={(e) => {
-                                                                            const newImages = [...catalogueFormData.galleryImages];
-                                                                            newImages[index].description = e.target.value;
-                                                                            setCatalogueFormData({ ...catalogueFormData, galleryImages: newImages });
-                                                                        }}
-                                                                        placeholder="What's happening in this photo?"
-                                                                        rows={2}
-                                                                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-900 focus:ring-4 focus:ring-[#007EA7]/10 focus:border-[#007EA7] transition-all"
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                            {img.url ? (
-                                                                <div className="w-32 h-32 rounded-xl overflow-hidden border border-gray-200 bg-gray-100 flex-shrink-0 shadow-sm relative group">
-                                                                    <img src={img.url} alt={`Gallery ${index + 1}`} className="w-full h-full object-cover" />
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            const newImages = [...catalogueFormData.galleryImages];
-                                                                            newImages[index].url = '';
-                                                                            setCatalogueFormData({ ...catalogueFormData, galleryImages: newImages });
-                                                                        }}
-                                                                        className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                                                    >
-                                                                        <X size={20} className="text-white" />
-                                                                    </button>
-                                                                </div>
-                                                            ) : (
-                                                                <div className="w-32 h-32 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-300 bg-white flex-shrink-0 shadow-sm">
-                                                                    <ImageIcon size={24} />
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-
                                         </div>
                                     </div>
 
-                                    {/* Description */}
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-3 pb-2 border-b border-gray-100">
-                                            <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
-                                                <Newspaper size={18} />
-                                            </div>
-                                            <h3 className="text-base font-bold text-gray-900">About the Business</h3>
+                                    {/* Photo Gallery Section */}
+                                    <div className="md:col-span-2 mt-8 pt-8 border-t border-gray-100">
+                                        <div className="mb-6">
+                                            <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm flex items-center gap-2">
+                                                <ImageIcon size={16} /> Manage Gallery Photos
+                                            </h3>
+                                            <p className="text-[11px] text-gray-500 font-medium mt-1">Add up to 3 high-quality JPG or PNG photos with short descriptions</p>
                                         </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Company Description</label>
-                                            <textarea
-                                                value={catalogueFormData.description}
-                                                onChange={(e) => setCatalogueFormData({ ...catalogueFormData, description: e.target.value })}
-                                                rows={4}
-                                                className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all resize-none"
-                                                placeholder="Describe the services and expertise..."
-                                            />
+
+                                        <div className="space-y-6">
+                                            {catalogueFormData.galleryImages.map((img, index) => (
+                                                <div key={index} className="flex flex-col md:flex-row gap-6 items-start border border-gray-100 p-6 rounded-2xl bg-gray-50/50">
+                                                    <div className="flex-grow space-y-4 w-full">
+                                                        <div>
+                                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Upload Photo {index + 1}</label>
+                                                            <div className="flex items-center gap-3">
+                                                                <input
+                                                                    type="file"
+                                                                    accept="image/jpeg, image/png"
+                                                                    onChange={(e) => handleGalleryUpload(index, e)}
+                                                                    disabled={isUploadingGallery[index]}
+                                                                    className="block w-full text-sm text-gray-500
+                                                                file:mr-4 file:py-2 file:px-4
+                                                                file:rounded-full file:border-0
+                                                                file:text-sm file:font-semibold
+                                                                file:bg-[#007EA7]/10 file:text-[#007EA7]
+                                                                hover:file:bg-[#007EA7]/20
+                                                                disabled:opacity-50 disabled:cursor-not-allowed
+                                                                transition-all"
+                                                                />
+                                                                {isUploadingGallery[index] && (
+                                                                    <Loader2 size={16} className="animate-spin text-[#007EA7] shrink-0" />
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Short Description</label>
+                                                            <textarea
+                                                                value={img.description}
+                                                                onChange={(e) => {
+                                                                    const newImages = [...catalogueFormData.galleryImages];
+                                                                    newImages[index].description = e.target.value;
+                                                                    setCatalogueFormData({ ...catalogueFormData, galleryImages: newImages });
+                                                                }}
+                                                                placeholder="What's happening in this photo?"
+                                                                rows={2}
+                                                                className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-900 focus:ring-4 focus:ring-[#007EA7]/10 focus:border-[#007EA7] transition-all"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    {img.url ? (
+                                                        <div className="w-32 h-32 rounded-xl overflow-hidden border border-gray-200 bg-gray-100 flex-shrink-0 shadow-sm relative group">
+                                                            <img src={img.url} alt={`Gallery ${index + 1}`} className="w-full h-full object-cover" />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const newImages = [...catalogueFormData.galleryImages];
+                                                                    newImages[index].url = '';
+                                                                    setCatalogueFormData({ ...catalogueFormData, galleryImages: newImages });
+                                                                }}
+                                                                className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            >
+                                                                <X size={20} className="text-white" />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="w-32 h-32 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-300 bg-white flex-shrink-0 shadow-sm">
+                                                            <ImageIcon size={24} />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
 
                                     {/* Categories Selection */}
-                                    <div className="space-y-4">
+                                    <div className="space-y-4 pt-8 border-t border-gray-100">
                                         <div className="flex items-center gap-3 pb-2 border-b border-gray-100">
                                             <div className="w-8 h-8 rounded-lg bg-green-50 text-[#007F00] flex items-center justify-center">
                                                 <Plus size={18} />
@@ -2595,7 +2788,7 @@ const Admin = () => {
                                                             return (
                                                                 <tr key={u.id} className="hover:bg-green-50/30 transition-colors group">
                                                                     <td className="px-6 py-4">
-                                                                        <div className="flex flex-col gap-1">
+                                                                        <div className="flex flex-col gap-1.5">
                                                                             <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${u.registration_status === 'active' ? 'bg-green-50 text-green-700 border-green-200' :
                                                                                 u.registration_status === 'rejected' ? 'bg-red-50 text-red-700 border-red-200' :
                                                                                     'bg-amber-50 text-amber-700 border-amber-200'
@@ -2604,10 +2797,10 @@ const Admin = () => {
                                                                                     u.registration_status === 'rejected' ? 'bg-red-500' :
                                                                                         'bg-amber-500'
                                                                                     }`} />
-                                                                                {u.registration_status || 'pending'}
+                                                                                {u.registration_status || (u.is_active !== false ? 'active' : 'pending')}
                                                                             </div>
-                                                                            {u.stripe_payment_id && (
-                                                                                <div className="flex flex-col mt-1">
+                                                                            {u.stripe_payment_id ? (
+                                                                                <div className="flex flex-col">
                                                                                     <span className="text-[9px] text-green-600 font-bold uppercase flex items-center gap-1">
                                                                                         <CreditCard size={10} /> Paid
                                                                                     </span>
@@ -2615,6 +2808,10 @@ const Admin = () => {
                                                                                         {u.stripe_payment_id}
                                                                                     </span>
                                                                                 </div>
+                                                                            ) : (
+                                                                                <span className="text-[9px] text-gray-400 font-bold uppercase flex items-center gap-1">
+                                                                                    <AlertTriangle size={10} className="text-amber-500" /> Not Paid
+                                                                                </span>
                                                                             )}
                                                                         </div>
                                                                     </td>
@@ -2835,11 +3032,31 @@ const Admin = () => {
                                                     return (
                                                         <tr key={u.id} className="hover:bg-green-50/30 transition-colors group">
                                                             <td className="px-6 py-4">
-                                                                <div className="flex items-center gap-2">
-                                                                    <div className={`w-2 h-2 rounded-full ${u.registration_status === 'pending' ? 'bg-orange-500 animate-pulse' : u.is_active !== false ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                                                                    <span className={`text-xs font-bold uppercase tracking-tight ${u.registration_status === 'pending' ? 'text-orange-600' : u.is_active !== false ? 'text-gray-500' : 'text-red-500'}`}>
-                                                                        {u.registration_status === 'pending' ? 'Pending' : u.is_active !== false ? 'Active' : 'Suspended'}
-                                                                    </span>
+                                                                <div className="flex flex-col gap-1.5">
+                                                                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${u.registration_status === 'active' ? 'bg-green-50 text-green-700 border-green-200' :
+                                                                        u.registration_status === 'rejected' ? 'bg-red-50 text-red-700 border-red-200' :
+                                                                            'bg-amber-50 text-amber-700 border-amber-200'
+                                                                        }`}>
+                                                                        <div className={`w-1.5 h-1.5 rounded-full ${u.registration_status === 'active' ? 'bg-green-500' :
+                                                                            u.registration_status === 'rejected' ? 'bg-red-500' :
+                                                                                'bg-amber-500'
+                                                                            }`} />
+                                                                        {u.registration_status || (u.is_active !== false ? 'active' : 'pending')}
+                                                                    </div>
+                                                                    {u.stripe_payment_id ? (
+                                                                        <div className="flex flex-col">
+                                                                            <span className="text-[9px] text-green-600 font-bold uppercase flex items-center gap-1">
+                                                                                <CreditCard size={10} /> Paid
+                                                                            </span>
+                                                                            <span className="text-[10px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 mt-0.5 select-all" title="Stripe Payment ID">
+                                                                                {u.stripe_payment_id}
+                                                                            </span>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <span className="text-[9px] text-gray-400 font-bold uppercase flex items-center gap-1">
+                                                                            <AlertTriangle size={10} className="text-amber-500" /> Not Paid
+                                                                        </span>
+                                                                    )}
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-4 font-medium text-gray-900">
@@ -3112,7 +3329,7 @@ const Admin = () => {
                                                 return (
                                                     <tr key={u.id} className="hover:bg-green-50/30 transition-colors group">
                                                         <td className="px-6 py-4">
-                                                            <div className="flex flex-col gap-1">
+                                                            <div className="flex flex-col gap-1.5">
                                                                 <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${u.registration_status === 'active' ? 'bg-green-50 text-green-700 border-green-200' :
                                                                     u.registration_status === 'rejected' ? 'bg-red-50 text-red-700 border-red-200' :
                                                                         'bg-amber-50 text-amber-700 border-amber-200'
@@ -3123,8 +3340,8 @@ const Admin = () => {
                                                                         }`} />
                                                                     {u.registration_status || 'pending'}
                                                                 </div>
-                                                                {u.stripe_payment_id && (
-                                                                    <div className="flex flex-col mt-1">
+                                                                {u.stripe_payment_id ? (
+                                                                    <div className="flex flex-col">
                                                                         <span className="text-[9px] text-green-600 font-bold uppercase flex items-center gap-1">
                                                                             <CreditCard size={10} /> Paid
                                                                         </span>
@@ -3132,6 +3349,10 @@ const Admin = () => {
                                                                             {u.stripe_payment_id}
                                                                         </span>
                                                                     </div>
+                                                                ) : (
+                                                                    <span className="text-[9px] text-gray-400 font-bold uppercase flex items-center gap-1">
+                                                                        <AlertTriangle size={10} className="text-amber-500" /> Not Paid
+                                                                    </span>
                                                                 )}
                                                             </div>
                                                         </td>
@@ -3140,7 +3361,7 @@ const Admin = () => {
                                                             <div className="text-xs text-gray-400 font-normal">{u.email}</div>
                                                         </td>
                                                         <td className="px-6 py-4 text-gray-500">
-                                                            {new Date(u.created_at).toLocaleDateString()}
+                                                            {new Date(u.created_at).toLocaleDateString('en-GB')}
                                                         </td>
                                                         <td className="px-6 py-4">
                                                             {(() => {
@@ -3166,16 +3387,22 @@ const Admin = () => {
                                                                         </div>
                                                                         {startDate && (
                                                                             <div className="text-[10px] text-gray-400">
-                                                                                <span className="font-semibold text-gray-500">Start:</span> {startDate.toLocaleDateString()}
+                                                                                <span className="font-semibold text-gray-500">Start:</span> {startDate.toLocaleDateString('en-GB')}
                                                                             </div>
                                                                         )}
                                                                         {endDate && (
                                                                             <div className={`text-[10px] ${isExpired ? 'text-red-500 font-bold' : isExpiringSoon ? 'text-amber-600 font-bold' : 'text-gray-400'
                                                                                 }`}>
-                                                                                <span className="font-semibold">{isExpired ? 'Expired:' : 'Expires:'}</span> {endDate.toLocaleDateString()}
+                                                                                <span className="font-semibold">{isExpired ? 'Expired:' : 'Expires:'}</span> {endDate.toLocaleDateString('en-GB')}
                                                                                 {isExpiringSoon && !isExpired && (
                                                                                     <span className="ml-1 text-amber-500">({daysLeft}d left)</span>
                                                                                 )}
+                                                                            </div>
+                                                                        )}
+                                                                        {isExpired && (
+                                                                            <div className="flex items-center gap-1 text-[9px] text-red-600 font-black animate-pulse uppercase mt-1">
+                                                                                <AlertCircle size={10} />
+                                                                                Account Disabled
                                                                             </div>
                                                                         )}
                                                                         {!startDate && !endDate && (
@@ -3234,6 +3461,40 @@ const Admin = () => {
                                                         </td>
                                                         <td className="px-6 py-4 text-right">
                                                             <div className="flex items-center justify-end gap-2">
+                                                                {(() => {
+                                                                    const endDate = u.subscription_end_date ? new Date(u.subscription_end_date) : null;
+                                                                    const isExpired = endDate && endDate < new Date();
+                                                                    const isExpiringSoon = endDate && !isExpired && (endDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24) <= 7;
+
+                                                                    return (isExpired || isExpiringSoon) && (
+                                                                        <button
+                                                                            onClick={() => handleSendRenewalReminder(u)}
+                                                                            disabled={sendingEmailId === u.id}
+                                                                            className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-600 hover:bg-amber-100 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 shadow-sm"
+                                                                            title="Send Renewal Reminder"
+                                                                        >
+                                                                            {sendingEmailId === u.id ? <Loader2 className="animate-spin" size={14} /> : <Mail size={14} />}
+                                                                            {isExpired ? 'Remind' : 'Expiring'}
+                                                                        </button>
+                                                                    );
+                                                                })()}
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setSelectedUser(u);
+                                                                        setEditForm({
+                                                                            role: u.role,
+                                                                            subscription_status: u.subscription_status || 'inactive',
+                                                                            subscription_start_date: u.subscription_start_date || '',
+                                                                            subscription_end_date: u.subscription_end_date || '',
+                                                                            manual_override_reason: u.manual_override_reason || '',
+                                                                            stripe_payment_id: u.stripe_payment_id || ''
+                                                                        });
+                                                                    }}
+                                                                    className="text-gray-400 hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition-all"
+                                                                    title="View/Edit Profile Details"
+                                                                >
+                                                                    <Eye size={18} />
+                                                                </button>
                                                                 {u.registration_status !== 'active' && !u.is_admin_created && (
                                                                     <button
                                                                         onClick={() => updateRegistrationStatus(u.id, 'active')}
@@ -4561,8 +4822,18 @@ const Admin = () => {
                             <div className="space-y-6">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Account Role</p>
-                                        <p className="text-sm font-bold text-gray-900 capitalize">{selectedUser.role}</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Account Role</p>
+                                        <select
+                                            value={editForm.role}
+                                            onChange={(e) => setEditForm({ ...editForm, role: e.target.value as any })}
+                                            className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white transition-all outline-none font-bold text-gray-900 capitalize"
+                                        >
+                                            <option value="user">User</option>
+                                            <option value="homeowner">Homeowner</option>
+                                            <option value="contractor">Assessor / Contractor</option>
+                                            <option value="business">Business</option>
+                                            <option value="admin">Admin</option>
+                                        </select>
                                     </div>
                                     <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Phone Number</p>
@@ -4579,7 +4850,20 @@ const Admin = () => {
                                 {/* Subscription Section */}
                                 {(selectedUser.role === 'contractor' || selectedUser.role === 'business') && (
                                     <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100/50">
-                                        <h4 className="text-xs font-bold text-blue-900 uppercase tracking-widest mb-4">Subscription Management</h4>
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h4 className="text-xs font-bold text-blue-900 uppercase tracking-widest">Subscription Management</h4>
+                                            {(() => {
+                                                const endDate = selectedUser.subscription_end_date ? new Date(selectedUser.subscription_end_date) : null;
+                                                const isExpired = endDate && endDate < new Date();
+                                                if (isExpired) return (
+                                                    <span className="flex items-center gap-1 text-[10px] font-black text-red-600 animate-pulse">
+                                                        <AlertCircle size={12} />
+                                                        ACCOUNT DISABLED
+                                                    </span>
+                                                );
+                                                return null;
+                                            })()}
+                                        </div>
                                         <div className="flex justify-between items-center mb-4">
                                             <div>
                                                 <p className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">Status</p>
@@ -4588,12 +4872,43 @@ const Admin = () => {
                                             <div className="text-right">
                                                 <p className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">Ends On</p>
                                                 <p className="text-sm font-black text-blue-900">
-                                                    {selectedUser.subscription_end_date ? new Date(selectedUser.subscription_end_date).toLocaleDateString() : 'N/A'}
+                                                    {selectedUser.subscription_end_date ? new Date(selectedUser.subscription_end_date).toLocaleDateString('en-GB') : 'N/A'}
                                                 </p>
                                             </div>
                                         </div>
+
+                                        <div className="flex flex-col gap-2 mt-4">
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleManualRenewal(selectedUser.id)}
+                                                    disabled={isUpdating}
+                                                    className="flex-1 bg-white border-2 border-green-600 text-green-600 text-[10px] font-black py-2.5 rounded-xl hover:bg-green-600 hover:text-white transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    <RefreshCw size={14} />
+                                                    MANUAL RENEW (1 MO)
+                                                </button>
+                                                <button
+                                                    onClick={() => handleSendRenewalReminder(selectedUser)}
+                                                    className="flex-1 bg-white border-2 border-amber-600 text-amber-600 text-[10px] font-black py-2.5 rounded-xl hover:bg-amber-600 hover:text-white transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    <Mail size={14} />
+                                                    SEND REMINDER
+                                                </button>
+                                            </div>
+                                            {selectedUser.subscription_status === 'active' && (
+                                                <button
+                                                    onClick={() => handleCancelSubscription(selectedUser.id)}
+                                                    disabled={isUpdating}
+                                                    className="w-full bg-red-50 text-red-600 border border-red-200 text-[10px] font-black py-2 rounded-xl hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    <XCircle size={14} />
+                                                    CANCEL SUBSCRIPTION
+                                                </button>
+                                            )}
+                                        </div>
+
                                         {selectedUser.manual_override_reason && (
-                                            <div className="mb-4 p-2 bg-white rounded-lg border border-blue-100">
+                                            <div className="mt-4 p-2 bg-white rounded-lg border border-blue-100">
                                                 <p className="text-[10px] text-gray-400 uppercase font-bold mb-1">Override Reason</p>
                                                 <p className="text-xs text-gray-600 italic">"{selectedUser.manual_override_reason}"</p>
                                             </div>
@@ -4608,7 +4923,7 @@ const Admin = () => {
                                     </div>
                                     <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Member Since</p>
-                                        <p className="text-sm font-bold text-gray-900">{new Date(selectedUser.created_at).toLocaleDateString()}</p>
+                                        <p className="text-sm font-bold text-gray-900">{new Date(selectedUser.created_at).toLocaleDateString('en-GB')}</p>
                                     </div>
                                 </div>
 
@@ -4630,14 +4945,14 @@ const Admin = () => {
                                         {selectedUser.is_active !== false ? 'Suspend Account' : 'Activate Account'}
                                     </button>
 
-                                    {user?.role === 'admin' && (selectedUser.role === 'contractor' || selectedUser.role === 'business') && (
+                                    {user?.role === 'admin' && (
                                         <button
-                                            onClick={handleUpdateSubscription}
+                                            onClick={handleUpdateProfile}
                                             disabled={isUpdating}
                                             className="flex-[2] py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all text-sm shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
                                         >
                                             {isUpdating && <Loader2 size={16} className="animate-spin" />}
-                                            Save Subscription Status
+                                            Save Profile Changes
                                         </button>
                                     )}
 
