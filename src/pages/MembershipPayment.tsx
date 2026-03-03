@@ -161,6 +161,7 @@ const MembershipPayment = () => {
                                 <BenefitItem text="Unlimited Quotes & Job Notifications" />
                                 <BenefitItem text="Verified Assessor Badge" />
                                 <BenefitItem text="Direct Quote Request Form" />
+                                <BenefitItem text="Money back guarantee if no jobs have been completed" />
                             </>
                         ) : (
                             <>

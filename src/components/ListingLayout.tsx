@@ -154,19 +154,28 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
                                     </div>
                                 </div>
 
-                                {listing.additional_addresses && listing.additional_addresses.length > 0 && listing.additional_addresses.map((addr, idx) => (
-                                    <div key={idx} className="flex items-start gap-4 md:gap-5 mt-6 pt-6 border-t border-gray-100/60">
-                                        <div className="mt-0.5 bg-gray-50 text-gray-400 p-2.5 rounded-xl flex-shrink-0 border border-gray-100/50">
-                                            <MapPin size={22} className="stroke-[2]" />
+                                {listing.additional_addresses && listing.additional_addresses.length > 0 && (
+                                    <div className="mt-8 pt-8 border-t border-gray-100/60">
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#007EA7]"></div>
+                                            <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em]">Preferred Locations</h3>
                                         </div>
-                                        <div className="flex-1">
-                                            <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] mb-2">Alternate Branch</h3>
-                                            <div className="text-base font-bold text-gray-700 leading-relaxed">
-                                                {formatAddress(addr)}
-                                            </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                            {listing.additional_addresses.map((addr, idx) => {
+                                                const county = addr.includes('|||') ? addr.split('|||')[1] : addr;
+                                                if (!county) return null;
+                                                return (
+                                                    <div key={idx} className="flex items-center gap-3 p-4 bg-gray-50/50 border border-gray-100 rounded-2xl hover:border-[#007EA7]/20 hover:bg-white hover:shadow-sm transition-all duration-300 group">
+                                                        <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-[#007EA7] border border-gray-100 group-hover:bg-[#E8F4FD]/50 group-hover:border-[#007EA7]/20 transition-all">
+                                                            <MapPin size={16} />
+                                                        </div>
+                                                        <span className="text-sm font-bold text-gray-700">{county}</span>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     </div>
-                                ))}
+                                )}
                             </div>
                             {(listing.company_number || listing.vat_number || listing.registration_no) && (
                                 <div className="mb-8 pt-4 border-t border-gray-100 flex flex-wrap gap-x-6 gap-y-2 text-xs text-gray-500">

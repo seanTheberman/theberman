@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, AlertCircle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2, Search, Newspaper, Plus, Star, Check, Edit2, ExternalLink, Image as ImageIcon, UploadCloud, ArrowLeft, Users, DollarSign, CreditCard, ClipboardList, ArrowRight, Hourglass, Building, XCircle } from 'lucide-react';
+import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, AlertCircle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2, Search, Newspaper, Plus, Star, Check, Edit2, ExternalLink, Image as ImageIcon, UploadCloud, ArrowLeft, Users, DollarSign, CreditCard, ClipboardList, ArrowRight, Hourglass, Building, XCircle, Zap } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
@@ -333,6 +333,7 @@ const Admin = () => {
     const [isSavingSettings, setIsSavingSettings] = useState(false);
     const [isSavingRegistrationFees, setIsSavingRegistrationFees] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [customMonths, setCustomMonths] = useState<number>(1);
 
     const filteredLeads = leads.filter(l =>
         l.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -601,7 +602,7 @@ const Admin = () => {
                 logoUrl: existingListing.logo_url || '',
                 featured: existingListing.featured || false,
                 selectedCategories: [],
-                additionalAddresses: existingListing.additional_addresses || [],
+                additionalAddresses: (existingListing.additional_addresses || []).map((a: string) => a.includes('|||') ? a.split('|||')[1] : a),
                 companyNumber: existingListing.company_number || '',
                 registrationNo: existingListing.registration_no || '',
                 vatNumber: existingListing.vat_number || '',
@@ -939,19 +940,24 @@ const Admin = () => {
                     await supabase.from('catalogue_listing_categories').insert(categoryMappings);
                 }
 
-                // Map location (County)
-                if (catalogueFormData.county) {
-                    const { data: locData } = await supabase
+                // Map all locations (Primary County + Preferred Locations)
+                const allCounties = Array.from(new Set([
+                    catalogueFormData.county,
+                    ...catalogueFormData.additionalAddresses
+                ])).filter(Boolean);
+
+                if (allCounties.length > 0) {
+                    const { data: locsData } = await supabase
                         .from('catalogue_locations')
                         .select('id')
-                        .eq('name', catalogueFormData.county)
-                        .maybeSingle();
+                        .in('name', allCounties);
 
-                    if (locData) {
-                        await supabase.from('catalogue_listing_locations').insert({
+                    if (locsData && locsData.length > 0) {
+                        const locationMappings = locsData.map(loc => ({
                             listing_id: listingId,
-                            location_id: locData.id
-                        });
+                            location_id: loc.id
+                        }));
+                        await supabase.from('catalogue_listing_locations').insert(locationMappings);
                     }
                 }
 
@@ -1803,25 +1809,44 @@ const Admin = () => {
         }
     };
 
-    const handleManualRenewal = async (userId: string) => {
+    const handleManualRenewal = async (userId: string, monthsToAdd: number = 12) => {
         setIsUpdating(true);
         try {
-            const startDate = new Date();
-            const endDate = new Date();
-            endDate.setMonth(endDate.getMonth() + 1);
+            const userToUpdate = users_list.find(u => u.id === userId);
+            const now = new Date();
+            let startDate = new Date();
+            let endDate = new Date();
+
+            if (userToUpdate?.subscription_end_date) {
+                const currentEnd = new Date(userToUpdate.subscription_end_date);
+                if (currentEnd > now) {
+                    // If active, extend from the current end date
+                    startDate = userToUpdate.subscription_start_date ? new Date(userToUpdate.subscription_start_date) : now;
+                    endDate = new Date(currentEnd);
+                    endDate.setMonth(endDate.getMonth() + monthsToAdd);
+                } else {
+                    // If expired, start from today
+                    endDate.setMonth(endDate.getMonth() + monthsToAdd);
+                }
+            } else {
+                // If no date, start from today
+                endDate.setMonth(endDate.getMonth() + monthsToAdd);
+            }
 
             // If we're manually renewing, we should auto-activate registration too
+            const updateData = {
+                subscription_status: 'active',
+                subscription_start_date: startDate.toISOString(),
+                subscription_end_date: endDate.toISOString(),
+                is_active: true,
+                registration_status: 'active',
+                // Set a manual payment ID if one doesn't exist to remove "Not Paid" tag
+                stripe_payment_id: userToUpdate?.stripe_payment_id || 'MANUAL_BY_ADMIN'
+            };
+
             const { error } = await supabase
                 .from('profiles')
-                .update({
-                    subscription_status: 'active',
-                    subscription_start_date: startDate.toISOString(),
-                    subscription_end_date: endDate.toISOString(),
-                    is_active: true,
-                    registration_status: 'active',
-                    // Set a manual payment ID if one doesn't exist to remove "Not Paid" tag
-                    stripe_payment_id: selectedUser?.stripe_payment_id || 'MANUAL_BY_ADMIN'
-                })
+                .update(updateData)
                 .eq('id', userId);
 
             if (error) throw error;
@@ -1829,28 +1854,18 @@ const Admin = () => {
             setUsersList(users_list.map(u =>
                 u.id === userId ? {
                     ...u,
-                    subscription_status: 'active',
-                    subscription_start_date: startDate.toISOString(),
-                    subscription_end_date: endDate.toISOString(),
-                    is_active: true,
-                    registration_status: 'active',
-                    stripe_payment_id: u.stripe_payment_id || 'MANUAL_BY_ADMIN'
+                    ...updateData
                 } : u
             ));
 
             if (selectedUser?.id === userId) {
                 setSelectedUser({
                     ...selectedUser,
-                    subscription_status: 'active',
-                    subscription_start_date: startDate.toISOString(),
-                    subscription_end_date: endDate.toISOString(),
-                    is_active: true,
-                    registration_status: 'active',
-                    stripe_payment_id: selectedUser.stripe_payment_id || 'MANUAL_BY_ADMIN'
+                    ...updateData
                 });
             }
 
-            toast.success('Subscription renewed for 1 month & user activated!');
+            toast.success(`Subscription updated for ${monthsToAdd} months & account activated!`);
             fetchUsers();
         } catch (error: any) {
             console.error('Error renewing subscription:', error);
@@ -2260,59 +2275,36 @@ const Admin = () => {
                                                 </select>
                                             </div>
 
-                                            <div className="md:col-span-2 space-y-3">
-                                                <div className="flex justify-between items-center px-1">
-                                                    <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Alternate Locations</label>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setCatalogueFormData({ ...catalogueFormData, additionalAddresses: [...catalogueFormData.additionalAddresses, '|||'] })}
-                                                        className="text-xs text-[#007F00] hover:text-[#005c00] font-bold flex items-center gap-1"
-                                                    >
-                                                        <Plus size={14} /> Add Address
-                                                    </button>
+                                            <div className="md:col-span-2 space-y-4 pt-6 border-t border-gray-100">
+                                                <div className="flex items-center gap-3 pb-2 border-b border-gray-100">
+                                                    <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center">
+                                                        <MapPin size={18} />
+                                                    </div>
+                                                    <h3 className="text-base font-bold text-gray-900">Preferred Locations</h3>
                                                 </div>
-                                                {catalogueFormData.additionalAddresses.map((addr, idx) => {
-                                                    const [addressPart, countryPart] = addr.includes('|||') ? addr.split('|||') : [addr, ''];
-                                                    return (
-                                                        <div key={idx} className="flex gap-4 items-start bg-gray-50 p-4 rounded-2xl relative group">
-                                                            <div className="flex-1 space-y-3">
-                                                                <input
-                                                                    type="text"
-                                                                    value={addressPart}
-                                                                    onChange={(e) => {
-                                                                        const newAddrs = [...catalogueFormData.additionalAddresses];
-                                                                        newAddrs[idx] = `${e.target.value}|||${countryPart || ''}`;
-                                                                        setCatalogueFormData({ ...catalogueFormData, additionalAddresses: newAddrs });
-                                                                    }}
-                                                                    className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
-                                                                    placeholder="Street, City..."
-                                                                />
-                                                                <select
-                                                                    value={countryPart || ''}
-                                                                    onChange={(e) => {
-                                                                        const newAddrs = [...catalogueFormData.additionalAddresses];
-                                                                        newAddrs[idx] = `${addressPart || ''}|||${e.target.value}`;
-                                                                        setCatalogueFormData({ ...catalogueFormData, additionalAddresses: newAddrs });
-                                                                    }}
-                                                                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold text-gray-900 focus:ring-2 focus:ring-[#007F00] transition-all"
-                                                                >
-                                                                    <option value="">Select County (Optional)</option>
-                                                                    {IRISH_COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
-                                                                </select>
-                                                            </div>
+                                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                                    {IRISH_COUNTIES.map(county => {
+                                                        const isSelected = catalogueFormData.additionalAddresses.includes(county);
+                                                        return (
                                                             <button
+                                                                key={county}
                                                                 type="button"
                                                                 onClick={() => {
-                                                                    const newAddrs = catalogueFormData.additionalAddresses.filter((_, i) => i !== idx);
-                                                                    setCatalogueFormData({ ...catalogueFormData, additionalAddresses: newAddrs });
+                                                                    const newLocs = isSelected
+                                                                        ? catalogueFormData.additionalAddresses.filter(c => c !== county)
+                                                                        : [...catalogueFormData.additionalAddresses, county];
+                                                                    setCatalogueFormData({ ...catalogueFormData, additionalAddresses: newLocs });
                                                                 }}
-                                                                className="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors mt-1"
+                                                                className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-tight transition-all border text-center ${isSelected
+                                                                    ? 'bg-[#007F00] text-white border-[#007F00] shadow-md shadow-green-100'
+                                                                    : 'bg-white text-gray-500 border-gray-200 hover:border-[#007F00]/30 hover:bg-green-50'
+                                                                    }`}
                                                             >
-                                                                <Trash2 size={20} />
+                                                                {county}
                                                             </button>
-                                                        </div>
-                                                    )
-                                                })}
+                                                        );
+                                                    })}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -2607,6 +2599,7 @@ const Admin = () => {
                                         <tr className="bg-gray-50 border-b border-gray-100 text-[10px] font-black uppercase tracking-widest text-gray-400">
                                             <th className="px-6 py-4">Business</th>
                                             <th className="px-6 py-4">Contact</th>
+                                            <th className="px-6 py-4">Locations</th>
                                             <th className="px-6 py-4">Status</th>
                                             <th className="px-6 py-4">Featured</th>
                                             <th className="px-6 py-4 text-right">Actions</th>
@@ -2625,7 +2618,7 @@ const Admin = () => {
                                             })
                                             .length === 0 ? (
                                             <tr>
-                                                <td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">No listings found.</td>
+                                                <td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic">No listings found.</td>
                                             </tr>
                                         ) : (
                                             listings
@@ -2642,6 +2635,13 @@ const Admin = () => {
                                                     const owner = users_list.find(u => u.id === l.user_id || u.id === l.owner_id);
                                                     const isOwnerSuspended = owner?.stripe_payment_id === 'SUSPENDED';
 
+                                                    // Collect all locations
+                                                    const allCounties = [
+                                                        l.county,
+                                                        ...(l.additional_addresses || []).map((a: string) => a.includes('|||') ? a.split('|||')[1] : a)
+                                                    ].filter(Boolean);
+                                                    const uniqueCounties = Array.from(new Set(allCounties));
+
                                                     return (
                                                         <tr key={l.id} className="hover:bg-gray-50/50 transition-colors group">
                                                             <td className="px-6 py-4">
@@ -2655,13 +2655,28 @@ const Admin = () => {
                                                                     )}
                                                                     <div>
                                                                         <div className="font-bold text-gray-900 text-sm">{l.name}</div>
-                                                                        <div className="text-[10px] text-gray-400 font-medium">Added {new Date(l.created_at).toLocaleDateString()}</div>
+                                                                        <div className="text-[10px] text-gray-400 font-medium">{l.company_name}</div>
                                                                     </div>
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-4">
                                                                 <div className="text-xs text-gray-600 font-medium">{l.email}</div>
                                                                 {l.phone && <div className="text-[10px] text-gray-400">{l.phone}</div>}
+                                                            </td>
+                                                            <td className="px-6 py-4">
+                                                                <div className="flex flex-wrap gap-1 max-w-[200px]">
+                                                                    {uniqueCounties.slice(0, 3).map((c, i) => (
+                                                                        <span key={i} className="px-2 py-0.5 bg-gray-100 text-[9px] font-black uppercase rounded text-gray-600 border border-gray-200">
+                                                                            {c}
+                                                                        </span>
+                                                                    ))}
+                                                                    {uniqueCounties.length > 3 && (
+                                                                        <span className="px-2 py-0.5 bg-blue-50 text-[9px] font-black uppercase rounded text-blue-600 border border-blue-100">
+                                                                            +{uniqueCounties.length - 3} More
+                                                                        </span>
+                                                                    )}
+                                                                    {uniqueCounties.length === 0 && <span className="text-[10px] text-gray-300 italic">No locations</span>}
+                                                                </div>
                                                             </td>
                                                             <td className="px-6 py-4">
                                                                 {isOwnerSuspended ? (
@@ -3259,10 +3274,10 @@ const Admin = () => {
                                                                     {u.role === 'contractor' && (
                                                                         <div className="flex items-center gap-1 bg-gray-50/50 p-1 rounded-lg border border-gray-100 mr-2">
                                                                             <button
-                                                                                onClick={() => handleManualRenewal(u.id)}
+                                                                                onClick={() => handleManualRenewal(u.id, 12)}
                                                                                 disabled={isUpdating}
                                                                                 className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-all"
-                                                                                title="Manual Renew (1 Month)"
+                                                                                title="Manual Renew (1 Year)"
                                                                             >
                                                                                 <RefreshCw size={14} />
                                                                             </button>
@@ -3602,10 +3617,10 @@ const Admin = () => {
                                                             <div className="flex items-center justify-end gap-2">
                                                                 <div className="flex items-center gap-1 bg-gray-50/50 p-1 rounded-lg border border-gray-100 mr-2">
                                                                     <button
-                                                                        onClick={() => handleManualRenewal(u.id)}
+                                                                        onClick={() => handleManualRenewal(u.id, 12)}
                                                                         disabled={isUpdating}
                                                                         className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-all"
-                                                                        title="Manual Renew (1 Month)"
+                                                                        title="Manual Renew (1 Year)"
                                                                     >
                                                                         <RefreshCw size={14} />
                                                                     </button>
@@ -5026,29 +5041,67 @@ const Admin = () => {
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-col gap-2 mt-4">
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => handleManualRenewal(selectedUser.id)}
-                                                    disabled={isUpdating}
-                                                    className="flex-1 bg-white border-2 border-green-600 text-green-600 text-[10px] font-black py-2.5 rounded-xl hover:bg-green-600 hover:text-white transition-all flex items-center justify-center gap-2"
-                                                >
-                                                    <RefreshCw size={14} />
-                                                    MANUAL RENEW (1 MO)
-                                                </button>
-                                                <button
-                                                    onClick={() => handleSendRenewalReminder(selectedUser)}
-                                                    className="flex-1 bg-white border-2 border-amber-600 text-amber-600 text-[10px] font-black py-2.5 rounded-xl hover:bg-amber-600 hover:text-white transition-all flex items-center justify-center gap-2"
-                                                >
-                                                    <Mail size={14} />
-                                                    SEND REMINDER
-                                                </button>
+                                        <div className="flex flex-col gap-4 mt-4">
+                                            <div className="p-4 bg-white rounded-2xl border border-blue-100 shadow-sm">
+                                                <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3">Renewal Duration</p>
+
+                                                {/* Quick Select Pills */}
+                                                <div className="flex flex-wrap gap-2 mb-4">
+                                                    {[1, 3, 6, 12].map((m) => (
+                                                        <button
+                                                            key={m}
+                                                            onClick={() => setCustomMonths(m)}
+                                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${customMonths === m
+                                                                ? 'bg-blue-600 text-white border-blue-600'
+                                                                : 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100'
+                                                                }`}
+                                                        >
+                                                            {m === 12 ? '1 Year' : `${m} Month${m > 1 ? 's' : ''}`}
+                                                        </button>
+                                                    ))}
+                                                    <div className="flex items-center gap-2 ml-auto">
+                                                        <span className="text-[10px] font-bold text-gray-400 capitalize">Custom:</span>
+                                                        <input
+                                                            type="number"
+                                                            min="1"
+                                                            max="60"
+                                                            value={customMonths}
+                                                            onChange={(e) => setCustomMonths(parseInt(e.target.value) || 1)}
+                                                            className="w-14 border border-gray-200 rounded-lg px-2 py-1 text-xs font-bold focus:ring-2 focus:ring-blue-100 outline-none text-center"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => handleManualRenewal(selectedUser.id, customMonths)}
+                                                        disabled={isUpdating}
+                                                        className="flex-[2] bg-blue-600 text-white text-[11px] font-black py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-100 disabled:opacity-50"
+                                                    >
+                                                        <Zap size={14} fill="currentColor" />
+                                                        UPDATE UNTIL {(() => {
+                                                            const d = new Date(selectedUser.subscription_end_date && new Date(selectedUser.subscription_end_date) > new Date() ? selectedUser.subscription_end_date : new Date());
+                                                            d.setMonth(d.getMonth() + customMonths);
+                                                            return d.toLocaleDateString('en-GB');
+                                                        })()}
+                                                    </button>
+
+                                                    <button
+                                                        onClick={() => handleSendRenewalReminder(selectedUser)}
+                                                        className="flex-1 bg-white border-2 border-amber-600 text-amber-600 text-[10px] font-black py-2.5 rounded-xl hover:bg-amber-600 hover:text-white transition-all flex items-center justify-center gap-2"
+                                                        title="Send Reminder Email"
+                                                    >
+                                                        <Mail size={14} />
+                                                        REMINDER
+                                                    </button>
+                                                </div>
                                             </div>
+
                                             {selectedUser.subscription_status === 'active' && (
                                                 <button
                                                     onClick={() => handleCancelSubscription(selectedUser.id)}
                                                     disabled={isUpdating}
-                                                    className="w-full bg-red-50 text-red-600 border border-red-200 text-[10px] font-black py-2 rounded-xl hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-2"
+                                                    className="w-full bg-red-50 text-red-600 border border-red-200 text-[10px] font-black py-2.5 rounded-xl hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-2"
                                                 >
                                                     <XCircle size={14} />
                                                     CANCEL SUBSCRIPTION

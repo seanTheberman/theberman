@@ -17,8 +17,7 @@ import {
     Menu,
     X,
     AlertCircle,
-    Plus,
-    Trash2
+    AlertTriangle,
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -106,6 +105,7 @@ const BusinessDashboard = () => {
             fetchBusinessData();
             fetchAllCategories();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
 
     const fetchBusinessData = async () => {
@@ -125,7 +125,12 @@ const BusinessDashboard = () => {
             if (listingError) throw listingError;
 
             if (listingData) {
-                setListing(listingData);
+                // Initialize categories first to avoid scope issues
+                const { data: catData } = await supabase
+                    .from('catalogue_listing_categories')
+                    .select('category_id')
+                    .eq('listing_id', listingData.id);
+
                 // Set images state
                 const imgs = [
                     { url: '', description: '' },
@@ -139,15 +144,22 @@ const BusinessDashboard = () => {
                 });
                 setListingImages(imgs);
 
-                // Initialize categories
-                const { data: catData } = await supabase
-                    .from('catalogue_listing_categories')
-                    .select('category_id')
-                    .eq('listing_id', listingData.id);
-
                 if (catData) {
                     setSelectedCategories(catData.map(c => c.category_id));
                 }
+
+                // Normalize additional addresses (counties only)
+                let normalizedAddrs: string[] = [];
+                if (listingData.additional_addresses) {
+                    normalizedAddrs = listingData.additional_addresses.map((a: string) =>
+                        a.includes('|||') ? a.split('|||')[1] : a
+                    ).filter(Boolean);
+                }
+
+                setListing({
+                    ...listingData,
+                    additional_addresses: normalizedAddrs
+                });
             }
         } catch (error) {
             console.error('Error fetching business data:', error);
@@ -569,64 +581,40 @@ const BusinessDashboard = () => {
                                         />
                                     </div>
 
-                                    <div className="md:col-span-2 space-y-3 mt-4">
-                                        <div className="flex justify-between items-center px-1">
-                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Alternate Business Locations</label>
-                                            <button
-                                                type="button"
-                                                onClick={() => setListing(prev => ({ ...prev!, additional_addresses: [...(prev?.additional_addresses || []), '|||'] }))}
-                                                className="text-xs text-[#007F00] hover:text-[#005c00] font-bold flex items-center gap-1 bg-[#007F00]/5 px-3 py-1.5 rounded-full"
-                                            >
-                                                <Plus size={14} /> Add Alternate Address
-                                            </button>
+                                    <div className="md:col-span-2 space-y-4 mt-8 pt-8 border-t border-gray-100">
+                                        <div className="flex items-center gap-3 mb-6">
+                                            <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center">
+                                                <MapPin size={18} />
+                                            </div>
+                                            <h3 className="text-base font-black text-gray-900 uppercase tracking-tight">Preferred Locations</h3>
                                         </div>
-                                        {(listing.additional_addresses || []).map((addr, idx) => {
-                                            const [addressPart, countryPart] = addr.includes('|||') ? addr.split('|||') : [addr, ''];
-                                            return (
-                                                <div key={idx} className="flex gap-4 items-start bg-gray-50 p-4 rounded-2xl relative group">
-                                                    <div className="flex-1 space-y-3">
-                                                        <input
-                                                            type="text"
-                                                            value={addressPart}
-                                                            onChange={(e) => {
-                                                                const newAddrs = [...(listing.additional_addresses || [])];
-                                                                newAddrs[idx] = `${e.target.value}|||${countryPart || ''}`;
-                                                                setListing(prev => ({ ...prev!, additional_addresses: newAddrs }));
-                                                                const formEvent = { target: { name: 'additional_addresses', value: newAddrs } } as any;
-                                                                handleProfileChange(formEvent);
-                                                            }}
-                                                            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold text-gray-900 focus:ring-2 focus:ring-[#007F00] transition-all"
-                                                            placeholder="Street, City..."
-                                                        />
-                                                        <select
-                                                            value={countryPart || ''}
-                                                            onChange={(e) => {
-                                                                const newAddrs = [...(listing.additional_addresses || [])];
-                                                                newAddrs[idx] = `${addressPart || ''}|||${e.target.value}`;
-                                                                setListing(prev => ({ ...prev!, additional_addresses: newAddrs }));
-                                                                const formEvent = { target: { name: 'additional_addresses', value: newAddrs } } as any;
-                                                                handleProfileChange(formEvent);
-                                                            }}
-                                                            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold text-gray-900 focus:ring-2 focus:ring-[#007F00] transition-all"
-                                                        >
-                                                            <option value="">Select County (Optional)</option>
-                                                            {IRISH_COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
-                                                        </select>
-                                                    </div>
+                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-6">Select all counties where your business provides services:</p>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                                            {IRISH_COUNTIES.map(county => {
+                                                const isSelected = (listing.additional_addresses || []).includes(county);
+                                                return (
                                                     <button
+                                                        key={county}
                                                         type="button"
                                                         onClick={() => {
-                                                            const newAddrs = (listing.additional_addresses || []).filter((_, i) => i !== idx);
-                                                            setListing(prev => ({ ...prev!, additional_addresses: newAddrs }));
-                                                            saveProfileData({ additional_addresses: newAddrs });
+                                                            const current = listing.additional_addresses || [];
+                                                            const next = isSelected
+                                                                ? current.filter(c => c !== county)
+                                                                : [...current, county];
+
+                                                            setListing({ ...listing, additional_addresses: next });
+                                                            saveProfileData({ additional_addresses: next });
                                                         }}
-                                                        className="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors mt-1"
+                                                        className={`px-3 py-3 rounded-xl text-[10px] font-black uppercase tracking-tight transition-all border text-center ${isSelected
+                                                            ? 'bg-[#007F00] text-white border-[#007F00] shadow-md shadow-green-100'
+                                                            : 'bg-white text-gray-500 border-gray-100 hover:border-[#007F00]/30 hover:bg-green-50'
+                                                            }`}
                                                     >
-                                                        <Trash2 size={20} />
+                                                        {county}
                                                     </button>
-                                                </div>
-                                            )
-                                        })}
+                                                );
+                                            })}
+                                        </div>
                                     </div>
 
                                     <div>
