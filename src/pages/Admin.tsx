@@ -148,7 +148,7 @@ interface NewsArticle {
 }
 
 // Helper components for centralized status display
-const StatusBadge = ({ profile }: { profile: Profile }) => {
+const ProfileStatusBadge = ({ profile }: { profile: Profile }) => {
     let statusLabel = profile.registration_status || (profile.is_active !== false ? 'active' : 'pending');
     let bgColor = 'bg-amber-50 text-amber-700 border-amber-200';
     let dotColor = 'bg-amber-500';
@@ -177,6 +177,23 @@ const StatusBadge = ({ profile }: { profile: Profile }) => {
         <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${bgColor}`}>
             <div className={`w-1.5 h-1.5 rounded-full ${dotColor} ${statusLabel === 'active' ? 'animate-pulse' : ''}`} />
             {statusLabel}
+        </div>
+    );
+};
+
+const LeadStatusBadge = ({ status }: { status: string }) => {
+    let bgColor = 'bg-amber-50 text-amber-700 border-amber-200';
+    let dotColor = 'bg-amber-500';
+
+    if (status === 'responded' || status === 'contacted') {
+        bgColor = 'bg-green-50 text-green-700 border-green-200';
+        dotColor = 'bg-green-500';
+    }
+
+    return (
+        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${bgColor}`}>
+            <div className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
+            {status}
         </div>
     );
 };
@@ -1761,7 +1778,7 @@ const Admin = () => {
         try {
             const finalStripeId = (editForm.subscription_status === 'active' && !editForm.stripe_payment_id)
                 ? 'MANUAL_BY_ADMIN'
-                : (editForm.stripe_payment_id || null);
+                : (editForm.stripe_payment_id || undefined);
 
             const { error } = await supabase
                 .from('profiles')
@@ -1834,7 +1851,7 @@ const Admin = () => {
             }
 
             // If we're manually renewing, we should auto-activate registration too
-            const updateData = {
+            const updateData: Partial<Profile> = {
                 subscription_status: 'active',
                 subscription_start_date: startDate.toISOString(),
                 subscription_end_date: endDate.toISOString(),
@@ -1862,7 +1879,7 @@ const Admin = () => {
                 setSelectedUser({
                     ...selectedUser,
                     ...updateData
-                });
+                } as Profile);
             }
 
             toast.success(`Subscription updated for ${monthsToAdd} months & account activated!`);
@@ -3245,7 +3262,7 @@ const Admin = () => {
                                                         <tr key={u.id} className="hover:bg-green-50/30 transition-colors group">
                                                             <td className="px-6 py-4">
                                                                 <div className="flex flex-col gap-1.5">
-                                                                    <StatusBadge profile={u} />
+                                                                    <ProfileStatusBadge profile={u} />
                                                                     <PaymentStatusBadge profile={u} />
                                                                 </div>
                                                             </td>
@@ -3392,7 +3409,7 @@ const Admin = () => {
                                                     <p className="font-bold text-gray-900">{lead.name}</p>
                                                     <p className="text-xs text-gray-500">{new Date(lead.created_at).toLocaleDateString()}</p>
                                                 </div>
-                                                <StatusBadge status={lead.status || 'new'} />
+                                                <LeadStatusBadge status={lead.status || 'new'} />
                                             </div>
                                             <div className="text-sm text-gray-600">
                                                 <p>{lead.email}</p>
@@ -3441,7 +3458,7 @@ const Admin = () => {
                                             filteredLeads.map((lead) => (
                                                 <tr key={lead.id} className="hover:bg-green-50/30 transition-colors group">
                                                     <td className="px-6 py-4">
-                                                        <StatusBadge status={lead.status || 'new'} />
+                                                        <LeadStatusBadge status={lead.status || 'new'} />
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-gray-500">
                                                         {new Date(lead.created_at).toLocaleDateString()}
@@ -3545,7 +3562,7 @@ const Admin = () => {
                                                     <tr key={u.id} className="hover:bg-green-50/30 transition-colors group">
                                                         <td className="px-6 py-4">
                                                             <div className="flex flex-col gap-1.5">
-                                                                <StatusBadge profile={u} />
+                                                                <ProfileStatusBadge profile={u} />
                                                                 <PaymentStatusBadge profile={u} />
                                                             </div>
                                                         </td>
@@ -4128,53 +4145,63 @@ const Admin = () => {
                 ) : null}
             </main>
 
+
+
             {/* ASSIGN ASSESSOR MODAL */}
             {showAssignModal && selectedAssessmentForAssignment && (
-                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-gray-900">Assign BER Assessor</h3>
-                            <button onClick={() => setShowAssignModal(false)} className="text-gray-400 hover:text-gray-600">
+                <div
+                    className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+                    onClick={() => setShowAssignModal(false)}
+                >
+                    <div
+                        className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
+                            <h3 className="text-xl font-bold text-gray-900">Assign Assessor</h3>
+                            <button onClick={() => setShowAssignModal(false)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
                                 <X size={24} />
                             </button>
                         </div>
-                        <div className="mb-4">
-                            <p className="text-sm text-gray-500 mb-2">Select a certified BER Assessor for:</p>
-                            <p className="font-bold text-gray-800 text-sm bg-gray-50 p-2 rounded border border-gray-100">
-                                {selectedAssessmentForAssignment.property_address}
-                            </p>
-                        </div>
-                        <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                            {users_list.filter(u => u.role === 'contractor').length === 0 ? (
-                                <p className="text-center text-gray-400 text-sm py-4">No Assessors found.</p>
-                            ) : (
-                                users_list.filter(u => u.role === 'contractor').map(contractor => (
-                                    <button
-                                        key={contractor.id}
-                                        onClick={() => handleAssignContractor(contractor.id)}
-                                        className="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:border-[#007F00] hover:bg-green-50 transition-all text-left group"
-                                    >
-                                        <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0 group-hover:bg-white">
-                                            {contractor.full_name.charAt(0)}
-                                        </div>
-                                        <div className="flex-grow">
-                                            <p className="font-bold text-gray-900 text-sm">{contractor.full_name}</p>
-                                            <p className="text-xs text-gray-500">{contractor.email}</p>
-                                        </div>
-                                        {isUpdating && selectedAssessmentForAssignment?.id && (
-                                            <Loader2 size={16} className="animate-spin text-[#007F00]" />
-                                        )}
-                                    </button>
-                                ))
-                            )}
-                        </div>
-                        <div className="pt-4 mt-2 border-t border-gray-100 flex justify-end">
-                            <button
-                                onClick={() => setShowAssignModal(false)}
-                                className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
-                            >
-                                Cancel
-                            </button>
+                        <div className="p-8 overflow-y-auto">
+                            <div className="mb-4">
+                                <p className="text-sm text-gray-500 mb-2">Select a certified BER Assessor for:</p>
+                                <p className="font-bold text-gray-800 text-sm bg-gray-50 p-2 rounded border border-gray-100">
+                                    {selectedAssessmentForAssignment.property_address}
+                                </p>
+                            </div>
+                            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                                {users_list.filter(u => u.role === 'contractor').length === 0 ? (
+                                    <p className="text-center text-gray-400 text-sm py-4">No Assessors found.</p>
+                                ) : (
+                                    users_list.filter(u => u.role === 'contractor').map(contractor => (
+                                        <button
+                                            key={contractor.id}
+                                            onClick={() => handleAssignContractor(contractor.id)}
+                                            className="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:border-[#007F00] hover:bg-green-50 transition-all text-left group"
+                                        >
+                                            <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0 group-hover:bg-white">
+                                                {contractor.full_name.charAt(0)}
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className="font-bold text-gray-900 text-sm">{contractor.full_name}</p>
+                                                <p className="text-xs text-gray-500">{contractor.email}</p>
+                                            </div>
+                                            {isUpdating && selectedAssessmentForAssignment?.id && (
+                                                <Loader2 className="animate-spin" size={16} />
+                                            )}
+                                        </button>
+                                    ))
+                                )}
+                            </div>
+                            <div className="pt-4 mt-2 border-t border-gray-100 flex justify-end">
+                                <button
+                                    onClick={() => setShowAssignModal(false)}
+                                    className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -4182,15 +4209,21 @@ const Admin = () => {
 
             {/* PROMO SETTINGS MODAL */}
             {showPromoModal && (
-                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-in zoom-in-95 duration-200">
-                        <div className="flex justify-between items-center mb-6">
+                <div
+                    className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+                    onClick={() => setShowPromoModal(false)}
+                >
+                    <div
+                        className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
                             <h3 className="text-xl font-bold text-gray-900">Partner Promo Settings</h3>
-                            <button onClick={() => setShowPromoModal(false)} className="text-gray-400 hover:text-gray-600">
+                            <button onClick={() => setShowPromoModal(false)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
                                 <X size={24} />
                             </button>
                         </div>
-                        <form onSubmit={savePromoSettings} className="space-y-4">
+                        <form onSubmit={savePromoSettings} className="p-8 overflow-y-auto space-y-4">
                             <div className="flex items-center gap-2 mb-4">
                                 <input
                                     type="checkbox"
@@ -4276,10 +4309,16 @@ const Admin = () => {
                 </div>
             )}
 
-            {/* LEAL DETAILS MODAL */}
+            {/* LEAD DETAILS MODAL */}
             {selectedLead && (
-                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+                <div
+                    className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+                    onClick={() => setSelectedLead(null)}
+                >
+                    <div
+                        className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         {/* Modal Header */}
                         <div className="bg-white border-b border-gray-100 p-6 flex justify-between items-start shrink-0">
                             <div>
@@ -4307,18 +4346,14 @@ const Admin = () => {
                                         <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500/80 pointer-events-none group-hover:text-gray-700 transition-colors" size={14} />
                                     )}
                                 </div>
-                                <button
-                                    onClick={() => setSelectedLead(null)}
-                                    className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors"
-                                >
+                                <button onClick={() => setSelectedLead(null)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
                                     <X size={24} />
                                 </button>
                             </div>
                         </div>
 
                         {/* Modal Body */}
-                        <div className="p-6 pt-2 overflow-y-auto space-y-4 grow">
-
+                        <div className="p-8 overflow-y-auto space-y-8">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Client Info Card */}
                                 <div className="border border-gray-100 rounded-2xl p-6 bg-white hover:border-[#007F00]/30 hover:shadow-md hover:shadow-green-500/5 transition-all duration-300 group">
@@ -4396,7 +4431,6 @@ const Admin = () => {
                             </div>
 
                             {/* Conversion Action */}
-
                             <div className="flex flex-col gap-3 pt-4 border-t border-gray-50">
                                 <div className="grid grid-cols-1 gap-4 relative z-10">
                                     <a
@@ -4418,119 +4452,133 @@ const Admin = () => {
 
             {/* GENERATE QUOTE MODAL */}
             {showQuoteModal && selectedAssessment && (
-                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
-                        <div className="flex justify-between items-center mb-6">
+                <div
+                    className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+                    onClick={() => setShowQuoteModal(false)}
+                >
+                    <div
+                        className="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
                             <h3 className="text-xl font-bold text-gray-900">Generate Quote</h3>
-                            <button onClick={() => setShowQuoteModal(false)} className="text-gray-400 hover:text-gray-600">
+                            <button onClick={() => setShowQuoteModal(false)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
                                 <X size={24} />
                             </button>
                         </div>
-                        <div className="mb-6 space-y-4">
-                            <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100/50">
-                                <h4 className="text-[10px] font-bold text-blue-900 uppercase tracking-widest mb-3">Target Property</h4>
-                                <div className="space-y-2">
-                                    <div className="flex items-start gap-2">
-                                        <MapPin className="text-blue-500 mt-0.5" size={14} />
+                        <div className="p-8 overflow-y-auto space-y-6">
+                            <div className="mb-6 space-y-4">
+                                <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100/50">
+                                    <h4 className="text-[10px] font-bold text-blue-900 uppercase tracking-widest mb-3">Target Property</h4>
+                                    <div className="space-y-2">
+                                        <div className="flex items-start gap-2">
+                                            <MapPin className="text-blue-500 mt-0.5" size={14} />
+                                            <div>
+                                                <p className="text-sm font-bold text-gray-900 leading-tight">{selectedAssessment.property_address}</p>
+                                                <p className="text-[11px] text-gray-500 font-medium">{selectedAssessment.town}, {selectedAssessment.county}</p>
+                                                {selectedAssessment.eircode && (
+                                                    <p className="text-[11px] font-mono text-blue-600 mt-1">{selectedAssessment.eircode}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 pt-1">
+                                            <Home className="text-blue-400" size={14} />
+                                            <p className="text-xs font-bold text-gray-700">{selectedAssessment.property_type || 'N/A'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-green-50/50 p-4 rounded-xl border border-green-100/50">
+                                    <h4 className="text-[10px] font-bold text-[#007F00] uppercase tracking-widest mb-2">Client Information</h4>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-green-100 text-[#007F00] flex items-center justify-center font-bold text-xs">
+                                            {(selectedAssessment.profiles?.full_name || selectedAssessment.contact_name || 'U').charAt(0)}
+                                        </div>
                                         <div>
-                                            <p className="text-sm font-bold text-gray-900 leading-tight">{selectedAssessment.property_address}</p>
-                                            <p className="text-[11px] text-gray-500 font-medium">{selectedAssessment.town}, {selectedAssessment.county}</p>
-                                            {selectedAssessment.eircode && (
-                                                <p className="text-[11px] font-mono text-blue-600 mt-1">{selectedAssessment.eircode}</p>
+                                            <p className="text-xs font-bold text-gray-900">{selectedAssessment.profiles?.full_name || selectedAssessment.contact_name || 'Unknown Client'}</p>
+                                            <p className="text-[10px] text-gray-500">{selectedAssessment.profiles?.email || selectedAssessment.contact_email}</p>
+                                            {(selectedAssessment.profiles?.phone || selectedAssessment.contact_phone) && (
+                                                <p className="text-[10px] text-gray-400 font-medium mt-0.5">{selectedAssessment.profiles?.phone || selectedAssessment.contact_phone}</p>
                                             )}
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 pt-1">
-                                        <Home className="text-blue-400" size={14} />
-                                        <p className="text-xs font-bold text-gray-700">{selectedAssessment.property_type || 'N/A'}</p>
-                                    </div>
                                 </div>
                             </div>
-
-                            <div className="bg-green-50/50 p-4 rounded-xl border border-green-100/50">
-                                <h4 className="text-[10px] font-bold text-[#007F00] uppercase tracking-widest mb-2">Client Information</h4>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-green-100 text-[#007F00] flex items-center justify-center font-bold text-xs">
-                                        {(selectedAssessment.profiles?.full_name || selectedAssessment.contact_name || 'U').charAt(0)}
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-bold text-gray-900">{selectedAssessment.profiles?.full_name || selectedAssessment.contact_name || 'Unknown Client'}</p>
-                                        <p className="text-[10px] text-gray-500">{selectedAssessment.profiles?.email || selectedAssessment.contact_email}</p>
-                                        {(selectedAssessment.profiles?.phone || selectedAssessment.contact_phone) && (
-                                            <p className="text-[10px] text-gray-400 font-medium mt-0.5">{selectedAssessment.profiles?.phone || selectedAssessment.contact_phone}</p>
-                                        )}
-                                    </div>
+                            <form onSubmit={handleGenerateQuote} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Quote Price (€)</label>
+                                    <input
+                                        required
+                                        type="number"
+                                        step="0.01"
+                                        value={quoteData.price}
+                                        onChange={(e) => setQuoteData({ ...quoteData, price: e.target.value })}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#007F00]"
+                                        placeholder="e.g. 250.00"
+                                    />
+                                    <p className="text-[10px] text-gray-400 font-medium italic mt-2">
+                                        * Quote must include Berman's €30 service fee.
+                                    </p>
                                 </div>
-                            </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Estimated Date</label>
+                                    <input
+                                        type="date"
+                                        value={quoteData.estimated_date}
+                                        onChange={(e) => setQuoteData({ ...quoteData, estimated_date: e.target.value })}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#007F00]"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Internal Notes</label>
+                                    <textarea
+                                        value={quoteData.notes}
+                                        onChange={(e) => setQuoteData({ ...quoteData, notes: e.target.value })}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#007F00]"
+                                        placeholder="Add any internal details or notes for the quote..."
+                                        rows={3}
+                                    />
+                                </div>
+                                <div className="pt-4 flex justify-end gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowQuoteModal(false)}
+                                        className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isUpdating}
+                                        className="px-6 py-2 text-sm font-bold text-white bg-[#007F00] rounded-lg hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                                    >
+                                        {isUpdating ? <Loader2 className="animate-spin" size={16} /> : null}
+                                        {isUpdating ? 'Generating...' : 'Generate & Notify'}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                        <form onSubmit={handleGenerateQuote} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Quote Price (€)</label>
-                                <input
-                                    required
-                                    type="number"
-                                    step="0.01"
-                                    value={quoteData.price}
-                                    onChange={(e) => setQuoteData({ ...quoteData, price: e.target.value })}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#007F00]"
-                                    placeholder="e.g. 250.00"
-                                />
-                                <p className="text-[10px] text-gray-400 font-medium italic mt-2">
-                                    * Quote must include Berman's €30 service fee.
-                                </p>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Estimated Date</label>
-                                <input
-                                    type="date"
-                                    value={quoteData.estimated_date}
-                                    onChange={(e) => setQuoteData({ ...quoteData, estimated_date: e.target.value })}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#007F00]"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Internal Notes</label>
-                                <textarea
-                                    value={quoteData.notes}
-                                    onChange={(e) => setQuoteData({ ...quoteData, notes: e.target.value })}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#007F00]"
-                                    placeholder="Add any internal details or notes for the quote..."
-                                    rows={3}
-                                />
-                            </div>
-                            <div className="pt-4 flex justify-end gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowQuoteModal(false)}
-                                    className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={isUpdating}
-                                    className="px-6 py-2 text-sm font-bold text-white bg-[#007F00] rounded-lg hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
-                                >
-                                    {isUpdating ? <Loader2 className="animate-spin" size={16} /> : null}
-                                    {isUpdating ? 'Generating...' : 'Generate & Notify'}
-                                </button>
-                            </div>
-                        </form>
                     </div>
                 </div>
             )}
 
             {/* MESSAGE CLIENT MODAL */}
             {showMessageModal && (
-                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-in zoom-in-95 duration-200">
-                        <div className="flex justify-between items-center mb-6">
+                <div
+                    className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+                    onClick={() => setShowMessageModal(false)}
+                >
+                    <div
+                        className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
                             <h3 className="text-xl font-bold text-gray-900">Message Client</h3>
-                            <button onClick={() => setShowMessageModal(false)} className="text-gray-400 hover:text-gray-600">
+                            <button onClick={() => setShowMessageModal(false)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
                                 <X size={24} />
                             </button>
                         </div>
-                        <form onSubmit={handleSendMessage} className="space-y-4">
+                        <form onSubmit={handleSendMessage} className="p-8 overflow-y-auto space-y-4">
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">Content</label>
                                 <textarea
@@ -4559,15 +4607,21 @@ const Admin = () => {
 
             {/* SCHEDULE MODAL */}
             {showScheduleModal && (
-                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
-                        <div className="flex justify-between items-center mb-6">
+                <div
+                    className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+                    onClick={() => setShowScheduleModal(false)}
+                >
+                    <div
+                        className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
                             <h3 className="text-xl font-bold text-gray-900">Schedule Assessment</h3>
-                            <button onClick={() => setShowScheduleModal(false)} className="text-gray-400 hover:text-gray-600">
+                            <button onClick={() => setShowScheduleModal(false)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
                                 <X size={24} />
                             </button>
                         </div>
-                        <form onSubmit={handleSchedule} className="space-y-4">
+                        <form onSubmit={handleSchedule} className="p-8 overflow-y-auto space-y-4">
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">Assessment Date</label>
                                 <input
@@ -4596,15 +4650,21 @@ const Admin = () => {
 
             {/* COMPLETE MODAL */}
             {showCompleteModal && (
-                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-in zoom-in-95 duration-200">
-                        <div className="flex justify-between items-center mb-6">
+                <div
+                    className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+                    onClick={() => setShowCompleteModal(false)}
+                >
+                    <div
+                        className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
                             <h3 className="text-xl font-bold text-gray-900">Complete Assessment</h3>
-                            <button onClick={() => setShowCompleteModal(false)} className="text-gray-400 hover:text-gray-600">
-                                <X size={14} />
+                            <button onClick={() => setShowCompleteModal(false)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
+                                <X size={24} />
                             </button>
                         </div>
-                        <form onSubmit={handleComplete} className="space-y-4">
+                        <form onSubmit={handleComplete} className="p-8 overflow-y-auto space-y-4">
                             <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4">
                                 <p className="text-xs text-blue-800 font-medium">Finalizing this assessment will allow the homeowner to download their BER certificate.</p>
                             </div>
@@ -4635,815 +4695,863 @@ const Admin = () => {
                 </div>
             )}
             {/* ASSESSMENT DETAILS MODAL */}
-            {showAssessmentDetailModal && selectedAssessment && (
-                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-                        <div className="bg-white border-b border-gray-100 p-6 flex justify-between items-center shrink-0">
-                            <div>
-                                <h3 className="text-2xl font-bold text-gray-900">Assessment Details</h3>
-                                <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide mt-2 ${getStatusColor(selectedAssessment.status)}`}>
-                                    {selectedAssessment.status.replace('_', ' ')}
+            {
+                showAssessmentDetailModal && selectedAssessment && (
+                    <div
+                        className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+                        onClick={() => setShowAssessmentDetailModal(false)}
+                    >
+                        <div
+                            className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="bg-white border-b border-gray-100 p-6 flex justify-between items-center shrink-0">
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900">Assessment Details</h3>
+                                    <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide mt-2 ${getStatusColor(selectedAssessment.status)}`}>
+                                        {selectedAssessment.status.replace('_', ' ')}
+                                    </div>
                                 </div>
+                                <button onClick={() => setShowAssessmentDetailModal(false)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
+                                    <X size={24} />
+                                </button>
                             </div>
-                            <button onClick={() => setShowAssessmentDetailModal(false)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
-                                <X size={24} />
-                            </button>
-                        </div>
 
-                        <div className="p-8 overflow-y-auto space-y-8">
-                            {/* Detailed Property Grid */}
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-y-8 gap-x-6">
-                                <div className="space-y-2">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Location</span>
-                                    <div className="flex items-start gap-2">
-                                        <MapPin className="text-[#007EA7] shrink-0 mt-0.5" size={16} />
-                                        <div>
-                                            <p className="text-sm font-bold text-gray-900 leading-tight">{selectedAssessment.town}, {selectedAssessment.county}</p>
-                                            <p className="text-[11px] text-gray-500 mt-0.5">{selectedAssessment.property_address}</p>
+                            <div className="p-8 overflow-y-auto space-y-8">
+                                {/* Detailed Property Grid */}
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-y-8 gap-x-6">
+                                    <div className="space-y-2">
+                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Location</span>
+                                        <div className="flex items-start gap-2">
+                                            <MapPin className="text-[#007EA7] shrink-0 mt-0.5" size={16} />
+                                            <div>
+                                                <p className="text-sm font-bold text-gray-900 leading-tight">{selectedAssessment.town}, {selectedAssessment.county}</p>
+                                                <p className="text-[11px] text-gray-500 mt-0.5">{selectedAssessment.property_address}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div className="space-y-2">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Property Type</span>
-                                    <div className="flex items-center gap-2">
-                                        <Home className="text-[#007EA7] shrink-0" size={16} />
-                                        <p className="text-sm font-bold text-gray-900">{selectedAssessment.property_type || 'N/A'}</p>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Size</span>
-                                    <p className="text-sm font-bold text-gray-900">{selectedAssessment.property_size || 'N/A'}</p>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Bedrooms</span>
-                                    <p className="text-sm font-bold text-gray-900">{selectedAssessment.bedrooms || 'N/A'}</p>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Purpose</span>
-                                    <p className="text-sm font-bold text-gray-900">{selectedAssessment.ber_purpose || 'N/A'}</p>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Heat Pump</span>
-                                    <p className="text-sm font-bold text-gray-900">{selectedAssessment.heat_pump || 'No'}</p>
-                                </div>
-                            </div>
-
-                            {/* Schedule & Features highlight */}
-                            <div className="bg-gray-50 rounded-[2rem] p-8 border border-gray-100 flex flex-col md:flex-row gap-8">
-                                <div className="flex-1 space-y-3">
-                                    <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest block">
-                                        {selectedAssessment.status === 'completed' ? 'Completed On' : 'Preferred Schedule'}
-                                    </span>
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-3 bg-white rounded-xl text-[#007EA7] shadow-sm">
-                                            {selectedAssessment.status === 'completed' ? <CheckCircle2 size={20} className="text-[#007F00]" /> : <Calendar size={20} />}
-                                        </div>
-                                        <p className="text-lg font-black text-gray-900">
-                                            {selectedAssessment.status === 'completed' && selectedAssessment.completed_at ? (
-                                                new Date(selectedAssessment.completed_at).toLocaleDateString('en-IE', {
-                                                    day: 'numeric',
-                                                    month: 'long',
-                                                    year: 'numeric'
-                                                })
-                                            ) : selectedAssessment.preferred_date ? (
-                                                `20${selectedAssessment.preferred_date.slice(2)} at ${selectedAssessment.preferred_time || 'anytime'}`
-                                            ) : (
-                                                'Not specified'
-                                            )}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="flex-1 space-y-3">
-                                    <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest block">Features</span>
-                                    <div className="flex flex-wrap gap-2">
-                                        {selectedAssessment.additional_features && selectedAssessment.additional_features.length > 0 ? (
-                                            selectedAssessment.additional_features.map((feature, i) => (
-                                                <span key={i} className="text-xs bg-white border border-gray-200 text-gray-600 px-4 py-1.5 rounded-full font-bold shadow-sm">
-                                                    {feature}
-                                                </span>
-                                            ))
-                                        ) : (
-                                            <span className="text-sm text-gray-400 font-medium">Standard property features</span>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Client Summary card */}
-                            <div className="bg-[#007F00]/5 border border-[#007F00]/10 rounded-2xl p-6 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-[#007F00] text-white flex items-center justify-center font-black text-lg shadow-lg shadow-green-900/10">
-                                        {(selectedAssessment.profiles?.full_name || selectedAssessment.contact_name || 'U').charAt(0)}
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-black text-gray-900">{selectedAssessment.profiles?.full_name || selectedAssessment.contact_name || 'Unknown Client'}</p>
-                                        <p className="text-xs text-gray-500 font-medium">{selectedAssessment.profiles?.email || selectedAssessment.contact_email}</p>
-                                        {(selectedAssessment.profiles?.phone || selectedAssessment.contact_phone) && (
-                                            <p className="text-[10px] text-gray-400 font-medium mt-0.5">{selectedAssessment.profiles?.phone || selectedAssessment.contact_phone}</p>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <a href={`mailto:${selectedAssessment.profiles?.email || selectedAssessment.contact_email}`} className="p-2.5 bg-white border border-gray-100 text-[#007F00] rounded-xl hover:bg-green-50 transition-all shadow-sm">
-                                        <Mail size={18} />
-                                    </a>
-                                </div>
-                            </div>
-
-                            {/* Actions Section */}
-                            <div className="pt-6 border-t border-gray-100">
-                                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Required Actions</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                    {selectedAssessment.status === 'submitted' && (
-                                        <button
-                                            onClick={() => {
-                                                setShowQuoteModal(true);
-                                                setShowAssessmentDetailModal(false);
-                                            }}
-                                            className="bg-[#007F00] text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-sm flex items-center justify-center gap-2"
-                                        >
-                                            <TrendingUp size={18} />
-                                            Generate Quote
-                                        </button>
-                                    )}
-                                    {!selectedAssessment.contractor_id && selectedAssessment.status !== 'completed' && (
-                                        <button
-                                            onClick={() => {
-                                                setSelectedAssessmentForAssignment(selectedAssessment);
-                                                setShowAssignModal(true);
-                                                setShowAssessmentDetailModal(false);
-                                            }}
-                                            className="bg-[#007EA7] text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-sm flex items-center justify-center gap-2"
-                                        >
-                                            <Briefcase size={18} />
-                                            Assign Assessor
-                                        </button>
-                                    )}
-                                    {selectedAssessment.status === 'quote_accepted' && (
-                                        <button
-                                            onClick={() => {
-                                                setShowScheduleModal(true);
-                                                setShowAssessmentDetailModal(false);
-                                            }}
-                                            className="bg-indigo-600 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-sm flex items-center justify-center gap-2"
-                                        >
-                                            <Calendar size={18} />
-                                            Schedule
-                                        </button>
-                                    )}
-                                    {selectedAssessment.status === 'scheduled' && (
-                                        <button
-                                            onClick={() => {
-                                                setShowCompleteModal(true);
-                                                setShowAssessmentDetailModal(false);
-                                            }}
-                                            className="bg-purple-600 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-purple-700 transition-all shadow-sm flex items-center justify-center gap-2"
-                                        >
-                                            <RefreshCw size={18} />
-                                            Complete
-                                        </button>
-                                    )}
-                                    <button
-                                        onClick={() => {
-                                            const name = selectedAssessment.profiles?.full_name || selectedAssessment.contact_name || 'there';
-                                            setMessageContent(`Hi ${name},\n\nI'm writing to you regarding your BER assessment for ${selectedAssessment.property_address}.\n\n[Type your message here]\n\nBest regards,\nThe Berman Team`);
-                                            setShowMessageModal(true);
-                                            setShowAssessmentDetailModal(false);
-                                        }}
-                                        className="bg-white border-2 border-gray-900 text-gray-900 px-4 py-3 rounded-xl text-sm font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
-                                    >
-                                        <MessageSquare size={18} />
-                                        Message (Gmail)
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-            {/* SPONSOR MODAL */}
-            {showSponsorModal && (
-                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[90vh]">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-gray-900">Manage Sponsors</h3>
-                            <button onClick={() => { setShowSponsorModal(false); setEditingSponsor(null); }} className="text-gray-400 hover:text-gray-600">
-                                <X size={24} />
-                            </button>
-                        </div>
-
-                        {/* List Sponsors */}
-                        <div className="mb-8">
-                            <h4 className="text-sm font-bold text-gray-700 mb-3">Current Sponsors ({sponsors.length}/3)</h4>
-                            <div className="space-y-3">
-                                {sponsors.length === 0 && <p className="text-sm text-gray-500 italic">No sponsors added yet.</p>}
-                                {sponsors.map(sponsor => (
-                                    <div key={sponsor.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                                        {sponsor.image_url && <img src={sponsor.image_url} alt={sponsor.name} className="w-12 h-12 object-cover rounded-md" />}
-                                        <div className="flex-grow">
-                                            <p className="font-bold text-sm">{sponsor.headline}</p>
-                                            <p className="text-xs text-gray-500">{sponsor.sub_text}</p>
-                                        </div>
+                                    <div className="space-y-2">
+                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Property Type</span>
                                         <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={() => setEditingSponsor(sponsor)}
-                                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                                            >
-                                                <Pencil size={18} />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteSponsor(sponsor.id)}
-                                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
+                                            <Home className="text-[#007EA7] shrink-0" size={16} />
+                                            <p className="text-sm font-bold text-gray-900">{selectedAssessment.property_type || 'N/A'}</p>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
-                        </div>
 
-                        {/* Add/Edit Form */}
-                        {(sponsors.length < 3 || editingSponsor) && (
-                            <form onSubmit={handleSaveSponsor} className="space-y-4 border-t border-gray-100 pt-6">
-                                <h4 className="text-sm font-bold text-gray-900">{editingSponsor ? 'Edit Sponsor' : 'Add New Sponsor'}</h4>
+                                    <div className="space-y-2">
+                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Size</span>
+                                        <p className="text-sm font-bold text-gray-900">{selectedAssessment.property_size || 'N/A'}</p>
+                                    </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1">Business Name</label>
-                                        <input name="name" defaultValue={editingSponsor?.name} required className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Internal name" />
+                                    <div className="space-y-2">
+                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Bedrooms</span>
+                                        <p className="text-sm font-bold text-gray-900">{selectedAssessment.bedrooms || 'N/A'}</p>
                                     </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1">Headline</label>
-                                        <input name="headline" defaultValue={editingSponsor?.headline} required className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="e.g. Need Solar?" />
-                                    </div>
-                                </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1">Sub-text</label>
-                                        <input name="sub_text" defaultValue={editingSponsor?.sub_text} required className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Short description" />
+                                    <div className="space-y-2">
+                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Purpose</span>
+                                        <p className="text-sm font-bold text-gray-900">{selectedAssessment.ber_purpose || 'N/A'}</p>
                                     </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1">Destination URL</label>
-                                        <input name="destination_url" defaultValue={editingSponsor?.destination_url} required type="url" className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="https://..." />
+
+                                    <div className="space-y-2">
+                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Heat Pump</span>
+                                        <p className="text-sm font-bold text-gray-900">{selectedAssessment.heat_pump || 'No'}</p>
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1">Image URL</label>
-                                    <input name="image_url" defaultValue={editingSponsor?.image_url} required type="url" className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="https://..." />
-                                </div>
-
-                                <div className="pt-2 flex justify-end gap-3">
-                                    {editingSponsor && (
-                                        <button type="button" onClick={() => setEditingSponsor(null)} className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg">Cancel Edit</button>
-                                    )}
-                                    <button
-                                        type="submit"
-                                        disabled={isUpdating}
-                                        className="px-6 py-2 text-sm font-bold text-white bg-[#007F00] rounded-lg hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
-                                    >
-                                        {isUpdating ? <Loader2 className="animate-spin" size={16} /> : null}
-                                        {editingSponsor ? 'Update Sponsor' : 'Add Sponsor'}
-                                    </button>
-                                </div>
-                            </form>
-                        )}
-
-                        {sponsors.length >= 3 && !editingSponsor && (
-                            <div className="text-center p-4 bg-yellow-50 text-yellow-800 text-sm rounded-lg">
-                                Maximum of 3 sponsors allowed. Delete one to add a new one.
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
-            {/* DELETE CONFIRMATION MODAL */}
-            {showDeleteModal && (
-                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 animate-in zoom-in-95 duration-200 text-center">
-                        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-100">
-                            <AlertTriangle size={32} />
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">Are you sure?</h3>
-                        <p className="text-gray-500 text-sm mb-8">
-                            This action cannot be undone. This {itemToDelete?.type} will be permanently removed from our records.
-                        </p>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => { setShowDeleteModal(false); setItemToDelete(null); }}
-                                disabled={isDeleting}
-                                className="flex-1 px-4 py-3 text-sm font-bold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmDelete}
-                                disabled={isDeleting}
-                                className="flex-1 px-4 py-3 text-sm font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 transition-colors shadow-lg shadow-red-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                            >
-                                {isDeleting ? (
-                                    <>
-                                        <Loader2 size={18} className="animate-spin" />
-                                        Deleting...
-                                    </>
-                                ) : (
-                                    'Delete Permanently'
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* USER DETAILS / EDIT MODAL */}
-            {selectedUser && (
-                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-                        <div className="p-8 overflow-y-auto">
-                            <div className="flex justify-between items-start mb-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 rounded-full bg-green-50 text-[#007F00] flex items-center justify-center font-bold text-2xl border border-green-100 uppercase">
-                                        {selectedUser.full_name?.charAt(0) || 'U'}
+                                {/* Schedule & Features highlight */}
+                                <div className="bg-gray-50 rounded-[2rem] p-8 border border-gray-100 flex flex-col md:flex-row gap-8">
+                                    <div className="flex-1 space-y-3">
+                                        <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest block">
+                                            {selectedAssessment.status === 'completed' ? 'Completed On' : 'Preferred Schedule'}
+                                        </span>
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-3 bg-white rounded-xl text-[#007EA7] shadow-sm">
+                                                {selectedAssessment.status === 'completed' ? <CheckCircle2 size={20} className="text-[#007F00]" /> : <Calendar size={20} />}
+                                            </div>
+                                            <p className="text-lg font-black text-gray-900">
+                                                {selectedAssessment.status === 'completed' && selectedAssessment.completed_at ? (
+                                                    new Date(selectedAssessment.completed_at).toLocaleDateString('en-IE', {
+                                                        day: 'numeric',
+                                                        month: 'long',
+                                                        year: 'numeric'
+                                                    })
+                                                ) : selectedAssessment.preferred_date ? (
+                                                    `20${selectedAssessment.preferred_date.slice(2)} at ${selectedAssessment.preferred_time || 'anytime'}`
+                                                ) : (
+                                                    'Not specified'
+                                                )}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h3 className="text-2xl font-bold text-gray-900">{selectedUser.full_name}</h3>
-                                        <p className="text-sm text-gray-500">{selectedUser.email}</p>
-                                    </div>
-                                </div>
-                                <button onClick={() => setSelectedUser(null)} className="text-gray-400 hover:text-gray-600">
-                                    <X size={24} />
-                                </button>
-                            </div>
 
-                            <div className="space-y-6">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Account Role</p>
-                                        <select
-                                            value={editForm.role}
-                                            onChange={(e) => setEditForm({ ...editForm, role: e.target.value as any })}
-                                            className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white transition-all outline-none font-bold text-gray-900 capitalize"
-                                        >
-                                            <option value="user">User</option>
-                                            <option value="homeowner">Homeowner</option>
-                                            <option value="contractor">Assessor / Contractor</option>
-                                            <option value="business">Business</option>
-                                            <option value="admin">Admin</option>
-                                        </select>
-                                    </div>
-                                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Phone Number</p>
-                                        <p className="text-sm font-bold text-gray-900">{getFallbackPhone(selectedUser)}</p>
-                                    </div>
-                                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 col-span-2">
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Status</p>
-                                        <p className={`text-sm font-bold capitalize ${selectedUser.is_active !== false ? 'text-green-600' : 'text-red-600'}`}>
-                                            {selectedUser.is_active !== false ? 'Active' : 'Suspended'}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Subscription Section */}
-                                {(selectedUser.role === 'contractor' || selectedUser.role === 'business') && (
-                                    <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100/50">
-                                        <div className="flex justify-between items-center mb-4">
-                                            <h4 className="text-xs font-bold text-blue-900 uppercase tracking-widest">Subscription Management</h4>
-                                            {(() => {
-                                                const endDate = selectedUser.subscription_end_date ? new Date(selectedUser.subscription_end_date) : null;
-                                                const isExpired = endDate && endDate < new Date();
-                                                if (isExpired) return (
-                                                    <span className="flex items-center gap-1 text-[10px] font-black text-red-600 animate-pulse">
-                                                        <AlertCircle size={12} />
-                                                        ACCOUNT DISABLED
+                                    <div className="flex-1 space-y-3">
+                                        <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest block">Features</span>
+                                        <div className="flex flex-wrap gap-2">
+                                            {selectedAssessment.additional_features && selectedAssessment.additional_features.length > 0 ? (
+                                                selectedAssessment.additional_features.map((feature, i) => (
+                                                    <span key={i} className="text-xs bg-white border border-gray-200 text-gray-600 px-4 py-1.5 rounded-full font-bold shadow-sm">
+                                                        {feature}
                                                     </span>
-                                                );
-                                                return null;
-                                            })()}
-                                        </div>
-                                        <div className="flex justify-between items-center mb-4">
-                                            <div>
-                                                <p className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">Status</p>
-                                                <p className="text-sm font-black text-blue-900 capitalize">{selectedUser.subscription_status || 'Inactive'}</p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">Ends On</p>
-                                                <p className="text-sm font-black text-blue-900">
-                                                    {selectedUser.subscription_end_date ? new Date(selectedUser.subscription_end_date).toLocaleDateString('en-GB') : 'N/A'}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex flex-col gap-4 mt-4">
-                                            <div className="p-4 bg-white rounded-2xl border border-blue-100 shadow-sm">
-                                                <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3">Renewal Duration</p>
-
-                                                {/* Quick Select Pills */}
-                                                <div className="flex flex-wrap gap-2 mb-4">
-                                                    {[1, 3, 6, 12].map((m) => (
-                                                        <button
-                                                            key={m}
-                                                            onClick={() => setCustomMonths(m)}
-                                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${customMonths === m
-                                                                ? 'bg-blue-600 text-white border-blue-600'
-                                                                : 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100'
-                                                                }`}
-                                                        >
-                                                            {m === 12 ? '1 Year' : `${m} Month${m > 1 ? 's' : ''}`}
-                                                        </button>
-                                                    ))}
-                                                    <div className="flex items-center gap-2 ml-auto">
-                                                        <span className="text-[10px] font-bold text-gray-400 capitalize">Custom:</span>
-                                                        <input
-                                                            type="number"
-                                                            min="1"
-                                                            max="60"
-                                                            value={customMonths}
-                                                            onChange={(e) => setCustomMonths(parseInt(e.target.value) || 1)}
-                                                            className="w-14 border border-gray-200 rounded-lg px-2 py-1 text-xs font-bold focus:ring-2 focus:ring-blue-100 outline-none text-center"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={() => handleManualRenewal(selectedUser.id, customMonths)}
-                                                        disabled={isUpdating}
-                                                        className="flex-[2] bg-blue-600 text-white text-[11px] font-black py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-100 disabled:opacity-50"
-                                                    >
-                                                        <Zap size={14} fill="currentColor" />
-                                                        UPDATE UNTIL {(() => {
-                                                            const d = new Date(selectedUser.subscription_end_date && new Date(selectedUser.subscription_end_date) > new Date() ? selectedUser.subscription_end_date : new Date());
-                                                            d.setMonth(d.getMonth() + customMonths);
-                                                            return d.toLocaleDateString('en-GB');
-                                                        })()}
-                                                    </button>
-
-                                                    <button
-                                                        onClick={() => handleSendRenewalReminder(selectedUser)}
-                                                        className="flex-1 bg-white border-2 border-amber-600 text-amber-600 text-[10px] font-black py-2.5 rounded-xl hover:bg-amber-600 hover:text-white transition-all flex items-center justify-center gap-2"
-                                                        title="Send Reminder Email"
-                                                    >
-                                                        <Mail size={14} />
-                                                        REMINDER
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            {selectedUser.subscription_status === 'active' && (
-                                                <button
-                                                    onClick={() => handleCancelSubscription(selectedUser.id)}
-                                                    disabled={isUpdating}
-                                                    className="w-full bg-red-50 text-red-600 border border-red-200 text-[10px] font-black py-2.5 rounded-xl hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-2"
-                                                >
-                                                    <XCircle size={14} />
-                                                    CANCEL SUBSCRIPTION
-                                                </button>
+                                                ))
+                                            ) : (
+                                                <span className="text-sm text-gray-400 font-medium">Standard property features</span>
                                             )}
                                         </div>
+                                    </div>
+                                </div>
 
-                                        {selectedUser.manual_override_reason && (
-                                            <div className="mt-4 p-2 bg-white rounded-lg border border-blue-100">
-                                                <p className="text-[10px] text-gray-400 uppercase font-bold mb-1">Override Reason</p>
-                                                <p className="text-xs text-gray-600 italic">"{selectedUser.manual_override_reason}"</p>
-                                            </div>
+                                {/* Client Summary card */}
+                                <div className="bg-[#007F00]/5 border border-[#007F00]/10 rounded-2xl p-6 flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-[#007F00] text-white flex items-center justify-center font-black text-lg shadow-lg shadow-green-900/10">
+                                            {(selectedAssessment.profiles?.full_name || selectedAssessment.contact_name || 'U').charAt(0)}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-black text-gray-900">{selectedAssessment.profiles?.full_name || selectedAssessment.contact_name || 'Unknown Client'}</p>
+                                            <p className="text-xs text-gray-500 font-medium">{selectedAssessment.profiles?.email || selectedAssessment.contact_email}</p>
+                                            {(selectedAssessment.profiles?.phone || selectedAssessment.contact_phone) && (
+                                                <p className="text-[10px] text-gray-400 font-medium mt-0.5">{selectedAssessment.profiles?.phone || selectedAssessment.contact_phone}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <a href={`mailto:${selectedAssessment.profiles?.email || selectedAssessment.contact_email}`} className="p-2.5 bg-white border border-gray-100 text-[#007F00] rounded-xl hover:bg-green-50 transition-all shadow-sm">
+                                            <Mail size={18} />
+                                        </a>
+                                    </div>
+                                </div>
+
+                                {/* Actions Section */}
+                                <div className="pt-6 border-t border-gray-100">
+                                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Required Actions</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                        {selectedAssessment.status === 'submitted' && (
+                                            <button
+                                                onClick={() => {
+                                                    setShowQuoteModal(true);
+                                                    setShowAssessmentDetailModal(false);
+                                                }}
+                                                className="bg-[#007F00] text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-sm flex items-center justify-center gap-2"
+                                            >
+                                                <TrendingUp size={18} />
+                                                Generate Quote
+                                            </button>
                                         )}
-                                    </div>
-                                )}
-
-                                <div className="space-y-4">
-                                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">User ID</p>
-                                        <p className="text-xs font-mono text-gray-600 break-all">{selectedUser.id}</p>
-                                    </div>
-                                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Member Since</p>
-                                        <p className="text-sm font-bold text-gray-900">{new Date(selectedUser.created_at).toLocaleDateString('en-GB')}</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex gap-3 mt-8">
-                                    <button
-                                        className={`flex-1 py-3 font-bold rounded-xl transition-colors text-sm border ${selectedUser.is_active !== false
-                                            ? 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100'
-                                            : 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100'
-                                            }`}
-                                        onClick={() => {
-                                            setItemToSuspend({
-                                                id: selectedUser.id,
-                                                name: selectedUser.full_name,
-                                                currentStatus: selectedUser.is_active !== false
-                                            });
-                                            setShowSuspendModal(true);
-                                        }}
-                                    >
-                                        {selectedUser.is_active !== false ? 'Suspend Account' : 'Activate Account'}
-                                    </button>
-
-                                    {user?.role === 'admin' && (
+                                        {!selectedAssessment.contractor_id && selectedAssessment.status !== 'completed' && (
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedAssessmentForAssignment(selectedAssessment);
+                                                    setShowAssignModal(true);
+                                                    setShowAssessmentDetailModal(false);
+                                                }}
+                                                className="bg-[#007EA7] text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-sm flex items-center justify-center gap-2"
+                                            >
+                                                <Briefcase size={18} />
+                                                Assign Assessor
+                                            </button>
+                                        )}
+                                        {selectedAssessment.status === 'quote_accepted' && (
+                                            <button
+                                                onClick={() => {
+                                                    setShowScheduleModal(true);
+                                                    setShowAssessmentDetailModal(false);
+                                                }}
+                                                className="bg-indigo-600 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-sm flex items-center justify-center gap-2"
+                                            >
+                                                <Calendar size={18} />
+                                                Schedule
+                                            </button>
+                                        )}
+                                        {selectedAssessment.status === 'scheduled' && (
+                                            <button
+                                                onClick={() => {
+                                                    setShowCompleteModal(true);
+                                                    setShowAssessmentDetailModal(false);
+                                                }}
+                                                className="bg-purple-600 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-purple-700 transition-all shadow-sm flex items-center justify-center gap-2"
+                                            >
+                                                <RefreshCw size={18} />
+                                                Complete
+                                            </button>
+                                        )}
                                         <button
-                                            onClick={handleUpdateProfile}
-                                            disabled={isUpdating}
-                                            className="flex-[2] py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all text-sm shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
+                                            onClick={() => {
+                                                const name = selectedAssessment.profiles?.full_name || selectedAssessment.contact_name || 'there';
+                                                setMessageContent(`Hi ${name},\n\nI'm writing to you regarding your BER assessment for ${selectedAssessment.property_address}.\n\n[Type your message here]\n\nBest regards,\nThe Berman Team`);
+                                                setShowMessageModal(true);
+                                                setShowAssessmentDetailModal(false);
+                                            }}
+                                            className="bg-white border-2 border-gray-900 text-gray-900 px-4 py-3 rounded-xl text-sm font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
                                         >
-                                            {isUpdating && <Loader2 size={16} className="animate-spin" />}
-                                            Save Profile Changes
+                                            <MessageSquare size={18} />
+                                            Message (Gmail)
                                         </button>
-                                    )}
-
-                                    <button
-                                        className="flex-[1] py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors text-sm"
-                                        onClick={() => setSelectedUser(null)}
-                                    >
-                                        Close
-                                    </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
-
-            {/* SUSPEND USER MODAL */}
-            {showSuspendModal && itemToSuspend && (
-                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
-                        <div className="flex items-center gap-4 mb-6 text-amber-600">
-                            <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center">
-                                <AlertTriangle size={24} />
-                            </div>
-                            <div>
-                                <h3 className="text-xl font-bold text-gray-900">
-                                    {itemToSuspend.currentStatus ? 'Suspend User' : 'Activate User'}
-                                </h3>
-                                <p className="text-sm text-gray-500">Confirm account status change</p>
-                            </div>
-                        </div>
-
-                        <p className="text-gray-600 mb-8">
-                            Are you sure you want to {itemToSuspend.currentStatus ? <span className="text-red-600 font-bold">suspend</span> : <span className="text-green-600 font-bold">activate</span>} <strong>{itemToSuspend.name}</strong>?
-                            {itemToSuspend.currentStatus && " The user will no longer be able to access their dashboard until reactivated."}
-                        </p>
-
-                        <div className="flex gap-3 justify-end">
-                            <button
-                                onClick={() => {
-                                    setShowSuspendModal(false);
-                                    setItemToSuspend(null);
-                                }}
-                                className="px-6 py-2 rounded-xl text-gray-600 font-bold hover:bg-gray-50 transition-all border border-gray-200"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={toggleUserStatus}
-                                disabled={isUpdating}
-                                className={`px-6 py-2 rounded-xl text-white font-bold transition-all shadow-lg flex items-center gap-2 ${itemToSuspend.currentStatus
-                                    ? 'bg-red-600 hover:bg-red-700 shadow-red-100'
-                                    : 'bg-green-600 hover:bg-green-700 shadow-green-100'
-                                    }`}
-                            >
-                                {isUpdating ? <Loader2 size={18} className="animate-spin" /> : null}
-                                {itemToSuspend.currentStatus ? 'Suspend Account' : 'Activate Account'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* ADD USER MODAL (MANUAL) — ENHANCED */}
-            {showAddUserModal && (
-                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-lg animate-in zoom-in-95 duration-200 flex flex-col max-h-[95vh] sm:max-h-[90vh]">
-                        <div className="p-5 sm:p-8 pb-0 shrink-0">
-                            <div className="flex justify-between items-center mb-4 sm:mb-6">
-                                <div>
-                                    <h3 className="text-lg sm:text-xl font-black text-gray-900 uppercase tracking-tight">Manual Registration</h3>
-                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Adding a new {newUserRole === 'contractor' ? 'Assessor' : 'Business'}</p>
-                                </div>
-                                <button onClick={() => { setShowAddUserModal(false); resetNewUserForm(); }} className="text-gray-400 hover:text-gray-600">
+                )
+            }
+            {/* SPONSOR MODAL */}
+            {
+                showSponsorModal && (
+                    <div
+                        className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+                        onClick={() => { setShowSponsorModal(false); setEditingSponsor(null); }}
+                    >
+                        <div
+                            className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
+                                <h3 className="text-xl font-bold text-gray-900">Manage Sponsors</h3>
+                                <button onClick={() => { setShowSponsorModal(false); setEditingSponsor(null); }} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
                                     <X size={24} />
                                 </button>
                             </div>
-                        </div>
 
-                        <form onSubmit={handleAddUser} className="flex flex-col flex-1 overflow-hidden">
-                            <div className="px-5 sm:px-8 pb-5 sm:pb-8 overflow-y-auto space-y-5 sm:space-y-6 flex-1 custom-scrollbar">
-                                {/* SECTION: Personal Details */}
-                                <div>
-                                    <h4 className="text-[10px] font-black text-[#007F00] uppercase tracking-widest mb-3 sm:mb-4">Personal Details</h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                                        <div>
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Full Name *</label>
-                                            <input
-                                                type="text"
-                                                required
-                                                placeholder={newUserRole === 'contractor' ? 'e.g. John Doe' : 'e.g. Acme Energy'}
-                                                value={newUserFormData.fullName}
-                                                onChange={(e) => setNewUserFormData({ ...newUserFormData, fullName: e.target.value })}
-                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Email *</label>
-                                            <input
-                                                type="email"
-                                                required
-                                                placeholder="john@example.com"
-                                                value={newUserFormData.email}
-                                                onChange={(e) => setNewUserFormData({ ...newUserFormData, email: e.target.value })}
-                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Password *</label>
-                                            <input
-                                                type="password"
-                                                required
-                                                placeholder="••••••••"
-                                                value={newUserFormData.password}
-                                                onChange={(e) => setNewUserFormData({ ...newUserFormData, password: e.target.value })}
-                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Phone</label>
-                                            <input
-                                                type="tel"
-                                                placeholder="+353 8X XXX XXXX"
-                                                value={newUserFormData.phone}
-                                                onChange={(e) => setNewUserFormData({ ...newUserFormData, phone: e.target.value })}
-                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
-                                            />
-                                        </div>
-                                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">County</label>
-                                                <select
-                                                    value={newUserFormData.county}
-                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, county: e.target.value, town: '' })}
-                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white transition-all outline-none"
-                                                >
-                                                    <option value="">Select County</option>
-                                                    {IRISH_COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
-                                                </select>
-                                            </div>
-                                            {newUserRole === 'contractor' && newUserFormData.county && (
-                                                <div className="animate-in slide-in-from-top-2 duration-200">
-                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Town</label>
-                                                    <select
-                                                        value={newUserFormData.town}
-                                                        onChange={(e) => setNewUserFormData({ ...newUserFormData, town: e.target.value })}
-                                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white transition-all outline-none"
-                                                    >
-                                                        <option value="">Select Town</option>
-                                                        {(TOWNS_BY_COUNTY[newUserFormData.county] || []).map((t: string) => <option key={t} value={t}>{t}</option>)}
-                                                    </select>
+                            <div className="p-8 overflow-y-auto">
+                                {/* List Sponsors */}
+                                <div className="mb-8">
+                                    <h4 className="text-sm font-bold text-gray-700 mb-3">Current Sponsors ({sponsors.length}/3)</h4>
+                                    <div className="space-y-3">
+                                        {sponsors.length === 0 && <p className="text-sm text-gray-500 italic">No sponsors added yet.</p>}
+                                        {sponsors.map(sponsor => (
+                                            <div key={sponsor.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                                {sponsor.image_url && <img src={sponsor.image_url} alt={sponsor.name} className="w-12 h-12 object-cover rounded-md" />}
+                                                <div className="flex-grow">
+                                                    <p className="font-bold text-sm">{sponsor.headline}</p>
+                                                    <p className="text-xs text-gray-500">{sponsor.sub_text}</p>
                                                 </div>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => setEditingSponsor(sponsor)}
+                                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                                                    >
+                                                        <Pencil size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteSponsor(sponsor.id)}
+                                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Add/Edit Form */}
+                                {(sponsors.length < 3 || editingSponsor) && (
+                                    <form onSubmit={handleSaveSponsor} className="space-y-4 border-t border-gray-100 pt-6">
+                                        <h4 className="text-sm font-bold text-gray-900">{editingSponsor ? 'Edit Sponsor' : 'Add New Sponsor'}</h4>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-xs font-bold text-gray-500 mb-1">Business Name</label>
+                                                <input name="name" defaultValue={editingSponsor?.name} required className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Internal name" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-bold text-gray-500 mb-1">Headline</label>
+                                                <input name="headline" defaultValue={editingSponsor?.headline} required className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="e.g. Need Solar?" />
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-xs font-bold text-gray-500 mb-1">Sub-text</label>
+                                                <input name="sub_text" defaultValue={editingSponsor?.sub_text} required className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Short description" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-bold text-gray-500 mb-1">Destination URL</label>
+                                                <input name="destination_url" defaultValue={editingSponsor?.destination_url} required type="url" className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="https://..." />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-500 mb-1">Image URL</label>
+                                            <input name="image_url" defaultValue={editingSponsor?.image_url} required type="url" className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="https://..." />
+                                        </div>
+
+                                        <div className="pt-2 flex justify-end gap-3">
+                                            {editingSponsor && (
+                                                <button type="button" onClick={() => setEditingSponsor(null)} className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg">Cancel Edit</button>
                                             )}
+                                            <button
+                                                type="submit"
+                                                disabled={isUpdating}
+                                                className="px-6 py-2 text-sm font-bold text-white bg-[#007F00] rounded-lg hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                                            >
+                                                {isUpdating ? <Loader2 className="animate-spin" size={16} /> : null}
+                                                {editingSponsor ? 'Update Sponsor' : 'Add Sponsor'}
+                                            </button>
                                         </div>
-                                    </div>
-                                </div>
-
-                                {/* SECTION: Assessor-Specific Fields */}
-                                {newUserRole === 'contractor' && (
-                                    <div>
-                                        <h4 className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest mb-4">Assessor Details</h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">SEAI Registration #</label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="e.g. 10XXX"
-                                                    value={newUserFormData.seaiNumber}
-                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, seaiNumber: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Assessor Type</label>
-                                                <select
-                                                    value={newUserFormData.assessorType}
-                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, assessorType: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white"
-                                                >
-                                                    <option value="Domestic Assessor">Domestic Assessor</option>
-                                                    <option value="Commercial Assessor">Commercial Assessor</option>
-                                                    <option value="Both">Both (Domestic & Commercial)</option>
-                                                </select>
-                                            </div>
-                                            <div className="md:col-span-2">
-                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Company Name <span className="text-gray-300">(optional)</span></label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="e.g. ABC Energy Assessments"
-                                                    value={newUserFormData.companyName}
-                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, companyName: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
+                                    </form>
                                 )}
 
-                                {/* SECTION: Business-Specific Fields */}
-                                {newUserRole === 'business' && (
-                                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-                                        <h4 className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest mb-4">Business Details</h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="md:col-span-2">
-                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Business Address</label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="123 Main Street, Town"
-                                                    value={newUserFormData.businessAddress}
-                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, businessAddress: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all"
-                                                />
-                                            </div>
-                                            <div className="md:col-span-2">
-                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Website <span className="text-gray-300 font-medium">(optional)</span></label>
-                                                <input
-                                                    type="url"
-                                                    placeholder="https://www.example.ie"
-                                                    value={newUserFormData.website}
-                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, website: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Company Number <span className="text-gray-300 font-medium">(optional)</span></label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="123456"
-                                                    value={newUserFormData.companyNumber}
-                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, companyNumber: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">VAT Number <span className="text-gray-300 font-medium">(optional)</span></label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="IE1234567A"
-                                                    value={newUserFormData.vatNumber}
-                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, vatNumber: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all"
-                                                />
-                                            </div>
-                                            <div className="md:col-span-2">
-                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Description <span className="text-gray-300 font-medium">(optional)</span></label>
-                                                <textarea
-                                                    placeholder="Describe the business and services..."
-                                                    rows={3}
-                                                    value={newUserFormData.description}
-                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, description: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all resize-none"
-                                                />
-                                            </div>
-                                        </div>
+                                {sponsors.length >= 3 && !editingSponsor && (
+                                    <div className="text-center p-4 bg-yellow-50 text-yellow-800 text-sm rounded-lg mt-4">
+                                        Maximum of 3 sponsors allowed. Delete one to add a new one.
                                     </div>
                                 )}
-
-                                {/* Info Banner */}
-                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                                    <p className="text-[10px] text-gray-500 font-bold leading-relaxed">
-                                        <AlertTriangle size={12} className="inline mr-1 text-amber-500" />
-                                        This will create a profile entry. If the user eventually signs up with this email, their dashboard will automatically link to this record.
-                                    </p>
-                                </div>
                             </div>
-
-                            {/* Sticky footer */}
-                            <div className="px-5 sm:px-8 py-4 sm:py-6 border-t border-gray-100 flex gap-3 shrink-0 bg-gray-50/50 rounded-b-2xl sm:rounded-b-3xl">
+                        </div>
+                    </div>
+                )
+            }
+            {/* DELETE CONFIRMATION MODAL */}
+            {
+                showDeleteModal && (
+                    <div
+                        className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+                        onClick={() => { setShowDeleteModal(false); setItemToDelete(null); }}
+                    >
+                        <div
+                            className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 animate-in zoom-in-95 duration-200 text-center"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-100">
+                                <AlertTriangle size={32} />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Are you sure?</h3>
+                            <p className="text-gray-500 text-sm mb-8">
+                                This action cannot be undone. This {itemToDelete?.type} will be permanently removed from our records.
+                            </p>
+                            <div className="flex gap-3">
                                 <button
-                                    type="submit"
-                                    disabled={isUpdating}
-                                    className="flex-[2] py-3 sm:py-4 bg-[#007F00] text-white font-bold rounded-xl sm:rounded-2xl hover:bg-green-700 transition-all shadow-lg shadow-green-100 flex items-center justify-center gap-2 disabled:opacity-50"
-                                >
-                                    {isUpdating ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
-                                    {isUpdating ? 'Adding...' : `Add ${newUserRole === 'contractor' ? 'Assessor' : 'Business'}`}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => { setShowAddUserModal(false); resetNewUserForm(); }}
-                                    className="flex-1 py-4 bg-white border border-gray-200 text-gray-500 font-bold rounded-2xl hover:bg-gray-50 hover:text-gray-700 transition-all text-sm"
+                                    onClick={() => { setShowDeleteModal(false); setItemToDelete(null); }}
+                                    disabled={isDeleting}
+                                    className="flex-1 px-4 py-3 text-sm font-bold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50"
                                 >
                                     Cancel
                                 </button>
+                                <button
+                                    onClick={confirmDelete}
+                                    disabled={isDeleting}
+                                    className="flex-1 px-4 py-3 text-sm font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 transition-colors shadow-lg shadow-red-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    {isDeleting ? (
+                                        <>
+                                            <Loader2 size={18} className="animate-spin" />
+                                            Deleting...
+                                        </>
+                                    ) : (
+                                        'Delete Permanently'
+                                    )}
+                                </button>
                             </div>
-                        </form>
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+
+            {/* USER DETAILS / EDIT MODAL */}
+            {
+                selectedUser && (
+                    <div
+                        className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+                        onClick={() => setSelectedUser(null)}
+                    >
+                        <div
+                            className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
+                                <h3 className="text-xl font-bold text-gray-900">User Details</h3>
+                                <button onClick={() => setSelectedUser(null)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
+                                    <X size={24} />
+                                </button>
+                            </div>
+                            <div className="p-8 overflow-y-auto">
+                                <div className="flex items-center gap-4 mb-6">
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Account Role</p>
+                                            <select
+                                                value={editForm.role}
+                                                onChange={(e) => setEditForm({ ...editForm, role: e.target.value as any })}
+                                                className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white transition-all outline-none font-bold text-gray-900 capitalize"
+                                            >
+                                                <option value="user">User</option>
+                                                <option value="homeowner">Homeowner</option>
+                                                <option value="contractor">Assessor / Contractor</option>
+                                                <option value="business">Business</option>
+                                                <option value="admin">Admin</option>
+                                            </select>
+                                        </div>
+                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Phone Number</p>
+                                            <p className="text-sm font-bold text-gray-900">{getFallbackPhone(selectedUser)}</p>
+                                        </div>
+                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 col-span-2">
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Status</p>
+                                            <p className={`text-sm font-bold capitalize ${selectedUser.is_active !== false ? 'text-green-600' : 'text-red-600'}`}>
+                                                {selectedUser.is_active !== false ? 'Active' : 'Suspended'}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Subscription Section */}
+                                    {(selectedUser.role === 'contractor' || selectedUser.role === 'business') && (
+                                        <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100/50">
+                                            <div className="flex justify-between items-center mb-4">
+                                                <h4 className="text-xs font-bold text-blue-900 uppercase tracking-widest">Subscription Management</h4>
+                                                {(() => {
+                                                    const endDate = selectedUser.subscription_end_date ? new Date(selectedUser.subscription_end_date) : null;
+                                                    const isExpired = endDate && endDate < new Date();
+                                                    if (isExpired) return (
+                                                        <span className="flex items-center gap-1 text-[10px] font-black text-red-600 animate-pulse">
+                                                            <AlertCircle size={12} />
+                                                            ACCOUNT DISABLED
+                                                        </span>
+                                                    );
+                                                    return null;
+                                                })()}
+                                            </div>
+                                            <div className="flex justify-between items-center mb-4">
+                                                <div>
+                                                    <p className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">Status</p>
+                                                    <p className="text-sm font-black text-blue-900 capitalize">{selectedUser.subscription_status || 'Inactive'}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">Ends On</p>
+                                                    <p className="text-sm font-black text-blue-900">
+                                                        {selectedUser.subscription_end_date ? new Date(selectedUser.subscription_end_date).toLocaleDateString('en-GB') : 'N/A'}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-col gap-4 mt-4">
+                                                <div className="p-4 bg-white rounded-2xl border border-blue-100 shadow-sm">
+                                                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3">Renewal Duration</p>
+
+                                                    {/* Quick Select Pills */}
+                                                    <div className="flex flex-wrap gap-2 mb-4">
+                                                        {[1, 3, 6, 12].map((m) => (
+                                                            <button
+                                                                key={m}
+                                                                onClick={() => setCustomMonths(m)}
+                                                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${customMonths === m
+                                                                    ? 'bg-blue-600 text-white border-blue-600'
+                                                                    : 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100'
+                                                                    }`}
+                                                            >
+                                                                {m === 12 ? '1 Year' : `${m} Month${m > 1 ? 's' : ''}`}
+                                                            </button>
+                                                        ))}
+                                                        <div className="flex items-center gap-2 ml-auto">
+                                                            <span className="text-[10px] font-bold text-gray-400 capitalize">Custom:</span>
+                                                            <input
+                                                                type="number"
+                                                                min="1"
+                                                                max="60"
+                                                                value={customMonths}
+                                                                onChange={(e) => setCustomMonths(parseInt(e.target.value) || 1)}
+                                                                className="w-14 border border-gray-200 rounded-lg px-2 py-1 text-xs font-bold focus:ring-2 focus:ring-blue-100 outline-none text-center"
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => handleManualRenewal(selectedUser.id, customMonths)}
+                                                            disabled={isUpdating}
+                                                            className="flex-[2] bg-blue-600 text-white text-[11px] font-black py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-100 disabled:opacity-50"
+                                                        >
+                                                            <Zap size={14} fill="currentColor" />
+                                                            UPDATE UNTIL {(() => {
+                                                                const d = new Date(selectedUser.subscription_end_date && new Date(selectedUser.subscription_end_date) > new Date() ? selectedUser.subscription_end_date : new Date());
+                                                                d.setMonth(d.getMonth() + customMonths);
+                                                                return d.toLocaleDateString('en-GB');
+                                                            })()}
+                                                        </button>
+
+                                                        <button
+                                                            onClick={() => handleSendRenewalReminder(selectedUser)}
+                                                            className="flex-1 bg-white border-2 border-amber-600 text-amber-600 text-[10px] font-black py-2.5 rounded-xl hover:bg-amber-600 hover:text-white transition-all flex items-center justify-center gap-2"
+                                                            title="Send Reminder Email"
+                                                        >
+                                                            <Mail size={14} />
+                                                            REMINDER
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {selectedUser.subscription_status === 'active' && (
+                                                    <button
+                                                        onClick={() => handleCancelSubscription(selectedUser.id)}
+                                                        disabled={isUpdating}
+                                                        className="w-full bg-red-50 text-red-600 border border-red-200 text-[10px] font-black py-2.5 rounded-xl hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-2"
+                                                    >
+                                                        <XCircle size={14} />
+                                                        CANCEL SUBSCRIPTION
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            {selectedUser.manual_override_reason && (
+                                                <div className="mt-4 p-2 bg-white rounded-lg border border-blue-100">
+                                                    <p className="text-[10px] text-gray-400 uppercase font-bold mb-1">Override Reason</p>
+                                                    <p className="text-xs text-gray-600 italic">"{selectedUser.manual_override_reason}"</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    <div className="space-y-4">
+                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">User ID</p>
+                                            <p className="text-xs font-mono text-gray-600 break-all">{selectedUser.id}</p>
+                                        </div>
+                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Member Since</p>
+                                            <p className="text-sm font-bold text-gray-900">{new Date(selectedUser.created_at).toLocaleDateString('en-GB')}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-3 mt-8">
+                                        <button
+                                            className={`flex-1 py-3 font-bold rounded-xl transition-colors text-sm border ${selectedUser.is_active !== false
+                                                ? 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100'
+                                                : 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100'
+                                                }`}
+                                            onClick={() => {
+                                                setItemToSuspend({
+                                                    id: selectedUser.id,
+                                                    name: selectedUser.full_name,
+                                                    currentStatus: selectedUser.is_active !== false
+                                                });
+                                                setShowSuspendModal(true);
+                                            }}
+                                        >
+                                            {selectedUser.is_active !== false ? 'Suspend Account' : 'Activate Account'}
+                                        </button>
+
+                                        {user?.role === 'admin' && (
+                                            <button
+                                                onClick={handleUpdateProfile}
+                                                disabled={isUpdating}
+                                                className="flex-[2] py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all text-sm shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
+                                            >
+                                                {isUpdating && <Loader2 size={16} className="animate-spin" />}
+                                                Save Profile Changes
+                                            </button>
+                                        )}
+
+                                        <button
+                                            className="flex-[1] py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors text-sm"
+                                            onClick={() => setSelectedUser(null)}
+                                        >
+                                            Close
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* SUSPEND USER MODAL */}
+            {
+                showSuspendModal && itemToSuspend && (
+                    <div
+                        className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+                        onClick={() => { setShowSuspendModal(false); setItemToSuspend(null); }}
+                    >
+                        <div
+                            className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
+                                <h3 className="text-xl font-bold text-gray-900">
+                                    {itemToSuspend.currentStatus ? 'Suspend User' : 'Activate User'}
+                                </h3>
+                                <button onClick={() => { setShowSuspendModal(false); setItemToSuspend(null); }} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
+                                    <X size={24} />
+                                </button>
+                            </div>
+
+                            <div className="p-8 overflow-y-auto text-center">
+                                <div className="w-20 h-20 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-6 border border-amber-100">
+                                    <AlertTriangle size={40} />
+                                </div>
+                                <p className="text-gray-600 mb-8 leading-relaxed">
+                                    Are you sure you want to {itemToSuspend.currentStatus ? <span className="text-red-600 font-bold">suspend</span> : <span className="text-green-600 font-bold">activate</span>} <strong>{itemToSuspend.name}</strong>?
+                                    {itemToSuspend.currentStatus && (
+                                        <span className="block mt-2 text-sm text-gray-400">The user will no longer be able to access their dashboard until reactivated.</span>
+                                    )}
+                                </p>
+
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => {
+                                            setShowSuspendModal(false);
+                                            setItemToSuspend(null);
+                                        }}
+                                        className="flex-1 px-4 py-3 text-sm font-bold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={toggleUserStatus}
+                                        disabled={isUpdating}
+                                        className={`flex-[2] px-6 py-3 rounded-xl text-white font-bold transition-all shadow-lg flex items-center justify-center gap-2 ${itemToSuspend.currentStatus
+                                            ? 'bg-red-600 hover:bg-red-700 shadow-red-100'
+                                            : 'bg-green-600 hover:bg-green-700 shadow-green-100'
+                                            }`}
+                                    >
+                                        {isUpdating ? <Loader2 size={18} className="animate-spin" /> : null}
+                                        {itemToSuspend.currentStatus ? 'Suspend Account' : 'Activate Account'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* ADD USER MODAL (MANUAL) — ENHANCED */}
+            {
+                showAddUserModal && (
+                    <div
+                        className="fixed inset-0 z-[10001] flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+                        onClick={() => { setShowAddUserModal(false); resetNewUserForm(); }}
+                    >
+                        <div
+                            className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-lg animate-in zoom-in-95 duration-200 flex flex-col max-h-[95vh] sm:max-h-[90vh]"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="p-5 sm:p-8 pb-0 shrink-0">
+                                <div className="flex justify-between items-center mb-4 sm:mb-6">
+                                    <div>
+                                        <h3 className="text-lg sm:text-xl font-black text-gray-900 uppercase tracking-tight">Manual Registration</h3>
+                                        <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Adding a new {newUserRole === 'contractor' ? 'Assessor' : 'Business'}</p>
+                                    </div>
+                                    <button onClick={() => { setShowAddUserModal(false); resetNewUserForm(); }} className="text-gray-400 hover:text-gray-600">
+                                        <X size={24} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <form onSubmit={handleAddUser} className="flex flex-col flex-1 overflow-hidden">
+                                <div className="px-5 sm:px-8 pb-5 sm:pb-8 overflow-y-auto space-y-5 sm:space-y-6 flex-1 custom-scrollbar">
+                                    {/* SECTION: Personal Details */}
+                                    <div>
+                                        <h4 className="text-[10px] font-black text-[#007F00] uppercase tracking-widest mb-3 sm:mb-4">Personal Details</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                                            <div>
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Full Name *</label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    placeholder={newUserRole === 'contractor' ? 'e.g. John Doe' : 'e.g. Acme Energy'}
+                                                    value={newUserFormData.fullName}
+                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, fullName: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Email *</label>
+                                                <input
+                                                    type="email"
+                                                    required
+                                                    placeholder="john@example.com"
+                                                    value={newUserFormData.email}
+                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, email: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Password *</label>
+                                                <input
+                                                    type="password"
+                                                    required
+                                                    placeholder="••••••••"
+                                                    value={newUserFormData.password}
+                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, password: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Phone</label>
+                                                <input
+                                                    type="tel"
+                                                    placeholder="+353 8X XXX XXXX"
+                                                    value={newUserFormData.phone}
+                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, phone: e.target.value })}
+                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
+                                                />
+                                            </div>
+                                            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">County</label>
+                                                    <select
+                                                        value={newUserFormData.county}
+                                                        onChange={(e) => setNewUserFormData({ ...newUserFormData, county: e.target.value, town: '' })}
+                                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white transition-all outline-none"
+                                                    >
+                                                        <option value="">Select County</option>
+                                                        {IRISH_COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                                    </select>
+                                                </div>
+                                                {newUserRole === 'contractor' && newUserFormData.county && (
+                                                    <div className="animate-in slide-in-from-top-2 duration-200">
+                                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Town</label>
+                                                        <select
+                                                            value={newUserFormData.town}
+                                                            onChange={(e) => setNewUserFormData({ ...newUserFormData, town: e.target.value })}
+                                                            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white transition-all outline-none"
+                                                        >
+                                                            <option value="">Select Town</option>
+                                                            {(TOWNS_BY_COUNTY[newUserFormData.county] || []).map((t: string) => <option key={t} value={t}>{t}</option>)}
+                                                        </select>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* SECTION: Assessor-Specific Fields */}
+                                    {newUserRole === 'contractor' && (
+                                        <div>
+                                            <h4 className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest mb-4">Assessor Details</h4>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">SEAI Registration #</label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="e.g. 10XXX"
+                                                        value={newUserFormData.seaiNumber}
+                                                        onChange={(e) => setNewUserFormData({ ...newUserFormData, seaiNumber: e.target.value })}
+                                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Assessor Type</label>
+                                                    <select
+                                                        value={newUserFormData.assessorType}
+                                                        onChange={(e) => setNewUserFormData({ ...newUserFormData, assessorType: e.target.value })}
+                                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white"
+                                                    >
+                                                        <option value="Domestic Assessor">Domestic Assessor</option>
+                                                        <option value="Commercial Assessor">Commercial Assessor</option>
+                                                        <option value="Both">Both (Domestic & Commercial)</option>
+                                                    </select>
+                                                </div>
+                                                <div className="md:col-span-2">
+                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Company Name <span className="text-gray-300">(optional)</span></label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="e.g. ABC Energy Assessments"
+                                                        value={newUserFormData.companyName}
+                                                        onChange={(e) => setNewUserFormData({ ...newUserFormData, companyName: e.target.value })}
+                                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* SECTION: Business-Specific Fields */}
+                                    {newUserRole === 'business' && (
+                                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+                                            <h4 className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest mb-4">Business Details</h4>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="md:col-span-2">
+                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Business Address</label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="123 Main Street, Town"
+                                                        value={newUserFormData.businessAddress}
+                                                        onChange={(e) => setNewUserFormData({ ...newUserFormData, businessAddress: e.target.value })}
+                                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all"
+                                                    />
+                                                </div>
+                                                <div className="md:col-span-2">
+                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Website <span className="text-gray-300 font-medium">(optional)</span></label>
+                                                    <input
+                                                        type="url"
+                                                        placeholder="https://www.example.ie"
+                                                        value={newUserFormData.website}
+                                                        onChange={(e) => setNewUserFormData({ ...newUserFormData, website: e.target.value })}
+                                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Company Number <span className="text-gray-300 font-medium">(optional)</span></label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="123456"
+                                                        value={newUserFormData.companyNumber}
+                                                        onChange={(e) => setNewUserFormData({ ...newUserFormData, companyNumber: e.target.value })}
+                                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">VAT Number <span className="text-gray-300 font-medium">(optional)</span></label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="IE1234567A"
+                                                        value={newUserFormData.vatNumber}
+                                                        onChange={(e) => setNewUserFormData({ ...newUserFormData, vatNumber: e.target.value })}
+                                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all"
+                                                    />
+                                                </div>
+                                                <div className="md:col-span-2">
+                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Description <span className="text-gray-300 font-medium">(optional)</span></label>
+                                                    <textarea
+                                                        placeholder="Describe the business and services..."
+                                                        rows={3}
+                                                        value={newUserFormData.description}
+                                                        onChange={(e) => setNewUserFormData({ ...newUserFormData, description: e.target.value })}
+                                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all resize-none"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Info Banner */}
+                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                        <p className="text-[10px] text-gray-500 font-bold leading-relaxed">
+                                            <AlertTriangle size={12} className="inline mr-1 text-amber-500" />
+                                            This will create a profile entry. If the user eventually signs up with this email, their dashboard will automatically link to this record.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Sticky footer */}
+                                <div className="px-5 sm:px-8 py-4 sm:py-6 border-t border-gray-100 flex gap-3 shrink-0 bg-gray-50/50 rounded-b-2xl sm:rounded-b-3xl">
+                                    <button
+                                        type="submit"
+                                        disabled={isUpdating}
+                                        className="flex-[2] py-3 sm:py-4 bg-[#007F00] text-white font-bold rounded-xl sm:rounded-2xl hover:bg-green-700 transition-all shadow-lg shadow-green-100 flex items-center justify-center gap-2 disabled:opacity-50"
+                                    >
+                                        {isUpdating ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
+                                        {isUpdating ? 'Adding...' : `Add ${newUserRole === 'contractor' ? 'Assessor' : 'Business'}`}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => { setShowAddUserModal(false); resetNewUserForm(); }}
+                                        className="flex-1 py-4 bg-white border border-gray-200 text-gray-500 font-bold rounded-2xl hover:bg-gray-50 hover:text-gray-700 transition-all text-sm"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )
+            }
+        </div >
     );
 };
 

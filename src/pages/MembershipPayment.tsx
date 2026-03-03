@@ -113,8 +113,9 @@ const MembershipPayment = () => {
                 setTimeout(() => navigate('/dashboard/business'), 2000);
             }
 
-        } catch (error: any) {
-            console.error('Finalization Error:', error);
+        } catch (error: unknown) {
+            const err = error as Error;
+            console.error('Finalization Error:', err);
             toast.error('Failed to finalize registration. Please contact support.');
         } finally {
             setFinalizing(false);

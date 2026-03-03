@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
     MapPin, Mail, Phone, Globe, Loader2,
     CheckCircle2, Facebook, Instagram, X,
@@ -162,15 +163,19 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                             {listing.additional_addresses.map((addr, idx) => {
-                                                const county = addr.includes('|||') ? addr.split('|||')[1] : addr;
+                                                const county = addr.includes('|||') ? addr.split('|||')[1]?.trim() : addr.trim();
                                                 if (!county) return null;
                                                 return (
-                                                    <div key={idx} className="flex items-center gap-3 p-4 bg-gray-50/50 border border-gray-100 rounded-2xl hover:border-[#007EA7]/20 hover:bg-white hover:shadow-sm transition-all duration-300 group">
-                                                        <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-[#007EA7] border border-gray-100 group-hover:bg-[#E8F4FD]/50 group-hover:border-[#007EA7]/20 transition-all">
+                                                    <Link
+                                                        to={`/catalogue?county=${encodeURIComponent(county)}`}
+                                                        key={idx}
+                                                        className="flex items-center gap-3 p-4 bg-gray-50/50 border border-gray-100 rounded-2xl hover:border-[#007EA7]/50 hover:bg-[#E8F4FD]/20 hover:shadow-md transition-all duration-300 group"
+                                                    >
+                                                        <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-[#007EA7] border border-gray-100 group-hover:bg-[#007EA7] group-hover:text-white group-hover:border-[#007EA7] transition-all">
                                                             <MapPin size={16} />
                                                         </div>
-                                                        <span className="text-sm font-bold text-gray-700">{county}</span>
-                                                    </div>
+                                                        <span className="text-sm font-bold text-gray-700 group-hover:text-[#007EA7]">{county}</span>
+                                                    </Link>
                                                 );
                                             })}
                                         </div>
