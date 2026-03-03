@@ -71,7 +71,7 @@ function App() {
                         <Route path="catalogue" element={<Catalogue />} />
                         <Route path="catalogue/:slug" element={<ListingDetail />} />
                         <Route path="locations" element={<Locations />} />
-                        <Route path="region/:slug" element={<RegionPage />} />
+                        <Route path="region" element={<RegionPage />} />
                         <Route path="privacy" element={<PrivacyPolicy />} />
                         <Route path="terms" element={<TermsOfService />} />
                         <Route path="cookie-policy" element={<CookiePolicy />} />

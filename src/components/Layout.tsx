@@ -33,6 +33,12 @@ const Layout = () => {
     const locationsRef = useRef<HTMLButtonElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
 
+    const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+    const closeMenu = () => {
+        setIsMenuOpen(false);
+        setIsLocationsOpen(false);
+    };
+
     // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -44,7 +50,11 @@ const Layout = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isMenuOpen]);
 
-
+    const handleLogout = async () => {
+        await signOut();
+        navigate('/login');
+        closeMenu();
+    };
 
     useEffect(() => {
         const fetchLocations = async () => {
@@ -70,18 +80,6 @@ const Layout = () => {
         };
         checkBusinessListing();
     }, [user, role]);
-
-    const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-    const closeMenu = () => {
-        setIsMenuOpen(false);
-        setIsLocationsOpen(false);
-    };
-
-    const handleLogout = async () => {
-        await signOut();
-        navigate('/login');
-        closeMenu();
-    };
     const getDashboardLink = () => {
         if (!user) return '/contact';
         if (role === 'admin') return '/admin';
@@ -174,14 +172,14 @@ const Layout = () => {
                                                                                     Leinster: ['Carlow', 'Dublin', 'Kildare', 'Kilkenny', 'Laois', 'Longford', 'Louth', 'Meath', 'Offaly', 'Westmeath', 'Wexford', 'Wicklow'],
                                                                                     Munster: ['Clare', 'Cork', 'Kerry', 'Limerick', 'Tipperary', 'Waterford'],
                                                                                     Connacht: ['Galway', 'Leitrim', 'Mayo', 'Roscommon', 'Sligo'],
-                                                                                    Ulster: ['Cavan', 'Donegal', 'Monaghan']
+                                                                                    Ulster: ['Cavan', 'Donegal', 'Monaghan', 'Antrim', 'Armagh', 'Down', 'Fermanagh', 'Londonderry', 'Tyrone']
                                                                                 };
                                                                                 return PROVINCES[province]?.includes(loc.name);
                                                                             })
                                                                             .map(location => (
                                                                                 <Link
                                                                                     key={location.id}
-                                                                                    to={`/region/${location.slug}`}
+                                                                                    to={`/region?county=${location.slug}`}
                                                                                     onClick={closeMenu}
                                                                                     className="block pl-12 pr-5 py-2 text-xs text-gray-500 hover:text-[#007EA7] hover:bg-gray-50 transition-colors"
                                                                                 >

@@ -65,7 +65,7 @@ const Locations = () => {
                     {locations.map((location) => (
                         <Link
                             key={location.id}
-                            to={`/region/${location.slug}`}
+                            to={`/region?county=${location.slug}`}
                             className="group block bg-gray-50 hover:bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-[#007EA7]/30 hover:shadow-xl transition-all duration-300 relative"
                         >
                             <div className="h-48 bg-gray-200 overflow-hidden relative">
