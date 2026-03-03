@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
 import { MapPin, Loader2, ChevronRight, Search, ChevronDown, CheckCircle2, Star, Map, List } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
@@ -13,14 +13,14 @@ import { supabase } from '../lib/supabase';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
-let DefaultIcon = L.icon({
+const DefaultIcon = L.icon({
     iconUrl: icon,
     shadowUrl: iconShadow,
     iconSize: [25, 41],
     iconAnchor: [12, 41]
 });
 
-L.Marker.prototype.options.icon = DefaultIcon;
+(L.Marker.prototype.options as any).icon = DefaultIcon;
 
 // Custom branded icon creator
 const createBrandedIcon = (logoUrl: string | undefined, highlighted: boolean = false) => {
@@ -54,6 +54,7 @@ interface Listing {
     category: string;
     region: string;
     address: string;
+    additional_addresses?: string[];
     latitude: number;
     longitude: number;
     phone: string;
@@ -76,63 +77,111 @@ const MapController = ({ center }: { center: [number, number] }) => {
 };
 
 const RegionPage = () => {
-    const { slug } = useParams<{ slug: string }>();
+    const [searchParams] = useSearchParams();
+    const countySlug = searchParams.get('county');
     const [listings, setListings] = useState<Listing[]>([]);
     const [allListings, setAllListings] = useState<Listing[]>([]);
+    const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
     const [regionName, setRegionName] = useState('');
-    const [mapCenter, setMapCenter] = useState<[number, number]>([53.3498, -6.2603]);
+    const [mapCenter, setMapCenter] = useState<[number, number]>([53.45, -7.7]); // Default Ireland center
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [mobileView, setMobileView] = useState<'list' | 'map'>('list');
 
-    useEffect(() => {
-        fetchRegionData();
-    }, [slug]);
-
-    const fetchRegionData = async () => {
-        if (!slug) return;
+    const fetchRegionData = useCallback(async () => {
+        if (!countySlug) {
+            setLoading(false);
+            return;
+        }
         setLoading(true);
         try {
-            const { data: regionData } = await supabase
-                .from('catalogue_locations')
-                .select('name')
-                .eq('slug', slug)
-                .single();
-
-            if (regionData) setRegionName(regionData.name);
-
-            const { data: listingsData, error } = await supabase
-                .from('catalogue_listings')
-                .select(`
+            const [regionRes, listingsRes, categoriesRes] = await Promise.all([
+                supabase.from('catalogue_locations').select('name, latitude, longitude').eq('slug', countySlug).single(),
+                supabase.from('catalogue_listings').select(`
                     *,
                     categories:catalogue_listing_categories(catalogue_categories(*)),
                     locations:catalogue_listing_locations(catalogue_locations(*))
-                `)
-                .eq('status', 'active');
+                `).eq('status', 'active'),
+                supabase.from('catalogue_categories').select('*').order('name')
+            ]);
 
-            if (error) throw error;
+            if (regionRes.data) {
+                setRegionName(regionRes.data.name);
+                if (regionRes.data.latitude && regionRes.data.longitude) {
+                    setMapCenter([regionRes.data.latitude, regionRes.data.longitude]);
+                }
+            }
 
-            const allActive = (listingsData || []).map(listing => ({
-                ...listing,
-                categories: listing.categories.map((c: any) => c.catalogue_categories),
-            }));
+            if (categoriesRes.data) {
+                setCategories(categoriesRes.data);
+            }
 
-            const filtered = allActive.filter(listing =>
-                listing.locations.some((loc: any) => loc.catalogue_locations?.slug === slug)
-            );
+            if (listingsRes.data) {
+                const allActive = (listingsRes.data || []).map(listing => ({
+                    ...listing,
+                    categories: listing.categories.map((c: any) => c.catalogue_categories),
+                }));
 
-            setAllListings(allActive);
-            setListings(filtered);
+                const regionSpecific = allActive.filter(listing => {
+                    const matchesLocation = listing.locations?.some((loc: any) => loc.catalogue_locations?.slug === countySlug);
 
-            if (filtered.length > 0 && filtered[0].latitude && filtered[0].longitude) {
-                setMapCenter([Number(filtered[0].latitude), Number(filtered[0].longitude)]);
+                    const regSearch = regionRes.data?.name?.toLowerCase() || countySlug.replace(/-/g, ' ');
+                    const matchesAddress = listing.address?.toLowerCase().includes(regSearch);
+                    const matchesAdditional = (listing.additional_addresses || []).some((addr: string) =>
+                        addr.toLowerCase().includes(regSearch)
+                    );
+
+                    return matchesLocation || matchesAddress || matchesAdditional;
+                });
+
+                setAllListings(allActive);
+                setListings(regionSpecific);
+                setFilteredListings(regionSpecific);
             }
         } catch (err) {
             console.error('Error fetching region listings:', err);
         } finally {
             setLoading(false);
         }
-    };
+    }, [countySlug]);
+
+    // Reset filters when county changes
+    useEffect(() => {
+        setSelectedCategory('');
+        setSearchQuery('');
+    }, [countySlug]);
+
+    const applyFilters = useCallback(() => {
+        let filtered = [...listings];
+
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            filtered = filtered.filter(item =>
+                (item.company_name || item.name).toLowerCase().includes(query) ||
+                item.description?.toLowerCase().includes(query) ||
+                item.address?.toLowerCase().includes(query) ||
+                (item.additional_addresses || []).some(addr => addr.toLowerCase().includes(query))
+            );
+        }
+
+        if (selectedCategory) {
+            filtered = filtered.filter(item =>
+                item.categories?.some(cat => cat.id === selectedCategory)
+            );
+        }
+
+        setFilteredListings(filtered);
+    }, [searchQuery, selectedCategory, listings]);
+
+    useEffect(() => {
+        fetchRegionData();
+    }, [fetchRegionData]);
+
+    useEffect(() => {
+        applyFilters();
+    }, [applyFilters]);
 
     const handleCardClick = (listing: Listing) => {
         if (listing.latitude && listing.longitude) {
@@ -179,15 +228,34 @@ const RegionPage = () => {
                         </div>
 
                         <div className="flex flex-wrap items-center gap-4 md:gap-6">
-                            <button className="flex items-center gap-2 text-[11px] font-bold text-gray-600 hover:text-[#007EA7] transition-colors uppercase tracking-tight">
-                                Categories
-                                <ChevronDown size={14} />
-                            </button>
-                            <button className="flex items-center gap-2 text-[11px] font-bold text-gray-600 hover:text-[#007EA7] transition-colors uppercase tracking-tight">
+                            <div className="relative group/cat">
+                                <button className="flex items-center gap-2 text-[11px] font-bold text-gray-600 hover:text-[#007EA7] transition-colors uppercase tracking-tight">
+                                    {selectedCategory ? categories.find(c => c.id === selectedCategory)?.name : 'Categories'}
+                                    <ChevronDown size={14} />
+                                </button>
+                                <div className="absolute left-0 top-full mt-2 w-64 bg-white border border-gray-100 rounded-xl shadow-xl opacity-0 invisible group-hover/cat:opacity-100 group-hover/cat:visible transition-all z-[100] max-h-80 overflow-y-auto">
+                                    <button
+                                        onClick={() => setSelectedCategory('')}
+                                        className="w-full text-left px-5 py-3 text-[10px] font-bold uppercase hover:bg-gray-50 text-gray-500"
+                                    >
+                                        All Categories
+                                    </button>
+                                    {categories.map(cat => (
+                                        <button
+                                            key={cat.id}
+                                            onClick={() => setSelectedCategory(cat.id)}
+                                            className={`w-full text-left px-5 py-3 text-[10px] font-bold uppercase hover:bg-gray-50 ${selectedCategory === cat.id ? 'text-[#007EA7] bg-blue-50/50' : 'text-gray-500'}`}
+                                        >
+                                            {cat.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <button className="flex items-center gap-2 text-[11px] font-bold text-gray-600 hover:text-[#007EA7] transition-colors uppercase tracking-tight opacity-50 cursor-not-allowed">
                                 More Filters
                                 <ChevronDown size={14} />
                             </button>
-                            <button className="flex items-center gap-2 text-[11px] font-bold text-gray-600 hover:text-[#007EA7] transition-colors uppercase tracking-tight">
+                            <button className="flex items-center gap-2 text-[11px] font-bold text-gray-600 hover:text-[#007EA7] transition-colors uppercase tracking-tight opacity-50 cursor-not-allowed">
                                 Price Filter
                                 <ChevronDown size={14} />
                             </button>
@@ -214,12 +282,12 @@ const RegionPage = () => {
 
                     {/* Listings List */}
                     <div className={`flex-1 overflow-y-auto px-4 md:px-8 pb-8 space-y-4 bg-gray-50/30 ${mobileView === 'map' ? 'hidden lg:block' : ''}`}>
-                        {listings.length === 0 ? (
+                        {filteredListings.length === 0 ? (
                             <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-200 mt-4">
-                                <p className="text-gray-400">No active listings found in this region.</p>
+                                <p className="text-gray-400">No active listings found for your search.</p>
                             </div>
                         ) : (
-                            listings.map((listing) => (
+                            filteredListings.map((listing) => (
                                 <div
                                     key={listing.id}
                                     onClick={() => handleCardClick(listing)}
@@ -300,7 +368,7 @@ const RegionPage = () => {
                             zoomToBoundsOnClick={true}
                         >
                             {allListings.map((listing) => {
-                                const isHighlighted = listing.locations?.some((loc: any) => loc.catalogue_locations?.slug === slug);
+                                const isHighlighted = listing.locations?.some((loc: any) => loc.catalogue_locations?.slug === countySlug);
                                 return (
                                     listing.latitude && listing.longitude && (
                                         <Marker
@@ -351,7 +419,7 @@ const RegionPage = () => {
                 .marker-cluster-medium div { background-color: rgba(0, 126, 167, 1); color: white; font-weight: 900; }
                 .marker-cluster-large { background-color: rgba(0, 126, 167, 0.6); }
                 .marker-cluster-large div { background-color: rgba(0, 126, 167, 1); color: white; font-weight: 900; }
-                
+
                 .leaflet-popup-content-wrapper { border-radius: 1rem; padding: 0; overflow: hidden; }
                 .leaflet-popup-content { margin: 0; }
                 .custom-map-popup .leaflet-popup-tip { display: none; }

@@ -38,6 +38,8 @@ interface CatalogueListing {
     phone: string | null;
     email: string | null;
     website: string | null;
+    address: string;
+    additional_addresses?: string[];
     featured: boolean;
     rating: number;
     created_at: string;

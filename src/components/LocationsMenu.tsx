@@ -67,7 +67,13 @@ const IRELAND_LOCATIONS: Province[] = [
         counties: [
             { id: 'donegal', name: 'Donegal', slug: 'donegal' },
             { id: 'cavan', name: 'Cavan', slug: 'cavan' },
-            { id: 'monaghan', name: 'Monaghan', slug: 'monaghan' }
+            { id: 'monaghan', name: 'Monaghan', slug: 'monaghan' },
+            { id: 'antrim', name: 'Antrim', slug: 'antrim' },
+            { id: 'armagh', name: 'Armagh', slug: 'armagh' },
+            { id: 'down', name: 'Down', slug: 'down' },
+            { id: 'fermanagh', name: 'Fermanagh', slug: 'fermanagh' },
+            { id: 'derry', name: 'Londonderry', slug: 'londonderry' },
+            { id: 'tyrone', name: 'Tyrone', slug: 'tyrone' }
         ]
     }
 ];
@@ -108,7 +114,7 @@ export default function LocationsMenu({ open }: { open: boolean }) {
                         {activeProvince.counties.map((county) => (
                             <Link
                                 key={county.id}
-                                to={`/county/${county.slug}`}
+                                to={`/region/${county.slug}`}
                                 className="block px-6 py-2.5 text-gray-700 hover:bg-[#007F00]/10 hover:text-[#007F00] transition-colors font-medium border-l-2 border-transparent hover:border-[#007F00]"
                             >
                                 {county.name}
