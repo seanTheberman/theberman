@@ -491,8 +491,10 @@ const BusinessDashboard = () => {
             </header>
 
             {/* Subscription Expired / Pending Payment Blocker Overlay */}
-            {((profile?.subscription_status === 'expired' || profile?.is_active === false) && profile?.registration_status === 'active') ||
-                (profile?.registration_status === 'pending') ? (
+            {(((profile?.subscription_status === 'expired' || profile?.is_active === false) &&
+                profile?.registration_status === 'active' &&
+                profile?.stripe_payment_id !== 'MANUAL_BY_ADMIN') ||
+                (profile?.registration_status === 'pending')) ? (
                 <div className="fixed inset-0 z-[10001] bg-[#0c121d]/95 backdrop-blur-2xl flex items-center justify-center p-6 text-center">
                     <div className="max-w-md w-full bg-white rounded-3xl p-10 shadow-2xl border-t-8 border-red-500">
                         <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">

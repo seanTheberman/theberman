@@ -86,7 +86,7 @@ function App() {
                     </Route>
 
                     {/* No Layout wrapper for cleaner UX */}
-                    <Route path="/assessor-membership" element={<MembershipPayment />} />
+                    <Route path="/membership-payment" element={<MembershipPayment />} />
                     <Route path="/get-quote" element={<QuoteForm />} />
 
                     <Route path="/forgot-password" element={<ForgotPassword />} />

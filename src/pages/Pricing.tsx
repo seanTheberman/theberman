@@ -3,7 +3,12 @@ import { ArrowRight, X, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEOHead from '../components/SEOHead';
 
+import { useAuth } from '../hooks/useAuth';
+
 const Pricing = () => {
+    const { profile } = useAuth();
+    const isManualActive = profile?.stripe_payment_id === 'MANUAL_BY_ADMIN';
+
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen">
             <SEOHead
@@ -23,7 +28,9 @@ const Pricing = () => {
                         <span className="text-[#007F00]">Rates.</span>
                     </h1>
                     <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
-                        Choose the plan that fits your property type. No hidden fees, all assessments handled by registered experts.
+                        {isManualActive
+                            ? "Your account is currently active under a manual administrator activation. You have full access to all features."
+                            : "Choose the plan that fits your property type. No hidden fees, all assessments handled by registered experts."}
                     </p>
                 </div>
             </section>
