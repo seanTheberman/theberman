@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, AlertCircle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2, Search, Newspaper, Plus, Star, Check, Edit2, ExternalLink, Image as ImageIcon, UploadCloud, ArrowLeft, Users, DollarSign, CreditCard, ClipboardList, ArrowRight, Hourglass, Building, XCircle, Zap } from 'lucide-react';
+import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, AlertCircle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2, Search, Newspaper, Plus, Star, Check, Edit2, ExternalLink, Image as ImageIcon, UploadCloud, ArrowLeft, Users, DollarSign, CreditCard, ClipboardList, ArrowRight, Hourglass, Building, XCircle, Zap, Globe, Twitter, Facebook, Linkedin, Instagram } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
@@ -56,6 +56,7 @@ interface Profile {
     vat_number?: string;
     stripe_payment_id?: string;
     is_admin_created?: boolean;
+    last_login?: string;
 }
 
 interface Assessment {
@@ -146,6 +147,26 @@ interface NewsArticle {
     is_live: boolean;
     read_time: string;
 }
+
+const formatLastLogin = (date?: string) => {
+    if (!date) return 'Never';
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return 'Never';
+
+    const now = new Date();
+    const diffMs = now.getTime() - d.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays}d ago`;
+
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+};
 
 // Helper components for centralized status display
 const ProfileStatusBadge = ({ profile }: { profile: Profile }) => {
@@ -424,6 +445,10 @@ const Admin = () => {
         registrationNo: '',
         vatNumber: '',
         bannerUrl: '',
+        socialFacebook: '',
+        socialInstagram: '',
+        socialLinkedin: '',
+        socialTwitter: '',
         galleryImages: [
             { url: '', description: '' },
             { url: '', description: '' },
@@ -624,6 +649,10 @@ const Admin = () => {
                 registrationNo: existingListing.registration_no || '',
                 vatNumber: existingListing.vat_number || '',
                 bannerUrl: existingListing.banner_url || '',
+                socialFacebook: existingListing.social_media?.facebook || '',
+                socialInstagram: existingListing.social_media?.instagram || '',
+                socialLinkedin: existingListing.social_media?.linkedin || '',
+                socialTwitter: existingListing.social_media?.twitter || '',
                 galleryImages: [
                     { url: '', description: '' },
                     { url: '', description: '' },
@@ -682,6 +711,10 @@ const Admin = () => {
                 registrationNo: '',
                 vatNumber: '',
                 bannerUrl: '',
+                socialFacebook: '',
+                socialInstagram: '',
+                socialLinkedin: '',
+                socialTwitter: '',
                 galleryImages: [
                     { url: '', description: '' },
                     { url: '', description: '' },
@@ -920,6 +953,12 @@ const Admin = () => {
                 registration_no: catalogueFormData.registrationNo || null,
                 vat_number: catalogueFormData.vatNumber || null,
                 banner_url: catalogueFormData.bannerUrl || null,
+                social_media: {
+                    facebook: catalogueFormData.socialFacebook || undefined,
+                    instagram: catalogueFormData.socialInstagram || undefined,
+                    linkedin: catalogueFormData.socialLinkedin || undefined,
+                    twitter: catalogueFormData.socialTwitter || undefined,
+                },
                 additional_addresses: catalogueFormData.additionalAddresses.filter(a => a.trim() !== ''),
             };
 
@@ -2397,43 +2436,119 @@ const Admin = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="space-y-1.5">
-                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Banner Image</label>
-                                                <div className="mt-1 flex items-center gap-4">
+                                            <div className="md:col-span-2 space-y-2">
+                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1 block mb-3">Master Banner Image</label>
+                                                <div className="relative h-60 w-full rounded-2xl overflow-hidden bg-gray-50 border-2 border-dashed border-gray-200 group ring-4 ring-white shadow-sm transition-all hover:border-[#007F00]/30">
                                                     {catalogueFormData.bannerUrl ? (
-                                                        <div className="relative w-40 h-24 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 flex-shrink-0 group shadow-sm transition-all hover:shadow-md">
+                                                        <>
                                                             <img src={catalogueFormData.bannerUrl} alt="Banner Preview" className="w-full h-full object-cover" />
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => setCatalogueFormData(prev => ({ ...prev, bannerUrl: '' }))}
-                                                                className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                                            >
-                                                                <X size={20} className="text-white" />
-                                                            </button>
-                                                        </div>
+                                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setCatalogueFormData(prev => ({ ...prev, bannerUrl: '' }))}
+                                                                    className="bg-red-500 text-white p-3 rounded-full hover:bg-red-600 transition-all transform hover:scale-110 shadow-xl"
+                                                                >
+                                                                    <X size={24} />
+                                                                </button>
+                                                            </div>
+                                                        </>
                                                     ) : (
-                                                        <div className="w-40 h-24 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-300 bg-gray-50/50">
-                                                            {isUpdatingBanner ? <Loader2 size={24} className="animate-spin" /> : <ImageIcon size={24} />}
+                                                        <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-4">
+                                                            {isUpdatingBanner ? (
+                                                                <Loader2 size={40} className="animate-spin text-[#007F00]" />
+                                                            ) : (
+                                                                <>
+                                                                    <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-green-50 transition-colors">
+                                                                        <ImageIcon size={32} className="group-hover:text-[#007F00] transition-colors" />
+                                                                    </div>
+                                                                    <div className="text-center">
+                                                                        <p className="font-bold text-sm text-gray-900 mb-1">Upload Master Banner</p>
+                                                                        <p className="text-[10px] uppercase tracking-widest text-gray-500">1920 x 600 recommended</p>
+                                                                    </div>
+                                                                </>
+                                                            )}
                                                         </div>
                                                     )}
 
-                                                    <div className="flex-1 space-y-2">
-                                                        <input
-                                                            type="file"
-                                                            id="catalogue-banner-upload"
-                                                            className="hidden"
-                                                            accept="image/*"
-                                                            onChange={handleBannerUpload}
-                                                            disabled={isUpdatingBanner}
-                                                        />
+                                                    <input
+                                                        type="file"
+                                                        id="catalogue-banner-upload"
+                                                        className="hidden"
+                                                        accept="image/*"
+                                                        onChange={handleBannerUpload}
+                                                        disabled={isUpdatingBanner}
+                                                    />
+
+                                                    {!catalogueFormData.bannerUrl && !isUpdatingBanner && (
                                                         <label
                                                             htmlFor="catalogue-banner-upload"
-                                                            className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer shadow-sm border ${isUpdatingBanner ? 'bg-gray-50 text-gray-400 border-gray-100' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
-                                                        >
-                                                            {isUpdatingBanner ? <Loader2 size={16} className="animate-spin" /> : <UploadCloud size={16} />}
-                                                            {isUpdatingBanner ? 'Uploading...' : 'Upload Banner'}
-                                                        </label>
-                                                        <p className="text-[10px] text-gray-400 font-medium tracking-tight">Rec: 1920x600. Max 5MB.</p>
+                                                            className="absolute inset-0 cursor-pointer"
+                                                        />
+                                                    )}
+                                                </div>
+                                                {catalogueFormData.bannerUrl && (
+                                                    <label
+                                                        htmlFor="catalogue-banner-upload"
+                                                        className="mt-2 inline-flex items-center gap-2 text-[10px] font-black uppercase text-[#007EA7] hover:text-[#005f7d] cursor-pointer transition-colors"
+                                                    >
+                                                        <RefreshCw size={12} className={isUpdatingBanner ? 'animate-spin' : ''} />
+                                                        Replace Current Banner
+                                                    </label>
+                                                )}
+                                            </div>
+
+                                            {/* Social Connect Links */}
+                                            <div className="md:col-span-2 space-y-6 pt-6 border-t border-gray-100">
+                                                <div className="flex items-center gap-3 pb-2 border-b border-gray-100">
+                                                    <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                                                        <Globe size={18} />
+                                                    </div>
+                                                    <h3 className="text-base font-bold text-gray-900">Social Media Connections</h3>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2"><Facebook size={12} /> Facebook</label>
+                                                            <input
+                                                                type="url"
+                                                                value={catalogueFormData.socialFacebook}
+                                                                onChange={(e) => setCatalogueFormData({ ...catalogueFormData, socialFacebook: e.target.value })}
+                                                                placeholder="https://facebook.com/yourpage"
+                                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2"><Instagram size={12} /> Instagram</label>
+                                                            <input
+                                                                type="url"
+                                                                value={catalogueFormData.socialInstagram}
+                                                                onChange={(e) => setCatalogueFormData({ ...catalogueFormData, socialInstagram: e.target.value })}
+                                                                placeholder="https://instagram.com/yourprofile"
+                                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2"><Linkedin size={12} /> LinkedIn</label>
+                                                            <input
+                                                                type="url"
+                                                                value={catalogueFormData.socialLinkedin}
+                                                                onChange={(e) => setCatalogueFormData({ ...catalogueFormData, socialLinkedin: e.target.value })}
+                                                                placeholder="https://linkedin.com/company/handle"
+                                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2"><Twitter size={12} /> Twitter / X</label>
+                                                            <input
+                                                                type="url"
+                                                                value={catalogueFormData.socialTwitter}
+                                                                onChange={(e) => setCatalogueFormData({ ...catalogueFormData, socialTwitter: e.target.value })}
+                                                                placeholder="https://twitter.com/handle"
+                                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -2996,30 +3111,20 @@ const Admin = () => {
                                                                 <tr key={u.id} className="hover:bg-green-50/30 transition-colors group">
                                                                     <td className="px-6 py-4">
                                                                         <div className="flex flex-col gap-1.5">
-                                                                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${u.registration_status === 'active' ? 'bg-green-50 text-green-700 border-green-200' :
-                                                                                u.registration_status === 'rejected' ? 'bg-red-50 text-red-700 border-red-200' :
-                                                                                    'bg-amber-50 text-amber-700 border-amber-200'
-                                                                                }`}>
-                                                                                <div className={`w-1.5 h-1.5 rounded-full ${u.registration_status === 'active' ? 'bg-green-500' :
-                                                                                    u.registration_status === 'rejected' ? 'bg-red-500' :
-                                                                                        'bg-amber-500'
-                                                                                    }`} />
-                                                                                {u.registration_status || (u.is_active !== false ? 'active' : 'pending')}
-                                                                            </div>
-                                                                            {u.stripe_payment_id ? (
-                                                                                <div className="flex flex-col">
-                                                                                    <span className="text-[9px] text-green-600 font-bold uppercase flex items-center gap-1">
-                                                                                        <CreditCard size={10} /> Paid
-                                                                                    </span>
-                                                                                    <span className="text-[10px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 mt-0.5 select-all" title="Stripe Payment ID">
-                                                                                        {u.stripe_payment_id}
-                                                                                    </span>
+                                                                            <ProfileStatusBadge profile={u} />
+                                                                            <div className="flex flex-col gap-0.5 ml-1">
+                                                                                <div className="flex items-center gap-1 text-[9px] text-gray-400 font-bold uppercase">
+                                                                                    <Zap size={10} className={u.last_login ? 'text-blue-500' : 'text-gray-300'} />
+                                                                                    <span>Login: {formatLastLogin(u.last_login)}</span>
                                                                                 </div>
-                                                                            ) : (
-                                                                                <span className="text-[9px] text-gray-400 font-bold uppercase flex items-center gap-1">
-                                                                                    <AlertTriangle size={10} className="text-amber-500" /> Not Paid
-                                                                                </span>
-                                                                            )}
+                                                                                {(u.role === 'contractor' || u.role === 'business') && (
+                                                                                    <div className={`flex items-center gap-1 text-[9px] font-bold uppercase ${u.subscription_status === 'active' ? 'text-green-600' : 'text-amber-600'}`}>
+                                                                                        {u.subscription_status === 'active' ? <CheckCircle2 size={10} /> : <AlertTriangle size={10} />}
+                                                                                        <span>Sub: {u.subscription_status || 'None'}</span>
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                            <PaymentStatusBadge profile={u} />
                                                                         </div>
                                                                     </td>
                                                                     <td className="px-6 py-4 font-medium text-gray-900">
@@ -3263,6 +3368,18 @@ const Admin = () => {
                                                             <td className="px-6 py-4">
                                                                 <div className="flex flex-col gap-1.5">
                                                                     <ProfileStatusBadge profile={u} />
+                                                                    <div className="flex flex-col gap-0.5 ml-1">
+                                                                        <div className="flex items-center gap-1 text-[9px] text-gray-400 font-bold uppercase">
+                                                                            <Zap size={10} className={u.last_login ? 'text-blue-500' : 'text-gray-300'} />
+                                                                            <span>Login: {formatLastLogin(u.last_login)}</span>
+                                                                        </div>
+                                                                        {(u.role === 'contractor' || u.role === 'business') && (
+                                                                            <div className={`flex items-center gap-1 text-[9px] font-bold uppercase ${u.subscription_status === 'active' ? 'text-green-600' : 'text-amber-600'}`}>
+                                                                                {u.subscription_status === 'active' ? <CheckCircle2 size={10} /> : <AlertTriangle size={10} />}
+                                                                                <span>Sub: {u.subscription_status || 'None'}</span>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
                                                                     <PaymentStatusBadge profile={u} />
                                                                 </div>
                                                             </td>
@@ -3563,6 +3680,16 @@ const Admin = () => {
                                                         <td className="px-6 py-4">
                                                             <div className="flex flex-col gap-1.5">
                                                                 <ProfileStatusBadge profile={u} />
+                                                                <div className="flex flex-col gap-0.5 ml-1">
+                                                                    <div className="flex items-center gap-1 text-[9px] text-gray-400 font-bold uppercase">
+                                                                        <Zap size={10} className={u.last_login ? 'text-blue-500' : 'text-gray-300'} />
+                                                                        <span>Login: {formatLastLogin(u.last_login)}</span>
+                                                                    </div>
+                                                                    <div className={`flex items-center gap-1 text-[9px] font-bold uppercase ${u.subscription_status === 'active' ? 'text-green-600' : 'text-amber-600'}`}>
+                                                                        {u.subscription_status === 'active' ? <CheckCircle2 size={10} /> : <AlertTriangle size={10} />}
+                                                                        <span>Sub: {u.subscription_status || 'None'}</span>
+                                                                    </div>
+                                                                </div>
                                                                 <PaymentStatusBadge profile={u} />
                                                             </div>
                                                         </td>
@@ -5090,13 +5217,35 @@ const Admin = () => {
                                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Phone Number</p>
                                             <p className="text-sm font-bold text-gray-900">{getFallbackPhone(selectedUser)}</p>
                                         </div>
-                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 col-span-2">
+                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
                                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Status</p>
                                             <p className={`text-sm font-bold capitalize ${selectedUser.is_active !== false ? 'text-green-600' : 'text-red-600'}`}>
                                                 {selectedUser.is_active !== false ? 'Active' : 'Suspended'}
                                             </p>
                                         </div>
+                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 col-span-2">
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Last Login Date & Time</p>
+                                            <p className="text-sm font-bold text-gray-900">
+                                                {selectedUser.last_login ? new Date(selectedUser.last_login).toLocaleString('en-GB') : 'Never'}
+                                            </p>
+                                        </div>
                                     </div>
+
+                                    {selectedUser.role === 'business' && (
+                                        <div className="p-1 bg-gradient-to-r from-blue-500 to-[#007EA7] rounded-[1.5rem] shadow-lg shadow-blue-100">
+                                            <button
+                                                onClick={() => {
+                                                    const listing = listings.find(l => l.user_id === selectedUser.id || l.owner_id === selectedUser.id);
+                                                    handleOpenCatalogueView(selectedUser, listing);
+                                                    setSelectedUser(null);
+                                                }}
+                                                className="w-full h-full bg-white text-[#007EA7] hover:bg-transparent hover:text-white py-4 rounded-[1.25rem] font-black uppercase tracking-[0.15em] text-[10px] transition-all flex items-center justify-center gap-3"
+                                            >
+                                                <Edit2 size={16} />
+                                                Manage Professional Catalogue
+                                            </button>
+                                        </div>
+                                    )}
 
                                     {/* Subscription Section */}
                                     {(selectedUser.role === 'contractor' || selectedUser.role === 'business') && (

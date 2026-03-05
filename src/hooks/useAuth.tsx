@@ -30,6 +30,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const fetchProfile = async (userId: string) => {
         try {
+            // Update last_login first
+            await supabase
+                .from('profiles')
+                .update({ last_login: new Date().toISOString() })
+                .eq('id', userId);
+
             const { data } = await supabase
                 .from('profiles')
                 .select('*')

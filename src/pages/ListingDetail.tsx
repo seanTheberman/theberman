@@ -11,12 +11,25 @@ const ListingDetail = () => {
     const [listing, setListing] = useState<CatalogueListing | null>(null);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [currentUser, setCurrentUser] = useState<any>(null);
     const [enquiry, setEnquiry] = useState({
         name: '',
         email: '',
         phone: '',
         message: ''
     });
+
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setCurrentUser(session?.user ?? null);
+        });
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setCurrentUser(session?.user ?? null);
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
 
     useEffect(() => {
         fetchListing();
@@ -116,6 +129,7 @@ const ListingDetail = () => {
             setEnquiry={setEnquiry}
             onEnquirySubmit={handleEnquiry}
             isSubmitting={isSubmitting}
+            isOwner={currentUser?.id === listing.owner_id}
         />
     );
 };
