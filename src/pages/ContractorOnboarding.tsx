@@ -31,7 +31,10 @@ const ContractorOnboarding = () => {
         socialTwitter: '',
         socialInstagram: '',
         socialLinkedin: '',
-        features: [] as string[]
+        socialFacebook: '',
+        website: '',
+        features: [] as string[],
+        wantsCatalogueListing: true
     });
 
     const [featureInput, setFeatureInput] = useState('');
@@ -116,6 +119,19 @@ const ContractorOnboarding = () => {
 
             if (profileUpdateError) {
                 console.error('Failed to update initial profile:', profileUpdateError);
+            }
+
+            // Check if user is already marked as paid (manual activation)
+            const { data: currentProfile } = await supabase
+                .from('profiles')
+                .select('stripe_payment_id, registration_status')
+                .eq('id', user?.id)
+                .single();
+
+            if (currentProfile?.stripe_payment_id === 'MANUAL_BY_ADMIN') {
+                toast.success('Professional profile updated! Your account is active.');
+                navigate('/dashboard/ber-assessor', { replace: true });
+                return;
             }
 
             // Proactively notify admin of interest

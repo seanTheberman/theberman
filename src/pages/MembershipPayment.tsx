@@ -19,6 +19,22 @@ const MembershipPayment = () => {
     useEffect(() => {
         const fetchSettingsAndCalculate = async () => {
             try {
+                // Check if user is already marked as paid (manual activation)
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('stripe_payment_id, role')
+                    .eq('id', (await supabase.auth.getUser()).data.user?.id)
+                    .single();
+
+                if (profile?.stripe_payment_id === 'MANUAL_BY_ADMIN') {
+                    if (profile.role === 'contractor') {
+                        navigate('/dashboard/ber-assessor', { replace: true });
+                    } else if (profile.role === 'business') {
+                        navigate('/dashboard/business', { replace: true });
+                    }
+                    return;
+                }
+
                 // Fetch settings from DB
                 const { data: settings, error } = await supabase
                     .from('app_settings')
