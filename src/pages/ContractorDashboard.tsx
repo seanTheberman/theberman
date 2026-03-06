@@ -533,8 +533,10 @@ const ContractorDashboard = () => {
         loyaltyJobs: profile?.completed_jobs_count || 0
     };
 
-    // Pending account - show website-style page with navigation
-    if (profile?.registration_status === 'pending') {
+    // Suspended or Pending - show website-style page with navigation
+    const isSuspended = profile?.stripe_payment_id === 'SUSPENDED' || (profile?.is_active === false && profile?.registration_status !== 'active');
+    if (profile?.registration_status === 'pending' || isSuspended) {
+        const suspended = isSuspended && profile?.stripe_payment_id === 'SUSPENDED';
         return (
             <div className="min-h-screen bg-gray-50 font-sans">
                 {/* Site-style header */}
@@ -559,36 +561,43 @@ const ContractorDashboard = () => {
                     </div>
                 </header>
 
-                {/* Pending Card */}
                 <main className="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4 py-16">
                     <div className="max-w-lg w-full bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                        <div className="h-2 bg-[#007F00]" />
+                        <div className={`h-2 ${suspended ? 'bg-red-500' : 'bg-[#007F00]'}`} />
                         <div className="p-10 text-center">
-                            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <AlertCircle size={40} className="text-[#007F00] animate-pulse" />
+                            <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${suspended ? 'bg-red-50' : 'bg-green-50'}`}>
+                                <AlertCircle size={40} className={`${suspended ? 'text-red-500' : 'text-[#007F00]'} animate-pulse`} />
                             </div>
-                            <h1 className="text-2xl font-black text-gray-900 mb-3">Account Pending Approval</h1>
+                            <h1 className="text-2xl font-black text-gray-900 mb-3">
+                                {suspended ? 'Account Suspended' : 'Account Pending Approval'}
+                            </h1>
                             <p className="text-gray-500 mb-2 font-medium leading-relaxed">
-                                Your profile has been submitted and is waiting to be reviewed by our team.
+                                {suspended
+                                    ? 'Your account has been suspended by an administrator.'
+                                    : 'Your profile has been submitted and is waiting to be reviewed by our team.'}
                             </p>
                             <p className="text-gray-400 text-sm mb-8">
-                                Once approved, you will receive a free subscription and full access to the Assessor Portal.
+                                {suspended
+                                    ? 'If you believe this is a mistake, please contact our support team.'
+                                    : 'Once approved, you will receive a free subscription and full access to the Assessor Portal.'}
                             </p>
-                            <div className="bg-green-50 border border-green-100 rounded-xl p-4 mb-8 text-left">
-                                <p className="text-xs font-bold text-[#007F00] uppercase tracking-wider mb-1">Registered as</p>
+                            <div className={`border rounded-xl p-4 mb-8 text-left ${suspended ? 'bg-red-50 border-red-100' : 'bg-green-50 border-green-100'}`}>
+                                <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${suspended ? 'text-red-600' : 'text-[#007F00]'}`}>
+                                    {suspended ? 'Suspended account' : 'Registered as'}
+                                </p>
                                 <p className="text-sm font-semibold text-gray-800">{user?.user_metadata?.full_name || user?.email}</p>
                                 <p className="text-xs text-gray-500">{user?.email}</p>
                             </div>
                             <p className="text-xs text-gray-400 mb-6">
                                 Questions? Contact us at{' '}
-                                <a href="mailto:hello@theberman.eu" className="text-[#007F00] font-semibold hover:underline">
+                                <a href="mailto:hello@theberman.eu" className={`font-semibold hover:underline ${suspended ? 'text-red-500' : 'text-[#007F00]'}`}>
                                     hello@theberman.eu
                                 </a>
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3">
                                 <Link
                                     to="/"
-                                    className="flex-1 py-3 px-6 bg-[#007F00] text-white rounded-xl font-bold text-sm hover:bg-[#006600] transition-colors text-center"
+                                    className={`flex-1 py-3 px-6 text-white rounded-xl font-bold text-sm transition-colors text-center ${suspended ? 'bg-red-500 hover:bg-red-600' : 'bg-[#007F00] hover:bg-[#006600]'}`}
                                 >
                                     Explore Website
                                 </Link>

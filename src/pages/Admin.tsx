@@ -1,7 +1,7 @@
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, RefreshCw, X, Menu, ArrowLeft } from 'lucide-react';
+import { LogOut, RefreshCw, BarChart2, Building2, BookOpen, ClipboardList, HardHat, Home, Inbox, DollarSign, Newspaper, Settings as SettingsIcon, Users, Layers, Menu, X } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { geocodeAddress, COUNTY_COORDINATES } from '../lib/geocoding';
@@ -63,6 +63,7 @@ const Admin = () => {
     const [locationFilter, setLocationFilter] = useState('');
     const [customMonths, setCustomMonths] = useState<number>(1);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
     // Selected items
@@ -121,8 +122,9 @@ const Admin = () => {
     const navigate = useNavigate();
 
     // ─── Derived state ───────────────────────────────────────────────────────────
+    // Only show counties where that specific role actually has users
     const uniqueUserLocations = Array.from(
-        new Set(users_list.map(u => u.county || u.home_county).filter(Boolean))
+        new Set(users_list.filter(u => u.role === 'user' || u.role === 'homeowner').map(u => u.county || u.home_county).filter(Boolean))
     ).sort() as string[];
     const uniqueAssessorLocations = Array.from(
         new Set(users_list.filter(u => u.role === 'contractor').map(u => u.home_county || u.county).filter(Boolean))
@@ -1219,92 +1221,156 @@ const Admin = () => {
     };
 
     // ─── Render ───────────────────────────────────────────────────────────────────
+    const pendingAssessors = users_list.filter(u => u.role === 'contractor' && u.registration_status === 'pending').length;
+    const pendingBusinesses = users_list.filter(u => u.role === 'business' && u.registration_status === 'pending').length;
+
+    const NAV_ITEMS: { id: string; label: string; icon: React.ElementType; badge: number }[] = [
+        { id: 'stats',       label: 'Overview',      icon: BarChart2,     badge: 0 },
+        { id: 'leads',       label: 'Leads',         icon: Inbox,         badge: 0 },
+        { id: 'assessments', label: 'Assessments',   icon: ClipboardList, badge: 0 },
+        { id: 'assessors',   label: 'BER Assessors', icon: HardHat,       badge: pendingAssessors },
+        { id: 'businesses',  label: 'Businesses',    icon: Building2,     badge: pendingBusinesses },
+        { id: 'catalogue',   label: 'Catalogue',     icon: BookOpen,      badge: 0 },
+        { id: 'homeowners',  label: 'Homeowners',    icon: Home,          badge: 0 },
+        { id: 'payments',    label: 'Payments',      icon: DollarSign,    badge: 0 },
+        { id: 'news',        label: 'News',          icon: Newspaper,     badge: 0 },
+        { id: 'settings',    label: 'Settings',      icon: SettingsIcon,  badge: 0 },
+    ];
+
+    const navClick = (id: string) => { setView(id as AdminView); setLocationFilter(''); setSearchTerm(''); setSidebarOpen(false); };
+
     return (
-        <div className="min-h-screen bg-gray-50 font-sans relative">
-            {/* Header */}
-            <header className="bg-[#0c121d] backdrop-blur-md border-b border-white/5 sticky top-0 z-[9999] shadow-lg transition-all duration-300">
-                <div className="container mx-auto px-6 h-20 flex justify-between items-center">
-                    <div className="flex items-center gap-8">
-                        <Link to="/" className="relative flex-shrink-0">
-                            <img src="/logo.svg" alt="The Berman Logo" className="h-10 w-auto relative z-10" />
-                        </Link>
-                        <div className="hidden xl:block">
-                            <h1 className="text-lg font-bold text-white leading-tight">Admin Dashboard</h1>
-                            <span className="text-[10px] text-gray-400 flex items-center gap-1.5 uppercase tracking-widest font-bold">
-                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
-                                Live Connection
-                            </span>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-6">
-                        <div className="relative" ref={menuRef}>
-                            <button
-                                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                className="bg-white/5 p-2.5 rounded-xl hover:bg-white/10 transition-colors border border-white/10 flex items-center gap-2 text-white/70"
-                            >
-                                {isMenuOpen ? <X size={20} className="text-[#5CB85C]" /> : <Menu size={20} className="text-[#5CB85C]" />}
-                                <span className="text-[11px] font-black uppercase tracking-[0.15em] hidden sm:block">Menu</span>
-                            </button>
+        <div className="min-h-screen bg-gray-100 font-sans flex">
 
-                            {isMenuOpen && (
-                                <div className="absolute right-0 top-full mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
-                                    <div className="p-2 space-y-1">
-                                        {(['stats', 'leads', 'homeowners', 'businesses', 'catalogue', 'assessors', 'assessments', 'payments', 'settings', 'news'] as const).map((v) => (
-                                            <button
-                                                key={v}
-                                                onClick={() => { setView(v); setIsMenuOpen(false); }}
-                                                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] transition-all duration-200 ${view === v ? 'bg-[#5CB85C]/10 text-[#5CB85C]' : 'text-gray-600 hover:bg-gray-50'}`}
-                                            >
-                                                {v === 'stats' ? 'Overview' : v === 'homeowners' ? 'Homeowners' : v === 'businesses' ? 'Businesses' : v === 'catalogue' ? 'Manage Catalogue' : v === 'assessors' ? 'BER Assessors' : v}
-                                                {view === v && <div className="w-1.5 h-1.5 rounded-full bg-[#5CB85C]"></div>}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <div className="p-2 bg-gray-50/50 border-t border-gray-100 flex flex-col gap-1">
-                                        <button
-                                            onClick={() => { setShowSponsorModal(true); fetchSponsors(); setIsMenuOpen(false); }}
-                                            className="w-full text-left px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] text-gray-600 hover:bg-gray-50 flex items-center justify-between"
-                                        >
-                                            Partners
-                                        </button>
-                                        <button
-                                            onClick={handleSignOut}
-                                            className="w-full text-left px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] text-red-500 hover:bg-red-50 flex items-center justify-between"
-                                        >
-                                            Sign Out <LogOut size={14} />
-                                        </button>
-                                    </div>
+            {/* ── Mobile overlay backdrop ──────────────────────────────────────── */}
+            {sidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
+            {/* ── Sidebar ──────────────────────────────────────────────────────── */}
+            <aside className={`
+                fixed top-0 left-0 h-full bg-[#0c121d] flex flex-col z-50 shadow-2xl
+                transition-all duration-300 ease-in-out
+                w-56
+                md:translate-x-0 md:w-14 lg:w-56
+                ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+            `}>
+                {/* Logo */}
+                <div className="h-14 flex items-center justify-between px-4 border-b border-white/10 flex-shrink-0">
+                    <Link to="/" className="lg:block hidden">
+                        <img src="/logo.svg" alt="The Berman" className="h-7 w-auto" />
+                    </Link>
+                    <div className="lg:hidden flex items-center justify-center w-full">
+                        <img src="/logo.svg" alt="The Berman" className="h-7 w-auto" />
+                    </div>
+                    {/* Close on mobile */}
+                    <button onClick={() => setSidebarOpen(false)} className="md:hidden text-white/40 hover:text-white p-1">
+                        <X size={18} />
+                    </button>
+                </div>
+
+                <nav className="flex-1 py-3 overflow-y-auto overflow-x-hidden">
+                    <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] px-4 mb-2 lg:block hidden">Navigation</p>
+                    {NAV_ITEMS.map(({ id, label, icon: Icon, badge }) => {
+                        const isActive = view === id;
+                        return (
+                            <button
+                                key={id}
+                                onClick={() => navClick(id)}
+                                title={label}
+                                className={`w-full flex items-center justify-between px-4 py-2.5 text-[12px] font-semibold transition-all duration-150 relative group ${
+                                    isActive ? 'bg-[#007F00] text-white' : 'text-white/60 hover:text-white hover:bg-white/5'
+                                }`}
+                            >
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <Icon size={16} className={`flex-shrink-0 ${isActive ? 'text-white' : 'text-white/50 group-hover:text-white/80'}`} />
+                                    <span className="truncate lg:block hidden">{label}</span>
                                 </div>
-                            )}
+                                {badge > 0 && (
+                                    <span className={`flex-shrink-0 text-[10px] font-black px-1.5 py-0.5 rounded-full lg:flex hidden ${isActive ? 'bg-white text-[#007F00]' : 'bg-amber-500 text-white'}`}>
+                                        {badge}
+                                    </span>
+                                )}
+                                {/* Badge dot on tablet (icon-only) */}
+                                {badge > 0 && (
+                                    <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500 lg:hidden" />
+                                )}
+                                {isActive && <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-white rounded-l-full" />}
+                            </button>
+                        );
+                    })}
+                    <div className="mx-4 my-3 border-t border-white/10" />
+                    <button
+                        onClick={() => { setShowSponsorModal(true); fetchSponsors(); setSidebarOpen(false); }}
+                        title="Partners"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-white/60 hover:text-white hover:bg-white/5 transition-all"
+                    >
+                        <Layers size={16} className="flex-shrink-0 text-white/50" />
+                        <span className="lg:block hidden">Partners</span>
+                    </button>
+                </nav>
+
+                <div className="p-3 border-t border-white/10 flex-shrink-0">
+                    <div className="flex items-center gap-2.5 mb-2 px-1 lg:flex hidden">
+                        <div className="w-7 h-7 rounded-full bg-[#007F00]/80 flex items-center justify-center flex-shrink-0">
+                            <Users size={13} className="text-white" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] font-black text-white/80 truncate">Admin</p>
+                            <p className="text-[9px] text-white/40 truncate">{user?.email}</p>
                         </div>
                     </div>
+                    <button
+                        onClick={handleSignOut}
+                        title="Sign Out"
+                        className="w-full flex items-center justify-center lg:justify-start gap-2 px-2 py-2 rounded-lg text-[11px] font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"
+                    >
+                        <LogOut size={14} className="flex-shrink-0" />
+                        <span className="lg:block hidden">Sign Out</span>
+                    </button>
                 </div>
-            </header>
+            </aside>
 
-            {/* Main Content */}
-            <main className="container mx-auto px-4 py-8">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-800">{getViewTitle()}</h2>
-                        <p className="text-gray-500 text-sm mt-1">{getViewSubtitle()}</p>
-                    </div>
-                    <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
-                        {view !== 'stats' && (
-                            <button
-                                onClick={() => setView('stats')}
-                                className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm text-gray-700 hover:text-[#007F00]"
-                            >
-                                <ArrowLeft size={16} /> Back to Overview
-                            </button>
-                        )}
+            {/* ── Main area ────────────────────────────────────────────────────── */}
+            <div className="md:ml-14 lg:ml-56 flex-1 flex flex-col min-h-screen min-w-0">
+
+                {/* Page Header */}
+                <div className="bg-white border-b border-gray-200 px-4 md:px-6 py-3 flex items-center justify-between shadow-sm sticky top-0 z-30">
+                    <div className="flex items-center gap-3 min-w-0">
+                        {/* Mobile hamburger */}
                         <button
-                            onClick={view === 'leads' ? fetchLeads : fetchAssessments}
-                            className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm text-gray-700 hover:text-[#007F00] hover:border-[#007F00]"
+                            onClick={() => setSidebarOpen(true)}
+                            className="md:hidden flex-shrink-0 p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
                         >
-                            <RefreshCw className={loading ? 'animate-spin' : ''} size={16} /> Refresh Data
+                            <Menu size={20} />
                         </button>
+                        <div className="min-w-0">
+                            <h1 className="text-base md:text-lg font-bold text-gray-900 flex items-center gap-2 flex-wrap">
+                                <span className="truncate">{getViewTitle()}</span>
+                                {view === 'assessors' && pendingAssessors > 0 && (
+                                    <span className="text-xs font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full flex-shrink-0">{pendingAssessors} pending</span>
+                                )}
+                                {view === 'businesses' && pendingBusinesses > 0 && (
+                                    <span className="text-xs font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full flex-shrink-0">{pendingBusinesses} pending</span>
+                                )}
+                            </h1>
+                            <p className="text-xs text-gray-400 truncate">{getViewSubtitle()}</p>
+                        </div>
                     </div>
+                    <button
+                        onClick={view === 'leads' ? fetchLeads : fetchAssessments}
+                        className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:text-[#007F00] hover:border-[#007F00] transition-all"
+                    >
+                        <RefreshCw className={loading ? 'animate-spin text-[#007F00]' : ''} size={13} />
+                        <span className="hidden sm:inline">Refresh</span>
+                    </button>
                 </div>
+
+                {/* Content */}
+                <main className="flex-1 p-3 md:p-5 min-w-0 overflow-x-hidden">
 
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
@@ -1318,10 +1384,12 @@ const Admin = () => {
                         searchTerm={searchTerm} setSearchTerm={setSearchTerm}
                         locationFilter={locationFilter} setLocationFilter={setLocationFilter}
                         uniqueUserLocations={uniqueUserLocations}
+                        uniqueAssessorLocations={uniqueAssessorLocations}
+                        uniqueBusinessLocations={uniqueBusinessLocations}
                         handleOpenCatalogueView={handleOpenCatalogueView}
                         setSelectedUser={setSelectedUser}
                         setItemToSuspend={setItemToSuspend} setShowSuspendModal={setShowSuspendModal}
-                        handleDeleteClick={handleDeleteClick} setView={setView}
+                        setView={setView}
                     />
                 ) : view === 'leads' ? (
                     <LeadsView
@@ -1413,7 +1481,8 @@ const Admin = () => {
                         savePromoSettings={savePromoSettings}
                     />
                 ) : null}
-            </main>
+                </main>
+            </div>
 
             {/* ─── Modals ─────────────────────────────────────────────────────────── */}
             {selectedLead && (
@@ -1520,6 +1589,7 @@ const Admin = () => {
                     onSendRenewalReminder={handleSendRenewalReminder}
                     onCancelSubscription={handleCancelSubscription}
                     onOpenCatalogue={(u, listing) => { handleOpenCatalogueView(u, listing); setSelectedUser(null); }}
+                    onUpdateRegistrationStatus={updateRegistrationStatus}
                     getFallbackPhone={getFallbackPhone}
                 />
             )}
