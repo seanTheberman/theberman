@@ -20,7 +20,6 @@ interface Props {
     setSelectedUser: (u: Profile | null) => void;
     setItemToSuspend: (item: { id: string; name: string; currentStatus: boolean } | null) => void;
     setShowSuspendModal: (v: boolean) => void;
-    handleDeleteClick: (id: string, type: 'lead' | 'sponsor' | 'assessment' | 'user') => void;
     setNewUserRole: (role: 'contractor' | 'business') => void;
     setShowAddUserModal: (v: boolean) => void;
 }
@@ -31,7 +30,7 @@ export const UsersView = ({
     isUpdating,
     handleSendRenewalReminder,
     handleOpenCatalogueView, updateRegistrationStatus, setSelectedUser, setItemToSuspend, setShowSuspendModal,
-    handleDeleteClick, setNewUserRole, setShowAddUserModal,
+    setNewUserRole, setShowAddUserModal,
 }: Props) => {
     const isAssessors = view === 'assessors';
 
