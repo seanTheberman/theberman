@@ -10,7 +10,7 @@ import { geocodeAddress } from '../lib/geocoding';
 const COUNTIES = Object.keys(TOWNS_BY_COUNTY).sort();
 
 const ContractorOnboarding = () => {
-    const { user } = useAuth();
+    const { user, refreshProfile } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
 
@@ -113,7 +113,8 @@ const ContractorOnboarding = () => {
                     role: 'contractor',
                     registration_status: 'pending',
                     phone: formData.phone,
-                    home_county: formData.homeCounty
+                    home_county: formData.homeCounty,
+                    seai_number: formData.seaiNumber
                 })
                 .eq('id', user?.id);
 
@@ -130,20 +131,18 @@ const ContractorOnboarding = () => {
 
             if (currentProfile?.stripe_payment_id === 'MANUAL_BY_ADMIN') {
                 toast.success('Professional profile updated! Your account is active.');
+                await refreshProfile();
                 navigate('/dashboard/ber-assessor', { replace: true });
                 return;
             }
 
-            // Proactively notify admin of interest
-            try {
-                // Ensure supabase is available (already imported above)
-                await supabase.functions.invoke('notify-admin-interest', {
-                    body: { registrationData, type: 'assessor' }
-                });
-            } catch (err) {
-                console.error('Failed to send interest notification:', err);
-            }
+            // Fire-and-forget admin notification (non-blocking)
+            supabase.functions.invoke('notify-admin-interest', {
+                body: { registrationData, type: 'assessor' }
+            }).catch(err => console.error('Failed to send interest notification:', err));
 
+            // Refresh auth context so ProtectedRoute sees updated seai_number
+            await refreshProfile();
             navigate('/dashboard/ber-assessor', { replace: true });
 
         } catch (error: any) {

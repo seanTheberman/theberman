@@ -37,15 +37,9 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         return <Navigate to="/business-onboarding" replace />;
     }
 
-    // Stage 2 Gating: Redirect pending contractors to onboarding/payment
-    if (role === 'contractor' && profile?.registration_status === 'pending' &&
-        location.pathname !== '/assessor-onboarding' && location.pathname !== '/assessor-membership') {
-        return <Navigate to="/assessor-onboarding" replace />;
-    }
-
     const isContractor = role === 'contractor';
 
-    // If contractor and missing SEAI number, and NOT already on onboarding page, redirect
+    // If contractor and missing SEAI number, they haven't completed onboarding yet → redirect
     if (isContractor && (!profile?.seai_number || profile?.seai_number.trim() === '') && location.pathname !== '/assessor-onboarding') {
         return <Navigate to="/assessor-onboarding" replace />;
     }

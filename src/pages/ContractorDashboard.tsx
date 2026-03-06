@@ -533,6 +533,79 @@ const ContractorDashboard = () => {
         loyaltyJobs: profile?.completed_jobs_count || 0
     };
 
+    // Pending account - show website-style page with navigation
+    if (profile?.registration_status === 'pending') {
+        return (
+            <div className="min-h-screen bg-gray-50 font-sans">
+                {/* Site-style header */}
+                <header className="bg-white border-b border-gray-200 sticky top-0 z-[9999] shadow-sm">
+                    <div className="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
+                        <Link to="/" className="flex-shrink-0">
+                            <img src="/logo.svg" alt="The Berman Logo" className="h-9 w-auto" />
+                        </Link>
+                        <nav className="hidden md:flex items-center gap-6">
+                            <Link to="/" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">Home</Link>
+                            <Link to="/catalogue" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">Catalogue</Link>
+                            <Link to="/news" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">News</Link>
+                            <Link to="/contact" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">Contact</Link>
+                        </nav>
+                        <button
+                            onClick={handleSignOut}
+                            className="text-sm font-bold text-gray-500 hover:text-red-500 transition-colors flex items-center gap-2"
+                        >
+                            <LogOut size={16} />
+                            Sign Out
+                        </button>
+                    </div>
+                </header>
+
+                {/* Pending Card */}
+                <main className="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4 py-16">
+                    <div className="max-w-lg w-full bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                        <div className="h-2 bg-[#007F00]" />
+                        <div className="p-10 text-center">
+                            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <AlertCircle size={40} className="text-[#007F00] animate-pulse" />
+                            </div>
+                            <h1 className="text-2xl font-black text-gray-900 mb-3">Account Pending Approval</h1>
+                            <p className="text-gray-500 mb-2 font-medium leading-relaxed">
+                                Your profile has been submitted and is waiting to be reviewed by our team.
+                            </p>
+                            <p className="text-gray-400 text-sm mb-8">
+                                Once approved, you will receive a free subscription and full access to the Assessor Portal.
+                            </p>
+                            <div className="bg-green-50 border border-green-100 rounded-xl p-4 mb-8 text-left">
+                                <p className="text-xs font-bold text-[#007F00] uppercase tracking-wider mb-1">Registered as</p>
+                                <p className="text-sm font-semibold text-gray-800">{user?.user_metadata?.full_name || user?.email}</p>
+                                <p className="text-xs text-gray-500">{user?.email}</p>
+                            </div>
+                            <p className="text-xs text-gray-400 mb-6">
+                                Questions? Contact us at{' '}
+                                <a href="mailto:hello@theberman.eu" className="text-[#007F00] font-semibold hover:underline">
+                                    hello@theberman.eu
+                                </a>
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <Link
+                                    to="/"
+                                    className="flex-1 py-3 px-6 bg-[#007F00] text-white rounded-xl font-bold text-sm hover:bg-[#006600] transition-colors text-center"
+                                >
+                                    Explore Website
+                                </Link>
+                                <button
+                                    onClick={handleSignOut}
+                                    className="flex-1 py-3 px-6 border border-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors"
+                                >
+                                    Sign Out
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-[#F8FAFC] font-sans">
             {/* Nav */}
@@ -605,35 +678,28 @@ const ContractorDashboard = () => {
                 </div>
             </header>
 
-            {/* Subscription Expired / Pending Payment Blocker Overlay */}
-            {(((profile?.subscription_status === 'expired' || profile?.is_active === false) &&
+            {/* Subscription Expired Blocker Overlay */}
+            {(profile?.subscription_status === 'expired' || profile?.is_active === false) &&
                 profile?.registration_status === 'active' &&
-                profile?.stripe_payment_id !== 'MANUAL_BY_ADMIN') ||
-                (profile?.registration_status === 'pending')) ? (
+                profile?.stripe_payment_id !== 'MANUAL_BY_ADMIN' ? (
                 <div className="fixed inset-0 z-[10001] bg-[#0c121d]/95 backdrop-blur-2xl flex items-center justify-center p-6 text-center">
                     <div className="max-w-md w-full bg-white rounded-3xl p-10 shadow-2xl border-t-8 border-red-500">
                         <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <AlertCircle size={40} className={`text-red-500 ${profile?.registration_status === 'pending' ? 'animate-bounce' : 'animate-pulse'}`} />
+                            <AlertCircle size={40} className="text-red-500 animate-pulse" />
                         </div>
-                        <h2 className="text-2xl font-black text-gray-900 mb-2">
-                            {profile?.registration_status === 'pending' ? 'Account Pending Approval' : 'Subscription Expired'}
-                        </h2>
+                        <h2 className="text-2xl font-black text-gray-900 mb-2">Subscription Expired</h2>
                         <p className="text-gray-500 mb-8 font-medium">
-                            {profile?.registration_status === 'pending'
-                                ? 'Your profile is currently waiting to be approved by an administrator. Once confirmed, you will receive a 12-month free subscription.'
-                                : 'Your subscription has ended and your account is currently disabled. Please renew your subscription to reactivate your listing and access the portal.'}
+                            Your subscription has ended and your account is currently disabled. Please renew your subscription to reactivate your listing and access the portal.
                         </p>
-                        {!(profile?.registration_status === 'pending') && (
-                            <Link
-                                to="/pricing"
-                                className="block w-full bg-red-600 text-white py-4 rounded-2xl font-black uppercase tracking-wider text-sm hover:bg-red-700 transition-all mb-4 shadow-lg shadow-red-500/20"
-                            >
-                                Renew Subscription
-                            </Link>
-                        )}
+                        <Link
+                            to="/pricing"
+                            className="block w-full bg-red-600 text-white py-4 rounded-2xl font-black uppercase tracking-wider text-sm hover:bg-red-700 transition-all mb-4 shadow-lg shadow-red-500/20"
+                        >
+                            Renew Subscription
+                        </Link>
                         <button
                             onClick={handleSignOut}
-                            className={`w-full font-bold uppercase tracking-widest text-[10px] transition-colors ${profile?.registration_status === 'pending' ? 'bg-gray-100 text-gray-700 py-4 rounded-xl hover:bg-gray-200 text-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                            className="w-full text-gray-400 hover:text-gray-600 font-bold uppercase tracking-widest text-[10px] transition-colors"
                         >
                             Sign Out
                         </button>
