@@ -396,9 +396,17 @@ const BusinessDashboard = () => {
     }
 
     // Suspended or Pending — show website-style blocking page instead of dashboard
-    const isSuspended = profile?.stripe_payment_id === 'SUSPENDED' || (profile?.is_active === false && profile?.registration_status !== 'active');
-    if (profile?.registration_status === 'pending' || isSuspended) {
-        const suspended = isSuspended && profile?.stripe_payment_id === 'SUSPENDED';
+    const isSuspended = profile?.stripe_payment_id === 'SUSPENDED';
+    const hasPaid = !!profile?.stripe_payment_id && profile.stripe_payment_id !== 'SUSPENDED';
+
+    // Business pending + no payment yet → redirect to payment page
+    if (profile?.registration_status === 'pending' && !hasPaid) {
+        navigate('/business-membership', { replace: true });
+        return null;
+    }
+
+    if (isSuspended || profile?.registration_status === 'pending') {
+        const suspended = isSuspended;
         return (
             <div className="min-h-screen bg-gray-50 font-sans">
                 <header className="bg-white border-b border-gray-200 sticky top-0 z-[9999] shadow-sm">

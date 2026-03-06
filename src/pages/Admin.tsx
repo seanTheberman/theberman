@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, RefreshCw, BarChart2, Building2, BookOpen, ClipboardList, HardHat, Home, Inbox, DollarSign, Newspaper, Settings as SettingsIcon, Users, Layers, Menu, X } from 'lucide-react';
+import { LogOut, RefreshCw, BarChart2, Building2, BookOpen, ClipboardList, HardHat, Home, Inbox, DollarSign, Newspaper, Settings as SettingsIcon, Users, Layers, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { geocodeAddress, COUNTY_COORDINATES } from '../lib/geocoding';
@@ -64,6 +64,7 @@ const Admin = () => {
     const [customMonths, setCustomMonths] = useState<number>(1);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [desktopExpanded, setDesktopExpanded] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
     // Selected items
@@ -678,15 +679,25 @@ const Admin = () => {
         try {
             const isSuspending = itemToSuspend.currentStatus === true;
             const updateData: any = { is_active: !itemToSuspend.currentStatus };
-            if (isSuspending) { updateData.stripe_payment_id = 'SUSPENDED'; updateData.registration_status = 'pending'; }
+            if (isSuspending) {
+                updateData.stripe_payment_id = 'SUSPENDED';
+                updateData.registration_status = 'pending';
+            } else {
+                updateData.stripe_payment_id = 'MANUAL_BY_ADMIN';
+                updateData.registration_status = 'active';
+            }
 
             const { error } = await supabase.from('profiles').update(updateData).eq('id', itemToSuspend.id);
             if (error) throw error;
 
             await supabase.from('catalogue_listings').update({ is_active: !itemToSuspend.currentStatus })
-                .or(`user_id.eq.${itemToSuspend.id},owner_id.eq.${itemToSuspend.id}`);
+                .eq('owner_id', itemToSuspend.id);
 
-            const profileUpdates = { is_active: !itemToSuspend.currentStatus, ...(isSuspending ? { stripe_payment_id: 'SUSPENDED', registration_status: 'pending' as const } : {}) };
+            const profileUpdates = {
+                is_active: !itemToSuspend.currentStatus,
+                stripe_payment_id: isSuspending ? 'SUSPENDED' : 'MANUAL_BY_ADMIN',
+                registration_status: (isSuspending ? 'pending' : 'active') as 'pending' | 'active',
+            };
             setUsersList(users_list.map(u => u.id === itemToSuspend.id ? { ...u, ...profileUpdates } : u));
             setListings(prev => prev.map(l => (l.user_id === itemToSuspend.id || l.owner_id === itemToSuspend.id) ? { ...l, is_active: !itemToSuspend.currentStatus } : l));
             if (selectedUser?.id === itemToSuspend.id) setSelectedUser({ ...selectedUser, ...profileUpdates });
@@ -1255,15 +1266,16 @@ const Admin = () => {
                 fixed top-0 left-0 h-full bg-[#0c121d] flex flex-col z-50 shadow-2xl
                 transition-all duration-300 ease-in-out
                 w-56
-                md:translate-x-0 md:w-14 lg:w-56
+                md:translate-x-0 lg:w-56
+                ${desktopExpanded ? 'md:w-56' : 'md:w-14'}
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
             `}>
                 {/* Logo */}
                 <div className="h-14 flex items-center justify-between px-4 border-b border-white/10 flex-shrink-0">
-                    <Link to="/" className="lg:block hidden">
+                    <Link to="/" className={`block ${desktopExpanded ? 'md:block' : 'md:hidden'} lg:block`}>
                         <img src="/logo.svg" alt="The Berman" className="h-7 w-auto" />
                     </Link>
-                    <div className="lg:hidden flex items-center justify-center w-full">
+                    <div className={`flex items-center justify-center ${desktopExpanded ? 'md:hidden' : 'md:flex'} lg:hidden`}>
                         <img src="/logo.svg" alt="The Berman" className="h-7 w-auto" />
                     </div>
                     {/* Close on mobile */}
@@ -1273,7 +1285,17 @@ const Admin = () => {
                 </div>
 
                 <nav className="flex-1 py-3 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-track]:bg-transparent">
-                    <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] px-4 mb-2 block md:hidden lg:block">Navigation</p>
+                    {/* Expand/collapse toggle — only on md (laptop icon-only mode) */}
+                    <div className={`hidden md:flex lg:hidden mb-1 ${desktopExpanded ? 'px-4 justify-end' : 'justify-center'}`}>
+                        <button
+                            onClick={() => setDesktopExpanded(!desktopExpanded)}
+                            className="flex items-center justify-center w-7 h-7 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                            title={desktopExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
+                        >
+                            {desktopExpanded ? <ChevronLeft size={15} /> : <ChevronRight size={15} />}
+                        </button>
+                    </div>
+                    <p className={`text-[9px] font-black text-white/30 uppercase tracking-[0.2em] px-4 mb-2 block ${desktopExpanded ? 'md:block' : 'md:hidden'} lg:block`}>Navigation</p>
                     {NAV_ITEMS.map(({ id, label, icon: Icon, badge }) => {
                         const isActive = view === id;
                         return (
@@ -1287,15 +1309,15 @@ const Admin = () => {
                             >
                                 <div className="flex items-center gap-3 min-w-0">
                                     <Icon size={16} className={`flex-shrink-0 ${isActive ? 'text-white' : 'text-white/70 group-hover:text-white'}`} />
-                                    <span className="truncate block md:hidden lg:block">{label}</span>
+                                    <span className={`truncate block ${desktopExpanded ? 'md:block' : 'md:hidden'} lg:block`}>{label}</span>
                                 </div>
                                 {badge > 0 && (
-                                    <span className={`flex-shrink-0 text-[10px] font-black px-1.5 py-0.5 rounded-full flex md:hidden lg:flex ${isActive ? 'bg-white text-[#007F00]' : 'bg-amber-500 text-white'}`}>
+                                    <span className={`flex-shrink-0 text-[10px] font-black px-1.5 py-0.5 rounded-full flex ${desktopExpanded ? 'md:flex' : 'md:hidden'} lg:flex ${isActive ? 'bg-white text-[#007F00]' : 'bg-amber-500 text-white'}`}>
                                         {badge}
                                     </span>
                                 )}
-                                {/* Badge dot on tablet (icon-only) */}
-                                {badge > 0 && (
+                                {/* Badge dot on tablet icon-only mode */}
+                                {badge > 0 && !desktopExpanded && (
                                     <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500 hidden md:block lg:hidden" />
                                 )}
                                 {isActive && <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-white rounded-l-full" />}
@@ -1309,12 +1331,12 @@ const Admin = () => {
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-white/60 hover:text-white hover:bg-white/5 transition-all"
                     >
                         <Layers size={16} className="flex-shrink-0 text-white/70" />
-                        <span className="block md:hidden lg:block">Partners</span>
+                        <span className={`block ${desktopExpanded ? 'md:block' : 'md:hidden'} lg:block`}>Partners</span>
                     </button>
                 </nav>
 
                 <div className="p-3 border-t border-white/10 flex-shrink-0">
-                    <div className="flex items-center gap-2.5 mb-2 px-1 md:hidden lg:flex">
+                    <div className={`flex items-center gap-2.5 mb-2 px-1 ${desktopExpanded ? 'md:flex' : 'md:hidden'} lg:flex`}>
                         <div className="w-7 h-7 rounded-full bg-[#007F00]/80 flex items-center justify-center flex-shrink-0">
                             <Users size={13} className="text-white" />
                         </div>
@@ -1326,16 +1348,16 @@ const Admin = () => {
                     <button
                         onClick={handleSignOut}
                         title="Sign Out"
-                        className="w-full flex items-center justify-center md:justify-center lg:justify-start gap-2 px-2 py-2 rounded-lg text-[11px] font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"
+                        className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg text-[11px] font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all justify-center ${desktopExpanded ? 'md:justify-start' : 'md:justify-center'} lg:justify-start`}
                     >
                         <LogOut size={14} className="flex-shrink-0" />
-                        <span className="block md:hidden lg:block">Sign Out</span>
+                        <span className={`block ${desktopExpanded ? 'md:block' : 'md:hidden'} lg:block`}>Sign Out</span>
                     </button>
                 </div>
             </aside>
 
             {/* ── Main area ────────────────────────────────────────────────────── */}
-            <div className="md:ml-14 lg:ml-56 flex-1 flex flex-col min-h-screen min-w-0">
+            <div className={`${desktopExpanded ? 'md:ml-56' : 'md:ml-14'} lg:ml-56 flex-1 flex flex-col min-h-screen min-w-0 transition-all duration-300`}>
 
                 {/* Page Header */}
                 <div className="bg-white border-b border-gray-200 px-4 md:px-6 py-3 flex items-center justify-between shadow-sm sticky top-0 z-30">

@@ -1,7 +1,7 @@
 import { Search, TrendingUp, Briefcase, Home, Eye, AlertTriangle, Mail, Edit2, Plus, CheckCircle2, X } from 'lucide-react';
 import { Filter as FilterIcon } from 'lucide-react';
 import type { Profile, Assessment, AdminView } from '../../../types/admin';
-import { StatusCell } from '../StatusBadges';
+import { StatusCell, PaymentStatusBadge } from '../StatusBadges';
 
 interface Props {
     view: AdminView;
@@ -23,6 +23,7 @@ interface Props {
     setNewUserRole: (role: 'contractor' | 'business') => void;
     setShowAddUserModal: (v: boolean) => void;
 }
+
 
 export const UsersView = ({
     view, users_list, assessments, listings,
@@ -93,13 +94,14 @@ export const UsersView = ({
                             <th className="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">{isAssessors ? 'Assessor' : 'User'}</th>
                             <th className="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Joined</th>
                             <th className="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Activity</th>
+                            {isAssessors && <th className="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Payment</th>}
                             {isAssessors && <th className="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Approval</th>}
                             <th className="px-5 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                         {filtered.length === 0 ? (
-                            <tr><td colSpan={isAssessors ? 6 : 5} className="px-5 py-12 text-center text-gray-300 text-sm italic">
+                            <tr><td colSpan={isAssessors ? 7 : 5} className="px-5 py-12 text-center text-gray-300 text-sm italic">
                                 No {isAssessors ? 'assessors' : 'users'} found{locationFilter ? ` in ${locationFilter}` : ''}.
                             </td></tr>
                         ) : filtered.map(u => {
@@ -120,7 +122,7 @@ export const UsersView = ({
                                     {/* Details */}
                                     <td className="px-5 py-3">
                                         <div className="font-semibold text-gray-800 text-[13px] leading-tight">{u.full_name || u.email}</div>
-                                        {u.full_name && <div className="text-[11px] text-gray-400 mt-0.5">{u.email}</div>}
+                                        {!isAssessors && u.full_name && <div className="text-[11px] text-gray-400 mt-0.5">{u.email}</div>}
                                         {isAssessors && u.home_county && (
                                             <div className="text-[10px] text-gray-400 mt-0.5">Co. {u.home_county}</div>
                                         )}
@@ -138,6 +140,22 @@ export const UsersView = ({
                                             {jobCount} {isAssessors ? 'job' : 'request'}{jobCount !== 1 ? 's' : ''}
                                         </div>
                                     </td>
+
+                                    {/* Payment (assessors only) */}
+                                    {isAssessors && (
+                                        <td className="px-5 py-3">
+                                            <div className="flex flex-col gap-0.5">
+                                                <PaymentStatusBadge profile={u} />
+                                                {u.subscription_end_date && (
+                                                    <span className="text-[10px] text-gray-400">
+                                                        {new Date(u.subscription_end_date) < new Date()
+                                                            ? <span className="text-red-400">Expired</span>
+                                                            : `Until ${new Date(u.subscription_end_date).toLocaleDateString('en-GB')}`}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
+                                    )}
 
                                     {/* Approval (assessors only) */}
                                     {isAssessors && (

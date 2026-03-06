@@ -534,9 +534,9 @@ const ContractorDashboard = () => {
     };
 
     // Suspended or Pending - show website-style page with navigation
-    const isSuspended = profile?.stripe_payment_id === 'SUSPENDED' || (profile?.is_active === false && profile?.registration_status !== 'active');
-    if (profile?.registration_status === 'pending' || isSuspended) {
-        const suspended = isSuspended && profile?.stripe_payment_id === 'SUSPENDED';
+    const isSuspended = profile?.stripe_payment_id === 'SUSPENDED';
+    if (isSuspended || profile?.registration_status === 'pending') {
+        const suspended = isSuspended;
         return (
             <div className="min-h-screen bg-gray-50 font-sans">
                 {/* Site-style header */}

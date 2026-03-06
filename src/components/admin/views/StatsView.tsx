@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Home, ClipboardList, Building2, DollarSign, Briefcase, TrendingUp, ArrowRight, Hourglass, CheckCircle2, AlertTriangle, Edit2, Plus, Eye, MapPin, Users } from 'lucide-react';
 import { Search } from 'lucide-react';
 import type { Profile, Assessment, Payment, AdminView } from '../../../types/admin';
-import { StatusCell } from '../StatusBadges';
+import { StatusCell, PaymentStatusBadge } from '../StatusBadges';
 
 interface Stats {
     totalUsers: number;
@@ -84,7 +84,8 @@ export const StatsView = ({
 
     const showActivity = userType !== 'businesses';
     const showRole = userType === 'all';
-    const colCount = showRole ? (showActivity ? 6 : 5) : (showActivity ? 5 : 4);
+    const showPayment = userType === 'assessors';
+    const colCount = showRole ? (showActivity ? 6 : 5) : (showActivity ? (showPayment ? 6 : 5) : 4);
 
     const switchType = (t: UserType) => { setUserType(t); setLocationFilter(''); setSearchTerm(''); };
 
@@ -208,6 +209,7 @@ export const StatsView = ({
                             {showRole && <th className="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Role</th>}
                             <th className="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Joined</th>
                             {showActivity && <th className="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Activity</th>}
+                            {showPayment && <th className="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Payment</th>}
                             <th className="px-5 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
@@ -254,6 +256,18 @@ export const StatsView = ({
                                             <div className={`inline-flex items-center gap-1.5 text-[12px] font-semibold ${jobCount > 0 ? 'text-blue-600' : 'text-gray-300'}`}>
                                                 {isContractor ? <Briefcase size={13} /> : <Home size={13} />}
                                                 {jobCount} {isContractor ? 'job' : 'request'}{jobCount !== 1 ? 's' : ''}
+                                            </div>
+                                        </td>
+                                    )}
+                                    {showPayment && (
+                                        <td className="px-5 py-3">
+                                            <div className="flex flex-col gap-0.5">
+                                                <PaymentStatusBadge profile={u} />
+                                                {u.subscription_end_date && (
+                                                    <span className={`text-[10px] ${new Date(u.subscription_end_date) < new Date() ? 'text-red-400' : 'text-gray-400'}`}>
+                                                        {new Date(u.subscription_end_date) < new Date() ? 'Expired' : `Until ${new Date(u.subscription_end_date).toLocaleDateString('en-GB')}`}
+                                                    </span>
+                                                )}
                                             </div>
                                         </td>
                                     )}
