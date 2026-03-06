@@ -395,6 +395,76 @@ const BusinessDashboard = () => {
         );
     }
 
+    // Suspended or Pending — show website-style blocking page instead of dashboard
+    const isSuspended = profile?.stripe_payment_id === 'SUSPENDED' || (profile?.is_active === false && profile?.registration_status !== 'active');
+    if (profile?.registration_status === 'pending' || isSuspended) {
+        const suspended = isSuspended && profile?.stripe_payment_id === 'SUSPENDED';
+        return (
+            <div className="min-h-screen bg-gray-50 font-sans">
+                <header className="bg-white border-b border-gray-200 sticky top-0 z-[9999] shadow-sm">
+                    <div className="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
+                        <Link to="/" className="flex-shrink-0">
+                            <img src="/logo.svg" alt="The Berman Logo" className="h-9 w-auto" />
+                        </Link>
+                        <nav className="hidden md:flex items-center gap-6">
+                            <Link to="/" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">Home</Link>
+                            <Link to="/catalogue" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">Catalogue</Link>
+                            <Link to="/news" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">News</Link>
+                            <Link to="/contact" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">Contact</Link>
+                        </nav>
+                        <button onClick={handleSignOut} className="text-sm font-bold text-gray-500 hover:text-red-500 transition-colors flex items-center gap-2">
+                            <LogOut size={16} /> Sign Out
+                        </button>
+                    </div>
+                </header>
+                <main className="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4 py-16">
+                    <div className="max-w-lg w-full bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                        <div className={`h-2 ${suspended ? 'bg-red-500' : 'bg-[#007F00]'}`} />
+                        <div className="p-10 text-center">
+                            <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${suspended ? 'bg-red-50' : 'bg-green-50'}`}>
+                                <AlertCircle size={40} className={`${suspended ? 'text-red-500' : 'text-[#007F00]'} animate-pulse`} />
+                            </div>
+                            <h1 className="text-2xl font-black text-gray-900 mb-3">
+                                {suspended ? 'Account Suspended' : 'Account Pending Approval'}
+                            </h1>
+                            <p className="text-gray-500 mb-2 font-medium leading-relaxed">
+                                {suspended
+                                    ? 'Your account has been suspended by an administrator.'
+                                    : 'Your profile has been submitted and is waiting to be reviewed by our team.'}
+                            </p>
+                            <p className="text-gray-400 text-sm mb-8">
+                                {suspended
+                                    ? 'If you believe this is a mistake, please contact our support team.'
+                                    : 'Once approved, you will have full access to the Business Portal.'}
+                            </p>
+                            <div className={`border rounded-xl p-4 mb-8 text-left ${suspended ? 'bg-red-50 border-red-100' : 'bg-green-50 border-green-100'}`}>
+                                <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${suspended ? 'text-red-600' : 'text-[#007F00]'}`}>
+                                    {suspended ? 'Suspended account' : 'Registered as'}
+                                </p>
+                                <p className="text-sm font-semibold text-gray-800">{user?.user_metadata?.full_name || user?.email}</p>
+                                <p className="text-xs text-gray-500">{user?.email}</p>
+                            </div>
+                            <p className="text-xs text-gray-400 mb-6">
+                                Questions? Contact us at{' '}
+                                <a href="mailto:hello@theberman.eu" className={`font-semibold hover:underline ${suspended ? 'text-red-500' : 'text-[#007F00]'}`}>
+                                    hello@theberman.eu
+                                </a>
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <Link to="/" className={`flex-1 py-3 px-6 text-white rounded-xl font-bold text-sm transition-colors text-center ${suspended ? 'bg-red-500 hover:bg-red-600' : 'bg-[#007F00] hover:bg-[#006600]'}`}>
+                                    Explore Website
+                                </Link>
+                                <button onClick={handleSignOut} className="flex-1 py-3 px-6 border border-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors">
+                                    Sign Out
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        );
+    }
+
     if (!listing) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
@@ -484,41 +554,31 @@ const BusinessDashboard = () => {
                 </div>
             </header>
 
-            {/* Subscription Expired / Pending Payment Blocker Overlay */}
-            {(((profile?.subscription_status === 'expired' || profile?.is_active === false) &&
+            {/* Subscription Expired Overlay (active accounts only) */}
+            {(profile?.subscription_status === 'expired' || profile?.is_active === false) &&
                 profile?.registration_status === 'active' &&
-                profile?.stripe_payment_id !== 'MANUAL_BY_ADMIN') ||
-                (profile?.registration_status === 'pending')) ? (
+                profile?.stripe_payment_id !== 'MANUAL_BY_ADMIN' && (
                 <div className="fixed inset-0 z-[10001] bg-[#0c121d]/95 backdrop-blur-2xl flex items-center justify-center p-6 text-center">
                     <div className="max-w-md w-full bg-white rounded-3xl p-10 shadow-2xl border-t-8 border-red-500">
                         <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <AlertCircle size={40} className={`text-red-500 ${profile?.registration_status === 'pending' ? 'animate-bounce' : 'animate-pulse'}`} />
+                            <AlertCircle size={40} className="text-red-500 animate-pulse" />
                         </div>
-                        <h2 className="text-2xl font-black text-gray-900 mb-2">
-                            {profile?.registration_status === 'pending' ? 'Account Pending Approval' : 'Subscription Expired'}
-                        </h2>
+                        <h2 className="text-2xl font-black text-gray-900 mb-2">Subscription Expired</h2>
                         <p className="text-gray-500 mb-8 font-medium">
-                            {profile?.registration_status === 'pending'
-                                ? 'Your profile is currently waiting to be approved by an administrator. You will be notified once it is confirmed.'
-                                : 'Your subscription has ended and your account is currently disabled. Please renew your subscription to reactivate your listing and access the portal.'}
+                            Your subscription has ended and your account is currently disabled. Please renew your subscription to reactivate your listing and access the portal.
                         </p>
-                        {!(profile?.registration_status === 'pending') && (
-                            <Link
-                                to="/pricing"
-                                className="block w-full bg-red-600 text-white py-4 rounded-2xl font-black uppercase tracking-wider text-sm hover:bg-red-700 transition-all mb-4 shadow-lg shadow-red-500/20"
-                            >
-                                Renew Subscription
-                            </Link>
-                        )}
-                        <button
-                            onClick={handleSignOut}
-                            className={`w-full font-bold uppercase tracking-widest text-[10px] transition-colors ${profile?.registration_status === 'pending' ? 'bg-gray-100 text-gray-700 py-4 rounded-xl hover:bg-gray-200 text-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                        <Link
+                            to="/pricing"
+                            className="block w-full bg-red-600 text-white py-4 rounded-2xl font-black uppercase tracking-wider text-sm hover:bg-red-700 transition-all mb-4 shadow-lg shadow-red-500/20"
                         >
+                            Renew Subscription
+                        </Link>
+                        <button onClick={handleSignOut} className="w-full text-gray-400 hover:text-gray-600 font-bold uppercase tracking-widest text-[10px] transition-colors">
                             Sign Out
                         </button>
                     </div>
                 </div>
-            ) : null}
+            )}
 
             {/* Main Content */}
             <main className="flex-grow pt-20">
