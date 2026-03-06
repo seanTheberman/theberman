@@ -1,320 +1,42 @@
-
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, RefreshCw, MessageSquare, Trash2, Eye, X, Mail, Phone, MapPin, Home, Calendar, ChevronDown, Loader2, AlertTriangle, AlertCircle, TrendingUp, Briefcase, Menu, Pencil, CheckCircle2, Search, Newspaper, Plus, Star, Check, Edit2, ExternalLink, Image as ImageIcon, UploadCloud, ArrowLeft, Users, DollarSign, CreditCard, ClipboardList, ArrowRight, Hourglass, Building, XCircle, Zap, Globe, Twitter, Facebook, Linkedin, Instagram } from 'lucide-react';
+import { LogOut, RefreshCw, X, Menu, ArrowLeft } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { TOWNS_BY_COUNTY } from '../data/irishTowns';
 import { geocodeAddress, COUNTY_COORDINATES } from '../lib/geocoding';
-import { REGISTRATION_PRICES } from '../constants/pricing';
 
-const IRISH_COUNTIES = [
-    'Carlow', 'Cavan', 'Clare', 'Cork', 'Donegal', 'Dublin', 'Galway',
-    'Kerry', 'Kildare', 'Kilkenny', 'Laois', 'Leitrim', 'Limerick',
-    'Longford', 'Louth', 'Mayo', 'Meath', 'Monaghan', 'Offaly',
-    'Roscommon', 'Sligo', 'Tipperary', 'Waterford', 'Westmeath',
-    'Wexford', 'Wicklow'
-];
+// Types
+import type { Lead, Assessment, Profile, Payment, Sponsor, AppSettings, NewsArticle, CatalogueFormData, AdminView } from '../types/admin';
 
-interface Lead {
-    id: string;
-    created_at: string;
-    name: string;
-    email: string;
-    phone: string;
-    message: string;
-    status: string;
-    county?: string;
-    town?: string;
-    property_type?: string;
-    purpose?: string;
-}
+// Views
+import { StatsView } from '../components/admin/views/StatsView';
+import { LeadsView } from '../components/admin/views/LeadsView';
+import { AssessmentsView } from '../components/admin/views/AssessmentsView';
+import { UsersView } from '../components/admin/views/UsersView';
+import { BusinessesView } from '../components/admin/views/BusinessesView';
+import { CatalogueView } from '../components/admin/views/CatalogueView';
+import { AddToCatalogueView } from '../components/admin/views/AddToCatalogueView';
+import { PaymentsView } from '../components/admin/views/PaymentsView';
+import { NewsView } from '../components/admin/views/NewsView';
+import { SettingsView } from '../components/admin/views/SettingsView';
 
-interface Profile {
-    id: string;
-    created_at: string;
-    full_name: string;
-    email: string;
-    role: 'admin' | 'contractor' | 'user' | 'homeowner' | 'business';
-    is_active?: boolean;
-    registration_status?: 'pending' | 'active' | 'rejected';
-    subscription_status?: string;
-    subscription_start_date?: string;
-    subscription_end_date?: string;
-    manual_override_reason?: string;
-    phone?: string;
-    county?: string;
-    town?: string;
-    seai_number?: string;
-    assessor_type?: string;
-    company_name?: string;
-    business_address?: string;
-    website?: string;
-    description?: string;
-    company_number?: string;
-    vat_number?: string;
-    stripe_payment_id?: string;
-    is_admin_created?: boolean;
-    last_login?: string;
-}
-
-interface Assessment {
-    id: string;
-    created_at: string;
-    property_address: string;
-    status: 'draft' | 'submitted' | 'pending' | 'pending_quote' | 'quote_accepted' | 'scheduled' | 'completed' | 'assigned';
-    scheduled_date: string | null;
-    completed_at?: string | null;
-    certificate_url: string | null;
-    eircode?: string;
-    town?: string;
-    county?: string;
-    property_type?: string;
-    user_id: string;
-    contractor_id?: string | null;
-    payment_status?: 'unpaid' | 'paid' | 'refunded';
-    property_size?: string;
-    bedrooms?: number;
-    additional_features?: string[];
-    heat_pump?: string;
-    ber_purpose?: string;
-    preferred_date?: string;
-    preferred_time?: string;
-    contact_name?: string;
-    contact_email?: string;
-    contact_phone?: string;
-    profiles?: {
-        full_name: string;
-        email: string;
-        phone: string;
-    };
-    referred_by_listing_id?: string | null;
-    referred_by?: {
-        name: string;
-        company_name: string;
-    } | null;
-}
-
-interface Sponsor {
-    id: string;
-    name: string;
-    headline: string;
-    sub_text: string;
-    image_url: string;
-    destination_url: string;
-    is_active: boolean;
-}
-
-interface Payment {
-    id: string;
-    created_at: string;
-    amount: number;
-    currency: string;
-    status: 'pending' | 'completed' | 'failed' | 'refunded';
-    assessment_id: string;
-    user_id: string;
-    metadata?: any;
-    profiles?: {
-        full_name: string;
-        email: string;
-    };
-}
-
-interface AppSettings {
-    id: string;
-    default_quote_price: number;
-    solar_quote_price: number;
-    vat_rate: number;
-    company_name: string;
-    support_email: string;
-    domestic_assessor_price: number;
-    commercial_assessor_price: number;
-    bundle_assessor_price: number;
-    business_registration_price: number;
-}
-
-
-interface NewsArticle {
-    id: string;
-    created_at: string;
-    published_at: string;
-    title: string;
-    excerpt: string;
-    author: string;
-    image_url: string;
-    category: string;
-    is_live: boolean;
-    read_time: string;
-}
-
-const formatLastLogin = (date?: string) => {
-    if (!date) return 'Never';
-    const d = new Date(date);
-    if (isNaN(d.getTime())) return 'Never';
-
-    const now = new Date();
-    const diffMs = now.getTime() - d.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays}d ago`;
-
-    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-};
-
-// Helper components for centralized status display
-const ProfileStatusBadge = ({ profile }: { profile: Profile }) => {
-    let statusLabel = profile.registration_status || (profile.is_active !== false ? 'active' : 'pending');
-    let bgColor = 'bg-amber-50 text-amber-700 border-amber-200';
-    let dotColor = 'bg-amber-500';
-
-    if (profile.stripe_payment_id === 'SUSPENDED') {
-        statusLabel = 'suspended' as any;
-        bgColor = 'bg-red-50 text-red-700 border-red-200';
-        dotColor = 'bg-red-500';
-    } else if (profile.registration_status === 'active') {
-        if (profile.is_active === false) {
-            statusLabel = 'inactive' as any;
-            bgColor = 'bg-gray-50 text-gray-700 border-gray-200';
-            dotColor = 'bg-gray-500';
-        } else {
-            statusLabel = 'active';
-            bgColor = 'bg-green-50 text-green-700 border-green-200';
-            dotColor = 'bg-green-500';
-        }
-    } else if (profile.registration_status === 'rejected') {
-        statusLabel = 'rejected';
-        bgColor = 'bg-red-50 text-red-700 border-red-200';
-        dotColor = 'bg-red-500';
-    }
-
-    return (
-        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${bgColor}`}>
-            <div className={`w-1.5 h-1.5 rounded-full ${dotColor} ${statusLabel === 'active' ? 'animate-pulse' : ''}`} />
-            {statusLabel}
-        </div>
-    );
-};
-
-const LeadStatusBadge = ({ status }: { status: string }) => {
-    let bgColor = 'bg-amber-50 text-amber-700 border-amber-200';
-    let dotColor = 'bg-amber-500';
-
-    if (status === 'responded' || status === 'contacted') {
-        bgColor = 'bg-green-50 text-green-700 border-green-200';
-        dotColor = 'bg-green-500';
-    }
-
-    return (
-        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${bgColor}`}>
-            <div className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
-            {status}
-        </div>
-    );
-};
-
-const PaymentStatusBadge = ({ profile }: { profile: Profile }) => {
-    if (profile.stripe_payment_id === 'SUSPENDED') {
-        return (
-            <div className="flex flex-col">
-                <span className="text-[9px] font-bold uppercase flex items-center gap-1 text-red-500">
-                    <AlertTriangle size={10} /> Suspended
-                </span>
-                <span className="text-[10px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 mt-0.5 select-all">
-                    SUSPENDED
-                </span>
-            </div>
-        );
-    }
-
-    if (profile.stripe_payment_id === 'CANCELLED') {
-        return (
-            <div className="flex flex-col">
-                <span className="text-[9px] font-bold uppercase flex items-center gap-1 text-red-500">
-                    <XCircle size={10} /> Cancelled
-                </span>
-                <span className="text-[10px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 mt-0.5 select-all">
-                    CANCELLED
-                </span>
-            </div>
-        );
-    }
-
-    if (profile.stripe_payment_id) {
-        return (
-            <div className="flex flex-col">
-                <span className="text-[9px] font-bold uppercase flex items-center gap-1 text-green-600">
-                    <CreditCard size={10} /> Paid
-                </span>
-                <span className="text-[10px] font-mono text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 mt-0.5 select-all" title="Stripe Payment ID">
-                    {profile.stripe_payment_id}
-                </span>
-            </div>
-        );
-    }
-
-    return (
-        <span className="text-[9px] text-gray-400 font-bold uppercase flex items-center gap-1">
-            <AlertTriangle size={10} className="text-amber-500" /> Not Paid
-        </span>
-    );
-};
-
-const SubscriptionInfo = ({ profile }: { profile: Profile }) => {
-    if (profile.stripe_payment_id === 'SUSPENDED') {
-        return (
-            <div className="flex items-center gap-1.5 text-red-600 font-bold text-xs bg-red-50 p-2 rounded-lg border border-red-100">
-                <AlertTriangle size={14} /> Account Suspended
-            </div>
-        );
-    }
-
-    const subStatus = profile.subscription_status || 'inactive';
-    const endDate = profile.subscription_end_date ? new Date(profile.subscription_end_date) : null;
-    const now = new Date();
-    const daysLeft = endDate ? Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : null;
-    const isExpired = daysLeft !== null && daysLeft <= 0;
-    const isExpiringSoon = daysLeft !== null && daysLeft > 0 && daysLeft <= 30;
-
-    return (
-        <div className="flex flex-col gap-1.5 p-2 bg-gray-50/50 rounded-lg border border-gray-100">
-            <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase w-fit ${subStatus === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                {subStatus}
-            </div>
-            {endDate && (
-                <div className={`text-[10px] ${isExpired ? 'text-red-500 font-bold' : isExpiringSoon ? 'text-amber-600 font-bold' : 'text-gray-400'}`}>
-                    <span className="font-semibold">{isExpired ? 'Expired:' : 'Expires:'}</span> {endDate.toLocaleDateString('en-GB')}
-                    {isExpiringSoon && !isExpired && (
-                        <span className="ml-1 text-amber-500">({daysLeft}d left)</span>
-                    )}
-                </div>
-            )}
-            {isExpired && (
-                <div className="flex items-center gap-1 text-[9px] text-red-600 font-black animate-pulse uppercase mt-1">
-                    <AlertCircle size={10} />
-                    Account Disabled
-                </div>
-            )}
-            {!endDate && (
-                <span className="text-[10px] text-gray-300 italic">No subscription</span>
-            )}
-        </div>
-    );
-};
+// Modals
+import { LeadDetailsModal } from '../components/admin/modals/LeadDetailsModal';
+import { GenerateQuoteModal } from '../components/admin/modals/GenerateQuoteModal';
+import { MessageModal } from '../components/admin/modals/MessageModal';
+import { ScheduleModal } from '../components/admin/modals/ScheduleModal';
+import { CompleteModal } from '../components/admin/modals/CompleteModal';
+import { AssessmentDetailModal } from '../components/admin/modals/AssessmentDetailModal';
+import { AssignAssessorModal } from '../components/admin/modals/AssignAssessorModal';
+import { SponsorModal } from '../components/admin/modals/SponsorModal';
+import { DeleteConfirmModal } from '../components/admin/modals/DeleteConfirmModal';
+import { UserDetailsModal } from '../components/admin/modals/UserDetailsModal';
+import { SuspendUserModal } from '../components/admin/modals/SuspendUserModal';
+import { AddUserModal } from '../components/admin/modals/AddUserModal';
 
 const Admin = () => {
-    const getFallbackPhone = (profile: Profile) => {
-        if (profile.phone && profile.phone !== 'N/A') return profile.phone;
-        const linkedAssessment = assessments.find(a => a.user_id === profile.id && (a.contact_phone || a.profiles?.phone));
-        return linkedAssessment?.contact_phone || linkedAssessment?.profiles?.phone || 'N/A';
-    };
-
+    // ─── State ──────────────────────────────────────────────────────────────────
     const [leads, setLeads] = useState<Lead[]>([]);
     const [assessments, setAssessments] = useState<Assessment[]>([]);
     const [users_list, setUsersList] = useState<Profile[]>([]);
@@ -322,56 +44,86 @@ const Admin = () => {
     const [sponsors, setSponsors] = useState<Sponsor[]>([]);
     const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
     const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
-    const [view, setView] = useState<'stats' | 'leads' | 'assessments' | 'homeowners' | 'businesses' | 'assessors' | 'payments' | 'settings' | 'news' | 'add-to-catalogue' | 'catalogue'>('stats');
     const [listings, setListings] = useState<any[]>([]);
+    const [catalogueCategories, setCatalogueCategories] = useState<{ id: string; name: string }[]>([]);
+
+    const [view, setView] = useState<AdminView>('stats');
     const [loading, setLoading] = useState(true);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isSavingSettings, setIsSavingSettings] = useState(false);
+    const [isSavingRegistrationFees, setIsSavingRegistrationFees] = useState(false);
+    const [isUpdatingBanner, setIsUpdatingBanner] = useState(false);
+    const [isSavingCatalogue, setIsSavingCatalogue] = useState(false);
+    const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+    const [isUploadingGallery, setIsUploadingGallery] = useState<{ [key: number]: boolean }>({});
+    const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
+
+    const [searchTerm, setSearchTerm] = useState('');
+    const [locationFilter, setLocationFilter] = useState('');
+    const [customMonths, setCustomMonths] = useState<number>(1);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    // Selected items
     const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
     const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
+    const [selectedAssessmentForAssignment, setSelectedAssessmentForAssignment] = useState<Assessment | null>(null);
     const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
     const [editForm, setEditForm] = useState<Partial<Profile>>({});
-    const [showAddUserModal, setShowAddUserModal] = useState(false);
-    const [newUserRole, setNewUserRole] = useState<'contractor' | 'business'>('contractor');
-    const [newUserFormData, setNewUserFormData] = useState({
-        fullName: '',
-        email: '',
-        password: '',
-        phone: '',
-        county: '',
-        town: '',
-        // Assessor-specific
-        seaiNumber: '',
-        assessorType: 'Domestic Assessor',
-        companyName: '',
-        // Business-specific
-        businessAddress: '',
-        website: '',
-        description: '',
-        companyNumber: '',
-        vatNumber: '',
-    });
+    const [editingSponsor, setEditingSponsor] = useState<Sponsor | null>(null);
+    const [itemToDelete, setItemToDelete] = useState<{ id: string; type: 'lead' | 'sponsor' | 'assessment' | 'user' } | null>(null);
+    const [itemToSuspend, setItemToSuspend] = useState<{ id: string; name: string; currentStatus: boolean } | null>(null);
+
+    // Modal visibility
     const [showQuoteModal, setShowQuoteModal] = useState(false);
-    const [showAssignModal, setShowAssignModal] = useState(false); const [vLabels] = useState<Record<string, string>>({
-        stats: 'Overview',
-        homeowners: 'Homeowners',
-        businesses: 'Businesses',
-        assessors: 'BER Assessors',
-        leads: 'Leads',
-        payments: 'Financials',
-        news: 'News',
-        settings: 'Settings'
-    });
-    const [selectedAssessmentForAssignment, setSelectedAssessmentForAssignment] = useState<Assessment | null>(null);
+    const [showAssignModal, setShowAssignModal] = useState(false);
     const [showMessageModal, setShowMessageModal] = useState(false);
     const [showScheduleModal, setShowScheduleModal] = useState(false);
     const [showCompleteModal, setShowCompleteModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showAssessmentDetailModal, setShowAssessmentDetailModal] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [isUpdating, setIsUpdating] = useState(false);
-    const [isSavingSettings, setIsSavingSettings] = useState(false);
-    const [isSavingRegistrationFees, setIsSavingRegistrationFees] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [customMonths, setCustomMonths] = useState<number>(1);
+    const [showSponsorModal, setShowSponsorModal] = useState(false);
+    const [showSuspendModal, setShowSuspendModal] = useState(false);
+    const [showAddUserModal, setShowAddUserModal] = useState(false);
+
+    // Form state for modals
+    const [quoteData, setQuoteData] = useState({ price: '', estimated_date: '', notes: '' });
+    const [messageContent, setMessageContent] = useState('');
+    const [selectedDate, setSelectedDate] = useState('');
+    const [certUrl, setCertUrl] = useState('');
+
+    // New user form
+    const [newUserRole, setNewUserRole] = useState<'contractor' | 'business'>('contractor');
+    const [newUserFormData, setNewUserFormData] = useState({
+        fullName: '', email: '', password: '', phone: '', county: '', town: '',
+        seaiNumber: '', assessorType: 'Domestic Assessor', companyName: '',
+        businessAddress: '', website: '', description: '', companyNumber: '', vatNumber: '',
+    });
+
+    // Catalogue form
+    const [selectedBusinessForCatalogue, setSelectedBusinessForCatalogue] = useState<Profile | null>(null);
+    const [selectedListingForEdit, setSelectedListingForEdit] = useState<any | null>(null);
+    const [catalogueFormData, setCatalogueFormData] = useState<CatalogueFormData>({
+        companyName: '', description: '', email: '', phone: '', address: '', county: '',
+        website: '', logoUrl: '', featured: false, selectedCategories: [],
+        additionalAddresses: [], companyNumber: '', registrationNo: '', vatNumber: '',
+        bannerUrl: '', socialFacebook: '', socialInstagram: '', socialLinkedin: '', socialTwitter: '',
+        galleryImages: [{ url: '', description: '' }, { url: '', description: '' }, { url: '', description: '' }],
+    });
+
+    // Promo settings
+    const [promoSettings, setPromoSettings] = useState({
+        id: 1, is_enabled: false, headline: '', sub_text: '', image_url: '', destination_url: ''
+    });
+
+    const { signOut, user } = useAuth();
+    const navigate = useNavigate();
+
+    // ─── Derived state ───────────────────────────────────────────────────────────
+    const uniqueUserLocations = Array.from(
+        new Set(users_list.map(u => u.county || u.home_county).filter(Boolean))
+    ).sort() as string[];
 
     const filteredLeads = leads.filter(l =>
         l.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -379,6 +131,7 @@ const Admin = () => {
         l.town?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (l.status || 'new').toLowerCase().includes(searchTerm.toLowerCase())
     );
+
     const filteredAssessments = assessments.filter(a =>
         a.property_address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         a.town?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -388,16 +141,52 @@ const Admin = () => {
 
     const filteredBusinessLeads = users_list.filter(u => u.role === 'business').filter(u => {
         const query = searchTerm.toLowerCase();
-        return u.full_name?.toLowerCase().includes(query) ||
+        const matchSearch =
+            u.full_name?.toLowerCase().includes(query) ||
             u.email?.toLowerCase().includes(query) ||
             u.company_name?.toLowerCase().includes(query) ||
             u.business_address?.toLowerCase().includes(query) ||
             u.county?.toLowerCase().includes(query) ||
             u.town?.toLowerCase().includes(query);
+        const matchLocation = !locationFilter || u.county === locationFilter || (u as any).home_county === locationFilter;
+        return matchSearch && matchLocation;
     });
 
+    const stats = {
+        totalUsers: users_list.length,
+        homeowners: users_list.filter(u => u.role === 'homeowner' || u.role === 'user').length,
+        contractors: users_list.filter(u => u.role === 'contractor').length,
+        totalLeads: leads.length,
+        totalRevenue: payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0),
+        activeAssessments: assessments.filter(a => a.status !== 'completed').length,
+        completedAssessments: assessments.filter(a => a.status === 'completed').length,
+        pendingQuotes: assessments.filter(a => a.status === 'submitted' || a.status === 'pending_quote').length,
+        acceptedQuotes: assessments.filter(a => a.status === 'quote_accepted' || a.status === 'scheduled' || a.status === 'completed').length,
+        businessLeads: users_list.filter(u => u.role === 'business').length,
+        pendingOnboarding: users_list.filter(u => u.role === 'business' && !listings.some(l => l.user_id === u.id)).length,
+    };
+
+    // ─── Helpers ─────────────────────────────────────────────────────────────────
+    const getFallbackPhone = (profile: Profile) => {
+        if (profile.phone && profile.phone !== 'N/A') return profile.phone;
+        const linked = assessments.find(a => a.user_id === profile.id && (a.contact_phone || a.profiles?.phone));
+        return linked?.contact_phone || linked?.profiles?.phone || 'N/A';
+    };
+
+    const logAudit = async (action: string, entityType: string, entityId: string, details: any) => {
+        try {
+            await supabase.from('audit_logs').insert({
+                user_id: user?.id, action, entity_type: entityType, entity_id: entityId, details
+            });
+        } catch (error) {
+            console.error('Audit log error:', error);
+        }
+    };
+
+    // ─── Effects ─────────────────────────────────────────────────────────────────
     useEffect(() => {
         setSearchTerm('');
+        setLocationFilter('');
     }, [view]);
 
     useEffect(() => {
@@ -417,126 +206,69 @@ const Admin = () => {
             setEditForm({});
         }
     }, [selectedUser]);
-    const [isUpdatingBanner, setIsUpdatingBanner] = useState(false);
-    const [isUploadingGallery, setIsUploadingGallery] = useState<{ [key: number]: boolean }>({});
-    const [itemToDelete, setItemToDelete] = useState<{ id: string, type: 'lead' | 'sponsor' | 'assessment' | 'user' } | null>(null);
-    const [itemToSuspend, setItemToSuspend] = useState<{ id: string, name: string, currentStatus: boolean } | null>(null);
-    const [showSuspendModal, setShowSuspendModal] = useState(false);
-    const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
-    // Catalogue page state
-    const [catalogueCategories, setCatalogueCategories] = useState<{ id: string; name: string }[]>([]);
-    const [isSavingCatalogue, setIsSavingCatalogue] = useState(false);
-    const [isUploadingLogo, setIsUploadingLogo] = useState(false);
-    const [selectedBusinessForCatalogue, setSelectedBusinessForCatalogue] = useState<Profile | null>(null);
-    const [selectedListingForEdit, setSelectedListingForEdit] = useState<any | null>(null);
-    const [catalogueFormData, setCatalogueFormData] = useState({
-        companyName: '',
-        description: '',
-        email: '',
-        phone: '',
-        address: '',
-        county: '',
-        website: '',
-        logoUrl: '',
-        featured: false,
-        selectedCategories: [] as string[],
-        additionalAddresses: [] as string[],
-        companyNumber: '',
-        registrationNo: '',
-        vatNumber: '',
-        bannerUrl: '',
-        socialFacebook: '',
-        socialInstagram: '',
-        socialLinkedin: '',
-        socialTwitter: '',
-        galleryImages: [
-            { url: '', description: '' },
-            { url: '', description: '' },
-            { url: '', description: '' }
-        ],
-    });
-    const [selectedStatView, setSelectedStatView] = useState<'homeowners' | 'assessors' | 'businesses' | 'payments' | 'assessments' | 'leads' | null>('homeowners');
 
-    const handleExportPayments = () => {
-        if (payments.length === 0) {
-            toast.error("No payments to export");
-            return;
-        }
-
-        const headers = ["ID", "Amount", "Currency", "Status", "User", "Email", "Date", "Assessment ID"];
-        const csvRows = [
-            headers.join(","),
-            ...payments.map(p => [
-                p.id,
-                p.amount,
-                p.currency,
-                p.status,
-                `"${p.profiles?.full_name || 'Unknown'}"`,
-                p.profiles?.email || 'N/A',
-                new Date(p.created_at).toLocaleDateString(),
-                p.assessment_id
-            ].join(","))
-        ];
-
-        const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `berman_payments_export_${new Date().toISOString().split('T')[0]}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        toast.success("Payments report exported successfully");
-    };
-
-    // Sponsor Modal State
-    const [showSponsorModal, setShowSponsorModal] = useState(false);
-    const [editingSponsor, setEditingSponsor] = useState<Sponsor | null>(null);
-
-    const [selectedDate, setSelectedDate] = useState('');
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const menuRef = useRef<HTMLDivElement>(null);
-    const [certUrl, setCertUrl] = useState('');
-
-    // Handle clicking outside of the mobile menu to close it
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
                 setIsMenuOpen(false);
             }
         };
-
-        if (isMenuOpen) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
+        if (isMenuOpen) document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isMenuOpen]);
 
-    // Quote Form State
-    const [quoteData, setQuoteData] = useState({
-        price: '',
-        estimated_date: '',
-        notes: ''
-    });
+    useEffect(() => {
+        const fetchViewData = async () => {
+            setIsUpdating(true);
+            try {
+                if (view === 'leads') await fetchLeads();
+                else if (view === 'assessments') await fetchAssessments();
+                else if (view === 'homeowners') await fetchUsers();
+                else if (view === 'businesses') {
+                    await fetchUsers();
+                    await fetchListings();
+                    await fetchCatalogueCategories();
+                } else if (view === 'catalogue') {
+                    await fetchListings();
+                    await fetchCatalogueCategories();
+                } else if (view === 'add-to-catalogue') {
+                    await fetchCatalogueCategories();
+                } else if (view === 'assessors') await fetchUsers();
+                else if (view === 'payments') await fetchPayments();
+                else if (view === 'settings') {
+                    await fetchAppSettings();
+                    await fetchPromoSettings();
+                    await fetchSponsors();
+                } else if (view === 'stats') {
+                    await Promise.all([fetchLeads(), fetchAssessments(), fetchUsers(), fetchPayments()]);
+                } else if (view === 'news') {
+                    await fetchNewsArticles();
+                }
+            } finally {
+                setIsUpdating(false);
+            }
+        };
 
-    // Message Form State
-    const [messageContent, setMessageContent] = useState('');
+        fetchViewData();
+        fetchPromoSettings();
 
-    const { signOut, user } = useAuth();
-    const navigate = useNavigate();
+        const channel = supabase
+            .channel('admin-changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, () => fetchLeads())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'assessments' }, () => fetchAssessments())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchUsers())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, () => fetchPayments())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'app_settings' }, () => fetchAppSettings())
+            .subscribe();
 
+        return () => { supabase.removeChannel(channel); };
+    }, [view]);
+
+    // ─── Data Fetching ────────────────────────────────────────────────────────────
     const fetchLeads = async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('leads')
-                .select('*')
-                .order('created_at', { ascending: false });
-
+            const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false });
             if (error) throw error;
             setLeads(data || []);
         } catch (error) {
@@ -556,20 +288,12 @@ const Admin = () => {
             .map(u => u.id);
 
         if (expiredUserIds.length > 0) {
-            console.log(`[Admin] Disabling ${expiredUserIds.length} expired subscriptions...`);
             const { error } = await supabase
                 .from('profiles')
                 .update({ is_active: false, subscription_status: 'expired' })
                 .in('id', expiredUserIds);
-
-            if (error) {
-                console.error('Error disabling expired subscriptions:', error);
-            } else {
-                toast(`Auto-disabled ${expiredUserIds.length} expired accounts.`, {
-                    icon: 'ℹ️',
-                });
-                // We don't need to re-fetch as the status will be visually 'Expired' in the current list
-                // and real-time subscription will sync the state soon anyway.
+            if (!error) {
+                toast(`Auto-disabled ${expiredUserIds.length} expired accounts.`, { icon: 'ℹ️' });
             }
         }
     };
@@ -577,22 +301,14 @@ const Admin = () => {
     const fetchUsers = async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .order('created_at', { ascending: false });
-
+            const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
             if (error) {
                 if (error.message?.includes('column "registration_status" does not exist')) {
                     toast.error('Registration status column missing. Please run the SQL migration.');
-                } else {
-                    throw error;
-                }
+                } else throw error;
             }
             const users = data || [];
             setUsersList(users);
-
-            // Run subscription check
             checkAndDisableExpiredSubscriptions(users);
         } catch (error: any) {
             console.error('Error fetching users:', error);
@@ -604,10 +320,7 @@ const Admin = () => {
 
     const fetchListings = async () => {
         try {
-            const { data, error } = await supabase
-                .from('catalogue_listings')
-                .select('*');
-
+            const { data, error } = await supabase.from('catalogue_listings').select('*');
             if (error) throw error;
             setListings(data || []);
         } catch (error) {
@@ -617,10 +330,7 @@ const Admin = () => {
 
     const fetchCatalogueCategories = async () => {
         try {
-            const { data, error } = await supabase
-                .from('catalogue_categories')
-                .select('id, name')
-                .order('name');
+            const { data, error } = await supabase.from('catalogue_categories').select('id, name').order('name');
             if (error) throw error;
             setCatalogueCategories(data || []);
         } catch (error) {
@@ -628,10 +338,606 @@ const Admin = () => {
         }
     };
 
+    const fetchAssessments = async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('assessments')
+                .select('*, profiles:user_id (full_name, email, phone), referred_by:referred_by_listing_id (name, company_name)')
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            setAssessments(data || []);
+        } catch (error) {
+            console.error('Error fetching assessments:', error);
+            toast.error('Failed to load assessments');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchPayments = async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('payments')
+                .select('*, profiles (full_name, email)')
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            setPayments(data || []);
+        } catch (error) {
+            console.error('Error fetching payments:', error);
+            toast.error('Failed to load payments');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchAppSettings = async () => {
+        try {
+            const { data, error } = await supabase.from('app_settings').select('*').single();
+            if (error) throw error;
+            setAppSettings(data);
+        } catch (error) {
+            console.error('Error fetching settings:', error);
+        }
+    };
+
+    const fetchNewsArticles = async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('news_articles')
+                .select('*')
+                .order('published_at', { ascending: false })
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            setNewsArticles(data || []);
+        } catch (error) {
+            console.error('Error fetching news:', error);
+            toast.error('Failed to load news articles');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchSponsors = async () => {
+        try {
+            const { data, error } = await supabase.from('sponsors').select('*').order('created_at', { ascending: true });
+            if (error) throw error;
+            setSponsors(data || []);
+        } catch (error) {
+            console.error('Error fetching sponsors:', error);
+        }
+    };
+
+    const fetchPromoSettings = async () => {
+        try {
+            const { data } = await supabase.from('promo_settings').select('*').eq('id', 1).maybeSingle();
+            if (data) {
+                setPromoSettings(data);
+            } else {
+                setPromoSettings({ id: 1, is_enabled: false, headline: 'Considering Solar Panels?', sub_text: 'Compare the Best Solar Deals', image_url: '', destination_url: '' });
+            }
+        } catch (error) {
+            console.error('Error fetching promo settings:', error);
+        }
+    };
+
+    // ─── Handlers ─────────────────────────────────────────────────────────────────
+    const handleSignOut = async () => {
+        await signOut();
+        navigate('/login');
+    };
+
+    const updateStatus = async (id: string, newStatus: string) => {
+        setIsUpdating(true);
+        try {
+            const { error } = await supabase.from('leads').update({ status: newStatus }).eq('id', id);
+            if (error) throw error;
+            setLeads(leads.map(lead => lead.id === id ? { ...lead, status: newStatus } : lead));
+            if (selectedLead?.id === id) setSelectedLead({ ...selectedLead, status: newStatus });
+            toast.success('Status updated');
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to update status');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleDeleteClick = (id: string, type: 'lead' | 'sponsor' | 'assessment' | 'user') => {
+        setItemToDelete({ id, type });
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!itemToDelete) return;
+        setIsDeleting(true);
+        try {
+            if (itemToDelete.type === 'user') {
+                const { data: edgeData, error: edgeError } = await supabase.functions.invoke('delete-user', {
+                    body: { userId: itemToDelete.id }
+                });
+                if (edgeError || edgeData?.error) throw new Error((edgeData?.error || edgeError?.message) || 'Failed to delete user');
+                setUsersList(users_list.filter(u => u.id !== itemToDelete.id));
+                toast.success('User deleted successfully');
+            } else {
+                const tableMap = { lead: 'leads', sponsor: 'sponsors', assessment: 'assessments' } as const;
+                const table = tableMap[itemToDelete.type as keyof typeof tableMap];
+                const { error } = await supabase.from(table).delete().eq('id', itemToDelete.id);
+                if (error) throw error;
+
+                if (itemToDelete.type === 'lead') {
+                    setLeads(leads.filter(l => l.id !== itemToDelete.id));
+                    if (selectedLead?.id === itemToDelete.id) setSelectedLead(null);
+                    toast.success('Lead deleted successfully');
+                } else if (itemToDelete.type === 'sponsor') {
+                    setSponsors(sponsors.filter(s => s.id !== itemToDelete.id));
+                    toast.success('Sponsor deleted successfully');
+                } else if (itemToDelete.type === 'assessment') {
+                    setAssessments(assessments.filter(a => a.id !== itemToDelete.id));
+                    if (selectedAssessment?.id === itemToDelete.id) setSelectedAssessment(null);
+                    toast.success('Assessment deleted successfully');
+                }
+            }
+            setShowDeleteModal(false);
+        } catch (error: any) {
+            toast.error(error.message || `Failed to delete ${itemToDelete.type}`);
+        } finally {
+            setIsDeleting(false);
+            setItemToDelete(null);
+        }
+    };
+
+    const handleAddUser = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsUpdating(true);
+        try {
+            const { data: fnData, error: fnError } = await supabase.functions.invoke('create-admin-user', {
+                body: {
+                    fullName: newUserFormData.fullName,
+                    email: newUserFormData.email,
+                    password: newUserFormData.password,
+                    phone: newUserFormData.phone || null,
+                    county: newUserFormData.county || null,
+                    town: newUserFormData.town || null,
+                    assessorType: newUserFormData.assessorType || null,
+                    companyName: newUserFormData.companyName || null,
+                    businessAddress: newUserFormData.businessAddress || null,
+                    website: newUserFormData.website || null,
+                    description: newUserFormData.description || null,
+                    companyNumber: newUserFormData.companyNumber || null,
+                    vatNumber: newUserFormData.vatNumber || null,
+                    role: newUserRole,
+                }
+            });
+            if (fnError) throw new Error(fnError.message || 'Edge function failed');
+            if (!fnData?.success) throw new Error(fnData?.error || 'Failed to create user');
+
+            try {
+                const { data: emailData } = await supabase.functions.invoke('send-onboarding-link', {
+                    body: {
+                        fullName: newUserFormData.fullName,
+                        email: newUserFormData.email,
+                        password: newUserFormData.password,
+                        town: newUserFormData.town || '',
+                        onboardingUrl: fnData.magicLink,
+                        role: newUserRole,
+                        userId: fnData.user.id
+                    }
+                });
+                if (emailData?.success) {
+                    toast.success(`${newUserRole === 'contractor' ? 'Assessor' : 'Business'} created & login link sent via email!`);
+                } else {
+                    toast.success('User created but email failed. Please share the login link manually.');
+                }
+            } catch {
+                toast.success('User created but email failed. Please share the login link manually.');
+            }
+
+            if (fnData?.user) {
+                setUsersList([fnData.user, ...users_list]);
+                logAudit('create_user', 'user', fnData.user.id, { role: newUserRole });
+            }
+            setShowAddUserModal(false);
+            setNewUserFormData({
+                fullName: '', email: '', password: '', phone: '', county: '', town: '',
+                seaiNumber: '', assessorType: 'Domestic Assessor', companyName: '',
+                businessAddress: '', website: '', description: '', companyNumber: '', vatNumber: '',
+            });
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to add user');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleUpdateProfile = async () => {
+        if (!selectedUser) return;
+        setIsUpdating(true);
+        try {
+            const finalStripeId = (editForm.subscription_status === 'active' && !editForm.stripe_payment_id)
+                ? 'MANUAL_BY_ADMIN'
+                : (editForm.stripe_payment_id || undefined);
+
+            const { error } = await supabase.from('profiles').update({
+                subscription_status: editForm.subscription_status,
+                subscription_start_date: editForm.subscription_start_date,
+                subscription_end_date: editForm.subscription_end_date,
+                manual_override_reason: editForm.manual_override_reason,
+                stripe_payment_id: finalStripeId,
+                role: editForm.role
+            }).eq('id', selectedUser.id);
+            if (error) throw error;
+
+            const updates = {
+                subscription_status: editForm.subscription_status,
+                subscription_start_date: editForm.subscription_start_date,
+                subscription_end_date: editForm.subscription_end_date,
+                manual_override_reason: editForm.manual_override_reason,
+                stripe_payment_id: finalStripeId,
+                role: editForm.role as any
+            };
+            setUsersList(users_list.map(u => u.id === selectedUser.id ? { ...u, ...updates } : u));
+            setSelectedUser({ ...selectedUser, ...updates });
+            toast.success('Profile updated successfully');
+        } catch (error: any) {
+            toast.error('Failed to update profile');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleManualRenewal = async (userId: string, monthsToAdd: number = 12) => {
+        setIsUpdating(true);
+        try {
+            const userToUpdate = users_list.find(u => u.id === userId);
+            const now = new Date();
+            let startDate = new Date();
+            let endDate = new Date();
+
+            if (userToUpdate?.subscription_end_date) {
+                const currentEnd = new Date(userToUpdate.subscription_end_date);
+                if (currentEnd > now) {
+                    startDate = userToUpdate.subscription_start_date ? new Date(userToUpdate.subscription_start_date) : now;
+                    endDate = new Date(currentEnd);
+                    endDate.setMonth(endDate.getMonth() + monthsToAdd);
+                } else {
+                    endDate.setMonth(endDate.getMonth() + monthsToAdd);
+                }
+            } else {
+                endDate.setMonth(endDate.getMonth() + monthsToAdd);
+            }
+
+            const updateData: Partial<Profile> = {
+                subscription_status: 'active',
+                subscription_start_date: startDate.toISOString(),
+                subscription_end_date: endDate.toISOString(),
+                is_active: true,
+                registration_status: 'active',
+                stripe_payment_id: userToUpdate?.stripe_payment_id || 'MANUAL_BY_ADMIN'
+            };
+
+            const { error } = await supabase.from('profiles').update(updateData).eq('id', userId);
+            if (error) throw error;
+
+            setUsersList(users_list.map(u => u.id === userId ? { ...u, ...updateData } : u));
+            if (selectedUser?.id === userId) setSelectedUser({ ...selectedUser, ...updateData } as Profile);
+            toast.success(`Subscription updated for ${monthsToAdd} months & account activated!`);
+            fetchUsers();
+        } catch (error: any) {
+            toast.error('Failed to renew subscription');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleCancelSubscription = async (userId: string) => {
+        if (!confirm('Are you sure you want to cancel this subscription? The user will be instantly disabled.')) return;
+        setIsUpdating(true);
+        try {
+            const updates = { subscription_status: 'cancelled', is_active: false, stripe_payment_id: 'CANCELLED', registration_status: 'pending' as const };
+            const { error } = await supabase.from('profiles').update(updates).eq('id', userId);
+            if (error) throw error;
+            setUsersList(users_list.map(u => u.id === userId ? { ...u, ...updates } : u));
+            if (selectedUser?.id === userId) setSelectedUser({ ...selectedUser, ...updates });
+            toast.success('Subscription cancelled and status updated.');
+            fetchUsers();
+        } catch (error: any) {
+            toast.error('Failed to cancel subscription');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleSendRenewalReminder = async (u: any) => {
+        setSendingEmailId(u.id);
+        try {
+            const expiryDate = u.subscription_end_date ? new Date(u.subscription_end_date).toLocaleDateString('en-GB') : 'Soon';
+            const subject = encodeURIComponent(`Your Subscription Expiry - The Berman`);
+            const body = encodeURIComponent(`Hi ${u.full_name || 'there'},\n\nYour subscription with The Berman has expired/is about to expire on ${expiryDate}.\n\nTo continue your membership and keep your listing active, please login and renew your subscription.\n\nBest regards,\nThe Berman Team`);
+            window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${u.email}&su=${subject}&body=${body}`, '_blank');
+            toast.success('Opening Gmail with renewal reminder...');
+        } catch (error: any) {
+            toast.error('Failed to send renewal reminder');
+        } finally {
+            setSendingEmailId(null);
+        }
+    };
+
+    const toggleUserStatus = async () => {
+        if (!itemToSuspend) return;
+        setIsUpdating(true);
+        try {
+            const isSuspending = itemToSuspend.currentStatus === true;
+            const updateData: any = { is_active: !itemToSuspend.currentStatus };
+            if (isSuspending) { updateData.stripe_payment_id = 'SUSPENDED'; updateData.registration_status = 'pending'; }
+
+            const { error } = await supabase.from('profiles').update(updateData).eq('id', itemToSuspend.id);
+            if (error) throw error;
+
+            await supabase.from('catalogue_listings').update({ is_active: !itemToSuspend.currentStatus })
+                .or(`user_id.eq.${itemToSuspend.id},owner_id.eq.${itemToSuspend.id}`);
+
+            const profileUpdates = { is_active: !itemToSuspend.currentStatus, ...(isSuspending ? { stripe_payment_id: 'SUSPENDED', registration_status: 'pending' as const } : {}) };
+            setUsersList(users_list.map(u => u.id === itemToSuspend.id ? { ...u, ...profileUpdates } : u));
+            setListings(prev => prev.map(l => (l.user_id === itemToSuspend.id || l.owner_id === itemToSuspend.id) ? { ...l, is_active: !itemToSuspend.currentStatus } : l));
+            if (selectedUser?.id === itemToSuspend.id) setSelectedUser({ ...selectedUser, ...profileUpdates });
+
+            toast.success(`User ${isSuspending ? 'suspended' : 'activated'} successfully`);
+            setShowSuspendModal(false);
+            setItemToSuspend(null);
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to update user status');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const updateRegistrationStatus = async (userId: string, status: 'active' | 'rejected') => {
+        setIsUpdating(true);
+        const previousUsers = [...users_list];
+        setUsersList(users_list.map(u => u.id === userId ? { ...u, registration_status: status } : u));
+        try {
+            const { data, error } = await supabase.from('profiles').update({ registration_status: status }).eq('id', userId).select();
+            if (error) throw error;
+            if (!data || data.length === 0) throw new Error('Update failed: No rows were changed.');
+            toast.success(`Business registration ${status === 'active' ? 'approved' : 'rejected'} successfully`);
+            fetchUsers();
+        } catch (error: any) {
+            setUsersList(previousUsers);
+            toast.error(error.message || 'Failed to update registration status');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleSendOnboardingEmail = async (u: any) => {
+        setSendingEmailId(u.id);
+        try {
+            const { error } = await supabase.functions.invoke('send-onboarding-link', {
+                body: { fullName: u.full_name, email: u.email, town: u.company_name || u.town || 'Your Business Profile', userId: u.id, role: 'business' }
+            });
+            if (error) throw error;
+            toast.success('Onboarding email sent successfully!');
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to send onboarding email');
+        } finally {
+            setSendingEmailId(null);
+        }
+    };
+
+    const handleAssignContractor = async (contractorId: string) => {
+        if (!selectedAssessmentForAssignment) return;
+        setIsUpdating(true);
+        try {
+            const { error } = await supabase.from('assessments').update({ contractor_id: contractorId, status: 'assigned' }).eq('id', selectedAssessmentForAssignment.id);
+            if (error) throw error;
+            await logAudit('assign_contractor', 'assessment', selectedAssessmentForAssignment.id, { contractor_id: contractorId, previous_status: selectedAssessmentForAssignment.status });
+            toast.success('Assessor assigned successfully');
+            setShowAssignModal(false);
+            setSelectedAssessmentForAssignment(null);
+            fetchAssessments();
+        } catch (error: any) {
+            toast.error('Failed to assign assessor');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleGenerateQuote = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedAssessment) return;
+        setIsUpdating(true);
+        try {
+            const { data: quote, error: quoteError } = await supabase.from('quotes').insert({
+                assessment_id: selectedAssessment.id,
+                price: parseFloat(quoteData.price),
+                estimated_date: quoteData.estimated_date || null,
+                notes: quoteData.notes,
+                created_by: user?.id
+            }).select().single();
+            if (quoteError) throw quoteError;
+
+            const { error: updateError } = await supabase.from('assessments').update({ status: 'pending_quote' }).eq('id', selectedAssessment.id);
+            if (updateError) throw updateError;
+
+            supabase.functions.invoke('send-quote-notification', { body: { assessmentId: selectedAssessment.id } })
+                .catch(err => console.error('Failed to trigger homeowner notification:', err));
+
+            await logAudit('generate_quote', 'assessment', selectedAssessment.id, { quote_id: quote.id, price: quoteData.price });
+            toast.success('Quote generated successfully!');
+            setShowQuoteModal(false);
+            setQuoteData({ price: '', estimated_date: '', notes: '' });
+            fetchAssessments();
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to generate quote');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleSchedule = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedAssessment || !selectedDate) return;
+        setIsUpdating(true);
+        try {
+            const isRescheduled = selectedAssessment.status === 'scheduled' && selectedAssessment.scheduled_date !== selectedDate;
+            const { error } = await supabase.from('assessments').update({ status: 'scheduled', scheduled_date: selectedDate }).eq('id', selectedAssessment.id);
+            if (error) throw error;
+
+            supabase.functions.invoke('send-job-status-notification', {
+                body: { assessmentId: selectedAssessment.id, status: isRescheduled ? 'rescheduled' : 'scheduled', details: { inspectionDate: selectedDate, contractorName: 'The Berman Team' } }
+            }).catch(err => console.error('Failed to trigger status notification:', err));
+
+            await logAudit('schedule_assessment', 'assessment', selectedAssessment.id, { scheduled_date: selectedDate });
+            toast.success('Assessment scheduled!');
+            setShowScheduleModal(false);
+            fetchAssessments();
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to schedule');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleComplete = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedAssessment) return;
+        setIsUpdating(true);
+        try {
+            const { error } = await supabase.from('assessments').update({ status: 'completed', certificate_url: certUrl, completed_at: new Date().toISOString() }).eq('id', selectedAssessment.id);
+            if (error) throw error;
+
+            supabase.functions.invoke('send-job-status-notification', {
+                body: { assessmentId: selectedAssessment.id, status: 'completed', details: { certificateUrl: certUrl, contractorName: 'The Berman Team' } }
+            }).catch(err => console.error('Failed to trigger status notification:', err));
+
+            await logAudit('complete_assessment', 'assessment', selectedAssessment.id, { certificate_url: certUrl });
+            toast.success('Assessment marked as completed!');
+            setShowCompleteModal(false);
+            setCertUrl('');
+            fetchAssessments();
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to complete');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleSendMessage = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedAssessment || !messageContent.trim()) return;
+        setIsUpdating(true);
+        try {
+            const clientEmail = selectedAssessment.profiles?.email;
+            if (!clientEmail) { toast.error('Client email not found'); return; }
+            const subject = encodeURIComponent(`Update regarding your BER Assessment - ${selectedAssessment.property_address}`);
+            const body = encodeURIComponent(messageContent);
+            window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${clientEmail}&su=${subject}&body=${body}`, '_blank');
+            toast.success('Opening Gmail...');
+            setShowMessageModal(false);
+            setMessageContent('');
+            await logAudit('open_gmail_compose', 'assessment', selectedAssessment.id, { recipient: clientEmail });
+        } catch (error: any) {
+            toast.error('Failed to open Gmail');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleSaveSponsor = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const formData = new FormData(e.target as HTMLFormElement);
+        const updates = {
+            name: formData.get('name') as string,
+            headline: formData.get('headline') as string,
+            sub_text: formData.get('sub_text') as string,
+            image_url: formData.get('image_url') as string,
+            destination_url: formData.get('destination_url') as string,
+            is_active: true,
+            updated_at: new Date().toISOString()
+        };
+        setIsUpdating(true);
+        try {
+            if (editingSponsor) {
+                const { data, error } = await supabase.from('sponsors').update(updates).eq('id', editingSponsor.id).select().single();
+                if (error) throw error;
+                setSponsors(sponsors.map(s => s.id === editingSponsor.id ? data : s));
+                toast.success(`Sponsor "${data.name}" updated successfully!`);
+            } else {
+                const { data, error } = await supabase.from('sponsors').insert(updates).select().single();
+                if (error) throw error;
+                setSponsors([...sponsors, data]);
+                toast.success(`Sponsor "${data.name}" added successfully!`);
+            }
+            setShowSponsorModal(false);
+            setEditingSponsor(null);
+        } catch (error: any) {
+            toast.error(`Failed to save sponsor: ${error.message}`);
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleDeleteSponsor = (id: string) => handleDeleteClick(id, 'sponsor');
+
+    const savePromoSettings = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsUpdatingBanner(true);
+        try {
+            const { error } = await supabase.from('promo_settings').update({
+                headline: promoSettings.headline,
+                sub_text: promoSettings.sub_text,
+                image_url: promoSettings.image_url,
+                destination_url: promoSettings.destination_url,
+                is_enabled: promoSettings.is_enabled,
+                updated_at: new Date().toISOString()
+            }).eq('id', promoSettings.id);
+            if (error) throw error;
+            toast.success('Promo settings updated!');
+            fetchPromoSettings();
+        } catch (error: any) {
+            toast.error(`Failed to update settings: ${error.message || 'Unknown error'}`);
+        } finally {
+            setIsUpdatingBanner(false);
+        }
+    };
+
+    const handleExportPayments = () => {
+        if (payments.length === 0) { toast.error('No payments to export'); return; }
+        const headers = ['ID', 'Amount', 'Currency', 'Status', 'User', 'Email', 'Date', 'Assessment ID'];
+        const csvRows = [
+            headers.join(','),
+            ...payments.map(p => [p.id, p.amount, p.currency, p.status, `"${p.profiles?.full_name || 'Unknown'}"`, p.profiles?.email || 'N/A', new Date(p.created_at).toLocaleDateString(), p.assessment_id].join(','))
+        ];
+        const csvContent = 'data:text/csv;charset=utf-8,' + csvRows.join('\n');
+        const link = document.createElement('a');
+        link.setAttribute('href', encodeURI(csvContent));
+        link.setAttribute('download', `berman_payments_export_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success('Payments report exported successfully');
+    };
+
+    const handleDeleteNewsArticle = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this article?')) return;
+        setIsUpdating(true);
+        try {
+            const { error } = await supabase.from('news_articles').delete().eq('id', id);
+            if (error) throw error;
+            setNewsArticles(newsArticles.filter(a => a.id !== id));
+            toast.success('Article deleted successfully');
+        } catch (error: any) {
+            toast.error('Failed to delete article');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
     const handleOpenCatalogueView = (business: Profile | null, existingListing?: any) => {
         setSelectedBusinessForCatalogue(business);
         setSelectedListingForEdit(existingListing || null);
-
         if (existingListing) {
             setCatalogueFormData({
                 companyName: existingListing.name || '',
@@ -653,47 +959,17 @@ const Admin = () => {
                 socialInstagram: existingListing.social_media?.instagram || '',
                 socialLinkedin: existingListing.social_media?.linkedin || '',
                 socialTwitter: existingListing.social_media?.twitter || '',
-                galleryImages: [
-                    { url: '', description: '' },
-                    { url: '', description: '' },
-                    { url: '', description: '' }
-                ],
+                galleryImages: [{ url: '', description: '' }, { url: '', description: '' }, { url: '', description: '' }],
             });
-
-            // Fetch categories for this listing
-            const fetchExistingCategoriesAndImages = async () => {
-                const { data: catData } = await supabase
-                    .from('catalogue_listing_categories')
-                    .select('category_id')
-                    .eq('listing_id', existingListing.id);
-
-                const { data: imgData } = await supabase
-                    .from('catalogue_listing_images')
-                    .select('*')
-                    .eq('listing_id', existingListing.id);
-
+            (async () => {
+                const { data: catData } = await supabase.from('catalogue_listing_categories').select('category_id').eq('listing_id', existingListing.id);
+                const { data: imgData } = await supabase.from('catalogue_listing_images').select('*').eq('listing_id', existingListing.id);
                 setCatalogueFormData(prev => {
-                    const newImages = [
-                        { url: '', description: '' },
-                        { url: '', description: '' },
-                        { url: '', description: '' }
-                    ];
-                    if (imgData) {
-                        imgData.forEach((img: any) => {
-                            if (img.display_order < 3) {
-                                newImages[img.display_order] = { url: img.url, description: img.description || '' };
-                            }
-                        });
-                    }
-
-                    return {
-                        ...prev,
-                        selectedCategories: catData ? catData.map(c => c.category_id) : [],
-                        galleryImages: newImages
-                    };
+                    const newImages = [{ url: '', description: '' }, { url: '', description: '' }, { url: '', description: '' }];
+                    if (imgData) imgData.forEach((img: any) => { if (img.display_order < 3) newImages[img.display_order] = { url: img.url, description: img.description || '' }; });
+                    return { ...prev, selectedCategories: catData ? catData.map(c => c.category_id) : [], galleryImages: newImages };
                 });
-            };
-            fetchExistingCategoriesAndImages();
+            })();
         } else {
             setCatalogueFormData({
                 companyName: business ? ((business as any).company_name || business.full_name || '') : '',
@@ -703,83 +979,13 @@ const Admin = () => {
                 address: business ? ((business as any).business_address || '') : '',
                 county: business ? ((business as any).county || '') : '',
                 website: business ? ((business as any).website || '') : '',
-                logoUrl: '',
-                featured: false,
-                selectedCategories: [],
-                additionalAddresses: [],
-                companyNumber: '',
-                registrationNo: '',
-                vatNumber: '',
-                bannerUrl: '',
-                socialFacebook: '',
-                socialInstagram: '',
-                socialLinkedin: '',
-                socialTwitter: '',
-                galleryImages: [
-                    { url: '', description: '' },
-                    { url: '', description: '' },
-                    { url: '', description: '' }
-                ],
+                logoUrl: '', featured: false, selectedCategories: [], additionalAddresses: [],
+                companyNumber: '', registrationNo: '', vatNumber: '', bannerUrl: '',
+                socialFacebook: '', socialInstagram: '', socialLinkedin: '', socialTwitter: '',
+                galleryImages: [{ url: '', description: '' }, { url: '', description: '' }, { url: '', description: '' }],
             });
         }
         setView('add-to-catalogue');
-    };
-
-    const toggleCatalogueStatus = async (id: string, currentStatus: boolean) => {
-        try {
-            const { error } = await supabase
-                .from('catalogue_listings')
-                .update({ is_active: !currentStatus })
-                .eq('id', id);
-
-            if (error) throw error;
-            setListings(prev => prev.map(l => l.id === id ? { ...l, is_active: !currentStatus } : l));
-            toast.success(`Listing ${!currentStatus ? 'activated' : 'deactivated'} successfully`);
-        } catch (error) {
-            console.error('Error toggling listing status:', error);
-            toast.error('Failed to update status');
-        }
-    };
-
-    const toggleCatalogueFeatured = async (id: string, currentFeatured: boolean) => {
-        try {
-            const { error } = await supabase
-                .from('catalogue_listings')
-                .update({ featured: !currentFeatured })
-                .eq('id', id);
-
-            if (error) throw error;
-            setListings(prev => prev.map(l => l.id === id ? { ...l, featured: !currentFeatured } : l));
-            toast.success(`Listing ${!currentFeatured ? 'featured' : 'unfeatured'} successfully`);
-        } catch (error) {
-            console.error('Error toggling featured status:', error);
-            toast.error('Failed to update featured status');
-        }
-    };
-
-    const handleDeleteListing = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this listing? This action cannot be undone.')) return;
-
-        try {
-            setIsSavingCatalogue(true);
-            // Delete relationships first due to FK constraints if any, though Supabase cascading usually handles it
-            await supabase.from('catalogue_listing_categories').delete().eq('listing_id', id);
-            await supabase.from('catalogue_listing_locations').delete().eq('listing_id', id);
-
-            const { error } = await supabase
-                .from('catalogue_listings')
-                .delete()
-                .eq('id', id);
-
-            if (error) throw error;
-            setListings(prev => prev.filter(l => l.id !== id));
-            toast.success('Listing deleted successfully');
-        } catch (error) {
-            console.error('Error deleting listing:', error);
-            toast.error('Failed to delete listing');
-        } finally {
-            setIsSavingCatalogue(false);
-        }
     };
 
     const toggleCatalogueCategory = (categoryId: string) => {
@@ -791,34 +997,57 @@ const Admin = () => {
         }));
     };
 
+    const toggleCatalogueStatus = async (id: string, currentStatus: boolean) => {
+        try {
+            const { error } = await supabase.from('catalogue_listings').update({ is_active: !currentStatus }).eq('id', id);
+            if (error) throw error;
+            setListings(prev => prev.map(l => l.id === id ? { ...l, is_active: !currentStatus } : l));
+            toast.success(`Listing ${!currentStatus ? 'activated' : 'deactivated'} successfully`);
+        } catch (error) {
+            toast.error('Failed to update status');
+        }
+    };
+
+    const toggleCatalogueFeatured = async (id: string, currentFeatured: boolean) => {
+        try {
+            const { error } = await supabase.from('catalogue_listings').update({ featured: !currentFeatured }).eq('id', id);
+            if (error) throw error;
+            setListings(prev => prev.map(l => l.id === id ? { ...l, featured: !currentFeatured } : l));
+            toast.success(`Listing ${!currentFeatured ? 'featured' : 'unfeatured'} successfully`);
+        } catch (error) {
+            toast.error('Failed to update featured status');
+        }
+    };
+
+    const handleDeleteListing = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this listing? This action cannot be undone.')) return;
+        setIsSavingCatalogue(true);
+        try {
+            await supabase.from('catalogue_listing_categories').delete().eq('listing_id', id);
+            await supabase.from('catalogue_listing_locations').delete().eq('listing_id', id);
+            const { error } = await supabase.from('catalogue_listings').delete().eq('id', id);
+            if (error) throw error;
+            setListings(prev => prev.filter(l => l.id !== id));
+            toast.success('Listing deleted successfully');
+        } catch (error) {
+            toast.error('Failed to delete listing');
+        } finally {
+            setIsSavingCatalogue(false);
+        }
+    };
+
     const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-            toast.error('Please upload an image file');
-            return;
-        }
-
-        // Validate file size (max 2MB)
-        if (file.size > 2 * 1024 * 1024) {
-            toast.error('Image must be less than 2MB');
-            return;
-        }
-
+        if (!file.type.startsWith('image/')) { toast.error('Please upload an image file'); return; }
+        if (file.size > 2 * 1024 * 1024) { toast.error('Image must be less than 2MB'); return; }
         try {
             setIsUploadingLogo(true);
             const { uploadImageToCloudinary } = await import('../lib/cloudinary');
             const publicUrl = await uploadImageToCloudinary(file);
-
-            setCatalogueFormData(prev => ({
-                ...prev,
-                logoUrl: publicUrl
-            }));
+            setCatalogueFormData(prev => ({ ...prev, logoUrl: publicUrl }));
             toast.success('Logo uploaded successfully');
         } catch (error: any) {
-            console.error('Error uploading logo:', error);
             toast.error(error.message || 'Failed to upload logo');
         } finally {
             setIsUploadingLogo(false);
@@ -829,29 +1058,15 @@ const Admin = () => {
     const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-
-        if (!file.type.startsWith('image/')) {
-            toast.error('Please upload an image file');
-            return;
-        }
-
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error('Banner image must be less than 5MB');
-            return;
-        }
-
+        if (!file.type.startsWith('image/')) { toast.error('Please upload an image file'); return; }
+        if (file.size > 5 * 1024 * 1024) { toast.error('Banner image must be less than 5MB'); return; }
         try {
-            setIsUpdatingBanner(true); // Re-using existing isUpdatingBanner state if possible, or we could add a new one, but let's use isUpdatingBanner
+            setIsUpdatingBanner(true);
             const { uploadImageToCloudinary } = await import('../lib/cloudinary');
             const publicUrl = await uploadImageToCloudinary(file);
-
-            setCatalogueFormData(prev => ({
-                ...prev,
-                bannerUrl: publicUrl
-            }));
+            setCatalogueFormData(prev => ({ ...prev, bannerUrl: publicUrl }));
             toast.success('Banner uploaded successfully');
         } catch (error: any) {
-            console.error('Error uploading banner:', error);
             toast.error(error.message || 'Failed to upload banner');
         } finally {
             setIsUpdatingBanner(false);
@@ -862,18 +1077,12 @@ const Admin = () => {
     const handleGalleryUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-
-        if (file.type !== 'image/jpeg' && file.type !== 'image/png') {
-            toast.error('Please upload a JPG or PNG image file');
-            return;
-        }
-
+        if (file.type !== 'image/jpeg' && file.type !== 'image/png') { toast.error('Please upload a JPG or PNG image file'); return; }
         try {
             setIsUploadingGallery(prev => ({ ...prev, [index]: true }));
             toast.loading('Uploading gallery image...', { id: 'gallery-upload' });
             const { uploadImageToCloudinary } = await import('../lib/cloudinary');
             const publicUrl = await uploadImageToCloudinary(file);
-
             setCatalogueFormData(prev => {
                 const newImages = [...prev.galleryImages];
                 newImages[index].url = publicUrl;
@@ -881,7 +1090,6 @@ const Admin = () => {
             });
             toast.success('Gallery image uploaded successfully', { id: 'gallery-upload' });
         } catch (error: any) {
-            console.error('Error uploading gallery image:', error);
             toast.error(error.message || 'Failed to upload gallery image', { id: 'gallery-upload' });
         } finally {
             setIsUploadingGallery(prev => ({ ...prev, [index]: false }));
@@ -891,15 +1099,8 @@ const Admin = () => {
 
     const handleSaveCatalogueEntry = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        if (!catalogueFormData.companyName.trim() || !catalogueFormData.email.trim()) {
-            toast.error('Company name and email are required');
-            return;
-        }
-        if (catalogueFormData.selectedCategories.length === 0) {
-            toast.error('Please select at least one category');
-            return;
-        }
+        if (!catalogueFormData.companyName.trim() || !catalogueFormData.email.trim()) { toast.error('Company name and email are required'); return; }
+        if (catalogueFormData.selectedCategories.length === 0) { toast.error('Please select at least one category'); return; }
 
         setIsSavingCatalogue(true);
         try {
@@ -909,46 +1110,27 @@ const Admin = () => {
 
             const fullAddress = catalogueFormData.address.trim() + (
                 catalogueFormData.county && !catalogueFormData.address.includes(catalogueFormData.county)
-                    ? `, Co. ${catalogueFormData.county}`
-                    : ''
+                    ? `, Co. ${catalogueFormData.county}` : ''
             );
 
-            // Geocode address
-            let latitude = null;
-            let longitude = null;
-
+            let latitude = null, longitude = null;
             if (catalogueFormData.address) {
                 const coords = await geocodeAddress(fullAddress);
-                if (coords) {
-                    latitude = coords.latitude;
-                    longitude = coords.longitude;
-                }
+                if (coords) { latitude = coords.latitude; longitude = coords.longitude; }
             }
-
-            // Fallback to county center if geocoding fails or address is empty
             if (!latitude && catalogueFormData.county) {
                 const countyCoords = COUNTY_COORDINATES[catalogueFormData.county];
-                if (countyCoords) {
-                    latitude = countyCoords.latitude;
-                    longitude = countyCoords.longitude;
-                }
+                if (countyCoords) { latitude = countyCoords.latitude; longitude = countyCoords.longitude; }
             }
 
             const listingData = {
-                name: catalogueFormData.companyName,
-                slug,
-                company_name: catalogueFormData.companyName,
+                name: catalogueFormData.companyName, slug, company_name: catalogueFormData.companyName,
                 description: catalogueFormData.description || `${catalogueFormData.companyName} - Professional services provider.`,
-                email: catalogueFormData.email,
-                phone: catalogueFormData.phone || null,
-                address: fullAddress || null,
-                website: catalogueFormData.website || null,
+                email: catalogueFormData.email, phone: catalogueFormData.phone || null,
+                address: fullAddress || null, website: catalogueFormData.website || null,
                 logo_url: catalogueFormData.logoUrl || null,
                 owner_id: selectedBusinessForCatalogue?.id || selectedListingForEdit?.owner_id || null,
-                is_active: true,
-                featured: catalogueFormData.featured,
-                latitude,
-                longitude,
+                is_active: true, featured: catalogueFormData.featured, latitude, longitude,
                 company_number: catalogueFormData.companyNumber || null,
                 registration_no: catalogueFormData.registrationNo || null,
                 vat_number: catalogueFormData.vatNumber || null,
@@ -963,76 +1145,39 @@ const Admin = () => {
             };
 
             let listingId = selectedListingForEdit?.id;
-
             if (selectedListingForEdit) {
-                const { error: updateError } = await supabase
-                    .from('catalogue_listings')
-                    .update(listingData)
-                    .eq('id', selectedListingForEdit.id);
-                if (updateError) throw updateError;
+                const { error } = await supabase.from('catalogue_listings').update(listingData).eq('id', selectedListingForEdit.id);
+                if (error) throw error;
             } else {
-                const { data: newListing, error: insertError } = await supabase
-                    .from('catalogue_listings')
-                    .insert(listingData)
-                    .select('id')
-                    .single();
-                if (insertError) throw insertError;
+                const { data: newListing, error } = await supabase.from('catalogue_listings').insert(listingData).select('id').single();
+                if (error) throw error;
                 listingId = newListing.id;
             }
 
             if (listingId) {
-                // For categories and locations, we clear and re-add if updating
                 if (selectedListingForEdit) {
                     await supabase.from('catalogue_listing_categories').delete().eq('listing_id', listingId);
                     await supabase.from('catalogue_listing_locations').delete().eq('listing_id', listingId);
                 }
-
-                // Map categories
                 if (catalogueFormData.selectedCategories.length > 0) {
-                    const categoryMappings = catalogueFormData.selectedCategories.map(categoryId => ({
-                        listing_id: listingId,
-                        category_id: categoryId,
-                    }));
-                    await supabase.from('catalogue_listing_categories').insert(categoryMappings);
+                    await supabase.from('catalogue_listing_categories').insert(
+                        catalogueFormData.selectedCategories.map(categoryId => ({ listing_id: listingId, category_id: categoryId }))
+                    );
                 }
 
-                // Map all locations (Primary County + Preferred Locations)
-                const allCounties = Array.from(new Set([
-                    catalogueFormData.county,
-                    ...catalogueFormData.additionalAddresses
-                ])).filter(Boolean);
-
+                const allCounties = Array.from(new Set([catalogueFormData.county, ...catalogueFormData.additionalAddresses])).filter(Boolean);
                 if (allCounties.length > 0) {
-                    const { data: locsData } = await supabase
-                        .from('catalogue_locations')
-                        .select('id')
-                        .in('name', allCounties);
-
+                    const { data: locsData } = await supabase.from('catalogue_locations').select('id').in('name', allCounties);
                     if (locsData && locsData.length > 0) {
-                        const locationMappings = locsData.map(loc => ({
-                            listing_id: listingId,
-                            location_id: loc.id
-                        }));
-                        await supabase.from('catalogue_listing_locations').insert(locationMappings);
+                        await supabase.from('catalogue_listing_locations').insert(locsData.map(loc => ({ listing_id: listingId, location_id: loc.id })));
                     }
                 }
 
-                // Handle Gallery Images
-                if (selectedListingForEdit) {
-                    await supabase.from('catalogue_listing_images').delete().eq('listing_id', listingId);
-                }
+                if (selectedListingForEdit) await supabase.from('catalogue_listing_images').delete().eq('listing_id', listingId);
                 const validImages = catalogueFormData.galleryImages
-                    .map((img, index) => ({
-                        listing_id: listingId,
-                        url: img.url.trim(),
-                        description: img.description.trim(),
-                        display_order: index,
-                    }))
+                    .map((img, index) => ({ listing_id: listingId, url: img.url.trim(), description: img.description.trim(), display_order: index }))
                     .filter(img => img.url);
-
-                if (validImages.length > 0) {
-                    await supabase.from('catalogue_listing_images').insert(validImages);
-                }
+                if (validImages.length > 0) await supabase.from('catalogue_listing_images').insert(validImages);
             }
 
             toast.success(selectedListingForEdit ? 'Listing updated successfully!' : 'Business added to catalogue successfully!');
@@ -1040,1049 +1185,37 @@ const Admin = () => {
             setSelectedListingForEdit(null);
             await fetchListings();
         } catch (error: any) {
-            console.error('Error saving catalogue entry:', error);
             toast.error(error.message || 'Failed to add business to catalogue');
         } finally {
             setIsSavingCatalogue(false);
         }
     };
 
-    const fetchAssessments = async () => {
-        setLoading(true);
-        try {
-            const { data, error } = await supabase
-                .from('assessments')
-                .select(`
-                    *,
-                    profiles:user_id (full_name, email, phone),
-                    referred_by:referred_by_listing_id (name, company_name)
-                `)
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-            setAssessments(data || []);
-        } catch (error) {
-            console.error('Error fetching assessments:', error);
-            toast.error('Failed to load assessments');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const updateRegistrationStatus = async (userId: string, status: 'active' | 'rejected') => {
-        setIsUpdating(true);
-        // Optimistic update to UI
-        const previousUsers = [...users_list];
-        setUsersList(users_list.map(u => u.id === userId ? { ...u, registration_status: status } : u));
-
-        try {
-            console.log(`[Admin] Attempting to update user ${userId} to status ${status}`);
-
-            const { data, error } = await supabase
-                .from('profiles')
-                .update({ registration_status: status })
-                .eq('id', userId)
-                .select();
-
-            if (error) {
-                console.error('[Admin] Database update error:', error);
-                throw error;
-            }
-
-            if (!data || data.length === 0) {
-                console.warn('[Admin] No rows updated. Check if registration_status column exists and RLS allows updates.');
-                throw new Error('Update failed: No rows were changed. This usually means the "registration_status" column is missing from the database schema or an RLS policy is blocking the update.');
-            }
-
-            console.log('[Admin] Update successful:', data);
-            toast.success(`Business registration ${status === 'active' ? 'approved' : 'rejected'} successfully`);
-            fetchUsers(); // Refresh the list to sync with DB
-        } catch (error: any) {
-            console.error('Error updating registration status:', error);
-            // Rollback optimistic update
-            setUsersList(previousUsers);
-
-            if (error.message?.includes('column "registration_status" does not exist')) {
-                toast.error('Database Error: The "registration_status" column is missing. Please run the SQL migration I provided.');
-            } else {
-                toast.error(error.message || 'Failed to update registration status');
-            }
-        } finally {
-            setIsUpdating(false);
-        }
-    };
-
-    const handleSendOnboardingEmail = async (u: any) => {
-        setSendingEmailId(u.id);
-        try {
-            console.log(`[Admin] Sending onboarding email to ${u.email}...`);
-            const { error } = await supabase.functions.invoke('send-onboarding-link', {
-                body: {
-                    fullName: u.full_name,
-                    email: u.email,
-                    town: u.company_name || u.town || 'Your Business Profile',
-                    userId: u.id,
-                    role: 'business',
-                }
-            });
-
-            if (error) throw error;
-            toast.success('Onboarding email sent successfully!');
-        } catch (error: any) {
-            console.error('Error sending onboarding email:', error);
-            toast.error(error.message || 'Failed to send onboarding email');
-        } finally {
-            setSendingEmailId(null);
-        }
-    };
-
-    const fetchPayments = async () => {
-        setLoading(true);
-        try {
-            const { data, error } = await supabase
-                .from('payments')
-                .select(`
-                    *,
-                    profiles (full_name, email)
-                `)
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-            setPayments(data || []);
-        } catch (error) {
-            console.error('Error fetching payments:', error);
-            toast.error('Failed to load payments');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchAppSettings = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('app_settings')
-                .select('*')
-                .single();
-
-            if (error) throw error;
-            setAppSettings(data);
-        } catch (error) {
-            console.error('Error fetching settings:', error);
-        }
-    };
-
-    const fetchNewsArticles = async () => {
-        setLoading(true);
-        try {
-            const { data, error } = await supabase
-                .from('news_articles')
-                .select('*')
-                .order('published_at', { ascending: false })
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-            setNewsArticles(data || []);
-        } catch (error) {
-            console.error('Error fetching news:', error);
-            toast.error('Failed to load news articles');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleDeleteNewsArticle = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this article?')) return;
-
-        setIsUpdating(true);
-        try {
-            const { error } = await supabase
-                .from('news_articles')
-                .delete()
-                .eq('id', id);
-
-            if (error) throw error;
-
-            setNewsArticles(newsArticles.filter(a => a.id !== id));
-            toast.success('Article deleted successfully');
-        } catch (error: any) {
-            console.error('Error deleting article:', error);
-            toast.error('Failed to delete article');
-        } finally {
-            setIsUpdating(false);
-        }
-    };
-
-    const logAudit = async (action: string, entityType: string, entityId: string, details: any) => {
-        try {
-            await supabase.from('audit_logs').insert({
-                user_id: user?.id,
-                action,
-                entity_type: entityType,
-                entity_id: entityId,
-                details
-            });
-        } catch (error) {
-            console.error('Audit log error:', error);
-        }
-    };
-
-    const updateStatus = async (id: string, newStatus: string) => {
-        setIsUpdating(true);
-        try {
-            const { error } = await supabase
-                .from('leads')
-                .update({ status: newStatus })
-                .eq('id', id);
-
-            if (error) throw error;
-            // Optimistic update
-            setLeads(leads.map(lead => lead.id === id ? { ...lead, status: newStatus } : lead));
-            if (selectedLead?.id === id) {
-                setSelectedLead({ ...selectedLead, status: newStatus });
-            }
-            toast.success('Status updated');
-        } catch (error: any) {
-            console.error('Error updating status:', error);
-            toast.error(error.message || 'Failed to update status');
-        } finally {
-            setIsUpdating(false);
-        }
-    };
-
-    const handleDeleteClick = (id: string, type: 'lead' | 'sponsor' | 'assessment' | 'user') => {
-        setItemToDelete({ id, type });
-        setShowDeleteModal(true);
-    };
-
-    const confirmDelete = async () => {
-        if (!itemToDelete) return;
-        setIsDeleting(true);
-        try {
-            if (itemToDelete.type === 'user') {
-                // Delete user securely via Edge Function to remove from auth.users (and trigger cascade to profiles)
-                const { data: edgeData, error: edgeError } = await supabase.functions.invoke('delete-user', {
-                    body: { userId: itemToDelete.id }
-                });
-
-                if (edgeError || edgeData?.error) {
-                    console.error('Edge Function Error:', edgeError || edgeData?.error);
-                    throw new Error((edgeData?.error || edgeError?.message) || 'Failed to delete user from Auth database');
-                }
-
-                setUsersList(users_list.filter(u => u.id !== itemToDelete.id));
-                toast.success('User deleted successfully');
-            } else {
-                // Delete non-user entities directly from appropriate table
-                let table: 'leads' | 'sponsors' | 'assessments' = 'leads';
-                if (itemToDelete.type === 'lead') table = 'leads';
-                else if (itemToDelete.type === 'sponsor') table = 'sponsors';
-                else if (itemToDelete.type === 'assessment') table = 'assessments';
-
-                const { error } = await supabase
-                    .from(table)
-                    .delete()
-                    .eq('id', itemToDelete.id);
-
-                if (error) throw error;
-
-                if (itemToDelete.type === 'lead') {
-                    setLeads(leads.filter(lead => lead.id !== itemToDelete.id));
-                    if (selectedLead?.id === itemToDelete.id) setSelectedLead(null);
-                    toast.success('Lead deleted successfully');
-                } else if (itemToDelete.type === 'sponsor') {
-                    setSponsors(sponsors.filter(s => s.id !== itemToDelete.id));
-                    toast.success('Sponsor deleted successfully');
-                } else if (itemToDelete.type === 'assessment') {
-                    setAssessments(assessments.filter(a => a.id !== itemToDelete.id));
-                    if (selectedAssessment?.id === itemToDelete.id) setSelectedAssessment(null);
-                    toast.success('Assessment deleted successfully');
-                }
-            }
-
-            setShowDeleteModal(false);
-        } catch (error: any) {
-            console.error(`Error deleting ${itemToDelete.type}:`, error);
-            toast.error(error.message || `Failed to delete ${itemToDelete.type}`);
-        } finally {
-            setIsDeleting(false);
-            setItemToDelete(null);
-        }
-    };
-
-    const fetchSponsors = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('sponsors')
-                .select('*')
-                .order('created_at', { ascending: true });
-
-            if (error) throw error;
-            setSponsors(data || []);
-        } catch (error) {
-            console.error('Error fetching sponsors:', error);
-            toast.error('Failed to load sponsors');
-        }
-    };
-
-    const handleSaveSponsor = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const formData = new FormData(e.target as HTMLFormElement);
-        const updates = {
-            name: formData.get('name') as string,
-            headline: formData.get('headline') as string,
-            sub_text: formData.get('sub_text') as string,
-            image_url: formData.get('image_url') as string,
-            destination_url: formData.get('destination_url') as string,
-            is_active: true, // Default to true for now
-            updated_at: new Date().toISOString()
+    // ─── View title helpers ───────────────────────────────────────────────────────
+    const getViewTitle = () => {
+        const titles: Record<string, string> = {
+            stats: 'System Overview', leads: 'Leads & Inquiries', assessments: 'BER Assessments',
+            businesses: 'Business Directory', catalogue: 'Business Catalogue', assessors: 'BER Assessors',
+            homeowners: 'Homeowners', payments: 'Financials', news: 'News & Updates', settings: 'Settings',
         };
-
-        setIsUpdating(true);
-        try {
-            let data, error;
-
-            if (editingSponsor) {
-                const result = await supabase
-                    .from('sponsors')
-                    .update(updates)
-                    .eq('id', editingSponsor.id)
-                    .select()
-                    .single();
-                data = result.data;
-                error = result.error;
-            } else {
-                const result = await supabase
-                    .from('sponsors')
-                    .insert(updates)
-                    .select()
-                    .single();
-                data = result.data;
-                error = result.error;
-            }
-
-            if (error) throw error;
-
-            if (editingSponsor) {
-                setSponsors(sponsors.map(s => s.id === editingSponsor.id ? data : s));
-                toast.success(`Sponsor "${data.name}" updated successfully!`);
-            } else {
-                setSponsors([...sponsors, data]);
-                toast.success(`Sponsor "${data.name}" added successfully!`);
-            }
-            setShowSponsorModal(false);
-            setEditingSponsor(null);
-        } catch (error: any) {
-            console.error('Error saving sponsor:', error);
-            toast.error(`Failed to save sponsor: ${error.message}`);
-        } finally {
-            setIsUpdating(false);
-        }
+        return titles[view] || 'Admin';
     };
 
-    const handleDeleteSponsor = async (id: string) => {
-        handleDeleteClick(id, 'sponsor');
-    };
-
-    const [showPromoModal, setShowPromoModal] = useState(false);
-    const [promoSettings, setPromoSettings] = useState({
-        id: 1,
-        is_enabled: false,
-        headline: '',
-        sub_text: '',
-        image_url: '',
-        destination_url: ''
-    });
-
-    const fetchPromoSettings = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('promo_settings')
-                .select('*')
-                .eq('id', 1)
-                .maybeSingle();
-
-            if (data) {
-                setPromoSettings(data);
-            } else if (!error) {
-                // Initialize if not exists (though migration should handle this, doing it here too is safe)
-                const defaultSettings = { id: 1, is_enabled: false, headline: 'Considering Solar Panels?', sub_text: 'Compare the Best Solar Deals', image_url: '', destination_url: '' };
-                setPromoSettings(defaultSettings);
-            }
-        } catch (error) {
-            console.error('Error fetching promo settings:', error);
-        }
-    };
-
-    const savePromoSettings = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsUpdatingBanner(true);
-        try {
-            const { error } = await supabase
-                .from('promo_settings')
-                .update({
-                    headline: promoSettings.headline,
-                    sub_text: promoSettings.sub_text,
-                    image_url: promoSettings.image_url,
-                    destination_url: promoSettings.destination_url,
-                    is_enabled: promoSettings.is_enabled,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', promoSettings.id);
-
-            if (error) throw error;
-            toast.success('Promo settings updated!');
-            fetchPromoSettings();
-            setShowPromoModal(false);
-        } catch (error: any) {
-            console.error('Error saving promo settings:', error);
-            toast.error(`Failed to update settings: ${error.message || 'Unknown error'}`);
-        } finally {
-            setIsUpdatingBanner(false);
-        }
-    };
-
-    useEffect(() => {
-        const fetchViewData = async () => {
-            setIsUpdating(true);
-            try {
-                if (view === 'leads') await fetchLeads();
-                else if (view === 'assessments') await fetchAssessments();
-                else if (view === 'homeowners') await fetchUsers();
-                else if (view === 'businesses') {
-                    await fetchUsers();
-                    await fetchListings();
-                    await fetchCatalogueCategories();
-                }
-                else if (view === 'catalogue') {
-                    await fetchListings();
-                    await fetchCatalogueCategories();
-                }
-                else if (view === 'add-to-catalogue') {
-                    await fetchCatalogueCategories();
-                }
-                else if (view === 'assessors') await fetchUsers();
-                else if (view === 'payments') await fetchPayments();
-                else if (view === 'settings') {
-                    await fetchAppSettings();
-                    await fetchPromoSettings();
-                    await fetchSponsors();
-                }
-                else if (view === 'stats') {
-                    // Fetch assessments and listings for referrals or stats
-                    await Promise.all([
-                        fetchLeads(),
-                        fetchAssessments(),
-                        fetchUsers(),
-                        fetchPayments()
-                    ]);
-                }
-                else if (view === 'news') {
-                    await fetchNewsArticles();
-                }
-            } finally {
-                setIsUpdating(false);
-            }
+    const getViewSubtitle = () => {
+        const subs: Record<string, string> = {
+            stats: 'Key metrics and business performance.', leads: 'Manage your website submissions.',
+            assessments: 'Manage homeowner assessment requests.', businesses: 'Review business interest and send onboarding links.',
+            catalogue: 'Manage and edit business catalogue listings.', assessors: 'Manage BER Assessors and their jobs.',
+            homeowners: 'Manage homeowners.', payments: 'View and export payment records.',
+            settings: 'Configure global platform settings.',
         };
-
-        fetchViewData();
-        fetchPromoSettings(); // Always fetch this for initial state if needed
-
-        // Real-time
-        const channel = supabase
-            .channel('admin-changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, () => fetchLeads())
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'assessments' }, () => fetchAssessments())
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchUsers())
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, () => fetchPayments())
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'app_settings' }, () => fetchAppSettings())
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [view]);
-
-    // Stats Calculation
-    const stats = {
-        totalUsers: users_list.length,
-        homeowners: users_list.filter(u => u.role === 'homeowner' || u.role === 'user').length,
-        contractors: users_list.filter(u => u.role === 'contractor').length,
-        totalLeads: leads.length,
-        totalRevenue: payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0),
-        activeAssessments: assessments.filter(a => a.status !== 'completed').length,
-        completedAssessments: assessments.filter(a => a.status === 'completed').length,
-        pendingQuotes: assessments.filter(a => a.status === 'submitted' || a.status === 'pending_quote').length,
-        acceptedQuotes: assessments.filter(a => a.status === 'quote_accepted' || a.status === 'scheduled' || a.status === 'completed').length,
-        businessLeads: users_list.filter(u => u.role === 'business').length,
-        pendingOnboarding: users_list.filter(u => u.role === 'business' && !listings.some(l => l.user_id === u.id)).length,
+        return subs[view] || '';
     };
 
-    const handleAssignContractor = async (contractorId: string) => {
-        if (!selectedAssessmentForAssignment) return;
-
-        setIsUpdating(true);
-        try {
-            const { error } = await supabase
-                .from('assessments')
-                .update({
-                    contractor_id: contractorId,
-                    status: 'assigned'
-                })
-                .eq('id', selectedAssessmentForAssignment.id);
-
-            if (error) throw error;
-
-            await logAudit('assign_contractor', 'assessment', selectedAssessmentForAssignment.id, {
-                contractor_id: contractorId,
-                previous_status: selectedAssessmentForAssignment.status
-            });
-
-            toast.success('Assessor assigned successfully');
-            setShowAssignModal(false);
-            setSelectedAssessmentForAssignment(null);
-            fetchAssessments(); // Refresh list
-        } catch (error: any) {
-            console.error('Error assigning contractor:', error);
-            toast.error('Failed to assign assessor');
-        } finally {
-            setIsUpdating(false);
-        }
-    };
-
-    const handleGenerateQuote = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!selectedAssessment) return;
-
-        setIsUpdating(true);
-        try {
-            // 1. Create Quote
-            const { data: quote, error: quoteError } = await supabase.from('quotes').insert({
-                assessment_id: selectedAssessment.id,
-                price: parseFloat(quoteData.price),
-                estimated_date: quoteData.estimated_date || null,
-                notes: quoteData.notes,
-                created_by: user?.id
-            }).select().single();
-
-            if (quoteError) throw quoteError;
-
-            // 2. Update Assessment Status
-            const { error: updateError } = await supabase
-                .from('assessments')
-                .update({ status: 'pending_quote' })
-                .eq('id', selectedAssessment.id);
-
-            if (updateError) throw updateError;
-
-            // 3. Notify homeowner about the new quote
-            supabase.functions.invoke('send-quote-notification', {
-                body: { assessmentId: selectedAssessment.id }
-            }).catch(err => console.error('Failed to trigger homeowner notification:', err));
-
-            // 4. Log Audit
-            await logAudit('generate_quote', 'assessment', selectedAssessment.id, {
-                quote_id: quote.id,
-                price: quoteData.price
-            });
-
-            toast.success('Quote generated successfully!');
-            setShowQuoteModal(false);
-            setQuoteData({ price: '', estimated_date: '', notes: '' });
-            fetchAssessments();
-        } catch (error: any) {
-            console.error('Error generating quote:', error);
-            toast.error(error.message || 'Failed to generate quote');
-        } finally {
-            setIsUpdating(false);
-        }
-    };
-
-    const handleSchedule = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!selectedAssessment || !selectedDate) return;
-
-        setIsUpdating(true);
-        try {
-            // Check if rescheduling
-            const isRescheduled = selectedAssessment.status === 'scheduled' && selectedAssessment.scheduled_date !== selectedDate;
-
-            const { error } = await supabase
-                .from('assessments')
-                .update({
-                    status: 'scheduled',
-                    scheduled_date: selectedDate
-                })
-                .eq('id', selectedAssessment.id);
-
-            if (error) throw error;
-
-            // Trigger notification
-            supabase.functions.invoke('send-job-status-notification', {
-                body: {
-                    assessmentId: selectedAssessment.id,
-                    status: isRescheduled ? 'rescheduled' : 'scheduled',
-                    details: {
-                        inspectionDate: selectedDate,
-                        contractorName: 'The Berman Team' // Admin action
-                    }
-                }
-            }).catch(err => console.error('Failed to trigger status notification:', err));
-
-            await logAudit('schedule_assessment', 'assessment', selectedAssessment.id, { scheduled_date: selectedDate });
-
-            toast.success('Assessment scheduled!');
-            setShowScheduleModal(false);
-            fetchAssessments();
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to schedule');
-        } finally {
-            setIsUpdating(false);
-        }
-    };
-
-    const handleComplete = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!selectedAssessment) return;
-
-        setIsUpdating(true);
-        try {
-            const { error } = await supabase
-                .from('assessments')
-                .update({
-                    status: 'completed',
-                    certificate_url: certUrl,
-                    completed_at: new Date().toISOString()
-                })
-                .eq('id', selectedAssessment.id);
-
-            if (error) throw error;
-
-            // Trigger notification
-            supabase.functions.invoke('send-job-status-notification', {
-                body: {
-                    assessmentId: selectedAssessment.id,
-                    status: 'completed',
-                    details: {
-                        certificateUrl: certUrl,
-                        contractorName: 'The Berman Team'
-                    }
-                }
-            }).catch(err => console.error('Failed to trigger status notification:', err));
-
-            await logAudit('complete_assessment', 'assessment', selectedAssessment.id, { certificate_url: certUrl });
-
-            toast.success('Assessment marked as completed!');
-            setShowCompleteModal(false);
-            setCertUrl('');
-            fetchAssessments();
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to complete');
-        } finally {
-            setIsUpdating(false);
-        }
-    };
-
-    const handleSendMessage = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!selectedAssessment || !messageContent.trim()) return;
-
-        setIsUpdating(true);
-        try {
-            const clientEmail = selectedAssessment.profiles?.email;
-            const propertyAddress = selectedAssessment.property_address;
-
-            if (!clientEmail) {
-                toast.error('Client email not found');
-                return;
-            }
-
-            const subject = encodeURIComponent(`Update regarding your BER Assessment - ${propertyAddress}`);
-            const body = encodeURIComponent(messageContent);
-
-            const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${clientEmail}&su=${subject}&body=${body}`;
-
-            window.open(gmailUrl, '_blank');
-
-            toast.success('Opening Gmail...');
-            setShowMessageModal(false);
-            setMessageContent('');
-
-            await logAudit('open_gmail_compose', 'assessment', selectedAssessment.id, {
-                recipient: clientEmail
-            });
-
-        } catch (error: any) {
-            console.error('Error opening Gmail:', error);
-            toast.error('Failed to open Gmail');
-        } finally {
-            setIsUpdating(false);
-        }
-    };
-
-
-    const handleSignOut = async () => {
-        await signOut();
-        navigate('/login');
-    };
-
-
-
-    const resetNewUserForm = () => {
-        setNewUserFormData({
-            fullName: '', email: '', password: '', phone: '', county: '', town: '',
-            seaiNumber: '', assessorType: 'Domestic Assessor', companyName: '',
-            businessAddress: '', website: '', description: '', companyNumber: '', vatNumber: '',
-        });
-    };
-
-    const handleAddUser = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsUpdating(true);
-        try {
-            // Use server-side edge function for ALL roles (contractor, business, homeowner, user)
-            // This avoids replacing the admin's session with supabase.auth.signUp
-            const { data: fnData, error: fnError } = await supabase.functions.invoke('create-admin-user', {
-                body: {
-                    fullName: newUserFormData.fullName,
-                    email: newUserFormData.email,
-                    password: newUserFormData.password,
-                    phone: newUserFormData.phone || null,
-                    county: newUserFormData.county || null,
-                    town: newUserFormData.town || null,
-                    assessorType: newUserFormData.assessorType || null,
-                    companyName: newUserFormData.companyName || null,
-                    businessAddress: newUserFormData.businessAddress || null,
-                    website: newUserFormData.website || null,
-                    description: newUserFormData.description || null,
-                    companyNumber: newUserFormData.companyNumber || null,
-                    vatNumber: newUserFormData.vatNumber || null,
-                    role: newUserRole,
-                }
-            });
-
-            console.log('[handleAddUser] Edge function response:', fnData, fnError);
-
-            if (fnError) {
-                console.error('[handleAddUser] Edge function error:', fnError);
-                throw new Error(fnError.message || 'Edge function failed');
-            }
-            if (!fnData?.success) throw new Error(fnData?.error || 'Failed to create user');
-
-            // Send welcome email with magic link (one-click login)
-            try {
-                const onboardingUrl = fnData.magicLink;
-                const { data: emailData, error: emailError } = await supabase.functions.invoke('send-onboarding-link', {
-                    body: {
-                        fullName: newUserFormData.fullName,
-                        email: newUserFormData.email,
-                        password: newUserFormData.password, // Pass password for the email template
-                        town: newUserFormData.town || '',
-                        onboardingUrl: onboardingUrl,
-                        role: newUserRole,
-                        userId: fnData.user.id
-                    }
-                });
-
-                console.log('[handleAddUser] Email function response:', emailData, emailError);
-
-                if (emailData?.success) {
-                    toast.success(`${newUserRole === 'contractor' ? 'Assessor' : 'Business'} created & login link sent via email!`);
-                } else {
-                    console.error('[handleAddUser] Email workflow failed:', emailData?.workflow);
-                    toast.success('User created but email failed. Please share the login link manually.');
-                }
-            } catch (err: any) {
-                console.error('Email send failed:', err);
-                toast.success('User created but email failed. Please share the login link manually.');
-            }
-
-            if (fnData?.user) {
-                setUsersList([fnData.user, ...users_list]);
-                logAudit('create_user', 'user', fnData.user.id, { role: newUserRole });
-            }
-
-            setShowAddUserModal(false);
-            resetNewUserForm();
-        } catch (error: any) {
-            console.error('Error adding user:', error);
-            toast.error(error.message || 'Failed to add user');
-        } finally {
-            setIsUpdating(false);
-        }
-    };
-
-    const handleUpdateProfile = async () => {
-        if (!selectedUser) return;
-        setIsUpdating(true);
-        try {
-            const finalStripeId = (editForm.subscription_status === 'active' && !editForm.stripe_payment_id)
-                ? 'MANUAL_BY_ADMIN'
-                : (editForm.stripe_payment_id || undefined);
-
-            const { error } = await supabase
-                .from('profiles')
-                .update({
-                    subscription_status: editForm.subscription_status,
-                    subscription_start_date: editForm.subscription_start_date,
-                    subscription_end_date: editForm.subscription_end_date,
-                    manual_override_reason: editForm.manual_override_reason,
-                    stripe_payment_id: finalStripeId,
-                    role: editForm.role
-                })
-                .eq('id', selectedUser.id);
-
-            if (error) throw error;
-
-            setUsersList(users_list.map(u =>
-                u.id === selectedUser.id ? {
-                    ...u,
-                    subscription_status: editForm.subscription_status,
-                    subscription_start_date: editForm.subscription_start_date,
-                    subscription_end_date: editForm.subscription_end_date,
-                    manual_override_reason: editForm.manual_override_reason,
-                    stripe_payment_id: finalStripeId,
-                    role: editForm.role as any
-                } : u
-            ));
-
-            // Also update selectedUser to reflect changes in UI
-            setSelectedUser({
-                ...selectedUser,
-                subscription_status: editForm.subscription_status!,
-                subscription_start_date: editForm.subscription_start_date!,
-                subscription_end_date: editForm.subscription_end_date!,
-                manual_override_reason: editForm.manual_override_reason!,
-                stripe_payment_id: finalStripeId!,
-                role: editForm.role as any
-            });
-
-            toast.success('Profile updated successfully');
-        } catch (error: any) {
-            console.error('Error updating profile:', error);
-            toast.error('Failed to update profile');
-        } finally {
-            setIsUpdating(false);
-        }
-    };
-
-    const handleManualRenewal = async (userId: string, monthsToAdd: number = 12) => {
-        setIsUpdating(true);
-        try {
-            const userToUpdate = users_list.find(u => u.id === userId);
-            const now = new Date();
-            let startDate = new Date();
-            let endDate = new Date();
-
-            if (userToUpdate?.subscription_end_date) {
-                const currentEnd = new Date(userToUpdate.subscription_end_date);
-                if (currentEnd > now) {
-                    // If active, extend from the current end date
-                    startDate = userToUpdate.subscription_start_date ? new Date(userToUpdate.subscription_start_date) : now;
-                    endDate = new Date(currentEnd);
-                    endDate.setMonth(endDate.getMonth() + monthsToAdd);
-                } else {
-                    // If expired, start from today
-                    endDate.setMonth(endDate.getMonth() + monthsToAdd);
-                }
-            } else {
-                // If no date, start from today
-                endDate.setMonth(endDate.getMonth() + monthsToAdd);
-            }
-
-            // If we're manually renewing, we should auto-activate registration too
-            const updateData: Partial<Profile> = {
-                subscription_status: 'active',
-                subscription_start_date: startDate.toISOString(),
-                subscription_end_date: endDate.toISOString(),
-                is_active: true,
-                registration_status: 'active',
-                // Set a manual payment ID if one doesn't exist to remove "Not Paid" tag
-                stripe_payment_id: userToUpdate?.stripe_payment_id || 'MANUAL_BY_ADMIN'
-            };
-
-            const { error } = await supabase
-                .from('profiles')
-                .update(updateData)
-                .eq('id', userId);
-
-            if (error) throw error;
-
-            setUsersList(users_list.map(u =>
-                u.id === userId ? {
-                    ...u,
-                    ...updateData
-                } : u
-            ));
-
-            if (selectedUser?.id === userId) {
-                setSelectedUser({
-                    ...selectedUser,
-                    ...updateData
-                } as Profile);
-            }
-
-            toast.success(`Subscription updated for ${monthsToAdd} months & account activated!`);
-            fetchUsers();
-        } catch (error: any) {
-            console.error('Error renewing subscription:', error);
-            toast.error('Failed to renew subscription');
-        } finally {
-            setIsUpdating(false);
-        }
-    };
-
-    const handleCancelSubscription = async (userId: string) => {
-        if (!confirm('Are you sure you want to cancel this subscription? The user will be instantly disabled.')) return;
-        setIsUpdating(true);
-        try {
-            const { error } = await supabase
-                .from('profiles')
-                .update({
-                    subscription_status: 'cancelled',
-                    is_active: false,
-                    stripe_payment_id: 'CANCELLED',
-                    registration_status: 'pending'
-                })
-                .eq('id', userId);
-
-            if (error) throw error;
-
-            setUsersList(users_list.map(u =>
-                u.id === userId ? {
-                    ...u,
-                    subscription_status: 'cancelled',
-                    is_active: false,
-                    stripe_payment_id: 'CANCELLED',
-                    registration_status: 'pending'
-                } : u
-            ));
-
-            if (selectedUser?.id === userId) {
-                setSelectedUser({
-                    ...selectedUser,
-                    subscription_status: 'cancelled',
-                    is_active: false,
-                    stripe_payment_id: 'CANCELLED',
-                    registration_status: 'pending'
-                });
-            }
-
-            toast.success('Subscription cancelled and status updated.');
-            fetchUsers();
-        } catch (error: any) {
-            console.error('Error cancelling subscription:', error);
-            toast.error('Failed to cancel subscription');
-        } finally {
-            setIsUpdating(false);
-        }
-    };
-
-    const handleSendRenewalReminder = async (u: any) => {
-        setSendingEmailId(u.id);
-        try {
-            // Gmail Compose for manual renewal reminder
-            const expiryDate = u.subscription_end_date ? new Date(u.subscription_end_date).toLocaleDateString('en-GB') : 'Soon';
-            const subject = encodeURIComponent(`Your Subscription Expiry - The Berman`);
-            const body = encodeURIComponent(`Hi ${u.full_name || 'there'},\n\nYour subscription with The Berman has expired/is about to expire on ${expiryDate}.\n\nTo continue your membership and keep your listing active, please login and renew your subscription.\n\nBest regards,\nThe Berman Team`);
-            const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${u.email}&su=${subject}&body=${body}`;
-            window.open(gmailUrl, '_blank');
-
-            toast.success('Opening Gmail with renewal reminder...');
-        } catch (error: any) {
-            console.error('Error sending renewal reminder:', error);
-            toast.error('Failed to send renewal reminder');
-        } finally {
-            setSendingEmailId(null);
-        }
-    };
-
-
-    const toggleUserStatus = async () => {
-        if (!itemToSuspend) return;
-        setIsUpdating(true);
-        try {
-            const isSuspending = itemToSuspend.currentStatus === true;
-
-            // Updated status mapping
-            const updateData: any = {
-                is_active: !itemToSuspend.currentStatus,
-            };
-
-            if (isSuspending) {
-                updateData.stripe_payment_id = 'SUSPENDED';
-                updateData.registration_status = 'pending';
-            }
-
-            const { error } = await supabase
-                .from('profiles')
-                .update(updateData)
-                .eq('id', itemToSuspend.id);
-
-            if (error) throw error;
-
-            // ALSO SYNC LISTINGS
-            const { error: listingError } = await supabase
-                .from('catalogue_listings')
-                .update({ is_active: !itemToSuspend.currentStatus })
-                .or(`user_id.eq.${itemToSuspend.id},owner_id.eq.${itemToSuspend.id}`);
-
-            if (listingError) console.error('Error syncing listings:', listingError);
-
-            setUsersList(users_list.map(u =>
-                u.id === itemToSuspend.id ? {
-                    ...u,
-                    is_active: !itemToSuspend.currentStatus,
-                    ...(isSuspending ? {
-                        stripe_payment_id: 'SUSPENDED',
-                        registration_status: 'pending'
-                    } : {})
-                } : u
-            ));
-
-            // Update local listings state
-            setListings(prev => prev.map(l =>
-                (l.user_id === itemToSuspend.id || l.owner_id === itemToSuspend.id)
-                    ? { ...l, is_active: !itemToSuspend.currentStatus }
-                    : l
-            ));
-
-            if (selectedUser?.id === itemToSuspend.id) {
-                setSelectedUser({
-                    ...selectedUser,
-                    is_active: !itemToSuspend.currentStatus,
-                    ...(isSuspending ? {
-                        stripe_payment_id: 'SUSPENDED',
-                        registration_status: 'pending'
-                    } : {})
-                });
-            }
-
-            toast.success(`User ${isSuspending ? 'suspended' : 'activated'} successfully`);
-            setShowSuspendModal(false);
-            setItemToSuspend(null);
-        } catch (error: any) {
-            console.error('Error toggling user status:', error);
-            toast.error(error.message || 'Failed to update user status');
-        } finally {
-            setIsUpdating(false);
-        }
-    };
-
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'new':
-            case 'pending': return 'bg-blue-100 text-blue-800';
-            case 'contacted':
-            case 'pending_quote': return 'bg-yellow-100 text-yellow-800';
-            case 'completed': return 'bg-green-100 text-green-800';
-            case 'scheduled': return 'bg-purple-100 text-purple-800';
-            default: return 'bg-gray-100 text-gray-800';
-        }
-    };
-
+    // ─── Render ───────────────────────────────────────────────────────────────────
     return (
         <div className="min-h-screen bg-gray-50 font-sans relative">
-            {/* Admin Header */}
+            {/* Header */}
             <header className="bg-[#0c121d] backdrop-blur-md border-b border-white/5 sticky top-0 z-[9999] shadow-lg transition-all duration-300">
                 <div className="container mx-auto px-6 h-20 flex justify-between items-center">
                     <div className="flex items-center gap-8">
@@ -2116,11 +1249,7 @@ const Admin = () => {
                                                 onClick={() => { setView(v); setIsMenuOpen(false); }}
                                                 className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] transition-all duration-200 ${view === v ? 'bg-[#5CB85C]/10 text-[#5CB85C]' : 'text-gray-600 hover:bg-gray-50'}`}
                                             >
-                                                {v === 'stats' ? 'Overview' :
-                                                    v === 'homeowners' ? 'Homeowners' :
-                                                        v === 'businesses' ? 'Businesses' :
-                                                            v === 'catalogue' ? 'Manage Catalogue' :
-                                                                v === 'assessors' ? 'BER Assessors' : v}
+                                                {v === 'stats' ? 'Overview' : v === 'homeowners' ? 'Homeowners' : v === 'businesses' ? 'Businesses' : v === 'catalogue' ? 'Manage Catalogue' : v === 'assessors' ? 'BER Assessors' : v}
                                                 {view === v && <div className="w-1.5 h-1.5 rounded-full bg-[#5CB85C]"></div>}
                                             </button>
                                         ))}
@@ -2136,8 +1265,7 @@ const Admin = () => {
                                             onClick={handleSignOut}
                                             className="w-full text-left px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] text-red-500 hover:bg-red-50 flex items-center justify-between"
                                         >
-                                            Sign Out
-                                            <LogOut size={14} />
+                                            Sign Out <LogOut size={14} />
                                         </button>
                                     </div>
                                 </div>
@@ -2147,51 +1275,27 @@ const Admin = () => {
                 </div>
             </header>
 
-            {/* Dashboard Content */}
+            {/* Main Content */}
             <main className="container mx-auto px-4 py-8">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                    <div className="flex flex-col gap-4 w-full md:w-auto">
-                        <div>
-                            <h2 className="text-2xl font-bold text-gray-800">
-                                {view === 'stats' ? 'System Overview' :
-                                    view === 'leads' ? 'Leads & Inquiries' :
-                                        view === 'assessments' ? 'BER Assessments' :
-                                            view === 'businesses' ? 'Business Directory' :
-                                                view === 'catalogue' ? 'Business Catalogue' :
-                                                    view === 'assessors' ? 'BER Assessors' :
-                                                        view === 'homeowners' ? 'Homeowners' :
-                                                            view === 'payments' ? 'Financials' :
-                                                                view === 'news' ? 'News & Updates' : 'Admin'}
-                            </h2>
-                            <p className="text-gray-500 text-sm mt-1">
-                                {view === 'stats' ? 'Key metrics and business performance.' :
-                                    view === 'leads' ? 'Manage your website submissions.' :
-                                        view === 'assessments' ? 'Manage homeowner assessment requests.' :
-                                            view === 'businesses' ? 'Review business interest and send onboarding links.' :
-                                                view === 'catalogue' ? 'Manage and edit business catalogue listings.' :
-                                                    view === 'assessors' ? 'Manage BER Assessors and their jobs.' :
-                                                        view === 'homeowners' ? 'Manage homeowners.' :
-                                                            view === 'payments' ? 'View and export payment records.' :
-                                                                view === 'settings' ? 'Configure global platform settings.' : ''}
-                            </p>
-                        </div>
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-800">{getViewTitle()}</h2>
+                        <p className="text-gray-500 text-sm mt-1">{getViewSubtitle()}</p>
                     </div>
                     <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
                         {view !== 'stats' && (
                             <button
-                                onClick={() => { setView('stats'); setSelectedStatView('homeowners'); }}
+                                onClick={() => setView('stats')}
                                 className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm text-gray-700 hover:text-[#007F00]"
                             >
-                                <ArrowLeft size={16} />
-                                Back to Overview
+                                <ArrowLeft size={16} /> Back to Overview
                             </button>
                         )}
                         <button
                             onClick={view === 'leads' ? fetchLeads : fetchAssessments}
                             className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm text-gray-700 hover:text-[#007F00] hover:border-[#007F00]"
                         >
-                            <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
-                            Refresh Data
+                            <RefreshCw className={loading ? 'animate-spin' : ''} size={16} /> Refresh Data
                         </button>
                     </div>
                 </div>
@@ -2201,3506 +1305,237 @@ const Admin = () => {
                         <RefreshCw className="animate-spin text-[#007F00] mb-4" size={32} />
                         <p className="text-gray-500 font-medium">Loading {view}...</p>
                     </div>
-                ) : view === 'add-to-catalogue' ? (
-                    <div className="max-w-4xl mx-auto">
-                        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
-                            <form onSubmit={handleSaveCatalogueEntry} className="flex flex-col">
-                                {/* Header */}
-                                <div className="flex items-center justify-between px-8 py-8 bg-gray-50/50 border-b border-gray-100">
-                                    <div>
-                                        <h2 className="text-2xl font-bold text-gray-900">Add to Catalogue</h2>
-                                        <p className="text-sm text-gray-500 mt-1">
-                                            {selectedBusinessForCatalogue ? (
-                                                <>Create a listing for <span className="font-bold text-gray-700">{selectedBusinessForCatalogue.full_name}</span></>
-                                            ) : 'Create a new standalone business listing'}
-                                        </p>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setView(selectedListingForEdit ? 'catalogue' : 'businesses')}
-                                        className="bg-white text-gray-600 hover:text-gray-900 px-4 py-2 rounded-xl text-sm font-bold border border-gray-200 hover:border-gray-300 transition-all flex items-center gap-2"
-                                    >
-                                        <X size={18} />
-                                        Cancel
-                                    </button>
-                                </div>
-
-                                {/* Body */}
-                                <div className="px-8 py-10 space-y-8">
-                                    {/* Business Details Section */}
-                                    <div className="space-y-6">
-                                        <div className="flex items-center gap-3 pb-2 border-b border-gray-100">
-                                            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                                                <Briefcase size={18} />
-                                            </div>
-                                            <h3 className="text-base font-bold text-gray-900">{selectedListingForEdit ? 'Edit Business Details' : 'Business Details'}</h3>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="space-y-1.5">
-                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Company Name *</label>
-                                                <input
-                                                    type="text"
-                                                    required
-                                                    value={catalogueFormData.companyName}
-                                                    onChange={(e) => setCatalogueFormData({ ...catalogueFormData, companyName: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
-                                                    placeholder="e.g. Acme Retrofitting Ltd"
-                                                />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Email *</label>
-                                                <input
-                                                    type="email"
-                                                    required
-                                                    value={catalogueFormData.email}
-                                                    onChange={(e) => setCatalogueFormData({ ...catalogueFormData, email: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
-                                                    placeholder="info@business.ie"
-                                                />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Phone <span className="text-gray-300 font-medium">(Optional)</span></label>
-                                                <input
-                                                    type="tel"
-                                                    value={catalogueFormData.phone}
-                                                    onChange={(e) => setCatalogueFormData({ ...catalogueFormData, phone: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
-                                                    placeholder="+353 1 234 5678"
-                                                />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Website <span className="text-gray-300 font-medium">(Optional)</span></label>
-                                                <input
-                                                    type="url"
-                                                    value={catalogueFormData.website}
-                                                    onChange={(e) => setCatalogueFormData({ ...catalogueFormData, website: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
-                                                    placeholder="https://www.business.ie"
-                                                />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Company Number <span className="text-gray-300 font-medium">(Optional)</span></label>
-                                                <input
-                                                    type="text"
-                                                    value={catalogueFormData.companyNumber}
-                                                    onChange={(e) => setCatalogueFormData({ ...catalogueFormData, companyNumber: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
-                                                    placeholder="e.g. 123456"
-                                                />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">BER Assessor Registration <span className="text-gray-300 font-medium">(Optional)</span></label>
-                                                <input
-                                                    type="text"
-                                                    value={catalogueFormData.registrationNo}
-                                                    onChange={(e) => setCatalogueFormData({ ...catalogueFormData, registrationNo: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
-                                                    placeholder="e.g. BER-12345"
-                                                />
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">VAT Number <span className="text-gray-300 font-medium">(Optional)</span></label>
-                                                <input
-                                                    type="text"
-                                                    value={catalogueFormData.vatNumber}
-                                                    onChange={(e) => setCatalogueFormData({ ...catalogueFormData, vatNumber: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
-                                                    placeholder="e.g. IE1234567T"
-                                                />
-                                            </div>
-                                            <div className="space-y-1.5 md:col-span-2">
-                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Primary Address <span className="text-gray-300 font-medium">(Optional)</span></label>
-                                                <input
-                                                    type="text"
-                                                    value={catalogueFormData.address}
-                                                    onChange={(e) => setCatalogueFormData({ ...catalogueFormData, address: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
-                                                    placeholder="123 Industrial Estate, Dublin 12"
-                                                />
-                                            </div>
-                                            <div className="space-y-1.5 md:col-span-2">
-                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">County</label>
-                                                <select
-                                                    value={catalogueFormData.county}
-                                                    onChange={(e) => setCatalogueFormData({ ...catalogueFormData, county: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all bg-white"
-                                                >
-                                                    <option value="">Select County</option>
-                                                    {IRISH_COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
-                                                </select>
-                                            </div>
-
-                                            <div className="md:col-span-2 space-y-4 pt-6 border-t border-gray-100">
-                                                <div className="flex items-center gap-3 pb-2 border-b border-gray-100">
-                                                    <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center">
-                                                        <MapPin size={18} />
-                                                    </div>
-                                                    <h3 className="text-base font-bold text-gray-900">Preferred Locations</h3>
-                                                </div>
-                                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                                                    {IRISH_COUNTIES.map(county => {
-                                                        const isSelected = catalogueFormData.additionalAddresses.includes(county);
-                                                        return (
-                                                            <button
-                                                                key={county}
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    const newLocs = isSelected
-                                                                        ? catalogueFormData.additionalAddresses.filter(c => c !== county)
-                                                                        : [...catalogueFormData.additionalAddresses, county];
-                                                                    setCatalogueFormData({ ...catalogueFormData, additionalAddresses: newLocs });
-                                                                }}
-                                                                className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-tight transition-all border text-center ${isSelected
-                                                                    ? 'bg-[#007F00] text-white border-[#007F00] shadow-md shadow-green-100'
-                                                                    : 'bg-white text-gray-500 border-gray-200 hover:border-[#007F00]/30 hover:bg-green-50'
-                                                                    }`}
-                                                            >
-                                                                {county}
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Description (Moved up) */}
-                                    <div className="space-y-4 pt-6 border-t border-gray-100">
-                                        <div className="flex items-center gap-3 pb-2 border-b border-gray-100">
-                                            <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                                                <Newspaper size={18} />
-                                            </div>
-                                            <h3 className="text-base font-bold text-gray-900">About the Business</h3>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Company Description</label>
-                                            <textarea
-                                                value={catalogueFormData.description}
-                                                onChange={(e) => setCatalogueFormData({ ...catalogueFormData, description: e.target.value })}
-                                                rows={4}
-                                                className="w-full border border-gray-200 rounded-2xl px-5 py-4 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all resize-none"
-                                                placeholder="Describe the services and expertise..."
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Branding & Media Section */}
-                                    <div className="md:col-span-2 mt-8 pt-8 border-t border-double border-gray-100">
-                                        <div className="flex items-center gap-3 mb-8">
-                                            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                                                <ImageIcon size={18} />
-                                            </div>
-                                            <h3 className="text-base font-bold text-gray-900 uppercase tracking-widest">Branding & Media</h3>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                            <div className="space-y-1.5">
-                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Logo</label>
-                                                <div className="mt-1 flex items-center gap-4">
-                                                    {catalogueFormData.logoUrl ? (
-                                                        <div className="relative w-24 h-24 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 flex-shrink-0 group shadow-sm transition-all hover:shadow-md">
-                                                            <img src={catalogueFormData.logoUrl} alt="Logo Preview" className="w-full h-full object-contain" />
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => setCatalogueFormData(prev => ({ ...prev, logoUrl: ' ' }))}
-                                                                className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                                            >
-                                                                <X size={20} className="text-white" />
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-300 bg-gray-50/50">
-                                                            {isUploadingLogo ? <Loader2 size={24} className="animate-spin" /> : <ImageIcon size={24} />}
-                                                        </div>
-                                                    )}
-
-                                                    <div className="flex-1 space-y-2">
-                                                        <input
-                                                            type="file"
-                                                            id="catalogue-logo-upload"
-                                                            className="hidden"
-                                                            accept="image/*"
-                                                            onChange={handleLogoUpload}
-                                                            disabled={isUploadingLogo}
-                                                        />
-                                                        <label
-                                                            htmlFor="catalogue-logo-upload"
-                                                            className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer shadow-sm border ${isUploadingLogo ? 'bg-gray-50 text-gray-400 border-gray-100' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
-                                                        >
-                                                            {isUploadingLogo ? <Loader2 size={16} className="animate-spin" /> : <UploadCloud size={16} />}
-                                                            {isUploadingLogo ? 'Uploading...' : 'Upload Logo'}
-                                                        </label>
-                                                        <p className="text-[10px] text-gray-400 font-medium tracking-tight">Rec: Square PNG/JPG. Max 2MB.</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="md:col-span-2 space-y-2">
-                                                <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1 block mb-3">Master Banner Image</label>
-                                                <div className="relative h-60 w-full rounded-2xl overflow-hidden bg-gray-50 border-2 border-dashed border-gray-200 group ring-4 ring-white shadow-sm transition-all hover:border-[#007F00]/30">
-                                                    {catalogueFormData.bannerUrl ? (
-                                                        <>
-                                                            <img src={catalogueFormData.bannerUrl} alt="Banner Preview" className="w-full h-full object-cover" />
-                                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => setCatalogueFormData(prev => ({ ...prev, bannerUrl: '' }))}
-                                                                    className="bg-red-500 text-white p-3 rounded-full hover:bg-red-600 transition-all transform hover:scale-110 shadow-xl"
-                                                                >
-                                                                    <X size={24} />
-                                                                </button>
-                                                            </div>
-                                                        </>
-                                                    ) : (
-                                                        <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-4">
-                                                            {isUpdatingBanner ? (
-                                                                <Loader2 size={40} className="animate-spin text-[#007F00]" />
-                                                            ) : (
-                                                                <>
-                                                                    <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-green-50 transition-colors">
-                                                                        <ImageIcon size={32} className="group-hover:text-[#007F00] transition-colors" />
-                                                                    </div>
-                                                                    <div className="text-center">
-                                                                        <p className="font-bold text-sm text-gray-900 mb-1">Upload Master Banner</p>
-                                                                        <p className="text-[10px] uppercase tracking-widest text-gray-500">1920 x 600 recommended</p>
-                                                                    </div>
-                                                                </>
-                                                            )}
-                                                        </div>
-                                                    )}
-
-                                                    <input
-                                                        type="file"
-                                                        id="catalogue-banner-upload"
-                                                        className="hidden"
-                                                        accept="image/*"
-                                                        onChange={handleBannerUpload}
-                                                        disabled={isUpdatingBanner}
-                                                    />
-
-                                                    {!catalogueFormData.bannerUrl && !isUpdatingBanner && (
-                                                        <label
-                                                            htmlFor="catalogue-banner-upload"
-                                                            className="absolute inset-0 cursor-pointer"
-                                                        />
-                                                    )}
-                                                </div>
-                                                {catalogueFormData.bannerUrl && (
-                                                    <label
-                                                        htmlFor="catalogue-banner-upload"
-                                                        className="mt-2 inline-flex items-center gap-2 text-[10px] font-black uppercase text-[#007EA7] hover:text-[#005f7d] cursor-pointer transition-colors"
-                                                    >
-                                                        <RefreshCw size={12} className={isUpdatingBanner ? 'animate-spin' : ''} />
-                                                        Replace Current Banner
-                                                    </label>
-                                                )}
-                                            </div>
-
-                                            {/* Social Connect Links */}
-                                            <div className="md:col-span-2 space-y-6 pt-6 border-t border-gray-100">
-                                                <div className="flex items-center gap-3 pb-2 border-b border-gray-100">
-                                                    <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                                                        <Globe size={18} />
-                                                    </div>
-                                                    <h3 className="text-base font-bold text-gray-900">Social Media Connections</h3>
-                                                </div>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                    <div className="space-y-4">
-                                                        <div>
-                                                            <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2"><Facebook size={12} /> Facebook</label>
-                                                            <input
-                                                                type="url"
-                                                                value={catalogueFormData.socialFacebook}
-                                                                onChange={(e) => setCatalogueFormData({ ...catalogueFormData, socialFacebook: e.target.value })}
-                                                                placeholder="https://facebook.com/yourpage"
-                                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
-                                                            />
-                                                        </div>
-                                                        <div>
-                                                            <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2"><Instagram size={12} /> Instagram</label>
-                                                            <input
-                                                                type="url"
-                                                                value={catalogueFormData.socialInstagram}
-                                                                onChange={(e) => setCatalogueFormData({ ...catalogueFormData, socialInstagram: e.target.value })}
-                                                                placeholder="https://instagram.com/yourprofile"
-                                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    <div className="space-y-4">
-                                                        <div>
-                                                            <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2"><Linkedin size={12} /> LinkedIn</label>
-                                                            <input
-                                                                type="url"
-                                                                value={catalogueFormData.socialLinkedin}
-                                                                onChange={(e) => setCatalogueFormData({ ...catalogueFormData, socialLinkedin: e.target.value })}
-                                                                placeholder="https://linkedin.com/company/handle"
-                                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
-                                                            />
-                                                        </div>
-                                                        <div>
-                                                            <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2"><Twitter size={12} /> Twitter / X</label>
-                                                            <input
-                                                                type="url"
-                                                                value={catalogueFormData.socialTwitter}
-                                                                onChange={(e) => setCatalogueFormData({ ...catalogueFormData, socialTwitter: e.target.value })}
-                                                                placeholder="https://twitter.com/handle"
-                                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-4 focus:ring-[#007F00]/10 focus:border-[#007F00] transition-all"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Photo Gallery Section */}
-                                    <div className="md:col-span-2 mt-8 pt-8 border-t border-gray-100">
-                                        <div className="mb-6">
-                                            <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm flex items-center gap-2">
-                                                <ImageIcon size={16} /> Manage Gallery Photos
-                                            </h3>
-                                            <p className="text-[11px] text-gray-500 font-medium mt-1">Add up to 3 high-quality JPG or PNG photos with short descriptions</p>
-                                        </div>
-
-                                        <div className="space-y-6">
-                                            {catalogueFormData.galleryImages.map((img, index) => (
-                                                <div key={index} className="flex flex-col md:flex-row gap-6 items-start border border-gray-100 p-6 rounded-2xl bg-gray-50/50">
-                                                    <div className="flex-grow space-y-4 w-full">
-                                                        <div>
-                                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Upload Photo {index + 1}</label>
-                                                            <div className="flex items-center gap-3">
-                                                                <input
-                                                                    type="file"
-                                                                    accept="image/jpeg, image/png"
-                                                                    onChange={(e) => handleGalleryUpload(index, e)}
-                                                                    disabled={isUploadingGallery[index]}
-                                                                    className="block w-full text-sm text-gray-500
-                                                                file:mr-4 file:py-2 file:px-4
-                                                                file:rounded-full file:border-0
-                                                                file:text-sm file:font-semibold
-                                                                file:bg-[#007EA7]/10 file:text-[#007EA7]
-                                                                hover:file:bg-[#007EA7]/20
-                                                                disabled:opacity-50 disabled:cursor-not-allowed
-                                                                transition-all"
-                                                                />
-                                                                {isUploadingGallery[index] && (
-                                                                    <Loader2 size={16} className="animate-spin text-[#007EA7] shrink-0" />
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        <div>
-                                                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Short Description</label>
-                                                            <textarea
-                                                                value={img.description}
-                                                                onChange={(e) => {
-                                                                    const newImages = [...catalogueFormData.galleryImages];
-                                                                    newImages[index].description = e.target.value;
-                                                                    setCatalogueFormData({ ...catalogueFormData, galleryImages: newImages });
-                                                                }}
-                                                                placeholder="What's happening in this photo?"
-                                                                rows={2}
-                                                                className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-900 focus:ring-4 focus:ring-[#007EA7]/10 focus:border-[#007EA7] transition-all"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    {img.url ? (
-                                                        <div className="w-32 h-32 rounded-xl overflow-hidden border border-gray-200 bg-gray-100 flex-shrink-0 shadow-sm relative group">
-                                                            <img src={img.url} alt={`Gallery ${index + 1}`} className="w-full h-full object-cover" />
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    const newImages = [...catalogueFormData.galleryImages];
-                                                                    newImages[index].url = '';
-                                                                    setCatalogueFormData({ ...catalogueFormData, galleryImages: newImages });
-                                                                }}
-                                                                className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                                            >
-                                                                <X size={20} className="text-white" />
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="w-32 h-32 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-300 bg-white flex-shrink-0 shadow-sm">
-                                                            <ImageIcon size={24} />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Categories Selection */}
-                                    <div className="space-y-4 pt-8 border-t border-gray-100">
-                                        <div className="flex items-center gap-3 pb-2 border-b border-gray-100">
-                                            <div className="w-8 h-8 rounded-lg bg-green-50 text-[#007F00] flex items-center justify-center">
-                                                <Plus size={18} />
-                                            </div>
-                                            <h3 className="text-base font-bold text-gray-900">Service Categories *</h3>
-                                        </div>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                            {catalogueCategories.map(cat => (
-                                                <div
-                                                    key={cat.id}
-                                                    onClick={() => toggleCatalogueCategory(cat.id)}
-                                                    className={`cursor-pointer p-4 rounded-2xl border-2 flex items-center justify-between transition-all select-none ${catalogueFormData.selectedCategories.includes(cat.id)
-                                                        ? 'bg-green-50/50 border-[#007F00] text-[#007F00] shadow-sm'
-                                                        : 'bg-white border-gray-100 hover:border-green-200 text-gray-600'
-                                                        }`}
-                                                >
-                                                    <span className="text-xs font-bold leading-tight">{cat.name}</span>
-                                                    {catalogueFormData.selectedCategories.includes(cat.id) && <Check size={16} className="text-[#007F00]" />}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Premium Options */}
-                                    <div className="space-y-4 pt-4">
-                                        <div className="flex items-center gap-3 pb-2 border-b border-gray-100">
-                                            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-                                                <Star size={18} />
-                                            </div>
-                                            <h3 className="text-base font-bold text-gray-900">Premium Placement</h3>
-                                        </div>
-                                        <div
-                                            onClick={() => setCatalogueFormData({ ...catalogueFormData, featured: !catalogueFormData.featured })}
-                                            className={`cursor-pointer flex items-center gap-4 p-5 rounded-2xl border-2 transition-all ${catalogueFormData.featured
-                                                ? 'bg-amber-50/50 border-amber-400'
-                                                : 'bg-white border-gray-100 hover:border-amber-200'
-                                                }`}
-                                        >
-                                            <div className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${catalogueFormData.featured ? 'bg-amber-500' : 'bg-gray-200'}`}>
-                                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${catalogueFormData.featured ? 'translate-x-7' : 'translate-x-1'}`} />
-                                            </div>
-                                            <div>
-                                                <span className="text-sm font-bold text-gray-900">Feature this listing</span>
-                                                <p className="text-[11px] text-gray-400 mt-0.5">Featured businesses appear at the top of search results and in the spotlight carousel.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Footer Actions */}
-                                <div className="px-8 py-8 bg-gray-50/50 border-t border-gray-100 flex items-center justify-end gap-4">
-                                    <button
-                                        type="button"
-                                        onClick={() => setView(selectedListingForEdit ? 'catalogue' : 'businesses')}
-                                        className="px-8 py-4 bg-white border border-gray-200 text-gray-600 font-bold rounded-2xl hover:bg-gray-50 transition-all text-sm"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={isSavingCatalogue || isUploadingLogo || isUpdatingBanner || Object.values(isUploadingGallery).some(Boolean)}
-                                        className="px-10 py-4 bg-[#007F00] text-white font-bold rounded-2xl hover:bg-green-700 transition-all shadow-lg shadow-green-100 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {(isSavingCatalogue || isUploadingLogo || isUpdatingBanner || Object.values(isUploadingGallery).some(Boolean)) ? <Loader2 size={20} className="animate-spin" /> : <CheckCircle2 size={20} />}
-                                        {isSavingCatalogue ? 'Saving Listing...' : (isUploadingLogo || isUpdatingBanner || Object.values(isUploadingGallery).some(Boolean)) ? 'Uploading...' : (selectedListingForEdit ? 'Update Listing' : 'Add to Catalogue')}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                ) : view === 'catalogue' ? (
-                    <div className="space-y-4">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 gap-4">
-                            <div className="relative w-full max-w-md">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                                <input
-                                    type="text"
-                                    placeholder="Search catalogue by name or email..."
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] transition-all text-sm"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
-                            <button
-                                onClick={() => handleOpenCatalogueView(null)}
-                                className="flex items-center gap-2 bg-[#007F00] text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-md whitespace-nowrap"
-                            >
-                                <Plus size={18} />
-                                Add New Listing
-                            </button>
-                        </div>
-
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left">
-                                    <thead>
-                                        <tr className="bg-gray-50 border-b border-gray-100 text-[10px] font-black uppercase tracking-widest text-gray-400">
-                                            <th className="px-6 py-4">Business</th>
-                                            <th className="px-6 py-4">Contact</th>
-                                            <th className="px-6 py-4">Locations</th>
-                                            <th className="px-6 py-4">Status</th>
-                                            <th className="px-6 py-4">Featured</th>
-                                            <th className="px-6 py-4 text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-50">
-                                        {listings
-                                            .filter(l => {
-                                                const query = searchTerm.toLowerCase();
-                                                return (l.company_name || l.name || '').toLowerCase().includes(query) ||
-                                                    (l.email || '').toLowerCase().includes(query) ||
-                                                    (l.address || '').toLowerCase().includes(query) ||
-                                                    (l.county || '').toLowerCase().includes(query) ||
-                                                    (l.town || '').toLowerCase().includes(query) ||
-                                                    (l.additional_addresses || []).some((addr: string) => addr.toLowerCase().includes(query));
-                                            })
-                                            .length === 0 ? (
-                                            <tr>
-                                                <td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic">No listings found.</td>
-                                            </tr>
-                                        ) : (
-                                            listings
-                                                .filter(l => {
-                                                    const query = searchTerm.toLowerCase();
-                                                    return (l.company_name || l.name || '').toLowerCase().includes(query) ||
-                                                        (l.email || '').toLowerCase().includes(query) ||
-                                                        (l.address || '').toLowerCase().includes(query) ||
-                                                        (l.county || '').toLowerCase().includes(query) ||
-                                                        (l.town || '').toLowerCase().includes(query) ||
-                                                        (l.additional_addresses || []).some((addr: string) => addr.toLowerCase().includes(query));
-                                                })
-                                                .map((l) => {
-                                                    const owner = users_list.find(u => u.id === l.user_id || u.id === l.owner_id);
-                                                    const isOwnerSuspended = owner?.stripe_payment_id === 'SUSPENDED';
-
-                                                    // Collect all locations
-                                                    const allCounties = [
-                                                        l.county,
-                                                        ...(l.additional_addresses || []).map((a: string) => a.includes('|||') ? a.split('|||')[1] : a)
-                                                    ].filter(Boolean);
-                                                    const uniqueCounties = Array.from(new Set(allCounties));
-
-                                                    return (
-                                                        <tr key={l.id} className="hover:bg-gray-50/50 transition-colors group">
-                                                            <td className="px-6 py-4">
-                                                                <div className="flex items-center gap-3">
-                                                                    {l.logo_url ? (
-                                                                        <img src={l.logo_url} className="w-10 h-10 rounded-lg object-cover border border-gray-100" alt="" />
-                                                                    ) : (
-                                                                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
-                                                                            <Briefcase size={20} />
-                                                                        </div>
-                                                                    )}
-                                                                    <div>
-                                                                        <div className="font-bold text-gray-900 text-sm">{l.name}</div>
-                                                                        <div className="text-[10px] text-gray-400 font-medium">{l.company_name}</div>
-                                                                    </div>
-                                                                </div>
-                                                            </td>
-                                                            <td className="px-6 py-4">
-                                                                <div className="text-xs text-gray-600 font-medium">{l.email}</div>
-                                                                {l.phone && <div className="text-[10px] text-gray-400">{l.phone}</div>}
-                                                            </td>
-                                                            <td className="px-6 py-4">
-                                                                <div className="flex flex-wrap gap-1 max-w-[200px]">
-                                                                    {uniqueCounties.slice(0, 3).map((c, i) => (
-                                                                        <span key={i} className="px-2 py-0.5 bg-gray-100 text-[9px] font-black uppercase rounded text-gray-600 border border-gray-200">
-                                                                            {c}
-                                                                        </span>
-                                                                    ))}
-                                                                    {uniqueCounties.length > 3 && (
-                                                                        <span className="px-2 py-0.5 bg-blue-50 text-[9px] font-black uppercase rounded text-blue-600 border border-blue-100">
-                                                                            +{uniqueCounties.length - 3} More
-                                                                        </span>
-                                                                    )}
-                                                                    {uniqueCounties.length === 0 && <span className="text-[10px] text-gray-300 italic">No locations</span>}
-                                                                </div>
-                                                            </td>
-                                                            <td className="px-6 py-4">
-                                                                {isOwnerSuspended ? (
-                                                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700">
-                                                                        <AlertTriangle size={12} /> Suspended
-                                                                    </div>
-                                                                ) : (
-                                                                    <button
-                                                                        onClick={() => toggleCatalogueStatus(l.id, l.is_active)}
-                                                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${l.is_active ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500'}`}
-                                                                    >
-                                                                        <div className={`w-1.5 h-1.5 rounded-full ${l.is_active ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
-                                                                        {l.is_active ? 'Active' : 'Inactive'}
-                                                                    </button>
-                                                                )}
-                                                            </td>
-                                                            <td className="px-6 py-4">
-                                                                <button
-                                                                    onClick={() => toggleCatalogueFeatured(l.id, l.featured)}
-                                                                    className={`p-2 rounded-lg transition-all ${l.featured ? 'text-amber-500 bg-amber-50' : 'text-gray-300 hover:text-gray-400'
-                                                                        }`}
-                                                                    title={l.featured ? 'Unfeature Listing' : 'Feature Listing'}
-                                                                >
-                                                                    <Star size={18} fill={l.featured ? 'currentColor' : 'none'} />
-                                                                </button>
-                                                            </td>
-                                                            <td className="px-6 py-4 text-right">
-                                                                <div className="flex items-center justify-end gap-2">
-                                                                    <button
-                                                                        onClick={() => handleOpenCatalogueView(null, l)}
-                                                                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                                                                        title="Edit Listing"
-                                                                    >
-                                                                        <Edit2 size={16} />
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => handleDeleteListing(l.id)}
-                                                                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                                                        title="Delete Listing"
-                                                                    >
-                                                                        <Trash2 size={16} />
-                                                                    </button>
-                                                                    <a
-                                                                        href={`/catalogue/${l.slug}`}
-                                                                        target="_blank"
-                                                                        rel="noreferrer"
-                                                                        className="p-2 text-gray-400 hover:text-[#007F00] hover:bg-green-50 rounded-lg transition-all"
-                                                                        title="View Publicly"
-                                                                    >
-                                                                        <ExternalLink size={16} />
-                                                                    </a>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
                 ) : view === 'stats' ? (
-                    <div className="space-y-8">
-                        {/* Stats Custom Layout */}
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-
-                            {/* LEFT COLUMN: Stacked Users Breakdown */}
-                            <div className="lg:col-span-5 flex flex-col gap-3">
-                                {/* Homeowners */}
-                                <button
-                                    onClick={() => setSelectedStatView('homeowners')}
-                                    className={`w-full bg-white p-4 rounded-xl border-2 text-left hover:shadow-md transition-all relative overflow-hidden group ${selectedStatView === 'homeowners' ? 'border-green-300 shadow-green-100/50 shadow-lg' : 'border-green-100'}`}
-                                >
-                                    <div className="flex justify-between items-start mb-1">
-                                        <div className="bg-[#4b5563] text-white text-[11px] font-bold px-3 py-1.5 rounded-full inline-block">Homeowners</div>
-                                        <Home size={22} strokeWidth={2} className="text-green-500" />
-                                    </div>
-                                    <div className="flex items-baseline gap-2 mb-2 mt-2">
-                                        <h3 className="text-4xl font-black text-gray-900">{stats.homeowners}</h3>
-                                        <span className="text-sm font-medium text-gray-400">{stats.totalUsers > 0 ? Math.round((stats.homeowners / stats.totalUsers) * 100) : 0}% of {stats.totalUsers}</span>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex-1 h-[6px] rounded-full bg-green-50 overflow-hidden">
-                                            <div className="bg-green-500 h-full transition-all rounded-full" style={{ width: `${stats.totalUsers > 0 ? (stats.homeowners / stats.totalUsers) * 100 : 0}%` }}></div>
-                                        </div>
-                                        <span className="text-xs text-gray-500 font-medium w-8 text-right">{stats.homeowners}/{stats.totalUsers}</span>
-                                    </div>
-                                </button>
-
-                                {/* Assessors */}
-                                <button
-                                    onClick={() => setSelectedStatView('assessors')}
-                                    className={`w-full bg-white p-4 rounded-xl border-2 text-left hover:shadow-md transition-all relative overflow-hidden group ${selectedStatView === 'assessors' ? 'border-blue-300 shadow-blue-100/50 shadow-lg' : 'border-blue-100'}`}
-                                >
-                                    <div className="flex justify-between items-start mb-1">
-                                        <div className="bg-[#4b5563] text-white text-[11px] font-bold px-3 py-1.5 rounded-full inline-block">Assessors</div>
-                                        <ClipboardList size={22} strokeWidth={2} className="text-blue-500" />
-                                    </div>
-                                    <div className="flex items-baseline gap-2 mb-2 mt-2">
-                                        <h3 className="text-4xl font-black text-gray-900">{stats.contractors}</h3>
-                                        <span className="text-sm font-medium text-gray-400">{stats.totalUsers > 0 ? Math.round((stats.contractors / stats.totalUsers) * 100) : 0}% of {stats.totalUsers}</span>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex-1 h-[6px] rounded-full bg-blue-50 overflow-hidden">
-                                            <div className="bg-blue-500 h-full transition-all rounded-full" style={{ width: `${stats.totalUsers > 0 ? (stats.contractors / stats.totalUsers) * 100 : 0}%` }}></div>
-                                        </div>
-                                        <span className="text-xs text-gray-500 font-medium w-8 text-right">{stats.contractors}/{stats.totalUsers}</span>
-                                    </div>
-                                </button>
-
-                                {/* Businesses */}
-                                <button
-                                    onClick={() => setSelectedStatView('businesses')}
-                                    className={`w-full bg-white p-4 rounded-xl border-2 text-left hover:shadow-md transition-all relative overflow-hidden group ${selectedStatView === 'businesses' ? 'border-purple-300 shadow-purple-100/50 shadow-lg' : 'border-purple-100'}`}
-                                >
-                                    <div className="flex justify-between items-start mb-1">
-                                        <div className="bg-[#4b5563] text-white text-[11px] font-bold px-3 py-1.5 rounded-full inline-block">Businesses</div>
-                                        <Building size={22} strokeWidth={2} className="text-purple-500" />
-                                    </div>
-                                    <div className="flex items-baseline gap-2 mb-2 mt-2">
-                                        <h3 className="text-4xl font-black text-gray-900">{stats.businessLeads}</h3>
-                                        <span className="text-sm font-medium text-gray-400">{stats.totalUsers > 0 ? Math.round((stats.businessLeads / stats.totalUsers) * 100) : 0}% of {stats.totalUsers}</span>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex-1 h-[6px] rounded-full bg-purple-50 overflow-hidden">
-                                            <div className="bg-[#a855f7] h-full transition-all rounded-full" style={{ width: `${stats.totalUsers > 0 ? (stats.businessLeads / stats.totalUsers) * 100 : 0}%` }}></div>
-                                        </div>
-                                        <span className="text-xs text-gray-500 font-medium w-8 text-right">{stats.businessLeads}/{stats.totalUsers}</span>
-                                    </div>
-                                </button>
-                            </div>
-
-                            {/* RIGHT COLUMN: 2x2 Grid for Other Stats */}
-                            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                                {/* Total Revenue Card */}
-                                <button
-                                    onClick={() => { setView('payments'); setSelectedStatView(null); }}
-                                    className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 text-left hover:border-green-300 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between"
-                                >
-                                    <div className="absolute top-0 left-0 w-full h-1 bg-green-500 opacity-80"></div>
-                                    <div>
-                                        <div className="flex justify-between items-start mb-1">
-                                            <p className="text-xs font-bold text-gray-500">Total Revenue</p>
-                                            <div className="w-7 h-7 rounded-md bg-green-50 flex items-center justify-center">
-                                                <DollarSign size={14} className="text-green-600" />
-                                            </div>
-                                        </div>
-                                        <h3 className="text-4xl font-black text-gray-1000 tracking-tight mt-1 mb-4">
-                                            {new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' }).format(stats.totalRevenue)}
-                                        </h3>
-                                    </div>
-                                    <div>
-                                        <div className="inline-flex items-center px-2.5 py-1 rounded bg-green-50 border border-green-100">
-                                            <span className="text-[11px] font-bold text-green-700">$ {payments.filter(p => p.status === 'completed').length} Payments</span>
-                                        </div>
-                                    </div>
-                                </button>
-
-                                {/* Active Jobs Card */}
-                                <button
-                                    onClick={() => { setView('assessments'); setSelectedStatView(null); }}
-                                    className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 text-left hover:border-blue-300 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between"
-                                >
-                                    <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500 opacity-80"></div>
-                                    <div>
-                                        <div className="flex justify-between items-start mb-1">
-                                            <p className="text-xs font-bold text-gray-500">Active Jobs</p>
-                                            <div className="w-7 h-7 rounded-md bg-blue-50 flex items-center justify-center">
-                                                <Briefcase size={14} className="text-blue-600" />
-                                            </div>
-                                        </div>
-                                        <h3 className="text-4xl font-black text-gray-1000 tracking-tight mt-1 mb-4">{stats.activeAssessments}</h3>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="inline-flex items-center px-2.5 py-1 rounded bg-blue-50 border border-blue-100">
-                                            <span className="text-[11px] font-bold text-blue-700">{stats.pendingQuotes} Pending</span>
-                                        </div>
-                                        <div className="inline-flex items-center px-2.5 py-1 rounded bg-green-50 border border-green-100">
-                                            <span className="text-[11px] font-bold text-green-700">Done {stats.completedAssessments}</span>
-                                        </div>
-                                    </div>
-                                </button>
-
-                                {/* Conversion Card */}
-                                <button
-                                    onClick={() => { setView('leads'); setSelectedStatView(null); }}
-                                    className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 text-left hover:border-teal-300 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between"
-                                >
-                                    <div className="absolute top-0 left-0 w-full h-1 bg-teal-500 opacity-80"></div>
-                                    <div>
-                                        <div className="flex justify-between items-start mb-1">
-                                            <p className="text-xs font-bold text-gray-500">Conversion</p>
-                                            <div className="w-7 h-7 rounded-md bg-teal-50 flex items-center justify-center">
-                                                <TrendingUp size={14} className="text-teal-600" />
-                                            </div>
-                                        </div>
-                                        <h3 className="text-4xl font-black text-gray-1000 tracking-tight mt-1 mb-4">
-                                            {stats.totalLeads > 0 ? Math.round((stats.acceptedQuotes / stats.totalLeads) * 100) : 0}%
-                                        </h3>
-                                    </div>
-                                    <div>
-                                        <div className="inline-flex items-center px-2.5 py-1 rounded bg-teal-50 border border-teal-100 gap-1.5">
-                                            <ArrowRight size={12} className="text-teal-600" />
-                                            <span className="text-[11px] font-bold text-teal-700">{stats.acceptedQuotes} of {stats.totalLeads} Leads</span>
-                                        </div>
-                                    </div>
-                                </button>
-
-                                {/* Business Leads Card */}
-                                <button
-                                    onClick={() => { setView('businesses'); setSelectedStatView(null); }}
-                                    className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 text-left hover:border-amber-300 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between"
-                                >
-                                    <div className="absolute top-0 left-0 w-full h-1 bg-amber-500 opacity-80"></div>
-                                    <div>
-                                        <div className="flex justify-between items-start mb-1">
-                                            <p className="text-xs font-bold text-gray-500">Business Leads</p>
-                                            <div className="w-7 h-7 rounded-md bg-amber-50 flex items-center justify-center">
-                                                <ClipboardList size={14} className="text-amber-600" />
-                                            </div>
-                                        </div>
-                                        <h3 className="text-4xl font-black text-gray-1000 tracking-tight mt-1 mb-4">{stats.businessLeads}</h3>
-                                    </div>
-                                    <div>
-                                        {stats.pendingOnboarding > 0 ? (
-                                            <div className="inline-flex items-center px-2.5 py-1 rounded bg-amber-50 border border-amber-200 gap-1.5">
-                                                <Hourglass size={12} className="text-amber-600" />
-                                                <span className="text-[11px] font-bold text-amber-700">{stats.pendingOnboarding} Pending Onboarding</span>
-                                            </div>
-                                        ) : (
-                                            <div className="inline-flex items-center px-2.5 py-1 rounded bg-green-50 border border-green-100 gap-1.5">
-                                                <CheckCircle2 size={12} className="text-green-600" />
-                                                <span className="text-[11px] font-bold text-green-700">All Onboarded</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
-
-                        {selectedStatView === 'homeowners' || selectedStatView === 'assessors' || selectedStatView === 'businesses' ? (
-                            <div className="space-y-4">
-                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 gap-4">
-                                    <div className="relative w-full max-w-md">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                                        <input
-                                            type="text"
-                                            placeholder={`Search by name or email...`}
-                                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] transition-all text-sm"
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="flex items-center gap-3 w-full md:w-auto">
-                                        <div className="text-xs text-gray-400 font-medium hidden sm:block">
-                                            Showing {users_list.filter(u => selectedStatView === 'assessors' ? u.role === 'contractor' : selectedStatView === 'businesses' ? u.role === 'business' : (u.role === 'user' || u.role === 'homeowner')).filter(u => u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.email?.toLowerCase().includes(searchTerm.toLowerCase())).length} users
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-left text-sm text-gray-600">
-                                            <thead className="bg-gray-50/50 text-gray-900 font-bold uppercase tracking-wider text-xs border-b border-gray-100">
-                                                <tr>
-                                                    <th className="px-6 py-4">Status</th>
-                                                    <th className="px-6 py-4">Details</th>
-                                                    <th className="px-6 py-4">Sign-Up Date</th>
-                                                    {selectedStatView !== 'businesses' && <th className="px-6 py-4">Activity</th>}
-                                                    <th className="px-6 py-4 text-right">Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-gray-50">
-                                                {users_list
-                                                    .filter(u => {
-                                                        const matchRole = selectedStatView === 'assessors' ? u.role === 'contractor' : selectedStatView === 'businesses' ? u.role === 'business' : (u.role === 'user' || u.role === 'homeowner');
-                                                        const matchSearch = u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.email?.toLowerCase().includes(searchTerm.toLowerCase());
-                                                        return matchRole && matchSearch;
-                                                    })
-                                                    .length === 0 ? (
-                                                    <tr>
-                                                        <td colSpan={selectedStatView === 'businesses' ? 4 : 5} className="px-6 py-12 text-center text-gray-400 italic">
-                                                            No users found.
-                                                        </td>
-                                                    </tr>
-                                                ) : (
-                                                    users_list
-                                                        .filter(u => {
-                                                            const matchRole = selectedStatView === 'assessors' ? u.role === 'contractor' : selectedStatView === 'businesses' ? u.role === 'business' : (u.role === 'user' || u.role === 'homeowner');
-                                                            const matchSearch = u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.email?.toLowerCase().includes(searchTerm.toLowerCase());
-                                                            return matchRole && matchSearch;
-                                                        })
-                                                        .map((u) => {
-                                                            const listing = listings.find(l => l.user_id === u.id || l.owner_id === u.id);
-                                                            const hasListing = !!listing;
-
-                                                            return (
-                                                                <tr key={u.id} className="hover:bg-green-50/30 transition-colors group">
-                                                                    <td className="px-6 py-4">
-                                                                        <div className="flex flex-col gap-1.5">
-                                                                            <ProfileStatusBadge profile={u} />
-                                                                            <div className="flex flex-col gap-0.5 ml-1">
-                                                                                <div className="flex items-center gap-1 text-[9px] text-gray-400 font-bold uppercase">
-                                                                                    <Zap size={10} className={u.last_login ? 'text-blue-500' : 'text-gray-300'} />
-                                                                                    <span>Login: {formatLastLogin(u.last_login)}</span>
-                                                                                </div>
-                                                                                {(u.role === 'contractor' || u.role === 'business') && (
-                                                                                    <div className={`flex items-center gap-1 text-[9px] font-bold uppercase ${u.subscription_status === 'active' ? 'text-green-600' : 'text-amber-600'}`}>
-                                                                                        {u.subscription_status === 'active' ? <CheckCircle2 size={10} /> : <AlertTriangle size={10} />}
-                                                                                        <span>Sub: {u.subscription_status || 'None'}</span>
-                                                                                    </div>
-                                                                                )}
-                                                                            </div>
-                                                                            <PaymentStatusBadge profile={u} />
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="px-6 py-4 font-medium text-gray-900">
-                                                                        {u.full_name}
-                                                                        <div className="text-xs text-gray-400 font-normal">{u.email}</div>
-                                                                    </td>
-                                                                    <td className="px-6 py-4 text-gray-500">
-                                                                        {new Date(u.created_at).toLocaleDateString()}
-                                                                    </td>
-                                                                    {selectedStatView !== 'businesses' && (
-                                                                        <td className="px-6 py-4 text-gray-500 font-medium">
-                                                                            {u.role === 'contractor' ? (
-                                                                                <div className="flex items-center gap-1 text-blue-600">
-                                                                                    <Briefcase size={14} />
-                                                                                    <span>{assessments.filter(a => a.contractor_id === u.id).length} Jobs</span>
-                                                                                </div>
-                                                                            ) : (
-                                                                                <div className="flex items-center gap-1 text-green-600">
-                                                                                    <Home size={14} />
-                                                                                    <span>{assessments.filter(a => a.user_id === u.id).length} Requests</span>
-                                                                                </div>
-                                                                            )}
-                                                                        </td>
-                                                                    )}
-                                                                    <td className="px-6 py-4 text-right">
-                                                                        <div className="flex items-center justify-end gap-2">
-                                                                            {u.role === 'contractor' && (
-                                                                                hasListing ? (
-                                                                                    <button
-                                                                                        onClick={() => handleOpenCatalogueView(u, listing)}
-                                                                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                                                                                        title="Edit Catalogue Listing"
-                                                                                    >
-                                                                                        <Edit2 size={16} />
-                                                                                    </button>
-                                                                                ) : (
-                                                                                    <button
-                                                                                        onClick={() => handleOpenCatalogueView(u)}
-                                                                                        className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
-                                                                                        title="Add to Catalogue"
-                                                                                    >
-                                                                                        <Plus size={16} />
-                                                                                    </button>
-                                                                                )
-                                                                            )}
-                                                                            <button
-                                                                                onClick={() => setSelectedUser(u)}
-                                                                                className="text-gray-400 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition-all"
-                                                                                title="View/Edit User Details"
-                                                                            >
-                                                                                <Pencil size={16} />
-                                                                            </button>
-                                                                            <button
-                                                                                onClick={() => {
-                                                                                    setItemToSuspend({
-                                                                                        id: u.id,
-                                                                                        name: u.full_name,
-                                                                                        currentStatus: u.is_active !== false
-                                                                                    });
-                                                                                    setShowSuspendModal(true);
-                                                                                }}
-                                                                                className={`p-2 rounded-lg transition-all ${u.is_active !== false
-                                                                                    ? 'text-red-400 hover:text-red-600 hover:bg-red-50'
-                                                                                    : 'text-green-400 hover:text-green-600 hover:bg-green-50'
-                                                                                    }`}
-                                                                                title={u.is_active !== false ? 'Suspend User' : 'Activate User'}
-                                                                            >
-                                                                                <AlertTriangle size={16} />
-                                                                            </button>
-                                                                            <button
-                                                                                onClick={() => handleDeleteClick(u.id, 'user')}
-                                                                                className="text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-all"
-                                                                                title="Delete User"
-                                                                            >
-                                                                                <Trash2 size={16} />
-                                                                            </button>
-                                                                        </div>
-                                                                    </td>
-                                                                </tr>
-                                                            );
-                                                        })
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : selectedStatView === 'payments' ? (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                                <div className="p-4 border-b border-gray-100">
-                                    <h3 className="font-bold text-gray-900">Recent Revenue</h3>
-                                </div>
-                            </div>
-                        ) : selectedStatView === 'assessments' ? (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                                <div className="p-4 border-b border-gray-100">
-                                    <h3 className="font-bold text-gray-900">Active Jobs</h3>
-                                </div>
-                            </div>
-                        ) : selectedStatView === 'leads' ? (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                                <div className="p-4 border-b border-gray-100">
-                                    <h3 className="font-bold text-gray-900">Recent Conversions</h3>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
-                                <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                    <Users size={24} className="text-gray-300" />
-                                </div>
-                                <h3 className="text-base font-bold text-gray-900 mb-1">Select a user type above</h3>
-                                <p className="text-sm text-gray-400">Click Homeowners, Assessors, or Businesses in the Total Users card to view details.</p>
-                            </div>
-                        )}
-                    </div>
-                ) : (view === 'settings' || view === 'payments' ? [1] : view === 'leads' ? leads : view === 'assessments' ? assessments : view === 'news' ? newsArticles : (view === 'homeowners' || view === 'assessors' || view === 'businesses') ? users_list.filter(u => u.role === (view === 'homeowners' ? 'user' : view === 'assessors' ? 'contractor' : 'business')) : []).length === 0 ? (
-                    <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
-                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
-                            {view === 'leads' ? <MessageSquare size={32} /> : view === 'news' ? <Newspaper size={32} /> : (view === 'businesses' || view === 'assessors') ? <Briefcase size={32} /> : <Home size={32} />}
-                        </div>
-                        <h3 className="text-lg font-bold text-gray-900">No {vLabels[view] || view} yet</h3>
-                        <p className="text-gray-500 mb-6">{view === 'leads' ? 'New form submissions will appear here.' : view === 'news' ? 'New articles will appear here.' : 'New records will appear here.'}</p>
-                        {view === 'businesses' && (
-                            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                                <button
-                                    onClick={() => { setNewUserRole('business'); setShowAddUserModal(true); }}
-                                    className="flex items-center gap-2 bg-[#007F00] text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-md whitespace-nowrap"
-                                >
-                                    <Briefcase size={18} />
-                                    Create Business Account
-                                </button>
-                                <button
-                                    onClick={() => handleOpenCatalogueView(null)}
-                                    className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-md whitespace-nowrap"
-                                >
-                                    <Plus size={18} />
-                                    Add Direct to Catalogue
-                                </button>
-                            </div>
-                        )}
-                        {view === 'news' && (
-                            <button
-                                onClick={() => navigate('/admin/news/new')}
-                                className="inline-flex items-center gap-2 bg-[#007F00] text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-md"
-                            >
-                                <Newspaper size={18} />
-                                Add New Article
-                            </button>
-                        )}
-                    </div>
-                ) : view === 'homeowners' || view === 'assessors' ? (
-                    /* HOMEOWNERS & ASSESSORS VIEW */
-                    <div className="space-y-4">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 gap-4">
-                            <div className="relative w-full max-w-md">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                                <input
-                                    type="text"
-                                    placeholder={`Search by name or email...`}
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] transition-all text-sm"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
-                            <div className="flex items-center gap-3 w-full md:w-auto">
-                                {view === 'assessors' && (
-                                    <button
-                                        onClick={() => { setNewUserRole('contractor'); setShowAddUserModal(true); }}
-                                        className="flex items-center gap-2 bg-[#007F00] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-700 transition-all shadow-sm whitespace-nowrap"
-                                    >
-                                        <TrendingUp size={16} />
-                                        Add BER Assessor
-                                    </button>
-                                )}
-                                <div className="text-xs text-gray-400 font-medium hidden sm:block">
-                                    Showing {users_list.filter(u => {
-                                        const matchRole = view === 'assessors' ? u.role === 'contractor' : (u.role === 'user' || u.role === 'homeowner');
-                                        const query = searchTerm.toLowerCase();
-                                        const matchSearch = u.full_name?.toLowerCase().includes(query) ||
-                                            u.email?.toLowerCase().includes(query) ||
-                                            u.company_name?.toLowerCase().includes(query) ||
-                                            u.business_address?.toLowerCase().includes(query) ||
-                                            u.county?.toLowerCase().includes(query) ||
-                                            u.town?.toLowerCase().includes(query);
-                                        return matchRole && matchSearch;
-                                    }).length} users
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left text-sm text-gray-600">
-                                    <thead className="bg-gray-50/50 text-gray-900 font-bold uppercase tracking-wider text-xs border-b border-gray-100">
-                                        <tr>
-                                            <th className="px-6 py-4">Status</th>
-                                            <th className="px-6 py-4">Details</th>
-                                            <th className="px-6 py-4">Sign-Up Date</th>
-                                            <th className="px-6 py-4">Activity</th>
-                                            <th className="px-6 py-4 text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-50">
-                                        {users_list
-                                            .filter(u => {
-                                                const matchRole = view === 'assessors' ? u.role === 'contractor' : (u.role === 'user' || u.role === 'homeowner');
-                                                const query = searchTerm.toLowerCase();
-                                                const matchSearch = u.full_name?.toLowerCase().includes(query) ||
-                                                    u.email?.toLowerCase().includes(query) ||
-                                                    u.company_name?.toLowerCase().includes(query) ||
-                                                    u.business_address?.toLowerCase().includes(query) ||
-                                                    u.county?.toLowerCase().includes(query) ||
-                                                    u.town?.toLowerCase().includes(query);
-                                                return matchRole && matchSearch;
-                                            })
-                                            .length === 0 ? (
-                                            <tr>
-                                                <td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">
-                                                    No users found.
-                                                </td>
-                                            </tr>
-                                        ) : (
-                                            users_list
-                                                .filter(u => {
-                                                    const matchRole = view === 'assessors' ? u.role === 'contractor' : (u.role === 'user' || u.role === 'homeowner');
-                                                    const query = searchTerm.toLowerCase();
-                                                    const matchSearch = u.full_name?.toLowerCase().includes(query) ||
-                                                        u.email?.toLowerCase().includes(query) ||
-                                                        u.company_name?.toLowerCase().includes(query) ||
-                                                        u.business_address?.toLowerCase().includes(query) ||
-                                                        u.county?.toLowerCase().includes(query) ||
-                                                        u.town?.toLowerCase().includes(query);
-                                                    return matchRole && matchSearch;
-                                                })
-                                                .map((u) => {
-                                                    const listing = listings.find(l => l.user_id === u.id || l.owner_id === u.id);
-                                                    const hasListing = !!listing;
-
-                                                    return (
-                                                        <tr key={u.id} className="hover:bg-green-50/30 transition-colors group">
-                                                            <td className="px-6 py-4">
-                                                                <div className="flex flex-col gap-1.5">
-                                                                    <ProfileStatusBadge profile={u} />
-                                                                    <div className="flex flex-col gap-0.5 ml-1">
-                                                                        <div className="flex items-center gap-1 text-[9px] text-gray-400 font-bold uppercase">
-                                                                            <Zap size={10} className={u.last_login ? 'text-blue-500' : 'text-gray-300'} />
-                                                                            <span>Login: {formatLastLogin(u.last_login)}</span>
-                                                                        </div>
-                                                                        {(u.role === 'contractor' || u.role === 'business') && (
-                                                                            <div className={`flex items-center gap-1 text-[9px] font-bold uppercase ${u.subscription_status === 'active' ? 'text-green-600' : 'text-amber-600'}`}>
-                                                                                {u.subscription_status === 'active' ? <CheckCircle2 size={10} /> : <AlertTriangle size={10} />}
-                                                                                <span>Sub: {u.subscription_status || 'None'}</span>
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                    <PaymentStatusBadge profile={u} />
-                                                                </div>
-                                                            </td>
-                                                            <td className="px-6 py-4 font-medium text-gray-900">
-                                                                {u.full_name}
-                                                                <div className="text-xs text-gray-400 font-normal">{u.email}</div>
-                                                            </td>
-                                                            <td className="px-6 py-4 text-gray-500">
-                                                                {new Date(u.created_at).toLocaleDateString()}
-                                                            </td>
-                                                            <td className="px-6 py-4 text-gray-500 font-medium">
-                                                                {u.role === 'contractor' ? (
-                                                                    <div className="flex items-center gap-1 text-blue-600">
-                                                                        <Briefcase size={14} />
-                                                                        <span>{assessments.filter(a => a.contractor_id === u.id).length} Jobs</span>
-                                                                    </div>
-                                                                ) : (
-                                                                    <div className="flex items-center gap-1 text-green-600">
-                                                                        <Home size={14} />
-                                                                        <span>{assessments.filter(a => a.user_id === u.id).length} Requests</span>
-                                                                    </div>
-                                                                )}
-                                                            </td>
-                                                            <td className="px-6 py-4 text-right">
-                                                                <div className="flex items-center justify-end gap-2">
-                                                                    {u.role === 'contractor' && (
-                                                                        <div className="flex items-center gap-1 bg-gray-50/50 p-1 rounded-lg border border-gray-100 mr-2">
-                                                                            <button
-                                                                                onClick={() => handleManualRenewal(u.id, 12)}
-                                                                                disabled={isUpdating}
-                                                                                className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-all"
-                                                                                title="Manual Renew (1 Year)"
-                                                                            >
-                                                                                <RefreshCw size={14} />
-                                                                            </button>
-                                                                            <button
-                                                                                onClick={() => handleSendRenewalReminder(u)}
-                                                                                className="p-1.5 text-amber-600 hover:bg-amber-50 rounded transition-all"
-                                                                                title="Send Renewal Reminder"
-                                                                            >
-                                                                                <Mail size={14} />
-                                                                            </button>
-                                                                            {u.subscription_status === 'active' && (
-                                                                                <button
-                                                                                    onClick={() => handleCancelSubscription(u.id)}
-                                                                                    disabled={isUpdating}
-                                                                                    className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-all"
-                                                                                    title="Cancel Subscription"
-                                                                                >
-                                                                                    <XCircle size={14} />
-                                                                                </button>
-                                                                            )}
-                                                                        </div>
-                                                                    )}
-                                                                    {u.role === 'contractor' && (
-                                                                        hasListing ? (
-                                                                            <button
-                                                                                onClick={() => handleOpenCatalogueView(u, listing)}
-                                                                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                                                                                title="Edit Catalogue Listing"
-                                                                            >
-                                                                                <Edit2 size={16} />
-                                                                            </button>
-                                                                        ) : (
-                                                                            <button
-                                                                                onClick={() => handleOpenCatalogueView(u)}
-                                                                                className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
-                                                                                title="Add to Catalogue"
-                                                                            >
-                                                                                <Plus size={16} />
-                                                                            </button>
-                                                                        )
-                                                                    )}
-                                                                    <button
-                                                                        onClick={() => setSelectedUser(u)}
-                                                                        className="text-gray-400 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition-all"
-                                                                        title="View User Details"
-                                                                    >
-                                                                        <Eye size={16} />
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            setItemToSuspend({
-                                                                                id: u.id,
-                                                                                name: u.full_name,
-                                                                                currentStatus: u.is_active !== false
-                                                                            });
-                                                                            setShowSuspendModal(true);
-                                                                        }}
-                                                                        className={`p-2 rounded-lg transition-all ${u.is_active !== false
-                                                                            ? 'text-red-400 hover:text-red-600 hover:bg-red-50'
-                                                                            : 'text-green-400 hover:text-green-600 hover:bg-green-50'
-                                                                            }`}
-                                                                        title={u.is_active !== false ? 'Suspend User' : 'Activate User'}
-                                                                    >
-                                                                        <AlertTriangle size={16} />
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => handleDeleteClick(u.id, 'user')}
-                                                                        className="text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-all"
-                                                                        title="Delete User"
-                                                                    >
-                                                                        <Trash2 size={16} />
-                                                                    </button>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+                    <StatsView
+                        stats={stats} users_list={users_list} listings={listings}
+                        assessments={assessments} payments={payments}
+                        searchTerm={searchTerm} setSearchTerm={setSearchTerm}
+                        locationFilter={locationFilter} setLocationFilter={setLocationFilter}
+                        uniqueUserLocations={uniqueUserLocations}
+                        handleOpenCatalogueView={handleOpenCatalogueView}
+                        setSelectedUser={setSelectedUser}
+                        setItemToSuspend={setItemToSuspend} setShowSuspendModal={setShowSuspendModal}
+                        handleDeleteClick={handleDeleteClick} setView={setView}
+                    />
                 ) : view === 'leads' ? (
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                            <div className="relative w-full max-w-md">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                                <input
-                                    type="text"
-                                    placeholder="Search by name, email, location, or status..."
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] transition-all text-sm"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
-                            <div className="text-xs text-gray-400 font-medium">
-                                Showing {filteredLeads.length} of {leads.length} leads
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                            {/* Mobile View: Cards */}
-                            <div className="md:hidden">
-                                {filteredLeads.length === 0 ? (
-                                    <div className="p-12 text-center text-gray-400 italic">No leads found.</div>
-                                ) : (
-                                    filteredLeads.map((lead) => (
-                                        <div key={lead.id} className="p-4 border-b border-gray-100 space-y-3">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <p className="font-bold text-gray-900">{lead.name}</p>
-                                                    <p className="text-xs text-gray-500">{new Date(lead.created_at).toLocaleDateString()}</p>
-                                                </div>
-                                                <LeadStatusBadge status={lead.status || 'new'} />
-                                            </div>
-                                            <div className="text-sm text-gray-600">
-                                                <p>{lead.email}</p>
-                                                <p className="mt-1">{lead.town}, {lead.county}</p>
-                                            </div>
-                                            <div className="flex justify-end gap-2 pt-2">
-                                                <button
-                                                    onClick={() => setSelectedLead(lead)}
-                                                    className="text-xs bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg font-bold text-gray-700"
-                                                >
-                                                    View Details
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteClick(lead.id, 'lead')}
-                                                    className="text-xs bg-red-50 border border-red-100 px-3 py-2 rounded-lg font-bold text-red-600 hover:bg-red-100 transition-colors"
-                                                >
-                                                    Delete
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-
-                            {/* Desktop View: Table */}
-                            <div className="hidden md:block overflow-x-auto">
-                                <table className="w-full text-left text-sm text-gray-600">
-                                    <thead className="bg-gray-50/50 text-gray-900 font-bold uppercase tracking-wider text-xs border-b border-gray-100">
-                                        <tr>
-                                            <th className="px-6 py-4">Status</th>
-                                            <th className="px-6 py-4">Date</th>
-                                            <th className="px-6 py-4">Client Name</th>
-                                            <th className="px-6 py-4">Location</th>
-                                            <th className="px-6 py-4">Purpose</th>
-                                            <th className="px-6 py-4 text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-50">
-                                        {filteredLeads.length === 0 ? (
-                                            <tr>
-                                                <td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic">
-                                                    No leads found matching your search.
-                                                </td>
-                                            </tr>
-                                        ) : (
-                                            filteredLeads.map((lead) => (
-                                                <tr key={lead.id} className="hover:bg-green-50/30 transition-colors group">
-                                                    <td className="px-6 py-4">
-                                                        <LeadStatusBadge status={lead.status || 'new'} />
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                                                        {new Date(lead.created_at).toLocaleDateString()}
-                                                    </td>
-                                                    <td className="px-6 py-4 font-medium text-gray-900">
-                                                        {lead.name}
-                                                        <div className="text-xs text-gray-400 font-normal">{lead.email}</div>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        {lead.town ? `${lead.town}, ${lead.county || ''} ` : '-'}
-                                                    </td>
-                                                    <td className="px-6 py-4 text-gray-500">
-                                                        {lead.purpose || '-'}
-                                                    </td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        <div className="flex items-center justify-end gap-2">
-                                                            <button
-                                                                onClick={() => setSelectedLead(lead)}
-                                                                className="flex items-center gap-1 bg-white border border-gray-200 text-gray-600 hover:text-[#007F00] hover:border-[#007F00] px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm"
-                                                            >
-                                                                <Eye size={14} />
-                                                                View More
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleDeleteClick(lead.id, 'lead')}
-                                                                className="text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-all"
-                                                                title="Delete Lead"
-                                                            >
-                                                                <Trash2 size={16} />
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                ) : view === 'businesses' ? (
-                    <div className="space-y-4">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 gap-4">
-                            <div className="relative w-full max-w-md">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                                <input
-                                    type="text"
-                                    placeholder="Search by business name or email..."
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] transition-all text-sm"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
-                            <div className="flex items-center gap-3 w-full md:w-auto">
-                                <button
-                                    onClick={() => { setNewUserRole('business'); setShowAddUserModal(true); }}
-                                    className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-50 transition-all shadow-sm whitespace-nowrap"
-                                >
-                                    <Briefcase size={16} />
-                                    Add Business
-                                </button>
-                                {/* <button
-                                    onClick={() => handleOpenCatalogueView(null)}
-                                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-all shadow-sm whitespace-nowrap"
-                                >
-                                    <Plus size={16} />
-                                    Add to Catalogue
-                                </button> */}
-                                <div className="text-xs text-gray-400 font-medium hidden sm:block">
-                                    Showing {filteredBusinessLeads.length} of {users_list.filter(u => u.role === 'business').length} businesses
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left text-sm text-gray-600">
-                                    <thead className="bg-gray-50/50 text-gray-900 font-bold uppercase tracking-wider text-xs border-b border-gray-100">
-                                        <tr>
-                                            <th className="px-6 py-4">Status</th>
-                                            <th className="px-6 py-4">Business Details</th>
-                                            <th className="px-6 py-4">Signup Date</th>
-                                            <th className="px-6 py-4">Subscription</th>
-                                            <th className="px-6 py-4">Registration</th>
-                                            <th className="px-6 py-4 text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-50">
-                                        {filteredBusinessLeads.length === 0 ? (
-                                            <tr>
-                                                <td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic">
-                                                    No business leads found.
-                                                </td>
-                                            </tr>
-                                        ) : (
-                                            filteredBusinessLeads.map((u) => {
-                                                const listing = listings.find(l => l.user_id === u.id || l.owner_id === u.id);
-                                                const hasListing = !!listing;
-
-                                                return (
-                                                    <tr key={u.id} className="hover:bg-green-50/30 transition-colors group">
-                                                        <td className="px-6 py-4">
-                                                            <div className="flex flex-col gap-1.5">
-                                                                <ProfileStatusBadge profile={u} />
-                                                                <div className="flex flex-col gap-0.5 ml-1">
-                                                                    <div className="flex items-center gap-1 text-[9px] text-gray-400 font-bold uppercase">
-                                                                        <Zap size={10} className={u.last_login ? 'text-blue-500' : 'text-gray-300'} />
-                                                                        <span>Login: {formatLastLogin(u.last_login)}</span>
-                                                                    </div>
-                                                                    <div className={`flex items-center gap-1 text-[9px] font-bold uppercase ${u.subscription_status === 'active' ? 'text-green-600' : 'text-amber-600'}`}>
-                                                                        {u.subscription_status === 'active' ? <CheckCircle2 size={10} /> : <AlertTriangle size={10} />}
-                                                                        <span>Sub: {u.subscription_status || 'None'}</span>
-                                                                    </div>
-                                                                </div>
-                                                                <PaymentStatusBadge profile={u} />
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-6 py-4 font-medium text-gray-900">
-                                                            {u.full_name}
-                                                            <div className="text-xs text-gray-400 font-normal">{u.email}</div>
-                                                        </td>
-                                                        <td className="px-6 py-4 text-gray-500">
-                                                            {new Date(u.created_at).toLocaleDateString('en-GB')}
-                                                        </td>
-                                                        <td className="px-6 py-4">
-                                                            <SubscriptionInfo profile={u} />
-                                                        </td>
-                                                        <td className="px-6 py-4">
-                                                            {u.stripe_payment_id === 'SUSPENDED' ? (
-                                                                <div className="flex items-center gap-1.5 text-red-600 font-bold text-xs">
-                                                                    <AlertTriangle size={14} /> Suspended
-                                                                </div>
-                                                            ) : (
-                                                                <>
-                                                                    {(u.registration_status === 'active' || u.registration_status === 'pending') && u.subscription_status !== 'active' && !hasListing && (
-                                                                        <div className="flex flex-col gap-2">
-                                                                            <button
-                                                                                onClick={() => handleSendOnboardingEmail(u)}
-                                                                                disabled={sendingEmailId === u.id}
-                                                                                className="flex items-center gap-1.5 bg-[#007F00] text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 transition-all shadow-sm disabled:opacity-50 w-fit animate-pulse hover:animate-none"
-                                                                            >
-                                                                                {sendingEmailId === u.id ? (
-                                                                                    <div className="w-14 h-4 flex items-center justify-center">
-                                                                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                                                                    </div>
-                                                                                ) : (
-                                                                                    <>
-                                                                                        <Mail size={14} />
-                                                                                        Send Form
-                                                                                    </>
-                                                                                )}
-                                                                            </button>
-                                                                            <button
-                                                                                onClick={() => handleOpenCatalogueView(u)}
-                                                                                className="flex items-center gap-1.5 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition-all shadow-sm w-fit"
-                                                                            >
-                                                                                <Plus size={14} />
-                                                                                Add to Catalogue
-                                                                            </button>
-                                                                        </div>
-                                                                    )}
-                                                                    {u.registration_status === 'active' && hasListing && (
-                                                                        <div className="flex flex-col gap-2">
-                                                                            <div className="flex items-center gap-1.5 text-green-600 font-bold text-xs">
-                                                                                <CheckCircle2 size={14} />
-                                                                                Registration Complete
-                                                                            </div>
-                                                                            <button
-                                                                                onClick={() => handleOpenCatalogueView(u, listing)}
-                                                                                className="text-blue-600 hover:text-blue-700 font-bold text-xs flex items-center gap-1"
-                                                                            >
-                                                                                <Pencil size={12} /> Edit Catalogue
-                                                                            </button>
-                                                                        </div>
-                                                                    )}
-                                                                    {u.registration_status === 'pending' && !hasListing && (
-                                                                        <span className="text-[10px] text-gray-400 font-medium italic">Sent Link/Waiting</span>
-                                                                    )}
-                                                                </>
-                                                            )}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-right">
-                                                            <div className="flex items-center justify-end gap-2">
-                                                                <div className="flex items-center gap-1 bg-gray-50/50 p-1 rounded-lg border border-gray-100 mr-2">
-                                                                    <button
-                                                                        onClick={() => handleManualRenewal(u.id, 12)}
-                                                                        disabled={isUpdating}
-                                                                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-all"
-                                                                        title="Manual Renew (1 Year)"
-                                                                    >
-                                                                        <RefreshCw size={14} />
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => handleSendRenewalReminder(u)}
-                                                                        className="p-1.5 text-amber-600 hover:bg-amber-50 rounded transition-all"
-                                                                        title="Send Renewal Reminder"
-                                                                    >
-                                                                        <Mail size={14} />
-                                                                    </button>
-                                                                    {u.subscription_status === 'active' && (
-                                                                        <button
-                                                                            onClick={() => handleCancelSubscription(u.id)}
-                                                                            disabled={isUpdating}
-                                                                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-all"
-                                                                            title="Cancel Subscription"
-                                                                        >
-                                                                            <XCircle size={14} />
-                                                                        </button>
-                                                                    )}
-                                                                </div>
-                                                                <button
-                                                                    onClick={() => {
-                                                                        setSelectedUser(u);
-                                                                        setEditForm({
-                                                                            role: u.role,
-                                                                            subscription_status: u.subscription_status || 'inactive',
-                                                                            subscription_start_date: u.subscription_start_date || '',
-                                                                            subscription_end_date: u.subscription_end_date || '',
-                                                                            manual_override_reason: u.manual_override_reason || '',
-                                                                            stripe_payment_id: u.stripe_payment_id || ''
-                                                                        });
-                                                                    }}
-                                                                    className="text-gray-400 hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition-all"
-                                                                    title="View/Edit Profile Details"
-                                                                >
-                                                                    <Eye size={18} />
-                                                                </button>
-                                                                {u.registration_status !== 'active' && !u.is_admin_created && (
-                                                                    <button
-                                                                        onClick={() => updateRegistrationStatus(u.id, 'active')}
-                                                                        disabled={isUpdating}
-                                                                        className="flex items-center gap-1.5 bg-white border border-green-200 text-green-600 hover:bg-green-50 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 shadow-sm"
-                                                                        title="Manually activate this business (bypassing payment requirements)"
-                                                                    >
-                                                                        <CheckCircle2 size={14} />
-                                                                        Approve
-                                                                    </button>
-                                                                )}
-                                                                {u.registration_status === 'pending' && !u.is_admin_created && (
-                                                                    <button
-                                                                        onClick={() => updateRegistrationStatus(u.id, 'rejected')}
-                                                                        disabled={isUpdating}
-                                                                        className="flex items-center gap-1.5 bg-white border border-red-200 text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 shadow-sm"
-                                                                    >
-                                                                        <X size={14} />
-                                                                        Reject
-                                                                    </button>
-                                                                )}
-                                                                <button
-                                                                    onClick={() => handleDeleteClick(u.id, 'user')}
-                                                                    className="text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-all"
-                                                                    title="Delete Business"
-                                                                >
-                                                                    <Trash2 size={16} />
-                                                                </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+                    <LeadsView
+                        leads={leads} filteredLeads={filteredLeads}
+                        searchTerm={searchTerm} setSearchTerm={setSearchTerm}
+                        setSelectedLead={setSelectedLead} handleDeleteClick={handleDeleteClick}
+                    />
                 ) : view === 'assessments' ? (
-                    /* ASSESSMENTS VIEW */
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm text-gray-600">
-                                <thead className="bg-gray-50/50 text-gray-900 font-bold uppercase tracking-wider text-xs border-b border-gray-100">
-                                    <tr>
-                                        <th className="px-6 py-4">Status</th>
-                                        <th className="px-6 py-4">Address</th>
-                                        <th className="px-6 py-4">Client</th>
-                                        <th className="px-6 py-4">Assessor</th>
-                                        <th className="px-6 py-4">Scheduled</th>
-                                        <th className="px-6 py-4">Payment</th>
-                                        <th className="px-6 py-4 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {filteredAssessments.map((assessment) => (
-                                        <tr key={assessment.id} className="hover:bg-green-50/30 transition-colors group">
-                                            <td className="px-6 py-4">
-                                                <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${getStatusColor(assessment.status)}`}>
-                                                    {assessment.status.replace('_', ' ')}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 font-medium text-gray-900">
-                                                {assessment.property_address}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="font-medium text-gray-900">{assessment.profiles?.full_name || 'Generic User'}</div>
-                                                <div className="text-xs text-gray-400">{assessment.profiles?.email}</div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                {assessment.contractor_id ? (
-                                                    <span className="text-xs font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded-md">
-                                                        {users_list.find(u => u.id === assessment.contractor_id)?.full_name || 'Unknown'}
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-xs text-gray-400 italic">Unassigned</span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 text-gray-500">
-                                                {assessment.scheduled_date ? new Date(assessment.scheduled_date).toLocaleDateString() : 'TBC'}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`text-xs font-bold px-2 py-1 rounded-md ${assessment.payment_status === 'paid' ? 'bg-green-100 text-green-700' :
-                                                    assessment.payment_status === 'refunded' ? 'bg-red-100 text-red-700' :
-                                                        'bg-gray-100 text-gray-500'
-                                                    }`}>
-                                                    {assessment.payment_status ? assessment.payment_status.toUpperCase() : 'UNPAID'}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedAssessment(assessment);
-                                                            setShowAssessmentDetailModal(true);
-                                                        }}
-                                                        className="bg-white border border-gray-200 text-gray-600 hover:text-[#007F00] hover:border-[#007F00] px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1"
-                                                    >
-                                                        <Eye size={14} />
-                                                        View Details
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteClick(assessment.id, 'assessment')}
-                                                        className="text-gray-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
-                                                        title="Delete Assessment"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                    <AssessmentsView
+                        filteredAssessments={filteredAssessments} users_list={users_list}
+                        setSelectedAssessment={setSelectedAssessment}
+                        setShowAssessmentDetailModal={setShowAssessmentDetailModal}
+                        handleDeleteClick={handleDeleteClick}
+                    />
+                ) : view === 'homeowners' || view === 'assessors' ? (
+                    <UsersView
+                        view={view} users_list={users_list} assessments={assessments} listings={listings}
+                        searchTerm={searchTerm} setSearchTerm={setSearchTerm}
+                        locationFilter={locationFilter} setLocationFilter={setLocationFilter}
+                        uniqueUserLocations={uniqueUserLocations}
+                        isUpdating={isUpdating}
+                        handleManualRenewal={handleManualRenewal}
+                        handleSendRenewalReminder={handleSendRenewalReminder}
+                        handleCancelSubscription={handleCancelSubscription}
+                        handleOpenCatalogueView={handleOpenCatalogueView}
+                        setSelectedUser={setSelectedUser}
+                        setItemToSuspend={setItemToSuspend} setShowSuspendModal={setShowSuspendModal}
+                        handleDeleteClick={handleDeleteClick}
+                        setNewUserRole={setNewUserRole} setShowAddUserModal={setShowAddUserModal}
+                    />
+                ) : view === 'businesses' ? (
+                    <BusinessesView
+                        filteredBusinessLeads={filteredBusinessLeads} users_list={users_list} listings={listings}
+                        searchTerm={searchTerm} setSearchTerm={setSearchTerm}
+                        locationFilter={locationFilter} setLocationFilter={setLocationFilter}
+                        uniqueUserLocations={uniqueUserLocations}
+                        isUpdating={isUpdating} sendingEmailId={sendingEmailId}
+                        handleManualRenewal={handleManualRenewal}
+                        handleSendRenewalReminder={handleSendRenewalReminder}
+                        handleCancelSubscription={handleCancelSubscription}
+                        handleSendOnboardingEmail={handleSendOnboardingEmail}
+                        handleOpenCatalogueView={handleOpenCatalogueView}
+                        setSelectedUser={setSelectedUser} setEditForm={setEditForm}
+                        setItemToSuspend={setItemToSuspend} setShowSuspendModal={setShowSuspendModal}
+                        updateRegistrationStatus={updateRegistrationStatus}
+                        handleDeleteClick={handleDeleteClick}
+                        setNewUserRole={setNewUserRole} setShowAddUserModal={setShowAddUserModal}
+                    />
+                ) : view === 'catalogue' ? (
+                    <CatalogueView
+                        listings={listings} users_list={users_list}
+                        searchTerm={searchTerm} setSearchTerm={setSearchTerm}
+                        handleOpenCatalogueView={handleOpenCatalogueView}
+                        toggleCatalogueStatus={toggleCatalogueStatus}
+                        toggleCatalogueFeatured={toggleCatalogueFeatured}
+                        handleDeleteListing={handleDeleteListing}
+                    />
+                ) : view === 'add-to-catalogue' ? (
+                    <AddToCatalogueView
+                        catalogueFormData={catalogueFormData} setCatalogueFormData={setCatalogueFormData}
+                        catalogueCategories={catalogueCategories}
+                        selectedBusinessForCatalogue={selectedBusinessForCatalogue}
+                        selectedListingForEdit={selectedListingForEdit}
+                        isSavingCatalogue={isSavingCatalogue} isUploadingLogo={isUploadingLogo}
+                        isUpdatingBanner={isUpdatingBanner} isUploadingGallery={isUploadingGallery}
+                        handleSaveCatalogueEntry={handleSaveCatalogueEntry}
+                        handleLogoUpload={handleLogoUpload} handleBannerUpload={handleBannerUpload}
+                        handleGalleryUpload={handleGalleryUpload}
+                        toggleCatalogueCategory={toggleCatalogueCategory}
+                        setView={setView}
+                    />
                 ) : view === 'payments' ? (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-900">Recent Payments</h3>
-                                <p className="text-sm text-gray-500">Track all financial transactions.</p>
-                            </div>
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={handleExportPayments}
-                                    className="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg text-sm font-bold hover:bg-gray-50 transition-colors shadow-sm"
-                                >
-                                    Export Report
-                                </button>
-                            </div>
-                        </div>
-
-                        {payments.length === 0 ? (
-                            <div className="text-center py-20">
-                                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
-                                    <div className="font-bold text-2xl">€</div>
-                                </div>
-                                <h3 className="text-lg font-bold text-gray-900">No payments found</h3>
-                                <p className="text-gray-500">Once payments are received, they will appear here.</p>
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left text-sm text-gray-600">
-                                    <thead className="bg-gray-50/50 text-gray-900 font-bold uppercase tracking-wider text-xs border-b border-gray-100">
-                                        <tr>
-                                            <th className="px-6 py-4">Status</th>
-                                            <th className="px-6 py-4">Amount</th>
-                                            <th className="px-6 py-4">User</th>
-                                            <th className="px-6 py-4">Date</th>
-                                            <th className="px-6 py-4 text-right">Reference</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-50">
-                                        {payments.map((payment) => (
-                                            <tr key={payment.id} className="hover:bg-green-50/30 transition-colors group">
-                                                <td className="px-6 py-4">
-                                                    <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${payment.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                                        payment.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                                            payment.status === 'failed' ? 'bg-red-100 text-red-700' :
-                                                                'bg-gray-100 text-gray-700'
-                                                        }`}>
-                                                        {payment.status}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 font-bold text-gray-900">
-                                                    {new Intl.NumberFormat('en-IE', { style: 'currency', currency: payment.currency }).format(payment.amount)}
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="font-medium text-gray-900">{payment.profiles?.full_name || 'Unknown User'}</div>
-                                                    <div className="text-xs text-gray-400">{payment.profiles?.email}</div>
-                                                </td>
-                                                <td className="px-6 py-4 text-gray-500">
-                                                    {new Date(payment.created_at).toLocaleDateString()}
-                                                </td>
-                                                <td className="px-6 py-4 text-right font-mono text-xs text-gray-400">
-                                                    {payment.id.substring(0, 8)}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
+                    <PaymentsView payments={payments} handleExportPayments={handleExportPayments} />
                 ) : view === 'news' ? (
-                    /* NEWS MANAGEMENT VIEW */
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-900">Website News Articles</h3>
-                                <p className="text-sm text-gray-500">Manage the content appearing on the News page.</p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <button
-                                    onClick={fetchNewsArticles}
-                                    className="p-2 text-gray-400 hover:text-[#007EA7] transition-colors"
-                                    title="Refresh news"
-                                >
-                                    <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-                                </button>
-                                <button
-                                    onClick={() => navigate('/admin/news/new')}
-                                    className="bg-[#007F00] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#006600] transition-colors flex items-center gap-2"
-                                >
-                                    <Newspaper size={16} />
-                                    Add New Article
-                                </button>
-                            </div>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm text-gray-600">
-                                <thead className="bg-gray-50/50 text-gray-900 font-bold uppercase tracking-wider text-xs border-b border-gray-100">
-                                    <tr>
-                                        <th className="px-6 py-4">Article</th>
-                                        <th className="px-6 py-4">Author & Category</th>
-                                        <th className="px-6 py-4">Published Date</th>
-                                        <th className="px-6 py-4">Status</th>
-                                        <th className="px-6 py-4 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {newsArticles.map((article) => (
-                                        <tr key={article.id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4 max-w-sm">
-                                                <div className="flex items-center gap-4">
-                                                    {article.image_url && (
-                                                        <img
-                                                            src={article.image_url}
-                                                            alt=""
-                                                            className="w-12 h-12 rounded-lg object-cover border border-gray-100 shrink-0"
-                                                        />
-                                                    )}
-                                                    <div>
-                                                        <div className="font-bold text-gray-900 line-clamp-1">{article.title}</div>
-                                                        <div className="text-xs text-gray-400 line-clamp-2 mt-0.5">{article.excerpt}</div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="font-medium text-gray-700">{article.author}</div>
-                                                <div className="text-xs text-gray-500 capitalize">{article.category} • {article.read_time}</div>
-                                            </td>
-                                            <td className="px-6 py-4 text-gray-500">
-                                                {new Date(article.published_at).toLocaleDateString()}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${article.is_live ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                                                    {article.is_live ? 'Live' : 'Draft'}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <div className="flex items-center justify-end gap-2 text-[#007EA7]">
-                                                    <button
-                                                        onClick={() => navigate(`/admin/news/edit/${article.id}`)}
-                                                        className="p-1.5 hover:bg-blue-50 rounded-lg transition-colors"
-                                                        title="Edit Article"
-                                                    >
-                                                        <Pencil size={16} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteNewsArticle(article.id)}
-                                                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        title="Delete Article"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                    <a
-                                                        href="/news"
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="p-1.5 hover:bg-gray-50 rounded-lg transition-colors text-gray-400"
-                                                        title="View on site"
-                                                    >
-                                                        <Eye size={16} />
-                                                    </a>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {newsArticles.length === 0 && (
-                                        <tr>
-                                            <td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">
-                                                No news articles found.
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                    <NewsView
+                        newsArticles={newsArticles} loading={loading}
+                        fetchNewsArticles={fetchNewsArticles}
+                        handleDeleteNewsArticle={handleDeleteNewsArticle}
+                    />
                 ) : view === 'settings' ? (
-                    /* SETTINGS VIEW */
-                    <div className="space-y-6">
-                        {/* General Settings */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                <TrendingUp size={20} className="text-[#007F00]" />
-                                Platform Config
-                            </h3>
-                            <form
-                                onSubmit={async (e) => {
-                                    e.preventDefault();
-                                    const formData = new FormData(e.target as HTMLFormElement);
-                                    try {
-                                        setIsSavingSettings(true);
-                                        const { error } = await supabase.from('app_settings').update({
-                                            default_quote_price: parseFloat(formData.get('default_quote_price') as string),
-                                            vat_rate: parseFloat(formData.get('vat_rate') as string),
-                                            company_name: formData.get('company_name') as string,
-                                            support_email: formData.get('support_email') as string,
-                                        }).eq('id', appSettings?.id);
-                                        if (error) throw error;
-                                        toast.success('Platform settings updated!');
-                                        fetchAppSettings();
-                                    } catch (err: any) {
-                                        toast.error(err.message);
-                                    } finally {
-                                        setIsSavingSettings(false);
-                                    }
-                                }}
-                                className="grid grid-cols-1 md:grid-cols-2 gap-4"
-                            >
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Company Name</label>
-                                    <input name="company_name" defaultValue={appSettings?.company_name || ''} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Support Email</label>
-                                    <input name="support_email" defaultValue={appSettings?.support_email || ''} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Default Quote Price (€)</label>
-                                    <input name="default_quote_price" type="number" step="0.01" defaultValue={appSettings?.default_quote_price} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">VAT Rate (%)</label>
-                                    <input name="vat_rate" type="number" step="0.1" defaultValue={appSettings?.vat_rate} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-                                </div>
-                                <div className="md:col-span-2 flex justify-end">
-                                    <button
-                                        type="submit"
-                                        disabled={isSavingSettings}
-                                        className="bg-[#007F00] text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                                    >
-                                        {isSavingSettings ? <Loader2 className="animate-spin" size={18} /> : null}
-                                        {isSavingSettings ? 'Saving...' : 'Save Configurations'}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-
-                        {/* Registration Fees Section */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                <Briefcase size={20} className="text-blue-600" />
-                                Membership Registration Fees
-                            </h3>
-                            <form
-                                onSubmit={async (e) => {
-                                    e.preventDefault();
-                                    const formData = new FormData(e.target as HTMLFormElement);
-                                    try {
-                                        setIsSavingRegistrationFees(true);
-                                        const { error } = await supabase.from('app_settings').update({
-                                            domestic_assessor_price: parseFloat(formData.get('domestic_assessor_price') as string),
-                                            commercial_assessor_price: parseFloat(formData.get('commercial_assessor_price') as string),
-                                            bundle_assessor_price: parseFloat(formData.get('bundle_assessor_price') as string),
-                                            business_registration_price: parseFloat(formData.get('business_registration_price') as string)
-                                        }).eq('id', appSettings?.id);
-                                        if (error) throw error;
-                                        toast.success('Registration fees updated!');
-                                        fetchAppSettings();
-                                    } catch (err: any) {
-                                        toast.error(err.message);
-                                    } finally {
-                                        setIsSavingRegistrationFees(false);
-                                    }
-                                }}
-                                className="space-y-6"
-                            >
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Domestic Assessor (€)</label>
-                                        <input name="domestic_assessor_price" type="number" step="1" defaultValue={appSettings?.domestic_assessor_price ?? REGISTRATION_PRICES.DOMESTIC_ASSESSOR} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Commercial Assessor (€)</label>
-                                        <input name="commercial_assessor_price" type="number" step="1" defaultValue={appSettings?.commercial_assessor_price ?? REGISTRATION_PRICES.COMMERCIAL_ASSESSOR} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Bundle Assessor (€)</label>
-                                        <input name="bundle_assessor_price" type="number" step="1" defaultValue={appSettings?.bundle_assessor_price ?? REGISTRATION_PRICES.BUNDLE_ASSESSOR} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Business Reg (€)</label>
-                                        <input name="business_registration_price" type="number" step="1" defaultValue={appSettings?.business_registration_price ?? REGISTRATION_PRICES.BUSINESS_REGISTRATION} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
-                                    </div>
-                                </div>
-                                <div className="flex justify-end">
-                                    <button
-                                        type="submit"
-                                        disabled={isSavingRegistrationFees}
-                                        className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:bg-blue-700"
-                                    >
-                                        {isSavingRegistrationFees ? <Loader2 className="animate-spin" size={18} /> : null}
-                                        {isSavingRegistrationFees ? 'Saving...' : 'Update Registration Fees'}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-
-                        {/* Promo Settings (Previously Modal) */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-4">Homepage Promo Banner</h3>
-                            <form onSubmit={savePromoSettings} className="space-y-4">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <input
-                                        type="checkbox"
-                                        checked={promoSettings.is_enabled}
-                                        onChange={(e) => setPromoSettings({ ...promoSettings, is_enabled: e.target.checked })}
-                                        className="w-5 h-5 text-[#007F00] rounded focus:ring-[#007F00]"
-                                    />
-                                    <span className="text-sm font-medium text-gray-700">Enable Promo Banner</span>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-1">Headline</label>
-                                        <input
-                                            value={promoSettings.headline || ''}
-                                            onChange={(e) => setPromoSettings({ ...promoSettings, headline: e.target.value })}
-                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-1">Sub Text</label>
-                                        <input
-                                            value={promoSettings.sub_text || ''}
-                                            onChange={(e) => setPromoSettings({ ...promoSettings, sub_text: e.target.value })}
-                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                                        />
-                                    </div>
-                                    <div className="md:col-span-2">
-                                        <label className="block text-sm font-bold text-gray-700 mb-1">Destination URL</label>
-                                        <input
-                                            value={promoSettings.destination_url || ''}
-                                            onChange={(e) => setPromoSettings({ ...promoSettings, destination_url: e.target.value })}
-                                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex justify-end">
-                                    <button
-                                        type="submit"
-                                        disabled={isUpdatingBanner}
-                                        className="bg-[#007F00] text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                                    >
-                                        {isUpdatingBanner ? <Loader2 className="animate-spin" size={18} /> : null}
-                                        {isUpdatingBanner ? 'Updating...' : 'Update Banner'}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+                    <SettingsView
+                        appSettings={appSettings}
+                        promoSettings={promoSettings} setPromoSettings={setPromoSettings}
+                        isSavingSettings={isSavingSettings} setIsSavingSettings={setIsSavingSettings}
+                        isSavingRegistrationFees={isSavingRegistrationFees} setIsSavingRegistrationFees={setIsSavingRegistrationFees}
+                        isUpdatingBanner={isUpdatingBanner}
+                        fetchAppSettings={fetchAppSettings}
+                        savePromoSettings={savePromoSettings}
+                    />
                 ) : null}
             </main>
 
-
-
-            {/* ASSIGN ASSESSOR MODAL */}
-            {showAssignModal && selectedAssessmentForAssignment && (
-                <div
-                    className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-                    onClick={() => setShowAssignModal(false)}
-                >
-                    <div
-                        className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
-                            <h3 className="text-xl font-bold text-gray-900">Assign Assessor</h3>
-                            <button onClick={() => setShowAssignModal(false)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <div className="p-8 overflow-y-auto">
-                            <div className="mb-4">
-                                <p className="text-sm text-gray-500 mb-2">Select a certified BER Assessor for:</p>
-                                <p className="font-bold text-gray-800 text-sm bg-gray-50 p-2 rounded border border-gray-100">
-                                    {selectedAssessmentForAssignment.property_address}
-                                </p>
-                            </div>
-                            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                                {users_list.filter(u => u.role === 'contractor').length === 0 ? (
-                                    <p className="text-center text-gray-400 text-sm py-4">No Assessors found.</p>
-                                ) : (
-                                    users_list.filter(u => u.role === 'contractor').map(contractor => (
-                                        <button
-                                            key={contractor.id}
-                                            onClick={() => handleAssignContractor(contractor.id)}
-                                            className="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:border-[#007F00] hover:bg-green-50 transition-all text-left group"
-                                        >
-                                            <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0 group-hover:bg-white">
-                                                {contractor.full_name.charAt(0)}
-                                            </div>
-                                            <div className="flex-grow">
-                                                <p className="font-bold text-gray-900 text-sm">{contractor.full_name}</p>
-                                                <p className="text-xs text-gray-500">{contractor.email}</p>
-                                            </div>
-                                            {isUpdating && selectedAssessmentForAssignment?.id && (
-                                                <Loader2 className="animate-spin" size={16} />
-                                            )}
-                                        </button>
-                                    ))
-                                )}
-                            </div>
-                            <div className="pt-4 mt-2 border-t border-gray-100 flex justify-end">
-                                <button
-                                    onClick={() => setShowAssignModal(false)}
-                                    className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* PROMO SETTINGS MODAL */}
-            {showPromoModal && (
-                <div
-                    className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-                    onClick={() => setShowPromoModal(false)}
-                >
-                    <div
-                        className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
-                            <h3 className="text-xl font-bold text-gray-900">Partner Promo Settings</h3>
-                            <button onClick={() => setShowPromoModal(false)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <form onSubmit={savePromoSettings} className="p-8 overflow-y-auto space-y-4">
-                            <div className="flex items-center gap-2 mb-4">
-                                <input
-                                    type="checkbox"
-                                    id="promo_enabled"
-                                    checked={promoSettings.is_enabled}
-                                    onChange={(e) => setPromoSettings({ ...promoSettings, is_enabled: e.target.checked })}
-                                    className="w-4 h-4 text-[#007F00] focus:ring-[#007F00] border-gray-300 rounded"
-                                />
-                                <label htmlFor="promo_enabled" className="text-sm font-medium text-gray-700">
-                                    Enable Partner Promo in Emails
-                                </label>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Headline</label>
-                                <input
-                                    type="text"
-                                    value={promoSettings.headline || ''}
-                                    onChange={(e) => setPromoSettings({ ...promoSettings, headline: e.target.value })}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#007F00]"
-                                    placeholder="e.g. Considering Solar Panels?"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Sub-text</label>
-                                <input
-                                    type="text"
-                                    value={promoSettings.sub_text || ''}
-                                    onChange={(e) => setPromoSettings({ ...promoSettings, sub_text: e.target.value })}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#007F00]"
-                                    placeholder="e.g. Compare the Best Solar Deals"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Image URL</label>
-                                <input
-                                    type="text"
-                                    value={promoSettings.image_url || ''}
-                                    onChange={(e) => setPromoSettings({ ...promoSettings, image_url: e.target.value })}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#007F00]"
-                                    placeholder="https://example.com/banner.png"
-                                />
-                                {promoSettings.image_url && (
-                                    <div className="mt-2 bg-gray-50 p-2 rounded border border-gray-200">
-                                        <p className="text-xs text-gray-500 mb-1">Preview:</p>
-                                        <img src={promoSettings.image_url} alt="Preview" className="h-16 object-contain" />
-                                    </div>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Destination URL</label>
-                                <input
-                                    type="text"
-                                    value={promoSettings.destination_url || ''}
-                                    onChange={(e) => setPromoSettings({ ...promoSettings, destination_url: e.target.value })}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#007F00]"
-                                    placeholder="https://partner-site.com"
-                                />
-                            </div>
-
-                            <div className="pt-4 flex justify-end gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPromoModal(false)}
-                                    className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={isUpdating}
-                                    className="px-6 py-2 text-sm font-bold text-white bg-[#007F00] rounded-lg hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all"
-                                >
-                                    {isUpdating ? <Loader2 className="animate-spin" size={16} /> : null}
-                                    {isUpdating ? 'Saving...' : 'Save Changes'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* LEAD DETAILS MODAL */}
+            {/* ─── Modals ─────────────────────────────────────────────────────────── */}
             {selectedLead && (
-                <div
-                    className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-                    onClick={() => setSelectedLead(null)}
-                >
-                    <div
-                        className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {/* Modal Header */}
-                        <div className="bg-white border-b border-gray-100 p-6 flex justify-between items-start shrink-0">
-                            <div>
-                                <h3 className="text-2xl font-bold text-gray-900">Lead Details</h3>
-                                <p className="text-sm text-gray-400 flex items-center gap-2 mt-1.5 font-medium">
-                                    <Calendar size={14} />
-                                    Received: {new Date(selectedLead.created_at).toLocaleString()}
-                                </p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="relative group">
-                                    <select
-                                        value={selectedLead.status || 'new'}
-                                        disabled={isUpdating}
-                                        onChange={(e) => updateStatus(selectedLead.id, e.target.value)}
-                                        className={`appearance-none cursor-pointer pl-4 pr-9 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border-0 ring-1 ring-inset focus:ring-2 outline-none transition-all shadow-sm ${getStatusColor(selectedLead.status || 'new')} ring-black/5 hover:ring-black/10 disabled:opacity-50 disabled:cursor-wait`}
-                                    >
-                                        <option value="new">New</option>
-                                        <option value="contacted">Contacted</option>
-                                        <option value="completed">Completed</option>
-                                    </select>
-                                    {isUpdating ? (
-                                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 animate-spin" size={14} />
-                                    ) : (
-                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500/80 pointer-events-none group-hover:text-gray-700 transition-colors" size={14} />
-                                    )}
-                                </div>
-                                <button onClick={() => setSelectedLead(null)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
-                                    <X size={24} />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Modal Body */}
-                        <div className="p-8 overflow-y-auto space-y-8">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Client Info Card */}
-                                <div className="border border-gray-100 rounded-2xl p-6 bg-white hover:border-[#007F00]/30 hover:shadow-md hover:shadow-green-500/5 transition-all duration-300 group">
-                                    <div className="flex items-center justify-between mb-6">
-                                        <h4 className="text-[11px] font-extrabold text-[#007F00] uppercase tracking-widest bg-green-50 px-3 py-1 rounded-full">Client Information</h4>
-                                    </div>
-
-                                    <div className="flex items-center gap-4 mb-6">
-                                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-green-50 to-green-100 text-[#007F00] flex items-center justify-center font-bold text-xl shadow-sm border border-green-200/50">
-                                            {selectedLead.name.charAt(0)}
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-gray-900 text-lg break-words">{selectedLead.name}</p>
-                                            <p className="text-xs text-gray-500 font-medium bg-gray-100 px-2 py-0.5 rounded inline-block mt-1">Customer</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="border-t border-dashed border-gray-200 my-5"></div>
-
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-3 text-sm text-gray-600 font-medium p-2 hover:bg-gray-50 rounded-lg transition-colors -mx-2">
-                                            <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-[#007F00]/10 group-hover:text-[#007F00] transition-colors shrink-0">
-                                                <Mail size={16} />
-                                            </div>
-                                            <span className="truncate flex-1" title={selectedLead.email}>{selectedLead.email}</span>
-                                        </div>
-                                        <div className="flex items-center gap-3 text-sm text-gray-600 font-medium p-2 hover:bg-gray-50 rounded-lg transition-colors -mx-2">
-                                            <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-[#007F00]/10 group-hover:text-[#007F00] transition-colors shrink-0">
-                                                <Phone size={16} />
-                                            </div>
-                                            {selectedLead.phone}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Property Info Card */}
-                                <div className="border border-gray-100 rounded-2xl p-6 bg-white hover:border-[#007EA7]/30 hover:shadow-md hover:shadow-blue-500/5 transition-all duration-300 h-full flex flex-col justify-between group">
-                                    <div>
-                                        <div className="flex items-center justify-between mb-6">
-                                            <h4 className="text-[11px] font-extrabold text-[#007EA7] uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full">Property Details</h4>
-                                        </div>
-                                        <div className="space-y-6">
-                                            <div className="flex items-start gap-4 p-2 -mx-2">
-                                                <div className="w-10 h-10 rounded-full bg-blue-50 text-[#007EA7] flex items-center justify-center shrink-0 border border-blue-100">
-                                                    <MapPin size={20} />
-                                                </div>
-                                                <div>
-                                                    <p className="font-bold text-gray-900 text-lg leading-tight mb-1">{selectedLead.town || 'Not provided'}</p>
-                                                    <p className="text-sm text-gray-500 font-medium">{selectedLead.county || 'County not provided'}</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-3 text-sm text-gray-700 p-2 hover:bg-blue-50/50 rounded-lg transition-colors -mx-2">
-                                                <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-[#007EA7]/10 group-hover:text-[#007EA7] transition-colors shrink-0">
-                                                    <Home size={18} />
-                                                </div>
-                                                <span className="font-medium text-gray-600">{selectedLead.property_type || 'N/A'}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-6">
-                                        <div className="inline-flex items-center px-4 py-1.5 bg-[#007EA7] text-white rounded-full text-xs font-bold shadow-sm">
-                                            Purpose: {selectedLead.purpose || 'N/A'}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Message */}
-                            <div>
-                                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 pl-1">MESSAGE FROM CLIENT</h4>
-                                <div className="bg-gray-50 rounded-xl p-6 text-gray-700 text-sm leading-relaxed border border-gray-100 font-medium">
-                                    {selectedLead.message}
-                                </div>
-                            </div>
-
-                            {/* Conversion Action */}
-                            <div className="flex flex-col gap-3 pt-4 border-t border-gray-50">
-                                <div className="grid grid-cols-1 gap-4 relative z-10">
-                                    <a
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        onClick={() => toast.success('Opening Gmail...')}
-                                        href={`https://mail.google.com/mail/?view=cm&fs=1&to=${selectedLead.email}&su=${encodeURIComponent('Re: Your inquiry to The Berman')}&body=${encodeURIComponent(`Hi ${selectedLead.name},\n\nI'm writing to you regarding your BER assessment for ${selectedLead.town || 'your area'}.\n\n`)}`}
-                                        className="w-full bg-white border-2 border-gray-900 text-gray-900 font-bold text-sm py-4 rounded-2xl hover:bg-gray-50 transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-lg active:scale-[0.98] no-underline"
-                                    >
-                                        <Mail size={18} />
-                                        Client Message
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <LeadDetailsModal
+                    lead={selectedLead} isUpdating={isUpdating}
+                    onClose={() => setSelectedLead(null)}
+                    updateStatus={updateStatus}
+                />
             )}
 
-            {/* GENERATE QUOTE MODAL */}
             {showQuoteModal && selectedAssessment && (
-                <div
-                    className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-                    onClick={() => setShowQuoteModal(false)}
-                >
-                    <div
-                        className="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
-                            <h3 className="text-xl font-bold text-gray-900">Generate Quote</h3>
-                            <button onClick={() => setShowQuoteModal(false)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <div className="p-8 overflow-y-auto space-y-6">
-                            <div className="mb-6 space-y-4">
-                                <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100/50">
-                                    <h4 className="text-[10px] font-bold text-blue-900 uppercase tracking-widest mb-3">Target Property</h4>
-                                    <div className="space-y-2">
-                                        <div className="flex items-start gap-2">
-                                            <MapPin className="text-blue-500 mt-0.5" size={14} />
-                                            <div>
-                                                <p className="text-sm font-bold text-gray-900 leading-tight">{selectedAssessment.property_address}</p>
-                                                <p className="text-[11px] text-gray-500 font-medium">{selectedAssessment.town}, {selectedAssessment.county}</p>
-                                                {selectedAssessment.eircode && (
-                                                    <p className="text-[11px] font-mono text-blue-600 mt-1">{selectedAssessment.eircode}</p>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2 pt-1">
-                                            <Home className="text-blue-400" size={14} />
-                                            <p className="text-xs font-bold text-gray-700">{selectedAssessment.property_type || 'N/A'}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="bg-green-50/50 p-4 rounded-xl border border-green-100/50">
-                                    <h4 className="text-[10px] font-bold text-[#007F00] uppercase tracking-widest mb-2">Client Information</h4>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-green-100 text-[#007F00] flex items-center justify-center font-bold text-xs">
-                                            {(selectedAssessment.profiles?.full_name || selectedAssessment.contact_name || 'U').charAt(0)}
-                                        </div>
-                                        <div>
-                                            <p className="text-xs font-bold text-gray-900">{selectedAssessment.profiles?.full_name || selectedAssessment.contact_name || 'Unknown Client'}</p>
-                                            <p className="text-[10px] text-gray-500">{selectedAssessment.profiles?.email || selectedAssessment.contact_email}</p>
-                                            {(selectedAssessment.profiles?.phone || selectedAssessment.contact_phone) && (
-                                                <p className="text-[10px] text-gray-400 font-medium mt-0.5">{selectedAssessment.profiles?.phone || selectedAssessment.contact_phone}</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <form onSubmit={handleGenerateQuote} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Quote Price (€)</label>
-                                    <input
-                                        required
-                                        type="number"
-                                        step="0.01"
-                                        value={quoteData.price}
-                                        onChange={(e) => setQuoteData({ ...quoteData, price: e.target.value })}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#007F00]"
-                                        placeholder="e.g. 250.00"
-                                    />
-                                    <p className="text-[10px] text-gray-400 font-medium italic mt-2">
-                                        * Quote must include Berman's €30 service fee.
-                                    </p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Estimated Date</label>
-                                    <input
-                                        type="date"
-                                        value={quoteData.estimated_date}
-                                        onChange={(e) => setQuoteData({ ...quoteData, estimated_date: e.target.value })}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#007F00]"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Internal Notes</label>
-                                    <textarea
-                                        value={quoteData.notes}
-                                        onChange={(e) => setQuoteData({ ...quoteData, notes: e.target.value })}
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#007F00]"
-                                        placeholder="Add any internal details or notes for the quote..."
-                                        rows={3}
-                                    />
-                                </div>
-                                <div className="pt-4 flex justify-end gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowQuoteModal(false)}
-                                        className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={isUpdating}
-                                        className="px-6 py-2 text-sm font-bold text-white bg-[#007F00] rounded-lg hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
-                                    >
-                                        {isUpdating ? <Loader2 className="animate-spin" size={16} /> : null}
-                                        {isUpdating ? 'Generating...' : 'Generate & Notify'}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
+                <GenerateQuoteModal
+                    assessment={selectedAssessment}
+                    quoteData={quoteData} setQuoteData={setQuoteData}
+                    isUpdating={isUpdating}
+                    onClose={() => { setShowQuoteModal(false); setQuoteData({ price: '', estimated_date: '', notes: '' }); }}
+                    onSubmit={handleGenerateQuote}
+                />
             )}
 
-            {/* MESSAGE CLIENT MODAL */}
-            {showMessageModal && (
-                <div
-                    className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-                    onClick={() => setShowMessageModal(false)}
-                >
-                    <div
-                        className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
-                            <h3 className="text-xl font-bold text-gray-900">Message Client</h3>
-                            <button onClick={() => setShowMessageModal(false)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <form onSubmit={handleSendMessage} className="p-8 overflow-y-auto space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Content</label>
-                                <textarea
-                                    required
-                                    value={messageContent}
-                                    onChange={(e) => setMessageContent(e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#007F00] min-h-[120px]"
-                                    placeholder="Type your message..."
-                                />
-                            </div>
-                            <div className="pt-4 flex justify-end gap-3">
-                                <button type="button" onClick={() => setShowMessageModal(false)} className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg">Cancel</button>
-                                <button
-                                    type="submit"
-                                    disabled={isUpdating}
-                                    className="px-6 py-2 text-sm font-bold text-white bg-[#007F00] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                                >
-                                    {isUpdating ? <Loader2 className="animate-spin" size={16} /> : null}
-                                    {isUpdating ? 'Sending...' : 'Send Message'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+            {showMessageModal && selectedAssessment && (
+                <MessageModal
+                    messageContent={messageContent} setMessageContent={setMessageContent}
+                    isUpdating={isUpdating}
+                    onClose={() => { setShowMessageModal(false); setMessageContent(''); }}
+                    onSubmit={handleSendMessage}
+                />
             )}
 
-            {/* SCHEDULE MODAL */}
-            {showScheduleModal && (
-                <div
-                    className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-                    onClick={() => setShowScheduleModal(false)}
-                >
-                    <div
-                        className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
-                            <h3 className="text-xl font-bold text-gray-900">Schedule Assessment</h3>
-                            <button onClick={() => setShowScheduleModal(false)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <form onSubmit={handleSchedule} className="p-8 overflow-y-auto space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Assessment Date</label>
-                                <input
-                                    type="datetime-local"
-                                    required
-                                    value={selectedDate}
-                                    onChange={(e) => setSelectedDate(e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#007F00]"
-                                />
-                            </div>
-                            <div className="pt-4 flex justify-end gap-3">
-                                <button type="button" onClick={() => setShowScheduleModal(false)} className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg">Cancel</button>
-                                <button
-                                    type="submit"
-                                    disabled={isUpdating}
-                                    className="px-6 py-2 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
-                                >
-                                    {isUpdating ? <Loader2 className="animate-spin" size={16} /> : null}
-                                    {isUpdating ? 'Scheduling...' : 'Confirm Schedule'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+            {showScheduleModal && selectedAssessment && (
+                <ScheduleModal
+                    selectedDate={selectedDate} setSelectedDate={setSelectedDate}
+                    isUpdating={isUpdating}
+                    onClose={() => setShowScheduleModal(false)}
+                    onSubmit={handleSchedule}
+                />
             )}
 
-            {/* COMPLETE MODAL */}
-            {showCompleteModal && (
-                <div
-                    className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-                    onClick={() => setShowCompleteModal(false)}
-                >
-                    <div
-                        className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
-                            <h3 className="text-xl font-bold text-gray-900">Complete Assessment</h3>
-                            <button onClick={() => setShowCompleteModal(false)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <form onSubmit={handleComplete} className="p-8 overflow-y-auto space-y-4">
-                            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4">
-                                <p className="text-xs text-blue-800 font-medium">Finalizing this assessment will allow the homeowner to download their BER certificate.</p>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Certificate URL (e.g. Google Drive/Dropbox/S3)</label>
-                                <input
-                                    type="url"
-                                    required
-                                    value={certUrl}
-                                    onChange={(e) => setCertUrl(e.target.value)}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#007F00]"
-                                    placeholder="https://..."
-                                />
-                            </div>
-                            <div className="pt-4 flex justify-end gap-3">
-                                <button type="button" onClick={() => setShowCompleteModal(false)} className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg">Cancel</button>
-                                <button
-                                    type="submit"
-                                    disabled={isUpdating}
-                                    className="px-6 py-2 text-sm font-bold text-white bg-[#007F00] rounded-lg hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                                >
-                                    {isUpdating ? <Loader2 className="animate-spin" size={16} /> : null}
-                                    {isUpdating ? 'Finalizing...' : 'Complete Assessment'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+            {showCompleteModal && selectedAssessment && (
+                <CompleteModal
+                    certUrl={certUrl} setCertUrl={setCertUrl}
+                    isUpdating={isUpdating}
+                    onClose={() => { setShowCompleteModal(false); setCertUrl(''); }}
+                    onSubmit={handleComplete}
+                />
             )}
-            {/* ASSESSMENT DETAILS MODAL */}
-            {
-                showAssessmentDetailModal && selectedAssessment && (
-                    <div
-                        className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-                        onClick={() => setShowAssessmentDetailModal(false)}
-                    >
-                        <div
-                            className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className="bg-white border-b border-gray-100 p-6 flex justify-between items-center shrink-0">
-                                <div>
-                                    <h3 className="text-2xl font-bold text-gray-900">Assessment Details</h3>
-                                    <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide mt-2 ${getStatusColor(selectedAssessment.status)}`}>
-                                        {selectedAssessment.status.replace('_', ' ')}
-                                    </div>
-                                </div>
-                                <button onClick={() => setShowAssessmentDetailModal(false)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
-                                    <X size={24} />
-                                </button>
-                            </div>
 
-                            <div className="p-8 overflow-y-auto space-y-8">
-                                {/* Detailed Property Grid */}
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-y-8 gap-x-6">
-                                    <div className="space-y-2">
-                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Location</span>
-                                        <div className="flex items-start gap-2">
-                                            <MapPin className="text-[#007EA7] shrink-0 mt-0.5" size={16} />
-                                            <div>
-                                                <p className="text-sm font-bold text-gray-900 leading-tight">{selectedAssessment.town}, {selectedAssessment.county}</p>
-                                                <p className="text-[11px] text-gray-500 mt-0.5">{selectedAssessment.property_address}</p>
-                                            </div>
-                                        </div>
-                                    </div>
+            {showAssessmentDetailModal && selectedAssessment && (
+                <AssessmentDetailModal
+                    assessment={selectedAssessment}
+                    onClose={() => setShowAssessmentDetailModal(false)}
+                    onGenerateQuote={() => { setShowQuoteModal(true); setShowAssessmentDetailModal(false); }}
+                    onAssignAssessor={() => { setSelectedAssessmentForAssignment(selectedAssessment); setShowAssignModal(true); setShowAssessmentDetailModal(false); }}
+                    onSchedule={() => { setShowScheduleModal(true); setShowAssessmentDetailModal(false); }}
+                    onComplete={() => { setShowCompleteModal(true); setShowAssessmentDetailModal(false); }}
+                    onMessage={(content) => { setMessageContent(content); setShowMessageModal(true); setShowAssessmentDetailModal(false); }}
+                />
+            )}
 
-                                    <div className="space-y-2">
-                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Property Type</span>
-                                        <div className="flex items-center gap-2">
-                                            <Home className="text-[#007EA7] shrink-0" size={16} />
-                                            <p className="text-sm font-bold text-gray-900">{selectedAssessment.property_type || 'N/A'}</p>
-                                        </div>
-                                    </div>
+            {showAssignModal && selectedAssessmentForAssignment && (
+                <AssignAssessorModal
+                    assessment={selectedAssessmentForAssignment}
+                    contractors={users_list.filter(u => u.role === 'contractor')}
+                    isUpdating={isUpdating}
+                    onClose={() => { setShowAssignModal(false); setSelectedAssessmentForAssignment(null); }}
+                    onAssign={handleAssignContractor}
+                />
+            )}
 
-                                    <div className="space-y-2">
-                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Size</span>
-                                        <p className="text-sm font-bold text-gray-900">{selectedAssessment.property_size || 'N/A'}</p>
-                                    </div>
+            {showSponsorModal && (
+                <SponsorModal
+                    sponsors={sponsors} editingSponsor={editingSponsor} setEditingSponsor={setEditingSponsor}
+                    isUpdating={isUpdating}
+                    onClose={() => { setShowSponsorModal(false); setEditingSponsor(null); }}
+                    onSave={handleSaveSponsor}
+                    onDelete={handleDeleteSponsor}
+                />
+            )}
 
-                                    <div className="space-y-2">
-                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Bedrooms</span>
-                                        <p className="text-sm font-bold text-gray-900">{selectedAssessment.bedrooms || 'N/A'}</p>
-                                    </div>
+            {showDeleteModal && itemToDelete && (
+                <DeleteConfirmModal
+                    itemType={itemToDelete.type}
+                    isDeleting={isDeleting}
+                    onCancel={() => { setShowDeleteModal(false); setItemToDelete(null); }}
+                    onConfirm={confirmDelete}
+                />
+            )}
 
-                                    <div className="space-y-2">
-                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Purpose</span>
-                                        <p className="text-sm font-bold text-gray-900">{selectedAssessment.ber_purpose || 'N/A'}</p>
-                                    </div>
+            {selectedUser && (
+                <UserDetailsModal
+                    user={selectedUser}
+                    currentUser={user}
+                    editForm={editForm} setEditForm={setEditForm}
+                    customMonths={customMonths} setCustomMonths={setCustomMonths}
+                    listings={listings}
+                    isUpdating={isUpdating}
+                    onClose={() => setSelectedUser(null)}
+                    onUpdate={handleUpdateProfile}
+                    onSuspend={() => {
+                        setItemToSuspend({ id: selectedUser.id, name: selectedUser.full_name, currentStatus: selectedUser.is_active !== false });
+                        setShowSuspendModal(true);
+                    }}
+                    onManualRenewal={handleManualRenewal}
+                    onSendRenewalReminder={handleSendRenewalReminder}
+                    onCancelSubscription={handleCancelSubscription}
+                    onOpenCatalogue={(u, listing) => { handleOpenCatalogueView(u, listing); setSelectedUser(null); }}
+                    getFallbackPhone={getFallbackPhone}
+                />
+            )}
 
-                                    <div className="space-y-2">
-                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Heat Pump</span>
-                                        <p className="text-sm font-bold text-gray-900">{selectedAssessment.heat_pump || 'No'}</p>
-                                    </div>
-                                </div>
+            {showSuspendModal && itemToSuspend && (
+                <SuspendUserModal
+                    item={itemToSuspend}
+                    isUpdating={isUpdating}
+                    onClose={() => { setShowSuspendModal(false); setItemToSuspend(null); }}
+                    onConfirm={toggleUserStatus}
+                />
+            )}
 
-                                {/* Schedule & Features highlight */}
-                                <div className="bg-gray-50 rounded-[2rem] p-8 border border-gray-100 flex flex-col md:flex-row gap-8">
-                                    <div className="flex-1 space-y-3">
-                                        <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest block">
-                                            {selectedAssessment.status === 'completed' ? 'Completed On' : 'Preferred Schedule'}
-                                        </span>
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-3 bg-white rounded-xl text-[#007EA7] shadow-sm">
-                                                {selectedAssessment.status === 'completed' ? <CheckCircle2 size={20} className="text-[#007F00]" /> : <Calendar size={20} />}
-                                            </div>
-                                            <p className="text-lg font-black text-gray-900">
-                                                {selectedAssessment.status === 'completed' && selectedAssessment.completed_at ? (
-                                                    new Date(selectedAssessment.completed_at).toLocaleDateString('en-IE', {
-                                                        day: 'numeric',
-                                                        month: 'long',
-                                                        year: 'numeric'
-                                                    })
-                                                ) : selectedAssessment.preferred_date ? (
-                                                    `20${selectedAssessment.preferred_date.slice(2)} at ${selectedAssessment.preferred_time || 'anytime'}`
-                                                ) : (
-                                                    'Not specified'
-                                                )}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex-1 space-y-3">
-                                        <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest block">Features</span>
-                                        <div className="flex flex-wrap gap-2">
-                                            {selectedAssessment.additional_features && selectedAssessment.additional_features.length > 0 ? (
-                                                selectedAssessment.additional_features.map((feature, i) => (
-                                                    <span key={i} className="text-xs bg-white border border-gray-200 text-gray-600 px-4 py-1.5 rounded-full font-bold shadow-sm">
-                                                        {feature}
-                                                    </span>
-                                                ))
-                                            ) : (
-                                                <span className="text-sm text-gray-400 font-medium">Standard property features</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Client Summary card */}
-                                <div className="bg-[#007F00]/5 border border-[#007F00]/10 rounded-2xl p-6 flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-full bg-[#007F00] text-white flex items-center justify-center font-black text-lg shadow-lg shadow-green-900/10">
-                                            {(selectedAssessment.profiles?.full_name || selectedAssessment.contact_name || 'U').charAt(0)}
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-black text-gray-900">{selectedAssessment.profiles?.full_name || selectedAssessment.contact_name || 'Unknown Client'}</p>
-                                            <p className="text-xs text-gray-500 font-medium">{selectedAssessment.profiles?.email || selectedAssessment.contact_email}</p>
-                                            {(selectedAssessment.profiles?.phone || selectedAssessment.contact_phone) && (
-                                                <p className="text-[10px] text-gray-400 font-medium mt-0.5">{selectedAssessment.profiles?.phone || selectedAssessment.contact_phone}</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <a href={`mailto:${selectedAssessment.profiles?.email || selectedAssessment.contact_email}`} className="p-2.5 bg-white border border-gray-100 text-[#007F00] rounded-xl hover:bg-green-50 transition-all shadow-sm">
-                                            <Mail size={18} />
-                                        </a>
-                                    </div>
-                                </div>
-
-                                {/* Actions Section */}
-                                <div className="pt-6 border-t border-gray-100">
-                                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Required Actions</h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                        {selectedAssessment.status === 'submitted' && (
-                                            <button
-                                                onClick={() => {
-                                                    setShowQuoteModal(true);
-                                                    setShowAssessmentDetailModal(false);
-                                                }}
-                                                className="bg-[#007F00] text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-sm flex items-center justify-center gap-2"
-                                            >
-                                                <TrendingUp size={18} />
-                                                Generate Quote
-                                            </button>
-                                        )}
-                                        {!selectedAssessment.contractor_id && selectedAssessment.status !== 'completed' && (
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedAssessmentForAssignment(selectedAssessment);
-                                                    setShowAssignModal(true);
-                                                    setShowAssessmentDetailModal(false);
-                                                }}
-                                                className="bg-[#007EA7] text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-sm flex items-center justify-center gap-2"
-                                            >
-                                                <Briefcase size={18} />
-                                                Assign Assessor
-                                            </button>
-                                        )}
-                                        {selectedAssessment.status === 'quote_accepted' && (
-                                            <button
-                                                onClick={() => {
-                                                    setShowScheduleModal(true);
-                                                    setShowAssessmentDetailModal(false);
-                                                }}
-                                                className="bg-indigo-600 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-sm flex items-center justify-center gap-2"
-                                            >
-                                                <Calendar size={18} />
-                                                Schedule
-                                            </button>
-                                        )}
-                                        {selectedAssessment.status === 'scheduled' && (
-                                            <button
-                                                onClick={() => {
-                                                    setShowCompleteModal(true);
-                                                    setShowAssessmentDetailModal(false);
-                                                }}
-                                                className="bg-purple-600 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-purple-700 transition-all shadow-sm flex items-center justify-center gap-2"
-                                            >
-                                                <RefreshCw size={18} />
-                                                Complete
-                                            </button>
-                                        )}
-                                        <button
-                                            onClick={() => {
-                                                const name = selectedAssessment.profiles?.full_name || selectedAssessment.contact_name || 'there';
-                                                setMessageContent(`Hi ${name},\n\nI'm writing to you regarding your BER assessment for ${selectedAssessment.property_address}.\n\n[Type your message here]\n\nBest regards,\nThe Berman Team`);
-                                                setShowMessageModal(true);
-                                                setShowAssessmentDetailModal(false);
-                                            }}
-                                            className="bg-white border-2 border-gray-900 text-gray-900 px-4 py-3 rounded-xl text-sm font-bold hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
-                                        >
-                                            <MessageSquare size={18} />
-                                            Message (Gmail)
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
-            {/* SPONSOR MODAL */}
-            {
-                showSponsorModal && (
-                    <div
-                        className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
-                        onClick={() => { setShowSponsorModal(false); setEditingSponsor(null); }}
-                    >
-                        <div
-                            className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
-                                <h3 className="text-xl font-bold text-gray-900">Manage Sponsors</h3>
-                                <button onClick={() => { setShowSponsorModal(false); setEditingSponsor(null); }} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
-                                    <X size={24} />
-                                </button>
-                            </div>
-
-                            <div className="p-8 overflow-y-auto">
-                                {/* List Sponsors */}
-                                <div className="mb-8">
-                                    <h4 className="text-sm font-bold text-gray-700 mb-3">Current Sponsors ({sponsors.length}/3)</h4>
-                                    <div className="space-y-3">
-                                        {sponsors.length === 0 && <p className="text-sm text-gray-500 italic">No sponsors added yet.</p>}
-                                        {sponsors.map(sponsor => (
-                                            <div key={sponsor.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                                                {sponsor.image_url && <img src={sponsor.image_url} alt={sponsor.name} className="w-12 h-12 object-cover rounded-md" />}
-                                                <div className="flex-grow">
-                                                    <p className="font-bold text-sm">{sponsor.headline}</p>
-                                                    <p className="text-xs text-gray-500">{sponsor.sub_text}</p>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        onClick={() => setEditingSponsor(sponsor)}
-                                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                                                    >
-                                                        <Pencil size={18} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteSponsor(sponsor.id)}
-                                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Add/Edit Form */}
-                                {(sponsors.length < 3 || editingSponsor) && (
-                                    <form onSubmit={handleSaveSponsor} className="space-y-4 border-t border-gray-100 pt-6">
-                                        <h4 className="text-sm font-bold text-gray-900">{editingSponsor ? 'Edit Sponsor' : 'Add New Sponsor'}</h4>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-xs font-bold text-gray-500 mb-1">Business Name</label>
-                                                <input name="name" defaultValue={editingSponsor?.name} required className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Internal name" />
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs font-bold text-gray-500 mb-1">Headline</label>
-                                                <input name="headline" defaultValue={editingSponsor?.headline} required className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="e.g. Need Solar?" />
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-xs font-bold text-gray-500 mb-1">Sub-text</label>
-                                                <input name="sub_text" defaultValue={editingSponsor?.sub_text} required className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Short description" />
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs font-bold text-gray-500 mb-1">Destination URL</label>
-                                                <input name="destination_url" defaultValue={editingSponsor?.destination_url} required type="url" className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="https://..." />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-xs font-bold text-gray-500 mb-1">Image URL</label>
-                                            <input name="image_url" defaultValue={editingSponsor?.image_url} required type="url" className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="https://..." />
-                                        </div>
-
-                                        <div className="pt-2 flex justify-end gap-3">
-                                            {editingSponsor && (
-                                                <button type="button" onClick={() => setEditingSponsor(null)} className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg">Cancel Edit</button>
-                                            )}
-                                            <button
-                                                type="submit"
-                                                disabled={isUpdating}
-                                                className="px-6 py-2 text-sm font-bold text-white bg-[#007F00] rounded-lg hover:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
-                                            >
-                                                {isUpdating ? <Loader2 className="animate-spin" size={16} /> : null}
-                                                {editingSponsor ? 'Update Sponsor' : 'Add Sponsor'}
-                                            </button>
-                                        </div>
-                                    </form>
-                                )}
-
-                                {sponsors.length >= 3 && !editingSponsor && (
-                                    <div className="text-center p-4 bg-yellow-50 text-yellow-800 text-sm rounded-lg mt-4">
-                                        Maximum of 3 sponsors allowed. Delete one to add a new one.
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
-            {/* DELETE CONFIRMATION MODAL */}
-            {
-                showDeleteModal && (
-                    <div
-                        className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-                        onClick={() => { setShowDeleteModal(false); setItemToDelete(null); }}
-                    >
-                        <div
-                            className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 animate-in zoom-in-95 duration-200 text-center"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-100">
-                                <AlertTriangle size={32} />
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Are you sure?</h3>
-                            <p className="text-gray-500 text-sm mb-8">
-                                This action cannot be undone. This {itemToDelete?.type} will be permanently removed from our records.
-                            </p>
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => { setShowDeleteModal(false); setItemToDelete(null); }}
-                                    disabled={isDeleting}
-                                    className="flex-1 px-4 py-3 text-sm font-bold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={confirmDelete}
-                                    disabled={isDeleting}
-                                    className="flex-1 px-4 py-3 text-sm font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 transition-colors shadow-lg shadow-red-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                >
-                                    {isDeleting ? (
-                                        <>
-                                            <Loader2 size={18} className="animate-spin" />
-                                            Deleting...
-                                        </>
-                                    ) : (
-                                        'Delete Permanently'
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
-
-            {/* USER DETAILS / EDIT MODAL */}
-            {
-                selectedUser && (
-                    <div
-                        className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
-                        onClick={() => setSelectedUser(null)}
-                    >
-                        <div
-                            className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
-                                <h3 className="text-xl font-bold text-gray-900">User Details</h3>
-                                <button onClick={() => setSelectedUser(null)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
-                                    <X size={24} />
-                                </button>
-                            </div>
-                            <div className="p-8 overflow-y-auto">
-                                <div className="flex items-center gap-4 mb-6">
-                                </div>
-
-                                <div className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Account Role</p>
-                                            <select
-                                                value={editForm.role}
-                                                onChange={(e) => setEditForm({ ...editForm, role: e.target.value as any })}
-                                                className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white transition-all outline-none font-bold text-gray-900 capitalize"
-                                            >
-                                                <option value="user">User</option>
-                                                <option value="homeowner">Homeowner</option>
-                                                <option value="contractor">Assessor / Contractor</option>
-                                                <option value="business">Business</option>
-                                                <option value="admin">Admin</option>
-                                            </select>
-                                        </div>
-                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Phone Number</p>
-                                            <p className="text-sm font-bold text-gray-900">{getFallbackPhone(selectedUser)}</p>
-                                        </div>
-                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Status</p>
-                                            <p className={`text-sm font-bold capitalize ${selectedUser.is_active !== false ? 'text-green-600' : 'text-red-600'}`}>
-                                                {selectedUser.is_active !== false ? 'Active' : 'Suspended'}
-                                            </p>
-                                        </div>
-                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 col-span-2">
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Last Login Date & Time</p>
-                                            <p className="text-sm font-bold text-gray-900">
-                                                {selectedUser.last_login ? new Date(selectedUser.last_login).toLocaleString('en-GB') : 'Never'}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {selectedUser.role === 'business' && (
-                                        <div className="p-1 bg-gradient-to-r from-blue-500 to-[#007EA7] rounded-[1.5rem] shadow-lg shadow-blue-100">
-                                            <button
-                                                onClick={() => {
-                                                    const listing = listings.find(l => l.user_id === selectedUser.id || l.owner_id === selectedUser.id);
-                                                    handleOpenCatalogueView(selectedUser, listing);
-                                                    setSelectedUser(null);
-                                                }}
-                                                className="w-full h-full bg-white text-[#007EA7] hover:bg-transparent hover:text-white py-4 rounded-[1.25rem] font-black uppercase tracking-[0.15em] text-[10px] transition-all flex items-center justify-center gap-3"
-                                            >
-                                                <Edit2 size={16} />
-                                                Manage Professional Catalogue
-                                            </button>
-                                        </div>
-                                    )}
-
-                                    {/* Subscription Section */}
-                                    {(selectedUser.role === 'contractor' || selectedUser.role === 'business') && (
-                                        <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100/50">
-                                            <div className="flex justify-between items-center mb-4">
-                                                <h4 className="text-xs font-bold text-blue-900 uppercase tracking-widest">Subscription Management</h4>
-                                                {(() => {
-                                                    const endDate = selectedUser.subscription_end_date ? new Date(selectedUser.subscription_end_date) : null;
-                                                    const isExpired = endDate && endDate < new Date();
-                                                    if (isExpired) return (
-                                                        <span className="flex items-center gap-1 text-[10px] font-black text-red-600 animate-pulse">
-                                                            <AlertCircle size={12} />
-                                                            ACCOUNT DISABLED
-                                                        </span>
-                                                    );
-                                                    return null;
-                                                })()}
-                                            </div>
-                                            <div className="flex justify-between items-center mb-4">
-                                                <div>
-                                                    <p className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">Status</p>
-                                                    <p className="text-sm font-black text-blue-900 capitalize">{selectedUser.subscription_status || 'Inactive'}</p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">Ends On</p>
-                                                    <p className="text-sm font-black text-blue-900">
-                                                        {selectedUser.subscription_end_date ? new Date(selectedUser.subscription_end_date).toLocaleDateString('en-GB') : 'N/A'}
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex flex-col gap-4 mt-4">
-                                                <div className="p-4 bg-white rounded-2xl border border-blue-100 shadow-sm">
-                                                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3">Renewal Duration</p>
-
-                                                    {/* Quick Select Pills */}
-                                                    <div className="flex flex-wrap gap-2 mb-4">
-                                                        {[1, 3, 6, 12].map((m) => (
-                                                            <button
-                                                                key={m}
-                                                                onClick={() => setCustomMonths(m)}
-                                                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${customMonths === m
-                                                                    ? 'bg-blue-600 text-white border-blue-600'
-                                                                    : 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100'
-                                                                    }`}
-                                                            >
-                                                                {m === 12 ? '1 Year' : `${m} Month${m > 1 ? 's' : ''}`}
-                                                            </button>
-                                                        ))}
-                                                        <div className="flex items-center gap-2 ml-auto">
-                                                            <span className="text-[10px] font-bold text-gray-400 capitalize">Custom:</span>
-                                                            <input
-                                                                type="number"
-                                                                min="1"
-                                                                max="60"
-                                                                value={customMonths}
-                                                                onChange={(e) => setCustomMonths(parseInt(e.target.value) || 1)}
-                                                                className="w-14 border border-gray-200 rounded-lg px-2 py-1 text-xs font-bold focus:ring-2 focus:ring-blue-100 outline-none text-center"
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex gap-2">
-                                                        <button
-                                                            onClick={() => handleManualRenewal(selectedUser.id, customMonths)}
-                                                            disabled={isUpdating}
-                                                            className="flex-[2] bg-blue-600 text-white text-[11px] font-black py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-100 disabled:opacity-50"
-                                                        >
-                                                            <Zap size={14} fill="currentColor" />
-                                                            UPDATE UNTIL {(() => {
-                                                                const d = new Date(selectedUser.subscription_end_date && new Date(selectedUser.subscription_end_date) > new Date() ? selectedUser.subscription_end_date : new Date());
-                                                                d.setMonth(d.getMonth() + customMonths);
-                                                                return d.toLocaleDateString('en-GB');
-                                                            })()}
-                                                        </button>
-
-                                                        <button
-                                                            onClick={() => handleSendRenewalReminder(selectedUser)}
-                                                            className="flex-1 bg-white border-2 border-amber-600 text-amber-600 text-[10px] font-black py-2.5 rounded-xl hover:bg-amber-600 hover:text-white transition-all flex items-center justify-center gap-2"
-                                                            title="Send Reminder Email"
-                                                        >
-                                                            <Mail size={14} />
-                                                            REMINDER
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                                {selectedUser.subscription_status === 'active' && (
-                                                    <button
-                                                        onClick={() => handleCancelSubscription(selectedUser.id)}
-                                                        disabled={isUpdating}
-                                                        className="w-full bg-red-50 text-red-600 border border-red-200 text-[10px] font-black py-2.5 rounded-xl hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-2"
-                                                    >
-                                                        <XCircle size={14} />
-                                                        CANCEL SUBSCRIPTION
-                                                    </button>
-                                                )}
-                                            </div>
-
-                                            {selectedUser.manual_override_reason && (
-                                                <div className="mt-4 p-2 bg-white rounded-lg border border-blue-100">
-                                                    <p className="text-[10px] text-gray-400 uppercase font-bold mb-1">Override Reason</p>
-                                                    <p className="text-xs text-gray-600 italic">"{selectedUser.manual_override_reason}"</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    <div className="space-y-4">
-                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">User ID</p>
-                                            <p className="text-xs font-mono text-gray-600 break-all">{selectedUser.id}</p>
-                                        </div>
-                                        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Member Since</p>
-                                            <p className="text-sm font-bold text-gray-900">{new Date(selectedUser.created_at).toLocaleDateString('en-GB')}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex gap-3 mt-8">
-                                        <button
-                                            className={`flex-1 py-3 font-bold rounded-xl transition-colors text-sm border ${selectedUser.is_active !== false
-                                                ? 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100'
-                                                : 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100'
-                                                }`}
-                                            onClick={() => {
-                                                setItemToSuspend({
-                                                    id: selectedUser.id,
-                                                    name: selectedUser.full_name,
-                                                    currentStatus: selectedUser.is_active !== false
-                                                });
-                                                setShowSuspendModal(true);
-                                            }}
-                                        >
-                                            {selectedUser.is_active !== false ? 'Suspend Account' : 'Activate Account'}
-                                        </button>
-
-                                        {user?.role === 'admin' && (
-                                            <button
-                                                onClick={handleUpdateProfile}
-                                                disabled={isUpdating}
-                                                className="flex-[2] py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all text-sm shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
-                                            >
-                                                {isUpdating && <Loader2 size={16} className="animate-spin" />}
-                                                Save Profile Changes
-                                            </button>
-                                        )}
-
-                                        <button
-                                            className="flex-[1] py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors text-sm"
-                                            onClick={() => setSelectedUser(null)}
-                                        >
-                                            Close
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
-
-            {/* SUSPEND USER MODAL */}
-            {
-                showSuspendModal && itemToSuspend && (
-                    <div
-                        className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-                        onClick={() => { setShowSuspendModal(false); setItemToSuspend(null); }}
-                    >
-                        <div
-                            className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
-                                <h3 className="text-xl font-bold text-gray-900">
-                                    {itemToSuspend.currentStatus ? 'Suspend User' : 'Activate User'}
-                                </h3>
-                                <button onClick={() => { setShowSuspendModal(false); setItemToSuspend(null); }} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors">
-                                    <X size={24} />
-                                </button>
-                            </div>
-
-                            <div className="p-8 overflow-y-auto text-center">
-                                <div className="w-20 h-20 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-6 border border-amber-100">
-                                    <AlertTriangle size={40} />
-                                </div>
-                                <p className="text-gray-600 mb-8 leading-relaxed">
-                                    Are you sure you want to {itemToSuspend.currentStatus ? <span className="text-red-600 font-bold">suspend</span> : <span className="text-green-600 font-bold">activate</span>} <strong>{itemToSuspend.name}</strong>?
-                                    {itemToSuspend.currentStatus && (
-                                        <span className="block mt-2 text-sm text-gray-400">The user will no longer be able to access their dashboard until reactivated.</span>
-                                    )}
-                                </p>
-
-                                <div className="flex gap-3">
-                                    <button
-                                        onClick={() => {
-                                            setShowSuspendModal(false);
-                                            setItemToSuspend(null);
-                                        }}
-                                        className="flex-1 px-4 py-3 text-sm font-bold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={toggleUserStatus}
-                                        disabled={isUpdating}
-                                        className={`flex-[2] px-6 py-3 rounded-xl text-white font-bold transition-all shadow-lg flex items-center justify-center gap-2 ${itemToSuspend.currentStatus
-                                            ? 'bg-red-600 hover:bg-red-700 shadow-red-100'
-                                            : 'bg-green-600 hover:bg-green-700 shadow-green-100'
-                                            }`}
-                                    >
-                                        {isUpdating ? <Loader2 size={18} className="animate-spin" /> : null}
-                                        {itemToSuspend.currentStatus ? 'Suspend Account' : 'Activate Account'}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
-
-            {/* ADD USER MODAL (MANUAL) — ENHANCED */}
-            {
-                showAddUserModal && (
-                    <div
-                        className="fixed inset-0 z-[10001] flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-                        onClick={() => { setShowAddUserModal(false); resetNewUserForm(); }}
-                    >
-                        <div
-                            className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-lg animate-in zoom-in-95 duration-200 flex flex-col max-h-[95vh] sm:max-h-[90vh]"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className="p-5 sm:p-8 pb-0 shrink-0">
-                                <div className="flex justify-between items-center mb-4 sm:mb-6">
-                                    <div>
-                                        <h3 className="text-lg sm:text-xl font-black text-gray-900 uppercase tracking-tight">Manual Registration</h3>
-                                        <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Adding a new {newUserRole === 'contractor' ? 'Assessor' : 'Business'}</p>
-                                    </div>
-                                    <button onClick={() => { setShowAddUserModal(false); resetNewUserForm(); }} className="text-gray-400 hover:text-gray-600">
-                                        <X size={24} />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <form onSubmit={handleAddUser} className="flex flex-col flex-1 overflow-hidden">
-                                <div className="px-5 sm:px-8 pb-5 sm:pb-8 overflow-y-auto space-y-5 sm:space-y-6 flex-1 custom-scrollbar">
-                                    {/* SECTION: Personal Details */}
-                                    <div>
-                                        <h4 className="text-[10px] font-black text-[#007F00] uppercase tracking-widest mb-3 sm:mb-4">Personal Details</h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                                            <div>
-                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Full Name *</label>
-                                                <input
-                                                    type="text"
-                                                    required
-                                                    placeholder={newUserRole === 'contractor' ? 'e.g. John Doe' : 'e.g. Acme Energy'}
-                                                    value={newUserFormData.fullName}
-                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, fullName: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Email *</label>
-                                                <input
-                                                    type="email"
-                                                    required
-                                                    placeholder="john@example.com"
-                                                    value={newUserFormData.email}
-                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, email: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Password *</label>
-                                                <input
-                                                    type="password"
-                                                    required
-                                                    placeholder="••••••••"
-                                                    value={newUserFormData.password}
-                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, password: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Phone</label>
-                                                <input
-                                                    type="tel"
-                                                    placeholder="+353 8X XXX XXXX"
-                                                    value={newUserFormData.phone}
-                                                    onChange={(e) => setNewUserFormData({ ...newUserFormData, phone: e.target.value })}
-                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
-                                                />
-                                            </div>
-                                            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div>
-                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">County</label>
-                                                    <select
-                                                        value={newUserFormData.county}
-                                                        onChange={(e) => setNewUserFormData({ ...newUserFormData, county: e.target.value, town: '' })}
-                                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white transition-all outline-none"
-                                                    >
-                                                        <option value="">Select County</option>
-                                                        {IRISH_COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
-                                                    </select>
-                                                </div>
-                                                {newUserRole === 'contractor' && newUserFormData.county && (
-                                                    <div className="animate-in slide-in-from-top-2 duration-200">
-                                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Town</label>
-                                                        <select
-                                                            value={newUserFormData.town}
-                                                            onChange={(e) => setNewUserFormData({ ...newUserFormData, town: e.target.value })}
-                                                            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white transition-all outline-none"
-                                                        >
-                                                            <option value="">Select Town</option>
-                                                            {(TOWNS_BY_COUNTY[newUserFormData.county] || []).map((t: string) => <option key={t} value={t}>{t}</option>)}
-                                                        </select>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* SECTION: Assessor-Specific Fields */}
-                                    {newUserRole === 'contractor' && (
-                                        <div>
-                                            <h4 className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest mb-4">Assessor Details</h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div>
-                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">SEAI Registration #</label>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="e.g. 10XXX"
-                                                        value={newUserFormData.seaiNumber}
-                                                        onChange={(e) => setNewUserFormData({ ...newUserFormData, seaiNumber: e.target.value })}
-                                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Assessor Type</label>
-                                                    <select
-                                                        value={newUserFormData.assessorType}
-                                                        onChange={(e) => setNewUserFormData({ ...newUserFormData, assessorType: e.target.value })}
-                                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white"
-                                                    >
-                                                        <option value="Domestic Assessor">Domestic Assessor</option>
-                                                        <option value="Commercial Assessor">Commercial Assessor</option>
-                                                        <option value="Both">Both (Domestic & Commercial)</option>
-                                                    </select>
-                                                </div>
-                                                <div className="md:col-span-2">
-                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Company Name <span className="text-gray-300">(optional)</span></label>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="e.g. ABC Energy Assessments"
-                                                        value={newUserFormData.companyName}
-                                                        onChange={(e) => setNewUserFormData({ ...newUserFormData, companyName: e.target.value })}
-                                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* SECTION: Business-Specific Fields */}
-                                    {newUserRole === 'business' && (
-                                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-                                            <h4 className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest mb-4">Business Details</h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div className="md:col-span-2">
-                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Business Address</label>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="123 Main Street, Town"
-                                                        value={newUserFormData.businessAddress}
-                                                        onChange={(e) => setNewUserFormData({ ...newUserFormData, businessAddress: e.target.value })}
-                                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all"
-                                                    />
-                                                </div>
-                                                <div className="md:col-span-2">
-                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Website <span className="text-gray-300 font-medium">(optional)</span></label>
-                                                    <input
-                                                        type="url"
-                                                        placeholder="https://www.example.ie"
-                                                        value={newUserFormData.website}
-                                                        onChange={(e) => setNewUserFormData({ ...newUserFormData, website: e.target.value })}
-                                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Company Number <span className="text-gray-300 font-medium">(optional)</span></label>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="123456"
-                                                        value={newUserFormData.companyNumber}
-                                                        onChange={(e) => setNewUserFormData({ ...newUserFormData, companyNumber: e.target.value })}
-                                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">VAT Number <span className="text-gray-300 font-medium">(optional)</span></label>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="IE1234567A"
-                                                        value={newUserFormData.vatNumber}
-                                                        onChange={(e) => setNewUserFormData({ ...newUserFormData, vatNumber: e.target.value })}
-                                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all"
-                                                    />
-                                                </div>
-                                                <div className="md:col-span-2">
-                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Description <span className="text-gray-300 font-medium">(optional)</span></label>
-                                                    <textarea
-                                                        placeholder="Describe the business and services..."
-                                                        rows={3}
-                                                        value={newUserFormData.description}
-                                                        onChange={(e) => setNewUserFormData({ ...newUserFormData, description: e.target.value })}
-                                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all resize-none"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Info Banner */}
-                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                                        <p className="text-[10px] text-gray-500 font-bold leading-relaxed">
-                                            <AlertTriangle size={12} className="inline mr-1 text-amber-500" />
-                                            This will create a profile entry. If the user eventually signs up with this email, their dashboard will automatically link to this record.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Sticky footer */}
-                                <div className="px-5 sm:px-8 py-4 sm:py-6 border-t border-gray-100 flex gap-3 shrink-0 bg-gray-50/50 rounded-b-2xl sm:rounded-b-3xl">
-                                    <button
-                                        type="submit"
-                                        disabled={isUpdating}
-                                        className="flex-[2] py-3 sm:py-4 bg-[#007F00] text-white font-bold rounded-xl sm:rounded-2xl hover:bg-green-700 transition-all shadow-lg shadow-green-100 flex items-center justify-center gap-2 disabled:opacity-50"
-                                    >
-                                        {isUpdating ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
-                                        {isUpdating ? 'Adding...' : `Add ${newUserRole === 'contractor' ? 'Assessor' : 'Business'}`}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => { setShowAddUserModal(false); resetNewUserForm(); }}
-                                        className="flex-1 py-4 bg-white border border-gray-200 text-gray-500 font-bold rounded-2xl hover:bg-gray-50 hover:text-gray-700 transition-all text-sm"
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )
-            }
-        </div >
+            {showAddUserModal && (
+                <AddUserModal
+                    newUserRole={newUserRole}
+                    newUserFormData={newUserFormData} setNewUserFormData={setNewUserFormData}
+                    isUpdating={isUpdating}
+                    onClose={() => { setShowAddUserModal(false); setNewUserFormData({ fullName: '', email: '', password: '', phone: '', county: '', town: '', seaiNumber: '', assessorType: 'Domestic Assessor', companyName: '', businessAddress: '', website: '', description: '', companyNumber: '', vatNumber: '' }); }}
+                    onSubmit={handleAddUser}
+                />
+            )}
+        </div>
     );
 };
 

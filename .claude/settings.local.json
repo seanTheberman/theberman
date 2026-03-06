@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep -l \"^import { .* } from ''.*types/admin''\")",
+      "Bash(while read f)",
+      "Bash(do sed -i \"s|^import { \\\\\\(.*\\\\\\) } from ''\\\\\\(.*types/admin\\\\\\)'';|import type { \\\\1 } from ''\\\\2'';|g\" \"$f\")",
+      "Bash(done)"
+    ]
+  }
+}
