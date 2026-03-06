@@ -1,4 +1,4 @@
-import { Search, Eye, Trash2, MessageCircle } from 'lucide-react';
+import { Search, Eye, Trash2 } from 'lucide-react';
 import type { Lead } from '../../../types/admin';
 import { LeadStatusBadge } from '../StatusBadges';
 

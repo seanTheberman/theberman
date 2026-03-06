@@ -24,7 +24,6 @@ interface Props {
     setItemToSuspend: (item: { id: string; name: string; currentStatus: boolean } | null) => void;
     setShowSuspendModal: (v: boolean) => void;
     updateRegistrationStatus: (userId: string, status: 'active' | 'rejected') => void;
-    handleDeleteClick: (id: string, type: 'lead' | 'sponsor' | 'assessment' | 'user') => void;
     setNewUserRole: (role: 'contractor' | 'business') => void;
     setShowAddUserModal: (v: boolean) => void;
 }
@@ -36,7 +35,7 @@ export const BusinessesView = ({
     handleManualRenewal, handleSendRenewalReminder, handleCancelSubscription,
     handleSendOnboardingEmail, handleOpenCatalogueView,
     setSelectedUser, setEditForm, setItemToSuspend, setShowSuspendModal,
-    updateRegistrationStatus, handleDeleteClick,
+    updateRegistrationStatus,
     setNewUserRole, setShowAddUserModal,
 }: Props) => (
     <div className="space-y-4">

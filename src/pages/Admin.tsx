@@ -1272,8 +1272,8 @@ const Admin = () => {
                     </button>
                 </div>
 
-                <nav className="flex-1 py-3 overflow-y-auto overflow-x-hidden">
-                    <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] px-4 mb-2 lg:block hidden">Navigation</p>
+                <nav className="flex-1 py-3 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-track]:bg-transparent">
+                    <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] px-4 mb-2 block md:hidden lg:block">Navigation</p>
                     {NAV_ITEMS.map(({ id, label, icon: Icon, badge }) => {
                         const isActive = view === id;
                         return (
@@ -1286,17 +1286,17 @@ const Admin = () => {
                                 }`}
                             >
                                 <div className="flex items-center gap-3 min-w-0">
-                                    <Icon size={16} className={`flex-shrink-0 ${isActive ? 'text-white' : 'text-white/50 group-hover:text-white/80'}`} />
-                                    <span className="truncate lg:block hidden">{label}</span>
+                                    <Icon size={16} className={`flex-shrink-0 ${isActive ? 'text-white' : 'text-white/70 group-hover:text-white'}`} />
+                                    <span className="truncate block md:hidden lg:block">{label}</span>
                                 </div>
                                 {badge > 0 && (
-                                    <span className={`flex-shrink-0 text-[10px] font-black px-1.5 py-0.5 rounded-full lg:flex hidden ${isActive ? 'bg-white text-[#007F00]' : 'bg-amber-500 text-white'}`}>
+                                    <span className={`flex-shrink-0 text-[10px] font-black px-1.5 py-0.5 rounded-full flex md:hidden lg:flex ${isActive ? 'bg-white text-[#007F00]' : 'bg-amber-500 text-white'}`}>
                                         {badge}
                                     </span>
                                 )}
                                 {/* Badge dot on tablet (icon-only) */}
                                 {badge > 0 && (
-                                    <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500 lg:hidden" />
+                                    <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500 hidden md:block lg:hidden" />
                                 )}
                                 {isActive && <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-white rounded-l-full" />}
                             </button>
@@ -1308,13 +1308,13 @@ const Admin = () => {
                         title="Partners"
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-[12px] font-semibold text-white/60 hover:text-white hover:bg-white/5 transition-all"
                     >
-                        <Layers size={16} className="flex-shrink-0 text-white/50" />
-                        <span className="lg:block hidden">Partners</span>
+                        <Layers size={16} className="flex-shrink-0 text-white/70" />
+                        <span className="block md:hidden lg:block">Partners</span>
                     </button>
                 </nav>
 
                 <div className="p-3 border-t border-white/10 flex-shrink-0">
-                    <div className="flex items-center gap-2.5 mb-2 px-1 lg:flex hidden">
+                    <div className="flex items-center gap-2.5 mb-2 px-1 md:hidden lg:flex">
                         <div className="w-7 h-7 rounded-full bg-[#007F00]/80 flex items-center justify-center flex-shrink-0">
                             <Users size={13} className="text-white" />
                         </div>
@@ -1326,10 +1326,10 @@ const Admin = () => {
                     <button
                         onClick={handleSignOut}
                         title="Sign Out"
-                        className="w-full flex items-center justify-center lg:justify-start gap-2 px-2 py-2 rounded-lg text-[11px] font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"
+                        className="w-full flex items-center justify-center md:justify-center lg:justify-start gap-2 px-2 py-2 rounded-lg text-[11px] font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"
                     >
                         <LogOut size={14} className="flex-shrink-0" />
-                        <span className="lg:block hidden">Sign Out</span>
+                        <span className="block md:hidden lg:block">Sign Out</span>
                     </button>
                 </div>
             </aside>
@@ -1411,14 +1411,11 @@ const Admin = () => {
                         locationFilter={locationFilter} setLocationFilter={setLocationFilter}
                         uniqueUserLocations={view === 'assessors' ? uniqueAssessorLocations : uniqueUserLocations}
                         isUpdating={isUpdating}
-                        handleManualRenewal={handleManualRenewal}
                         handleSendRenewalReminder={handleSendRenewalReminder}
-                        handleCancelSubscription={handleCancelSubscription}
                         handleOpenCatalogueView={handleOpenCatalogueView}
                         updateRegistrationStatus={updateRegistrationStatus}
                         setSelectedUser={setSelectedUser}
                         setItemToSuspend={setItemToSuspend} setShowSuspendModal={setShowSuspendModal}
-                        handleDeleteClick={handleDeleteClick}
                         setNewUserRole={setNewUserRole} setShowAddUserModal={setShowAddUserModal}
                     />
                 ) : view === 'businesses' ? (
@@ -1436,7 +1433,6 @@ const Admin = () => {
                         setSelectedUser={setSelectedUser} setEditForm={setEditForm}
                         setItemToSuspend={setItemToSuspend} setShowSuspendModal={setShowSuspendModal}
                         updateRegistrationStatus={updateRegistrationStatus}
-                        handleDeleteClick={handleDeleteClick}
                         setNewUserRole={setNewUserRole} setShowAddUserModal={setShowAddUserModal}
                     />
                 ) : view === 'catalogue' ? (
