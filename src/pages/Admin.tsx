@@ -124,6 +124,12 @@ const Admin = () => {
     const uniqueUserLocations = Array.from(
         new Set(users_list.map(u => u.county || u.home_county).filter(Boolean))
     ).sort() as string[];
+    const uniqueAssessorLocations = Array.from(
+        new Set(users_list.filter(u => u.role === 'contractor').map(u => u.home_county || u.county).filter(Boolean))
+    ).sort() as string[];
+    const uniqueBusinessLocations = Array.from(
+        new Set(users_list.filter(u => u.role === 'business').map(u => u.county || u.home_county).filter(Boolean))
+    ).sort() as string[];
 
     const filteredLeads = leads.filter(l =>
         l.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1335,12 +1341,13 @@ const Admin = () => {
                         view={view} users_list={users_list} assessments={assessments} listings={listings}
                         searchTerm={searchTerm} setSearchTerm={setSearchTerm}
                         locationFilter={locationFilter} setLocationFilter={setLocationFilter}
-                        uniqueUserLocations={uniqueUserLocations}
+                        uniqueUserLocations={view === 'assessors' ? uniqueAssessorLocations : uniqueUserLocations}
                         isUpdating={isUpdating}
                         handleManualRenewal={handleManualRenewal}
                         handleSendRenewalReminder={handleSendRenewalReminder}
                         handleCancelSubscription={handleCancelSubscription}
                         handleOpenCatalogueView={handleOpenCatalogueView}
+                        updateRegistrationStatus={updateRegistrationStatus}
                         setSelectedUser={setSelectedUser}
                         setItemToSuspend={setItemToSuspend} setShowSuspendModal={setShowSuspendModal}
                         handleDeleteClick={handleDeleteClick}
@@ -1351,7 +1358,7 @@ const Admin = () => {
                         filteredBusinessLeads={filteredBusinessLeads} users_list={users_list} listings={listings}
                         searchTerm={searchTerm} setSearchTerm={setSearchTerm}
                         locationFilter={locationFilter} setLocationFilter={setLocationFilter}
-                        uniqueUserLocations={uniqueUserLocations}
+                        uniqueUserLocations={uniqueBusinessLocations}
                         isUpdating={isUpdating} sendingEmailId={sendingEmailId}
                         handleManualRenewal={handleManualRenewal}
                         handleSendRenewalReminder={handleSendRenewalReminder}

@@ -4,7 +4,9 @@
       "Bash(xargs grep -l \"^import { .* } from ''.*types/admin''\")",
       "Bash(while read f)",
       "Bash(do sed -i \"s|^import { \\\\\\(.*\\\\\\) } from ''\\\\\\(.*types/admin\\\\\\)'';|import type { \\\\1 } from ''\\\\2'';|g\" \"$f\")",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(powershell -Command \":*)",
+      "Bash(powershell.exe -Command \"$file = ''c:\\\\Users\\\\Administrator\\\\OneDrive\\\\coding\\\\1_Adigital heroes\\\\theberman\\\\src\\\\pages\\\\ContractorOnboarding.tsx''; $content = [System.IO.File]::ReadAllText\\($file\\); $old = \"\"            navigate\\(''/dashboard/ber-assessor'', { replace: true }\\);\"\"; $new = \"\"            // Refresh auth context so ProtectedRoute sees updated seai_number\\\\`r\\\\`n            await refreshProfile\\(\\);\\\\`r\\\\`n            navigate\\(''/dashboard/ber-assessor'', { replace: true }\\);\"\"; $result = $content.Replace\\($old, $new\\); if \\($result -ne $content\\) { [System.IO.File]::WriteAllText\\($file, $result\\); Write-Host ''Done'' } else { Write-Host ''No match'' }\")"
     ]
   }
 }
