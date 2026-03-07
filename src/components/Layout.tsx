@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { Menu, X, Mail, Facebook, Instagram, Linkedin, ChevronRight, Globe, ChevronDown } from 'lucide-react';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
+import { Menu, X, Mail, Facebook, Instagram, Linkedin, ChevronRight, Globe } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import QuoteModal from './QuoteModal';
@@ -17,7 +17,12 @@ const NAV_LINKS = [
     { label: 'Contact', path: '/contact' },
 ];
 
-
+const PROVINCES: Record<string, string[]> = {
+    Leinster: ['Carlow', 'Dublin', 'Kildare', 'Kilkenny', 'Laois', 'Longford', 'Louth', 'Meath', 'Offaly', 'Westmeath', 'Wexford', 'Wicklow'],
+    Munster: ['Clare', 'Cork', 'Kerry', 'Limerick', 'Tipperary', 'Waterford'],
+    Connacht: ['Galway', 'Leitrim', 'Mayo', 'Roscommon', 'Sligo'],
+    Ulster: ['Cavan', 'Donegal', 'Monaghan', 'Antrim', 'Armagh', 'Down', 'Fermanagh', 'Londonderry', 'Tyrone'],
+};
 
 const Layout = () => {
     const [locations, setLocations] = useState<any[]>([]);
@@ -25,14 +30,15 @@ const Layout = () => {
     const [expandedProvince, setExpandedProvince] = useState<string | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigate = useNavigate();
+    const { pathname } = useLocation();
+    const isCatalogueNav = pathname === '/catalogue' || /^\/catalogue\/[^/]+/.test(pathname);
     const { user, role, profile, signOut } = useAuth();
     const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
     const [hasBusinessListing, setHasBusinessListing] = useState(false);
 
-    const [isDesktopLocationsOpen, setIsDesktopLocationsOpen] = useState(false);
-    const desktopLocationsRef = useRef<HTMLDivElement>(null);
-
-    // Dynamic Positioning Refs and State
+    const [isLocationsHover, setIsLocationsHover] = useState(false);
+    const [hoveredProvince, setHoveredProvince] = useState<string | null>(null);
+    const locationsHoverRef = useRef<HTMLDivElement>(null);
     const locationsRef = useRef<HTMLButtonElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -42,19 +48,15 @@ const Layout = () => {
         setIsLocationsOpen(false);
     };
 
-    // Close dropdowns when clicking outside
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
             if (isMenuOpen && menuRef.current && !menuRef.current.contains(e.target as Node)) {
                 closeMenu();
             }
-            if (isDesktopLocationsOpen && desktopLocationsRef.current && !desktopLocationsRef.current.contains(e.target as Node)) {
-                setIsDesktopLocationsOpen(false);
-            }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [isMenuOpen, isDesktopLocationsOpen]);
+    }, [isMenuOpen]);
 
     const handleLogout = async () => {
         await signOut();
@@ -86,6 +88,7 @@ const Layout = () => {
         };
         checkBusinessListing();
     }, [user, role]);
+
     const getDashboardLink = () => {
         if (!user) return '/contact';
         if (role === 'admin') return '/admin';
@@ -94,125 +97,106 @@ const Layout = () => {
         return '/dashboard/user';
     };
 
-
-
-    const PROVINCES: Record<string, string[]> = {
-        Leinster: ['Carlow', 'Dublin', 'Kildare', 'Kilkenny', 'Laois', 'Longford', 'Louth', 'Meath', 'Offaly', 'Westmeath', 'Wexford', 'Wicklow'],
-        Munster: ['Clare', 'Cork', 'Kerry', 'Limerick', 'Tipperary', 'Waterford'],
-        Connacht: ['Galway', 'Leitrim', 'Mayo', 'Roscommon', 'Sligo'],
-        Ulster: ['Cavan', 'Donegal', 'Monaghan', 'Antrim', 'Armagh', 'Down', 'Fermanagh', 'Londonderry', 'Tyrone'],
-    };
-
     return (
         <div className="flex flex-col min-h-screen font-sans">
             <header className="fixed w-full top-0 z-[9999] bg-[#0c121d] backdrop-blur-md border-b border-white/5 shadow-lg transition-all duration-300">
                 <div className="absolute top-full left-0 right-0 h-px bg-white/5 pointer-events-none"></div>
-                <div className="container mx-auto px-4 lg:px-6 h-16 lg:h-20 flex items-center justify-between gap-4">
+                <div className="container mx-auto px-6 h-20 flex justify-between items-center">
 
                     {/* Logo */}
-                    <Link to="/" onClick={closeMenu} className="flex-shrink-0">
-                        <img src="/logo.svg" alt="The Berman Logo" className="h-10 lg:h-14 w-auto" />
+                    <Link to="/" onClick={closeMenu}>
+                        <img src="/logo.svg" alt="The Berman Logo" className="h-18 w-auto relative z-10" />
                     </Link>
 
-                    {/* ── Desktop Nav ─────────────────────────────────────── */}
-                    <nav className="hidden lg:flex items-center gap-1 flex-1 justify-center">
-                        <Link to="/" className="px-3 py-2 text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">Home</Link>
-                        <Link to="/about" className="px-3 py-2 text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">About</Link>
-                        <Link to="/hire-agent" className="px-3 py-2 text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">Energy Advisor</Link>
-                        <Link to="/contact" className="px-3 py-2 text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">Book BER</Link>
-                        <Link to="/news" className="px-3 py-2 text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">News</Link>
-
-                        {/* Locations dropdown */}
-                        <div ref={desktopLocationsRef} className="relative">
-                            <button
-                                onClick={() => setIsDesktopLocationsOpen(!isDesktopLocationsOpen)}
-                                className="flex items-center gap-1 px-3 py-2 text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap"
+                    {/* Catalogue-only inline nav (desktop) */}
+                    {isCatalogueNav && (
+                        <nav className="hidden md:flex items-center gap-1">
+                            <Link to="/" className="px-3 py-2 text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">Home</Link>
+                            <Link to="/catalogue" className="px-3 py-2 text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">catalogue</Link>
+                            {/* Locations hover dropdown with province submenus */}
+                            <div
+                                ref={locationsHoverRef}
+                                className="relative"
+                                onMouseEnter={() => setIsLocationsHover(true)}
+                                onMouseLeave={() => { setIsLocationsHover(false); setHoveredProvince(null); }}
                             >
-                                Location <ChevronDown size={12} className={`transition-transform ${isDesktopLocationsOpen ? 'rotate-180' : ''}`} />
-                            </button>
-                            {isDesktopLocationsOpen && (
-                                <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-                                    {Object.keys(PROVINCES).map((province) => (
-                                        <div key={province} className="group relative">
-                                            <button
-                                                onClick={() => setExpandedProvince(expandedProvince === province ? null : province)}
-                                                className="w-full px-4 py-2.5 text-left text-xs font-bold text-gray-700 hover:bg-gray-50 uppercase tracking-wide flex justify-between items-center"
+                                <button className="px-3 py-2 text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap flex items-center gap-1">
+                                    Locations
+                                    <ChevronRight size={12} className={`transition-transform duration-200 ${isLocationsHover ? 'rotate-90' : ''}`} />
+                                </button>
+                                {isLocationsHover && (
+                                    <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-100 z-50 overflow-visible min-w-[180px]">
+                                        {Object.keys(PROVINCES).map((province) => (
+                                            <div
+                                                key={province}
+                                                className="relative group/province"
+                                                onMouseEnter={() => setHoveredProvince(province)}
+                                                onMouseLeave={() => setHoveredProvince(null)}
                                             >
-                                                {province}
-                                                <ChevronRight size={12} className={`transition-transform ${expandedProvince === province ? 'rotate-90' : ''}`} />
-                                            </button>
-                                            {expandedProvince === province && (
-                                                <div className="bg-gray-50 border-t border-gray-100 max-h-48 overflow-y-auto">
-                                                    {locations.filter(loc => PROVINCES[province]?.includes(loc.name)).map(location => (
-                                                        <Link
-                                                            key={location.id}
-                                                            to={`/region?county=${location.slug}`}
-                                                            onClick={() => { setIsDesktopLocationsOpen(false); setExpandedProvince(null); }}
-                                                            className="block pl-7 pr-4 py-2 text-xs text-gray-500 hover:text-[#007EA7] hover:bg-white transition-colors"
-                                                        >
-                                                            {location.name}
-                                                        </Link>
-                                                    ))}
+                                                <div className="flex items-center justify-between px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50 hover:text-[#007EA7] cursor-default border-b border-gray-100 last:border-0 transition-colors">
+                                                    <span className="uppercase tracking-wide">{province}</span>
+                                                    <ChevronRight size={12} className="text-gray-400" />
                                                 </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                                                {hoveredProvince === province && (
+                                                    <div className="absolute left-full top-0 ml-0.5 bg-white rounded-lg shadow-xl border border-gray-100 z-50 min-w-[160px] overflow-hidden">
+                                                        {locations.filter(loc => PROVINCES[province]?.includes(loc.name)).map(location => (
+                                                            <Link
+                                                                key={location.id}
+                                                                to={`/region?county=${location.slug}`}
+                                                                className="block px-4 py-2 text-xs text-gray-600 hover:text-[#007EA7] hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0"
+                                                            >
+                                                                {location.name}
+                                                            </Link>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <Link to="/news" className="px-3 py-2 text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">News</Link>
+                        </nav>
+                    )}
 
-                        <Link to="/contact" className="px-3 py-2 text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">Contact</Link>
-                    </nav>
+                    {/* Right: Catalogue pill + Hamburger */}
+                    <div ref={menuRef} className="flex items-center gap-4 relative">
 
-                    {/* ── Desktop Right Actions ──────────────────────────── */}
-                    <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
-                        <Link
-                            to="/catalogue"
-                            className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all group"
-                        >
-                            <div className="w-2 h-2 rounded-full bg-[#9ACD32] group-hover:animate-pulse"></div>
-                            <span className="text-xs font-black text-white uppercase tracking-wider">
-                                Home Energy <span className="text-[#9ACD32]">Catalogue</span>
-                            </span>
-                        </Link>
-                        {!user ? (
+                        {/* Catalogue pill (hidden on catalogue pages since nav already shows it) */}
+                        {!isCatalogueNav && (
                             <Link
-                                to="/login"
-                                className="px-4 py-2 text-xs font-black text-[#9ACD32] border border-[#9ACD32]/40 rounded-full hover:bg-[#9ACD32]/10 uppercase tracking-wide transition-all"
+                                to="/catalogue"
+                                className="hidden md:flex items-center gap-3 px-6 py-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all group"
                             >
-                                Login
-                            </Link>
-                        ) : (
-                            <Link
-                                to={getDashboardLink()}
-                                className="px-4 py-2 text-xs font-black text-[#9ACD32] border border-[#9ACD32]/40 rounded-full hover:bg-[#9ACD32]/10 uppercase tracking-wide transition-all"
-                            >
-                                Dashboard
+                                <div className="w-2 h-2 rounded-full bg-[#9ACD32] group-hover:animate-pulse"></div>
+                                <span className="text-sm font-black text-white uppercase tracking-wider">
+                                    Home Energy <span className="text-[#9ACD32]">Upgrade Catalogue</span>
+                                </span>
                             </Link>
                         )}
-                    </div>
 
-                    {/* ── Mobile: Catalogue pill + Hamburger ─────────────── */}
-                    <div ref={menuRef} className="flex lg:hidden items-center gap-2 relative">
+                        {/* Mobile catalogue pill */}
                         <Link
                             to="/catalogue"
-                            className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all group"
+                            className="flex md:hidden items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all group"
                         >
                             <div className="w-1.5 h-1.5 rounded-full bg-[#9ACD32]"></div>
-                            <span className="text-[10px] font-black text-white uppercase tracking-wider hidden sm:block">
+                            <span className="text-[10px] font-black text-white uppercase tracking-wider">
                                 Energy <span className="text-[#9ACD32]">Catalogue</span>
                             </span>
                         </Link>
+
+                        {/* Hamburger */}
                         <button
                             className="bg-gray-200 p-2 rounded-md hover:bg-gray-300 transition-colors"
                             onClick={toggleMenu}
                         >
-                            {isMenuOpen ? <X size={22} className="text-green-600" /> : <Menu size={22} className="text-green-600" />}
+                            {isMenuOpen ? <X size={28} className="text-green-600" /> : <Menu size={28} className="text-green-600" />}
                         </button>
 
-                        {/* Mobile Dropdown */}
+                        {/* Dropdown menu */}
                         {isMenuOpen && (
-                            <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white rounded-xl shadow-xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden max-h-[80vh] overflow-y-auto">
+                            <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white rounded-lg shadow-xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden max-h-[80vh] overflow-y-auto">
                                 <div className="py-2">
                                     {NAV_LINKS.map((link) => (
                                         link.label === 'Location' ? (
@@ -267,7 +251,6 @@ const Layout = () => {
                                         )
                                     ))}
 
-                                    {/* Subscribe to News */}
                                     <button
                                         onClick={() => {
                                             closeMenu();
@@ -283,7 +266,6 @@ const Layout = () => {
                                         Subscribe to News
                                     </button>
 
-                                    {/* Auth */}
                                     <div className="border-t border-gray-200 mt-2 pt-2">
                                         {!user ? (
                                             <>
@@ -331,7 +313,6 @@ const Layout = () => {
             <footer className="bg-gray-900 text-white border-t border-green-900 pt-16 pb-8">
                 <div className="container mx-auto px-6">
                     <div className="grid md:grid-cols-5 gap-12 mb-12">
-                        {/* Column 1: Brand */}
                         <div className="col-span-1">
                             <div className="flex items-center gap-2 mb-6">
                                 <img src="/logo.svg" alt="The Berman" className="h-16" />
@@ -352,7 +333,6 @@ const Layout = () => {
                             </div>
                         </div>
 
-                        {/* Column 2: Quick Links */}
                         <div>
                             <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">Quick Links</h4>
                             <ul className="space-y-3">
@@ -365,15 +345,12 @@ const Layout = () => {
                                     { label: 'FAQ', path: '/faq' }
                                 ].map(link => (
                                     <li key={link.path}>
-                                        <Link to={link.path} className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
-                                            {link.label}
-                                        </Link>
+                                        <Link to={link.path} className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{link.label}</Link>
                                     </li>
                                 ))}
                             </ul>
                         </div>
 
-                        {/* Column 3: Resources & Account */}
                         <div>
                             <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">Account</h4>
                             <ul className="space-y-3">
@@ -386,9 +363,7 @@ const Layout = () => {
                                     { label: 'Sign Up', path: '/signup' }
                                 ].map(link => (
                                     <li key={link.label}>
-                                        <Link to={link.path} className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
-                                            {link.label}
-                                        </Link>
+                                        <Link to={link.path} className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{link.label}</Link>
                                     </li>
                                 ))}
                                 <li>
@@ -398,9 +373,7 @@ const Layout = () => {
                                                 document.getElementById('newsletter')?.scrollIntoView({ behavior: 'smooth' });
                                             } else {
                                                 navigate('/#newsletter');
-                                                setTimeout(() => {
-                                                    document.getElementById('newsletter')?.scrollIntoView({ behavior: 'smooth' });
-                                                }, 100);
+                                                setTimeout(() => { document.getElementById('newsletter')?.scrollIntoView({ behavior: 'smooth' }); }, 100);
                                             }
                                         }}
                                         className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2 cursor-pointer"
@@ -411,37 +384,16 @@ const Layout = () => {
                             </ul>
                         </div>
 
-
-
-                        {/* Column 5: Legal */}
                         <div>
                             <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">Legal</h4>
                             <ul className="space-y-3">
-                                <li>
-                                    <Link to="/privacy" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
-                                        Privacy Policy
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link to="/terms" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
-                                        Terms & Conditions
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link to="/cookie-policy" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
-                                        Cookie Policy
-                                    </Link>
-                                </li>
-                                <li>
-                                    <a href="https://www.seai.ie" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">
-                                        SEAI.ie
-                                    </a>
-                                </li>
+                                <li><Link to="/privacy" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">Privacy Policy</Link></li>
+                                <li><Link to="/terms" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">Terms & Conditions</Link></li>
+                                <li><Link to="/cookie-policy" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">Cookie Policy</Link></li>
+                                <li><a href="https://www.seai.ie" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">SEAI.ie</a></li>
                             </ul>
                         </div>
 
-
-                        {/* Column 4: Contact */}
                         <div>
                             <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">Get in Touch</h4>
                             <ul className="space-y-4">
@@ -451,7 +403,7 @@ const Layout = () => {
                                 </li>
                                 <li className="flex items-start gap-3 text-gray-400 text-sm">
                                     <Globe className="text-[#9ACD32] mt-0.5" size={16} />
-                                    <a href="https://theberman.eu" target='_blank' className="hover:text-white transition">theberman.eu</a>
+                                    <a href="https://theberman.eu" target="_blank" className="hover:text-white transition">theberman.eu</a>
                                 </li>
                             </ul>
                         </div>
@@ -466,7 +418,7 @@ const Layout = () => {
                     </div>
                 </div>
             </footer>
-        </div >
+        </div>
     );
 };
 

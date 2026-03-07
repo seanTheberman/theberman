@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
     MapPin, Mail, Phone, Globe, Loader2,
-    Facebook, Instagram, X, Building2,
+    Facebook, Instagram, X,
     Check, ChevronRight, ChevronLeft, Linkedin, Twitter, Youtube,
     MessageCircle, LayoutDashboard
 } from 'lucide-react';
@@ -117,54 +117,87 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
         <div className="font-sans text-gray-900 bg-white min-h-screen pb-20">
             <title>{displayName} | The Berman Catalogue</title>
 
-            {/* Hero Banner — 4 photos visible at once, slider only when >4 */}
+            {/* Hero Banner — mobile: 1 image slider | desktop: up to 4 side-by-side */}
             {(() => {
-                const VISIBLE = 4;
-                const useSlider = heroImages.length > VISIBLE;
-                const maxSlide = Math.max(0, heroImages.length - VISIBLE);
+                const DESKTOP_VISIBLE = 4;
+                const mobileMax = heroImages.length - 1;
+                const desktopMax = Math.max(0, heroImages.length - DESKTOP_VISIBLE);
                 const canPrev = heroSlide > 0;
-                const canNext = heroSlide < maxSlide;
-                const perItemWidth = useSlider
-                    ? `${100 / heroImages.length}%`
-                    : `${100 / heroImages.length}%`;
-                const trackWidth = useSlider
-                    ? `${heroImages.length / VISIBLE * 100}%`
-                    : '100%';
-                const translateX = useSlider
-                    ? `translateX(-${heroSlide * (100 / VISIBLE)}%)`
-                    : 'translateX(0)';
+                const canNext = heroSlide < Math.max(mobileMax, desktopMax);
                 return (
-                    <div className="relative w-full bg-gray-900 overflow-hidden" style={{ aspectRatio: '4/1.2' }}>
-                        <div
-                            className="flex h-full transition-transform duration-500 ease-in-out"
-                            style={{ transform: translateX, width: trackWidth }}
-                        >
-                            {heroImages.map((img, idx) => (
-                                <div
-                                    key={idx}
-                                    className="relative overflow-hidden border-r border-white/10 last:border-0"
-                                    style={{ width: perItemWidth }}
-                                >
-                                    <img src={img} alt={`${displayName} ${idx + 1}`} className="w-full h-full object-cover" />
+                    <>
+                        {/* Mobile banner — full-width square, 1 image at a time */}
+                        <div className="relative block md:hidden w-full aspect-square bg-gray-900 overflow-hidden">
+                            <img
+                                src={heroImages[Math.min(heroSlide, mobileMax)]}
+                                alt={`${displayName} ${heroSlide + 1}`}
+                                className="w-full h-full object-cover"
+                            />
+                            {canPrev && (
+                                <button onClick={() => setHeroSlide(s => s - 1)} className="absolute left-3 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white rounded-full p-2">
+                                    <ChevronLeft size={18} />
+                                </button>
+                            )}
+                            {heroSlide < mobileMax && (
+                                <button onClick={() => setHeroSlide(s => s + 1)} className="absolute right-3 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white rounded-full p-2">
+                                    <ChevronRight size={18} />
+                                </button>
+                            )}
+                            {heroImages.length > 1 && (
+                                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                                    {heroImages.map((_, i) => (
+                                        <button key={i} onClick={() => setHeroSlide(i)}
+                                            className={`h-1.5 rounded-full transition-all ${i === heroSlide ? 'bg-white w-4' : 'bg-white/50 w-1.5'}`} />
+                                    ))}
                                 </div>
-                            ))}
+                            )}
+                            {isOwner && (
+                                <Link to="/dashboard/business" className="absolute top-4 right-4 z-10 bg-white/90 text-[#007EA7] px-3 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-1.5 shadow-lg">
+                                    <LayoutDashboard size={12} />Manage Profile
+                                </Link>
+                            )}
                         </div>
-                        {canPrev && (
-                            <button onClick={() => setHeroSlide(s => s - 1)} className="absolute left-3 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-all backdrop-blur-sm">
-                                <ChevronLeft size={20} />
-                            </button>
-                        )}
-                        {canNext && (
-                            <button onClick={() => setHeroSlide(s => s + 1)} className="absolute right-3 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-all backdrop-blur-sm">
-                                <ChevronRight size={20} />
-                            </button>
-                        )}
-                        {isOwner && (
-                            <Link to="/dashboard/business" className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur-sm text-[#007EA7] px-4 py-2 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-1.5 shadow-lg hover:bg-[#007EA7] hover:text-white transition-all">
-                                <LayoutDashboard size={12} />Manage Profile
-                            </Link>
-                        )}
-                    </div>
+
+                        {/* Desktop banner — multi-image strip, 4 visible, slider when >4 */}
+                        <div className="relative hidden md:block w-full bg-gray-900 overflow-hidden h-[340px] lg:h-[420px]">
+                            <div
+                                className="flex h-full transition-transform duration-500 ease-in-out"
+                                style={{
+                                    transform: heroImages.length > DESKTOP_VISIBLE
+                                        ? `translateX(-${Math.min(heroSlide, desktopMax) * (100 / DESKTOP_VISIBLE)}%)`
+                                        : 'translateX(0)',
+                                    width: heroImages.length > DESKTOP_VISIBLE
+                                        ? `${heroImages.length / DESKTOP_VISIBLE * 100}%`
+                                        : '100%'
+                                }}
+                            >
+                                {heroImages.map((img, idx) => (
+                                    <div
+                                        key={idx}
+                                        className="relative h-full overflow-hidden border-r border-white/10 last:border-0"
+                                        style={{ width: `${100 / heroImages.length}%` }}
+                                    >
+                                        <img src={img} alt={`${displayName} ${idx + 1}`} className="w-full h-full object-cover" />
+                                    </div>
+                                ))}
+                            </div>
+                            {canPrev && (
+                                <button onClick={() => setHeroSlide(s => s - 1)} className="absolute left-3 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-all">
+                                    <ChevronLeft size={20} />
+                                </button>
+                            )}
+                            {heroSlide < desktopMax && (
+                                <button onClick={() => setHeroSlide(s => s + 1)} className="absolute right-3 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-all">
+                                    <ChevronRight size={20} />
+                                </button>
+                            )}
+                            {isOwner && (
+                                <Link to="/dashboard/business" className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur-sm text-[#007EA7] px-3 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-1.5 shadow-lg hover:bg-[#007EA7] hover:text-white transition-all">
+                                    <LayoutDashboard size={12} />Manage Profile
+                                </Link>
+                            )}
+                        </div>
+                    </>
                 );
             })()}
 
@@ -172,11 +205,10 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                     {/* Left Column */}
-                    <div className="lg:col-span-8">
+                    <div className="order-1 lg:col-span-8 lg:row-start-1 lg:col-start-1">
 
                         {/* Company Header */}
-                        <div className="mb-8">
-                            {/* Category chips */}
+                        <div className="mb-6">
                             {listing.categories && listing.categories.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mb-4">
                                     {listing.categories.map(c => (
@@ -184,82 +216,14 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
                                     ))}
                                 </div>
                             )}
-                            {/* Company name */}
-                            <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight leading-tight mb-3">{displayName}</h1>
-                            {/* Location */}
+                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 tracking-tight leading-tight mb-2">{displayName}</h1>
                             {(listing.address || (listing.locations && listing.locations.length > 0)) && (
-                                <div className="flex items-center gap-1.5 text-gray-500 text-[14px] mb-5">
+                                <div className="flex items-center gap-1.5 text-gray-500 text-[14px]">
                                     <MapPin size={14} className="text-gray-400 shrink-0" />
                                     <span>{listing.address || listing.locations?.map(l => l.name).join(', ')}</span>
                                 </div>
                             )}
-                            {/* Horizontal contact bar */}
-                            {(listing.phone || listing.email || listing.website) && (
-                                <div className="flex flex-wrap items-center border border-gray-200 rounded-full overflow-hidden w-fit">
-                                    {listing.phone && (
-                                        <a href={`tel:${listing.phone}`} className="flex items-center gap-2 px-5 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors text-[13px] font-semibold border-r border-gray-200">
-                                            <Phone size={13} className="text-gray-400" />{listing.phone}
-                                        </a>
-                                    )}
-                                    {listing.email && (
-                                        <a href={`mailto:${listing.email}`} className="flex items-center gap-2 px-5 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors text-[13px] font-semibold border-r border-gray-200 last:border-0">
-                                            <Mail size={13} className="text-gray-400" />{listing.email}
-                                        </a>
-                                    )}
-                                    {listing.website && (
-                                        <a href={listing.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors text-[13px] font-semibold">
-                                            <Globe size={13} className="text-gray-400" />{listing.website.replace(/^https?:\/\//, '')}
-                                        </a>
-                                    )}
-                                </div>
-                            )}
                         </div>
-
-                        {/* Social Media */}
-                        {listing.social_media && Object.values(listing.social_media).some(Boolean) && (
-                            <div className="flex flex-wrap gap-2 mb-8">
-                                {listing.social_media.facebook && (
-                                    <a href={listing.social_media.facebook} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-4 py-2 bg-[#1877F2] text-white text-[11px] font-bold rounded-full transition-all hover:opacity-90 shadow-sm">
-                                        <Facebook size={13} /><span>Facebook</span>
-                                    </a>
-                                )}
-                                {listing.social_media.instagram && (
-                                    <a href={listing.social_media.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-br from-[#f09433] via-[#e6683c] via-[#dc2743] via-[#cc2366] to-[#bc1888] text-white text-[11px] font-bold rounded-full transition-all hover:opacity-90 shadow-sm">
-                                        <Instagram size={13} /><span>Instagram</span>
-                                    </a>
-                                )}
-                                {listing.social_media.linkedin && (
-                                    <a href={listing.social_media.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-4 py-2 bg-[#0A66C2] text-white text-[11px] font-bold rounded-full transition-all hover:opacity-90 shadow-sm">
-                                        <Linkedin size={13} /><span>LinkedIn</span>
-                                    </a>
-                                )}
-                                {listing.social_media.twitter && (
-                                    <a href={listing.social_media.twitter} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-4 py-2 bg-black text-white text-[11px] font-bold rounded-full transition-all hover:opacity-90 shadow-sm">
-                                        <Twitter size={13} /><span>X / Twitter</span>
-                                    </a>
-                                )}
-                                {listing.social_media.whatsapp && (
-                                    <a href={`https://wa.me/${listing.social_media.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-4 py-2 bg-[#25D366] text-white text-[11px] font-bold rounded-full transition-all hover:opacity-90 shadow-sm">
-                                        <MessageCircle size={13} /><span>WhatsApp</span>
-                                    </a>
-                                )}
-                                {listing.social_media.youtube && (
-                                    <a href={listing.social_media.youtube} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-4 py-2 bg-[#FF0000] text-white text-[11px] font-bold rounded-full transition-all hover:opacity-90 shadow-sm">
-                                        <Youtube size={13} /><span>YouTube</span>
-                                    </a>
-                                )}
-                                {listing.social_media.snapchat && (
-                                    <a href={listing.social_media.snapchat} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-4 py-2 bg-[#FFFC00] text-black text-[11px] font-bold rounded-full transition-all hover:opacity-90 shadow-sm">
-                                        <span className="font-black text-[12px]">👻</span><span>Snapchat</span>
-                                    </a>
-                                )}
-                                {listing.social_media.tiktok && (
-                                    <a href={listing.social_media.tiktok} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-4 py-2 bg-black text-white text-[11px] font-bold rounded-full transition-all hover:opacity-90 shadow-sm">
-                                        <span className="font-black">♪</span><span>TikTok</span>
-                                    </a>
-                                )}
-                            </div>
-                        )}
 
                         {/* Tabs */}
                         <div className="border-b border-gray-100 flex gap-8 mb-8">
@@ -270,84 +234,137 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
                                 Overview
                                 {activeTab === 'overview' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007EA7]" />}
                             </button>
-                            <button
-                                onClick={() => setActiveTab('location')}
-                                className={`pb-4 text-sm font-bold uppercase tracking-widest transition-all relative ${activeTab === 'location' ? 'text-[#007EA7]' : 'text-gray-400 hover:text-gray-600'}`}
-                            >
-                                Location
-                                {activeTab === 'location' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007EA7]" />}
-                            </button>
+                            {listing.address && (
+                                <button
+                                    onClick={() => document.getElementById('location-section')?.scrollIntoView({ behavior: 'smooth' })}
+                                    className="pb-4 text-sm font-bold uppercase tracking-widest transition-all relative text-gray-400 hover:text-gray-600"
+                                >
+                                    Location
+                                </button>
+                            )}
                         </div>
 
                         {/* Tab Content */}
-                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                        <div>
                             {activeTab === 'overview' ? (
-                                <div className="space-y-12">
-                                    <div className="prose prose-blue max-w-none">
-                                        {listing.long_description ? (
-                                            <div className="text-gray-600 leading-relaxed text-[16px] whitespace-pre-wrap">
-                                                {listing.long_description}
-                                            </div>
-                                        ) : (
-                                            <div className="text-gray-600 leading-relaxed text-[16px]">
-                                                {listing.description}
-                                            </div>
-                                        )}
+                                <div className="space-y-8">
+                                    {/* Description */}
+                                    <div className="text-gray-600 leading-relaxed text-[15px]">
+                                        {listing.long_description || listing.description}
                                     </div>
 
-                                    {/* Features section */}
-                                    <div>
-                                        <h2 className="text-2xl font-black text-gray-900 mb-8 uppercase tracking-tight">Features</h2>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-5 gap-x-8">
-                                            {displayFeatures.map((feature) => (
-                                                <div key={feature} className="flex items-center gap-3">
-                                                    <div className="bg-[#007EA7] p-1 rounded-sm flex items-center justify-center shrink-0">
-                                                        <Check size={12} className="text-white" strokeWidth={4} />
-                                                    </div>
-                                                    <span className="text-[14px] font-bold text-gray-700">{feature}</span>
-                                                </div>
-                                            ))}
+                                    {/* Contact bar */}
+                                    {(listing.phone || listing.email || listing.website) && (
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            {listing.phone && (
+                                                <a href={`tel:${listing.phone}`} className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-full text-gray-600 hover:bg-gray-50 transition-colors text-[11px] font-semibold">
+                                                    <Phone size={11} className="text-gray-400" />{listing.phone}
+                                                </a>
+                                            )}
+                                            {listing.email && (
+                                                <a href={`mailto:${listing.email}`} className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-full text-gray-600 hover:bg-gray-50 transition-colors text-[11px] font-semibold">
+                                                    <Mail size={11} className="text-gray-400" />{listing.email}
+                                                </a>
+                                            )}
+                                            {listing.website && (
+                                                <a href={listing.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-full text-gray-600 hover:bg-gray-50 transition-colors text-[11px] font-semibold">
+                                                    <Globe size={11} className="text-gray-400" />{listing.website.replace(/^https?:\/\//, '')}
+                                                </a>
+                                            )}
                                         </div>
-                                    </div>
+                                    )}
+
+                                    {/* Social Media */}
+                                    {listing.social_media && Object.values(listing.social_media).some(Boolean) && (
+                                        <div className="flex flex-wrap gap-2">
+                                            {listing.social_media.facebook && (
+                                                <a href={listing.social_media.facebook} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-4 py-2 bg-[#1877F2] text-white text-[11px] font-bold rounded-full transition-all hover:opacity-90 shadow-sm">
+                                                    <Facebook size={13} /><span>Facebook</span>
+                                                </a>
+                                            )}
+                                            {listing.social_media.instagram && (
+                                                <a href={listing.social_media.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-br from-[#f09433] via-[#e6683c] via-[#dc2743] via-[#cc2366] to-[#bc1888] text-white text-[11px] font-bold rounded-full transition-all hover:opacity-90 shadow-sm">
+                                                    <Instagram size={13} /><span>Instagram</span>
+                                                </a>
+                                            )}
+                                            {listing.social_media.linkedin && (
+                                                <a href={listing.social_media.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-4 py-2 bg-[#0A66C2] text-white text-[11px] font-bold rounded-full transition-all hover:opacity-90 shadow-sm">
+                                                    <Linkedin size={13} /><span>LinkedIn</span>
+                                                </a>
+                                            )}
+                                            {listing.social_media.twitter && (
+                                                <a href={listing.social_media.twitter} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-4 py-2 bg-black text-white text-[11px] font-bold rounded-full transition-all hover:opacity-90 shadow-sm">
+                                                    <Twitter size={13} /><span>X / Twitter</span>
+                                                </a>
+                                            )}
+                                            {listing.social_media.whatsapp && (
+                                                <a href={`https://wa.me/${listing.social_media.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-4 py-2 bg-[#25D366] text-white text-[11px] font-bold rounded-full transition-all hover:opacity-90 shadow-sm">
+                                                    <MessageCircle size={13} /><span>WhatsApp</span>
+                                                </a>
+                                            )}
+                                            {listing.social_media.youtube && (
+                                                <a href={listing.social_media.youtube} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-4 py-2 bg-[#FF0000] text-white text-[11px] font-bold rounded-full transition-all hover:opacity-90 shadow-sm">
+                                                    <Youtube size={13} /><span>YouTube</span>
+                                                </a>
+                                            )}
+                                            {listing.social_media.snapchat && (
+                                                <a href={listing.social_media.snapchat} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-4 py-2 bg-[#FFFC00] text-black text-[11px] font-bold rounded-full transition-all hover:opacity-90 shadow-sm">
+                                                    <span className="font-black text-[12px]">👻</span><span>Snapchat</span>
+                                                </a>
+                                            )}
+                                            {listing.social_media.tiktok && (
+                                                <a href={listing.social_media.tiktok} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-4 py-2 bg-black text-white text-[11px] font-bold rounded-full transition-all hover:opacity-90 shadow-sm">
+                                                    <span className="font-black">♪</span><span>TikTok</span>
+                                                </a>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Features */}
+                                    {displayFeatures.length > 0 && (
+                                        <div>
+                                            <h2 className="text-xl font-black text-gray-900 mb-5 uppercase tracking-tight">Features</h2>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6">
+                                                {displayFeatures.map((feature) => (
+                                                    <div key={feature} className="flex items-center gap-3">
+                                                        <div className="bg-[#007EA7] p-1 rounded-sm flex items-center justify-center shrink-0">
+                                                            <Check size={12} className="text-white" strokeWidth={4} />
+                                                        </div>
+                                                        <span className="text-[14px] font-semibold text-gray-700">{feature}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
-                                <div>
-                                    <h3 className="text-2xl font-black text-gray-900 mb-6 uppercase tracking-tight">Preferred Locations</h3>
-                                    <p className="text-gray-500 font-medium mb-8">We provide our energy services in the following counties throughout Ireland:</p>
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {(listing.additional_addresses && listing.additional_addresses.length > 0) ? (
-                                            listing.additional_addresses.map((addr, idx) => {
+                                <div className="space-y-6">
+                                    <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">Location</h3>
+                                    {listing.address && (
+                                        <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm h-[400px]">
+                                            <iframe
+                                                width="100%" height="100%"
+                                                style={{ border: 0 }}
+                                                loading="lazy"
+                                                src={`https://www.google.com/maps?q=${encodeURIComponent(listing.address + ', Ireland')}&output=embed`}
+                                                allowFullScreen
+                                            />
+                                        </div>
+                                    )}
+                                    {listing.additional_addresses && listing.additional_addresses.length > 0 && (
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4">
+                                            {listing.additional_addresses.map((addr, idx) => {
                                                 const county = addr.includes('|||') ? addr.split('|||')[1]?.trim() : addr.trim();
                                                 if (!county) return null;
                                                 return (
-                                                    <div
-                                                        key={idx}
-                                                        className="flex items-center gap-3 p-4 bg-gray-50 border border-gray-100 rounded-2xl hover:border-[#007EA7]/30 hover:bg-white transition-all group"
-                                                    >
-                                                        <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-[#007EA7] border border-gray-100 group-hover:bg-[#007EA7] group-hover:text-white transition-all shadow-sm">
-                                                            <MapPin size={16} />
-                                                        </div>
-                                                        <span className="text-sm font-black text-gray-700 uppercase tracking-tight">{county}</span>
+                                                    <div key={idx} className="flex items-center gap-2 p-3 bg-gray-50 border border-gray-100 rounded-xl">
+                                                        <MapPin size={13} className="text-[#007EA7] shrink-0" />
+                                                        <span className="text-sm font-semibold text-gray-700">{county}</span>
                                                     </div>
                                                 );
-                                            })
-                                        ) : (
-                                            <div className="col-span-full py-12 text-center bg-gray-50 rounded-3xl border border-dashed border-gray-200">
-                                                <MapPin size={32} className="mx-auto text-gray-300 mb-3" />
-                                                <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">No specific locations listed</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="mt-8 p-8 bg-[#E8F4FD]/30 rounded-3xl flex items-start gap-4 border border-[#007EA7]/10">
-                                        <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 text-[#007EA7]">
-                                            <Building2 size={24} />
+                                            })}
                                         </div>
-                                        <div>
-                                            <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-1">Business Headquarters</h4>
-                                            <p className="text-gray-600 font-bold">{formatAddress(listing.address)}</p>
-                                        </div>
-                                    </div>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -400,7 +417,7 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
                     </div>
 
                     {/* Right Column (Sidebar) */}
-                    <div className="lg:col-span-4">
+                    <div className="order-3 lg:col-span-4 lg:row-start-1 lg:col-start-9">
                         <div className="sticky top-28 space-y-6">
 
                             {/* Verified Button - Matches Screenshot */}
@@ -480,31 +497,41 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
                             </div>
                         </div>
                     </div>
+                    {/* Location Section — order-2 on mobile (above form), row-2 full width on desktop */}
+                    {listing.address && (
+                        <div
+                            id="location-section"
+                            className="order-2 lg:col-span-12 lg:row-start-2 lg:col-start-1"
+                            style={{ scrollMarginTop: '6rem' }}
+                        >
+                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-5">Location</h3>
+                            <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm h-[260px] md:h-[420px]">
+                                <iframe
+                                    width="100%" height="100%"
+                                    style={{ border: 0 }}
+                                    loading="lazy"
+                                    src={`https://www.google.com/maps?q=${encodeURIComponent(listing.address + ', Ireland')}&output=embed`}
+                                    allowFullScreen
+                                />
+                            </div>
+                            {listing.additional_addresses && listing.additional_addresses.length > 0 && (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-4">
+                                    {listing.additional_addresses.map((addr, idx) => {
+                                        const county = addr.includes('|||') ? addr.split('|||')[1]?.trim() : addr.trim();
+                                        if (!county) return null;
+                                        return (
+                                            <div key={idx} className="flex items-center gap-2 p-3 bg-gray-50 border border-gray-100 rounded-xl">
+                                                <MapPin size={13} className="text-[#007EA7] shrink-0" />
+                                                <span className="text-sm font-semibold text-gray-700">{county}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
-            {/* Main Location Map at the very end */}
-            {listing.address && (
-                <div className="container mx-auto px-6 max-w-7xl mt-24 mb-12">
-                    <div className="flex flex-col items-center justify-center text-center mb-12">
-                        <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-[0.3em] mb-4">Location</span>
-                        <h3 className="text-4xl font-black text-gray-900 tracking-tight mb-4 uppercase">Find Us Here</h3>
-                        <div className="w-16 h-1.5 bg-[#007EA7] rounded-full" />
-                    </div>
-
-                    <div className="rounded-[40px] overflow-hidden border border-gray-100 shadow-2xl h-[500px] relative group">
-                        <iframe
-                            width="100%"
-                            height="100%"
-                            style={{ border: 0 }}
-                            loading="lazy"
-                            src={`https://www.google.com/maps?q=${encodeURIComponent(listing.address + ', Ireland')}&output=embed`}
-                            allowFullScreen
-                            className="grayscale-[0.2] contrast-[1.1]"
-                        />
-                        <div className="absolute inset-0 pointer-events-none border-[12px] border-white/10 rounded-[40px]" />
-                    </div>
-                </div>
-            )}
 
             {/* Lightbox Modal */}
             {selectedImage && (

@@ -202,7 +202,7 @@ const NewCatalogue = () => {
                 canonical="/catalogue"
             />
 
-            <section className="relative min-h-[70vh] md:min-h-[80vh] overflow-hidden flex items-center m-10 rounded-2xl">
+            <section className="relative min-h-[70vh] md:min-h-[80vh] overflow-hidden flex items-center md:m-10 md:rounded-2xl">
                 <div className="absolute inset-0 w-full h-full">
                     {HERO_SLIDES.map((slide, index) => (
                         <div
@@ -293,38 +293,46 @@ const NewCatalogue = () => {
                 const spotlight = getDailySpotlight(listings);
                 if (!spotlight || loading) return null;
                 return (
-                    <div className="container mx-auto px-6 max-w-7xl -mt-8 relative z-20 mb-6">
+                    <div className="container mx-auto px-0 md:px-6 max-w-7xl -mt-8 relative z-20 mb-6">
                         <Link
                             to={`/catalogue/${spotlight.slug}`}
-                            className="group block relative overflow-hidden rounded-2xl shadow-2xl border border-white/10"
+                            className="group block relative overflow-hidden md:rounded-2xl shadow-2xl border border-white/10"
                         >
                             <div className="absolute inset-0 bg-gradient-to-r from-[#0c121d] via-[#1a2a3a] to-[#007F00]/90" />
                             <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_30%_50%,rgba(255,255,255,0.3),transparent_70%)]" />
 
-                            <div className="relative z-10 flex flex-col md:flex-row items-center gap-5 md:gap-8 px-6 md:px-10 py-5 md:py-6">
-                                <div className="flex items-center gap-2 bg-yellow-400/15 backdrop-blur-sm border border-yellow-400/30 px-4 py-1.5 rounded-full shrink-0">
+                            <div className="relative z-10 flex flex-col md:flex-row items-center gap-4 md:gap-8 px-6 md:px-10 py-6 md:py-6">
+                                {/* Mobile: logo + spotlight badge row */}
+                                <div className="flex items-center gap-4 w-full md:contents">
+                                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl overflow-hidden border-2 border-white/20 shadow-lg shrink-0 bg-white/10">
+                                        <img
+                                            src={spotlight.logo_url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=200'}
+                                            alt={spotlight.company_name || spotlight.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+                                    <div className="flex items-center gap-2 bg-yellow-400/15 backdrop-blur-sm border border-yellow-400/30 px-4 py-1.5 rounded-full shrink-0 md:hidden">
+                                        <Sparkles size={12} className="text-yellow-400" />
+                                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-300">Today's Spotlight</span>
+                                    </div>
+                                </div>
+
+                                {/* Desktop only spotlight badge */}
+                                <div className="hidden md:flex items-center gap-2 bg-yellow-400/15 backdrop-blur-sm border border-yellow-400/30 px-4 py-1.5 rounded-full shrink-0">
                                     <Sparkles size={14} className="text-yellow-400" />
                                     <span className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-300">Today's Spotlight</span>
                                 </div>
 
-                                <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl overflow-hidden border-2 border-white/20 shadow-lg shrink-0 bg-white/10">
-                                    <img
-                                        src={spotlight.logo_url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=200'}
-                                        alt={spotlight.company_name || spotlight.name}
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
-
-                                <div className="flex-1 text-center md:text-left min-w-0">
-                                    <h3 className="text-lg md:text-xl font-black text-white truncate">
+                                <div className="flex-1 text-center md:text-left w-full md:min-w-0">
+                                    <h3 className="text-base md:text-xl font-black text-white leading-snug mb-1">
                                         {spotlight.company_name || spotlight.name}
                                     </h3>
-                                    <p className="text-white/60 text-xs md:text-sm font-medium truncate max-w-lg">
+                                    <p className="text-white/60 text-xs md:text-sm font-medium line-clamp-2 md:truncate md:max-w-lg">
                                         {spotlight.description}
                                     </p>
                                 </div>
 
-                                <div className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/15 px-6 py-3 rounded-xl transition-all duration-300 group-hover:bg-[#007F00] group-hover:border-[#007F00] group-hover:shadow-lg shrink-0">
+                                <div className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/15 px-6 py-3 rounded-xl transition-all duration-300 group-hover:bg-[#007F00] group-hover:border-[#007F00] group-hover:shadow-lg shrink-0 w-full md:w-auto justify-center">
                                     <span className="text-[10px] font-black uppercase tracking-widest text-white">View Profile</span>
                                     <ArrowRight size={14} className="text-white transition-transform duration-300 group-hover:translate-x-1" />
                                 </div>
@@ -334,10 +342,10 @@ const NewCatalogue = () => {
                 );
             })()}
 
-            <div className="container mx-auto px-6 max-w-7xl">
-                <div className="flex flex-col md:flex-row justify-between items-center my-12 gap-8">
+            <div className="container mx-auto px-4 sm:px-6 max-w-7xl">
+                <div className="flex flex-col md:flex-row justify-between items-center my-8 md:my-12 gap-6 md:gap-8">
                     <div className="text-center md:text-left">
-                        <h2 className="text-3xl md:text-4xl font-black text-gray-900 uppercase tracking-tight mb-2">Operators and Energy Consultants</h2>
+                        <h2 className="text-2xl md:text-4xl font-black text-gray-900 uppercase tracking-tight mb-2">Operators and Energy Consultants</h2>
                         <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] md:text-xs">Find Operators and Energy Consultants in Your Local Area Today</p>
                     </div>
 

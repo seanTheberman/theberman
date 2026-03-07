@@ -222,6 +222,39 @@ export const AddToCatalogueView = ({
                                 </div>
                             </div>
 
+                            {/* Features */}
+                            <div className="pt-4 border-t border-gray-100">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-2"><CheckCircle2 size={14} className="text-[#007EA7]" /><span className="text-xs font-bold text-gray-700">Key Features / Highlights</span></div>
+                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Shown on listing page</span>
+                                </div>
+                                <div className="space-y-2">
+                                    {catalogueFormData.features.map((feature, idx) => (
+                                        <div key={idx} className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                value={feature}
+                                                onChange={e => {
+                                                    const updated = [...catalogueFormData.features];
+                                                    updated[idx] = e.target.value;
+                                                    setCatalogueFormData({ ...catalogueFormData, features: updated });
+                                                }}
+                                                placeholder="e.g. 24/7 Emergency Support"
+                                                className={inp}
+                                            />
+                                            <button type="button"
+                                                onClick={() => setCatalogueFormData({ ...catalogueFormData, features: catalogueFormData.features.filter((_, i) => i !== idx) })}
+                                                className="p-2 bg-red-50 text-red-400 rounded-lg hover:bg-red-100 transition-colors"
+                                            ><X size={14} /></button>
+                                        </div>
+                                    ))}
+                                    <button type="button"
+                                        onClick={() => setCatalogueFormData({ ...catalogueFormData, features: [...catalogueFormData.features, ''] })}
+                                        className="w-full py-2 border-2 border-dashed border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:border-[#007F00] hover:text-[#007F00] transition-all"
+                                    >+ Add Feature</button>
+                                </div>
+                            </div>
+
                             <div className="pt-4 border-t border-gray-100">
                                 <div className="flex items-center gap-2 mb-3"><Star size={14} className="text-amber-500" /><span className="text-xs font-bold text-gray-700">Premium Placement</span></div>
                                 <div onClick={() => setCatalogueFormData({ ...catalogueFormData, featured: !catalogueFormData.featured })}

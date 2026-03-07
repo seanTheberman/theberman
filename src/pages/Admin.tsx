@@ -115,6 +115,7 @@ const Admin = () => {
         bannerUrl: '', socialFacebook: '', socialInstagram: '', socialLinkedin: '', socialTwitter: '',
         socialWhatsapp: '', socialYoutube: '', socialSnapchat: '', socialTiktok: '',
         galleryImages: Array(10).fill(null).map(() => ({ url: '', description: '' })),
+        features: [],
     });
 
     // Promo settings
@@ -1065,7 +1066,7 @@ const Admin = () => {
                 setCatalogueFormData(prev => {
                     const newImages = Array(10).fill(null).map(() => ({ url: '', description: '' }));
                     if (imgData) imgData.forEach((img: any) => { if (img.display_order < 10) newImages[img.display_order] = { url: img.url, description: img.description || '' }; });
-                    return { ...prev, selectedCategories: catData ? catData.map(c => c.category_id) : [], galleryImages: newImages };
+                    return { ...prev, selectedCategories: catData ? catData.map(c => c.category_id) : [], galleryImages: newImages, features: existingListing.features || [] };
                 });
             })();
         } else {
@@ -1082,6 +1083,7 @@ const Admin = () => {
                 socialFacebook: '', socialInstagram: '', socialLinkedin: '', socialTwitter: '',
                 socialWhatsapp: '', socialYoutube: '', socialSnapchat: '', socialTiktok: '',
                 galleryImages: Array(10).fill(null).map(() => ({ url: '', description: '' })),
+                features: [],
             });
         }
         setView('add-to-catalogue');
@@ -1227,6 +1229,7 @@ const Admin = () => {
                     tiktok: catalogueFormData.socialTiktok || undefined,
                 },
                 additional_addresses: catalogueFormData.additionalAddresses.filter(a => a.trim() !== ''),
+                features: catalogueFormData.features.filter(f => f.trim() !== ''),
             };
 
             let listingId = selectedListingForEdit?.id;

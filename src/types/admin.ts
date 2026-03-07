@@ -154,6 +154,7 @@ export interface CatalogueFormData {
     socialSnapchat: string;
     socialTiktok: string;
     galleryImages: { url: string; description: string }[];
+    features: string[];
 }
 
 export type AdminView =
