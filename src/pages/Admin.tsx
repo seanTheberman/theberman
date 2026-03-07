@@ -1154,24 +1154,6 @@ const Admin = () => {
         }
     };
 
-    const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        if (!file.type.startsWith('image/')) { toast.error('Please upload an image file'); return; }
-        if (file.size > 5 * 1024 * 1024) { toast.error('Banner image must be less than 5MB'); return; }
-        try {
-            setIsUpdatingBanner(true);
-            const { uploadImageToCloudinary } = await import('../lib/cloudinary');
-            const publicUrl = await uploadImageToCloudinary(file);
-            setCatalogueFormData(prev => ({ ...prev, bannerUrl: publicUrl }));
-            toast.success('Banner uploaded successfully');
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to upload banner');
-        } finally {
-            setIsUpdatingBanner(false);
-            e.target.value = '';
-        }
-    };
 
     const handleGalleryUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -1564,7 +1546,7 @@ const Admin = () => {
                         isSavingCatalogue={isSavingCatalogue} isUploadingLogo={isUploadingLogo}
                         isUpdatingBanner={isUpdatingBanner} isUploadingGallery={isUploadingGallery}
                         handleSaveCatalogueEntry={handleSaveCatalogueEntry}
-                        handleLogoUpload={handleLogoUpload} handleBannerUpload={handleBannerUpload}
+                        handleLogoUpload={handleLogoUpload}
                         handleGalleryUpload={handleGalleryUpload}
                         toggleCatalogueCategory={toggleCatalogueCategory}
                         setView={setView}

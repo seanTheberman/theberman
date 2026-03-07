@@ -22,7 +22,7 @@ interface Props {
     isUploadingGallery: { [key: number]: boolean };
     handleSaveCatalogueEntry: (e: React.FormEvent) => void;
     handleLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    handleBannerUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+
     handleGalleryUpload: (index: number, e: React.ChangeEvent<HTMLInputElement>) => void;
     toggleCatalogueCategory: (categoryId: string) => void;
     setView: (v: AdminView) => void;
@@ -34,7 +34,7 @@ export const AddToCatalogueView = ({
     catalogueFormData, setCatalogueFormData, catalogueCategories,
     selectedBusinessForCatalogue, selectedListingForEdit,
     isSavingCatalogue, isUploadingLogo, isUpdatingBanner, isUploadingGallery,
-    handleSaveCatalogueEntry, handleLogoUpload, handleBannerUpload, handleGalleryUpload,
+    handleSaveCatalogueEntry, handleLogoUpload, handleGalleryUpload,
     toggleCatalogueCategory, setView,
 }: Props) => {
     const [activeTab, setActiveTab] = useState<Tab>('info');
@@ -243,7 +243,7 @@ export const AddToCatalogueView = ({
                 {/* Footer */}
                 <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between gap-3">
                     <div className="flex gap-1">
-                        {TABS.map((tab, i) => (
+                        {TABS.map((tab) => (
                             <button key={tab.id} type="button" onClick={() => setActiveTab(tab.id)}
                                 className={`w-2 h-2 rounded-full transition-all ${activeTab === tab.id ? 'bg-[#007F00] w-4' : 'bg-gray-300'}`} />
                         ))}
