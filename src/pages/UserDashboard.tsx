@@ -77,6 +77,7 @@ const UserDashboard = () => {
     const [paymentModalOpen, setPaymentModalOpen] = useState(false);
     const [paymentQuote, setPaymentQuote] = useState<{ assessmentId: string, quoteId: string, amount: number, balance?: number } | null>(null);
     const [deletingAssessmentId, setDeletingAssessmentId] = useState<string | null>(null);
+    const [submittingAssessmentId, setSubmittingAssessmentId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchAssessments();
@@ -163,6 +164,8 @@ const UserDashboard = () => {
     const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
 
     const handleSubmitAssessment = async (id: string) => {
+        if (submittingAssessmentId) return; // prevent double-submit
+        setSubmittingAssessmentId(id);
         try {
             // 1. Fetch assessment details for notification
             const { data: assessment, error: fetchError } = await supabase
@@ -202,6 +205,8 @@ const UserDashboard = () => {
         } catch (error: any) {
             console.error('Submission error:', error);
             toast.error(error.message || 'Failed to submit');
+        } finally {
+            setSubmittingAssessmentId(null);
         }
     };
 
@@ -600,9 +605,10 @@ const UserDashboard = () => {
                                                                             {assessment.status === 'draft' ? (
                                                                                 <button
                                                                                     onClick={() => handleSubmitAssessment(assessment.id)}
-                                                                                    className={`px-3 py-1.5 text-white rounded-lg text-xs font-bold transition-all ${isCommercial ? 'bg-purple-600 hover:bg-purple-700' : 'bg-[#007F00] hover:bg-[#006600]'}`}
+                                                                                    disabled={submittingAssessmentId === assessment.id}
+                                                                                    className={`px-3 py-1.5 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${isCommercial ? 'bg-purple-600 hover:bg-purple-700' : 'bg-[#007F00] hover:bg-[#006600]'}`}
                                                                                 >
-                                                                                    Submit
+                                                                                    {submittingAssessmentId === assessment.id ? 'Submitting...' : 'Submit'}
                                                                                 </button>
                                                                             ) : assessment.status === 'completed' && assessment.certificate_url ? (
                                                                                 <a

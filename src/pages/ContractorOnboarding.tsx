@@ -106,7 +106,7 @@ const ContractorOnboarding = () => {
 
             sessionStorage.setItem('pending_assessor_registration', JSON.stringify(registrationData));
 
-            // 0. Update Profile with pending status and role
+            // Update profile with pending status — admin will manually activate
             const { error: profileUpdateError } = await supabase
                 .from('profiles')
                 .update({
@@ -122,26 +122,12 @@ const ContractorOnboarding = () => {
                 console.error('Failed to update initial profile:', profileUpdateError);
             }
 
-            // Check if user is already marked as paid (manual activation)
-            const { data: currentProfile } = await supabase
-                .from('profiles')
-                .select('stripe_payment_id, registration_status')
-                .eq('id', user?.id)
-                .single();
-
-            if (currentProfile?.stripe_payment_id === 'MANUAL_BY_ADMIN') {
-                toast.success('Professional profile updated! Your account is active.');
-                await refreshProfile();
-                navigate('/dashboard/ber-assessor', { replace: true });
-                return;
-            }
-
             // Fire-and-forget admin notification (non-blocking)
             supabase.functions.invoke('notify-admin-interest', {
                 body: { registrationData, type: 'assessor' }
             }).catch(err => console.error('Failed to send interest notification:', err));
 
-            // Refresh auth context so ProtectedRoute sees updated seai_number
+            toast.success('Registration submitted! Your account is pending admin approval.');
             await refreshProfile();
             navigate('/dashboard/ber-assessor', { replace: true });
 

@@ -392,9 +392,9 @@ const BusinessDashboard = () => {
     const isSuspended = profile?.stripe_payment_id === 'SUSPENDED';
     const hasPaid = !!profile?.stripe_payment_id && profile.stripe_payment_id !== 'SUSPENDED';
 
-    // Business pending + no payment yet → redirect to payment page
+    // Business pending + no payment yet → redirect to onboarding
     if (profile?.registration_status === 'pending' && !hasPaid) {
-        navigate('/business-membership', { replace: true });
+        navigate('/business-onboarding', { replace: true });
         return null;
     }
 

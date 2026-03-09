@@ -31,7 +31,7 @@ const Login = () => {
             // Handle Blocked / Expired users (Exclude admins)
             if (role === 'contractor' || role === 'business') {
                 if (profile.registration_status === 'pending') {
-                    const path = role === 'contractor' ? '/assessor-membership' : '/business-membership';
+                    const path = role === 'contractor' ? '/assessor-onboarding' : '/business-onboarding';
                     navigate(path, { replace: true });
                     return;
                 }
@@ -119,8 +119,8 @@ const Login = () => {
                 // 1. Handle Blocked / Expired users first (Redirect them to payment/pricing)
                 if (userRole === 'contractor' || userRole === 'business') {
                     if (regStatus === 'pending') {
-                        // Redirect to initial payment
-                        const path = userRole === 'contractor' ? '/assessor-membership' : '/business-membership';
+                        // Redirect to onboarding to complete registration
+                        const path = userRole === 'contractor' ? '/assessor-onboarding' : '/business-onboarding';
                         navigate(path, { replace: true });
                         return;
                     }

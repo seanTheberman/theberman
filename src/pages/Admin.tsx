@@ -652,7 +652,7 @@ const Admin = () => {
                 manual_override_reason: editForm.manual_override_reason,
                 stripe_payment_id: finalStripeId,
                 role: editForm.role,
-                assessor_type: editForm.assessor_type || null
+                assessor_type: editForm.assessor_type || undefined
             }).eq('id', selectedUser.id);
             if (error) throw error;
 
@@ -663,7 +663,7 @@ const Admin = () => {
                 manual_override_reason: editForm.manual_override_reason,
                 stripe_payment_id: finalStripeId,
                 role: editForm.role as any,
-                assessor_type: editForm.assessor_type || null
+                assessor_type: editForm.assessor_type || undefined
             };
             setUsersList(users_list.map(u => u.id === selectedUser.id ? { ...u, ...updates } : u));
             setSelectedUser({ ...selectedUser, ...updates });
@@ -794,12 +794,25 @@ const Admin = () => {
     const updateRegistrationStatus = async (userId: string, status: 'active' | 'rejected') => {
         setIsUpdating(true);
         const previousUsers = [...users_list];
-        setUsersList(users_list.map(u => u.id === userId ? { ...u, registration_status: status } : u));
+        const targetUser = users_list.find(u => u.id === userId);
+        const isAssessor = targetUser?.role === 'contractor';
+
+        // When approving, also activate subscription (assessors get free membership, businesses paid via Stripe)
+        const updateData: Partial<Profile> = { registration_status: status };
+        if (status === 'active') {
+            updateData.is_active = true;
+            if (isAssessor) {
+                updateData.subscription_status = 'active';
+                updateData.stripe_payment_id = 'FREE_ASSESSOR';
+            }
+        }
+
+        setUsersList(users_list.map(u => u.id === userId ? { ...u, ...updateData } : u));
         try {
-            const { data, error } = await supabase.from('profiles').update({ registration_status: status }).eq('id', userId).select();
+            const { data, error } = await supabase.from('profiles').update(updateData).eq('id', userId).select();
             if (error) throw error;
             if (!data || data.length === 0) throw new Error('Update failed: No rows were changed.');
-            toast.success(`Business registration ${status === 'active' ? 'approved' : 'rejected'} successfully`);
+            toast.success(`${isAssessor ? 'Assessor' : 'Business'} account ${status === 'active' ? 'approved & activated' : 'rejected'} successfully`);
             fetchUsers();
         } catch (error: any) {
             setUsersList(previousUsers);
