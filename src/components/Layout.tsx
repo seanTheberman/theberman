@@ -112,7 +112,7 @@ const Layout = () => {
                     {isCatalogueNav && (
                         <nav className="hidden md:flex items-center gap-1">
                             <Link to="/" className="px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">Home</Link>
-                            <Link to="/catalogue" className="px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">Directory</Link>
+                            <Link to="/catalogue" className="px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">Catalogue</Link>
 
                             {/* Mobile: simple Locations link */}
                             <Link to="/locations" className="flex md:hidden px-2 py-1.5 text-[10px] font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">Locations</Link>
@@ -311,7 +311,7 @@ const Layout = () => {
                     <nav className="md:hidden border-t border-white/10 flex items-center justify-center gap-0 py-2">
                         <Link to="/" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">Home</Link>
                         <span className="text-white/20 text-[8px]">|</span>
-                        <Link to="/catalogue" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">Directory</Link>
+                        <Link to="/catalogue" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">Catalogue</Link>
                         <span className="text-white/20 text-[8px]">|</span>
                         <Link to="/locations" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">Locations</Link>
                         <span className="text-white/20 text-[8px]">|</span>
