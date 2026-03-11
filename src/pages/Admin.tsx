@@ -1553,7 +1553,6 @@ const Admin = () => {
                         view={view} users_list={users_list} assessments={assessments} listings={listings}
                         searchTerm={searchTerm} setSearchTerm={setSearchTerm}
                         locationFilter={locationFilter} setLocationFilter={setLocationFilter}
-                        uniqueUserLocations={view === 'assessors' ? uniqueAssessorLocations : uniqueUserLocations}
                         isUpdating={isUpdating}
                         handleSendRenewalReminder={handleSendRenewalReminder}
                         handleOpenCatalogueView={handleOpenCatalogueView}

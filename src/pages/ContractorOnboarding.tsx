@@ -23,7 +23,7 @@ const ContractorOnboarding = () => {
         seaiYear: new Date().getFullYear().toString(),
         insuranceHolder: false,
         vatRegistered: false,
-        assessorTypes: ['Domestic Assessor'] as string[],
+        assessorTypes: [] as string[],
         serviceAreas: [] as string[],
         isCompany: false,
         companyName: '',
@@ -40,14 +40,12 @@ const ContractorOnboarding = () => {
     const [featureInput, setFeatureInput] = useState('');
 
     useEffect(() => {
-        const pendingData = sessionStorage.getItem('pending_assessor_registration');
+        if (!user) return;
+        const pendingData = sessionStorage.getItem(`pending_assessor_registration_${user.id}`);
         if (pendingData) {
             try {
                 const parsed = JSON.parse(pendingData);
-                // Only restore if this data belongs to the current user (if user is loaded)
-                if (!user || parsed.user_id === user.id) {
-                    setFormData(parsed);
-                }
+                setFormData(parsed);
             } catch (e) {
                 console.error('Error parsing pending assessor data:', e);
             }
@@ -70,8 +68,6 @@ const ContractorOnboarding = () => {
         setFormData(prev => {
             const types = [...prev.assessorTypes];
             if (types.includes(type)) {
-                // Prevent deselecting if it's the only one left
-                if (types.length === 1) return prev;
                 return { ...prev, assessorTypes: types.filter(t => t !== type) };
             } else {
                 return { ...prev, assessorTypes: [...types, type] };
@@ -86,8 +82,8 @@ const ContractorOnboarding = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.phone || !formData.homeCounty || !formData.homeTown || !formData.seaiNumber || !formData.seaiYear) {
-            toast.error('Please fill in all required fields');
+        if (!formData.phone || !formData.homeCounty || !formData.homeTown || !formData.seaiNumber || !formData.seaiYear || formData.assessorTypes.length === 0) {
+            toast.error('Please fill in all required fields including Assessor Type');
             return;
         }
 
@@ -151,7 +147,7 @@ const ContractorOnboarding = () => {
 
             toast.success('Registration submitted! Your account is pending admin approval.');
             await refreshProfile();
-            sessionStorage.removeItem('pending_assessor_registration');
+            sessionStorage.removeItem(`pending_assessor_registration_${user?.id}`);
             navigate('/dashboard/ber-assessor', { replace: true });
 
         } catch (error: unknown) {
@@ -426,7 +422,7 @@ const ContractorOnboarding = () => {
                         </div>
 
                         <div className="pt-6">
-                            <label className="block text-sm font-bold text-gray-700 mb-3">Domestic or Commercial</label>
+                            <label className="block text-sm font-bold text-gray-700 mb-3">Domestic or Commercial <span className="text-red-500">*</span></label>
                             <div className="flex flex-wrap gap-4">
                                 {['Domestic Assessor', 'Commercial Assessor'].map((type) => (
                                     <button

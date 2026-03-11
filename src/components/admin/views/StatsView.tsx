@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Home, ClipboardList, Building2, DollarSign, Briefcase, TrendingUp, ArrowRight, Hourglass, CheckCircle2, AlertTriangle, Edit2, Plus, Eye, MapPin, Users, Trash2 } from 'lucide-react';
+import { Home, ClipboardList, Building2, DollarSign, Briefcase, TrendingUp, ArrowRight, Hourglass, CheckCircle2, AlertTriangle, Edit2, Plus, Eye, MapPin, Users, Trash2, Filter as FilterIcon } from 'lucide-react';
 import { Search } from 'lucide-react';
 import type { Profile, Assessment, Payment, AdminView } from '../../../types/admin';
 import { StatusCell, PaymentStatusBadge } from '../StatusBadges';
@@ -62,14 +62,35 @@ export const StatsView = ({
     handleOpenCatalogueView, setSelectedUser, setItemToSuspend, setShowSuspendModal, setView, handleDeleteClick,
 }: Props) => {
     const [userType, setUserType] = useState<UserType>('all');
+    const [typeFilter, setTypeFilter] = useState('');
 
-    const allLocations = Array.from(new Set(users_list.flatMap(u => [u.home_county, u.county, ...(u.preferred_counties || [])]).filter(Boolean))).sort() as string[];
+    const switchType = (t: UserType) => { setUserType(t); setLocationFilter(''); setSearchTerm(''); setTypeFilter(''); };
 
-    const activeLocations =
-        userType === 'assessors' ? uniqueAssessorLocations :
-        userType === 'businesses' ? uniqueBusinessLocations :
-        userType === 'homeowners' ? uniqueUserLocations :
-        allLocations;
+    const isTypeMatch = (assessorType: string | null | undefined, filter: string) => {
+        if (!filter) return true;
+        if (!assessorType) return false;
+        const type = assessorType.toLowerCase();
+        
+        const isDomestic = type.includes('domestic');
+        const isCommercial = type.includes('commercial');
+        const isBoth = type.includes('both') || type.includes('&') || (isDomestic && isCommercial);
+
+        if (filter === 'both') return isBoth;
+        if (filter === 'domestic') return isDomestic && !isBoth;
+        if (filter === 'commercial') return isCommercial && !isBoth;
+        return true;
+    };
+
+    const typeGroup = userType === 'assessors' ? users_list.filter(u => u.role === 'contractor' && isTypeMatch(u.assessor_type, typeFilter))
+        : userType === 'businesses' ? users_list.filter(u => u.role === 'business')
+        : userType === 'homeowners' ? users_list.filter(u => u.role === 'user' || u.role === 'homeowner')
+        : users_list.filter(u => u.role !== 'admin');
+
+    const activeLocations = Array.from(new Set(
+        typeGroup.flatMap(u => userType === 'assessors' ? [u.home_county, u.county, ...(u.preferred_counties || [])] : [u.home_county, u.county])
+    )).filter(Boolean).sort() as string[];
+
+    const countForLoc = (loc: string) => typeGroup.filter(u => u.county === loc || u.home_county === loc || u.preferred_counties?.includes(loc)).length;
 
     const filtered = users_list.filter(u => {
         const matchRole =
@@ -83,21 +104,14 @@ export const StatsView = ({
             u.county === locationFilter || 
             u.home_county === locationFilter || 
             u.preferred_counties?.includes(locationFilter);
-        return matchRole && matchSearch && matchLocation;
+        const matchType = userType !== 'assessors' || isTypeMatch(u.assessor_type, typeFilter);
+        return matchRole && matchSearch && matchLocation && matchType;
     });
 
     const showActivity = userType !== 'businesses';
     const showRole = userType === 'all';
     const showPayment = userType === 'assessors';
     const colCount = showRole ? (showActivity ? 6 : 5) : (showActivity ? (showPayment ? 6 : 5) : 4);
-
-    const switchType = (t: UserType) => { setUserType(t); setLocationFilter(''); setSearchTerm(''); };
-
-    const typeGroup = userType === 'assessors' ? users_list.filter(u => u.role === 'contractor')
-        : userType === 'businesses' ? users_list.filter(u => u.role === 'business')
-        : userType === 'homeowners' ? users_list.filter(u => u.role === 'user' || u.role === 'homeowner')
-        : users_list.filter(u => u.role !== 'admin');
-    const countForLoc = (loc: string) => typeGroup.filter(u => u.county === loc || u.home_county === loc || u.preferred_counties?.includes(loc)).length;
 
     return (
         <div className="space-y-5">
@@ -206,6 +220,21 @@ export const StatsView = ({
                                 {activeLocations.map(loc => <option key={loc} value={loc}>{loc} ({countForLoc(loc)})</option>)}
                             </select>
                         </div>
+                        {userType === 'assessors' && (
+                            <div className="relative w-full sm:w-40">
+                                <FilterIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={13} />
+                                <select
+                                    className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] outline-none transition-all bg-gray-50 appearance-none text-gray-600"
+                                    value={typeFilter}
+                                    onChange={e => setTypeFilter(e.target.value)}
+                                >
+                                    <option value="">All Types</option>
+                                    <option value="domestic">Domestic ({users_list.filter(u => u.role === 'contractor' && isTypeMatch(u.assessor_type, 'domestic')).length})</option>
+                                    <option value="commercial">Commercial ({users_list.filter(u => u.role === 'contractor' && isTypeMatch(u.assessor_type, 'commercial')).length})</option>
+                                    <option value="both">Both ({users_list.filter(u => u.role === 'contractor' && isTypeMatch(u.assessor_type, 'both')).length})</option>
+                                </select>
+                            </div>
+                        )}
                     </div>
                 </div>
 

@@ -13,7 +13,6 @@ interface Props {
     setSearchTerm: (v: string) => void;
     locationFilter: string;
     setLocationFilter: (v: string) => void;
-    uniqueUserLocations: string[];
     isUpdating: boolean;
     handleSendRenewalReminder: (u: any) => void;
     handleOpenCatalogueView: (business: Profile | null, existingListing?: any) => void;
@@ -29,7 +28,7 @@ interface Props {
 
 export const UsersView = ({
     view, users_list, assessments, listings,
-    searchTerm, setSearchTerm, locationFilter, setLocationFilter, uniqueUserLocations,
+    searchTerm, setSearchTerm, locationFilter, setLocationFilter,
     isUpdating,
     handleSendRenewalReminder,
     handleOpenCatalogueView, updateRegistrationStatus, setSelectedUser, setItemToSuspend, setShowSuspendModal,
@@ -37,6 +36,38 @@ export const UsersView = ({
 }: Props) => {
     const isAssessors = view === 'assessors';
     const [typeFilter, setTypeFilter] = useState('');
+
+    const isTypeMatch = (assessorType: string | null | undefined, filter: string) => {
+        if (!filter) return true;
+        if (!assessorType) return false;
+        const type = assessorType.toLowerCase();
+        
+        const isDomestic = type.includes('domestic');
+        const isCommercial = type.includes('commercial');
+        const isBoth = type.includes('both') || type.includes('&') || (isDomestic && isCommercial);
+
+        if (filter === 'both') return isBoth;
+        if (filter === 'domestic') return isDomestic && !isBoth;
+        if (filter === 'commercial') return isCommercial && !isBoth;
+        return true;
+    };
+
+    const activeGroup = users_list.filter(u => {
+        const matchRole = isAssessors ? u.role === 'contractor' : (u.role === 'user' || u.role === 'homeowner');
+        const matchType = !isAssessors || isTypeMatch(u.assessor_type, typeFilter);
+        return matchRole && matchType;
+    });
+
+    const activeLocations = Array.from(new Set(
+        activeGroup.flatMap(u => isAssessors ? [u.home_county, u.county, ...(u.preferred_counties || [])] : [u.home_county, u.county])
+    )).filter(Boolean).sort() as string[];
+
+    const countForLoc = (loc: string) => activeGroup.filter(u => {
+        const matchLoc = isAssessors ? 
+            (u.home_county === loc || u.county === loc || u.preferred_counties?.includes(loc)) : 
+            (u.county === loc || u.home_county === loc);
+        return matchLoc;
+    }).length;
 
     const filtered = users_list.filter(u => {
         const matchRole = isAssessors ? u.role === 'contractor' : (u.role === 'user' || u.role === 'homeowner');
@@ -46,7 +77,7 @@ export const UsersView = ({
         const matchLoc = !locationFilter || (isAssessors ? 
             (u.home_county === locationFilter || u.county === locationFilter || u.preferred_counties?.includes(locationFilter)) : 
             (u.county === locationFilter || u.home_county === locationFilter));
-        const matchType = !typeFilter || !isAssessors || (u.assessor_type?.toLowerCase() === typeFilter.toLowerCase());
+        const matchType = !isAssessors || isTypeMatch(u.assessor_type, typeFilter);
         return matchRole && matchSearch && matchLoc && matchType;
     });
 
@@ -72,17 +103,10 @@ export const UsersView = ({
                             value={locationFilter}
                             onChange={e => setLocationFilter(e.target.value)}
                         >
-                            <option value="">All Counties ({users_list.filter(u => isAssessors ? u.role === 'contractor' : (u.role === 'user' || u.role === 'homeowner')).length})</option>
-                            {uniqueUserLocations.map(loc => {
-                                const count = users_list.filter(u => {
-                                    const matchRole = isAssessors ? u.role === 'contractor' : (u.role === 'user' || u.role === 'homeowner');
-                                    const matchLoc = isAssessors ? 
-                                        (u.home_county === loc || u.county === loc || u.preferred_counties?.includes(loc)) : 
-                                        (u.county === loc || u.home_county === loc);
-                                    return matchRole && matchLoc;
-                                }).length;
-                                return <option key={loc} value={loc}>{loc} ({count})</option>;
-                            })}
+                            <option value="">All Counties ({activeGroup.length})</option>
+                            {activeLocations.map(loc => (
+                                <option key={loc} value={loc}>{loc} ({countForLoc(loc)})</option>
+                            ))}
                         </select>
                     </div>
                     {isAssessors && (
@@ -94,9 +118,9 @@ export const UsersView = ({
                                 onChange={e => setTypeFilter(e.target.value)}
                             >
                                 <option value="">All Types</option>
-                                <option value="domestic">Domestic ({users_list.filter(u => u.role === 'contractor' && u.assessor_type?.toLowerCase() === 'domestic').length})</option>
-                                <option value="commercial">Commercial ({users_list.filter(u => u.role === 'contractor' && u.assessor_type?.toLowerCase() === 'commercial').length})</option>
-                                <option value="both">Both ({users_list.filter(u => u.role === 'contractor' && u.assessor_type?.toLowerCase() === 'both').length})</option>
+                                <option value="domestic">Domestic ({users_list.filter(u => u.role === 'contractor' && isTypeMatch(u.assessor_type, 'domestic')).length})</option>
+                                <option value="commercial">Commercial ({users_list.filter(u => u.role === 'contractor' && isTypeMatch(u.assessor_type, 'commercial')).length})</option>
+                                <option value="both">Both ({users_list.filter(u => u.role === 'contractor' && isTypeMatch(u.assessor_type, 'both')).length})</option>
                             </select>
                         </div>
                     )}
