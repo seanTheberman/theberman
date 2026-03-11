@@ -1,18 +1,18 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { type User, type Session } from '@supabase/supabase-js';
+import { type User, type Session, type AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
 interface AuthContextType {
     user: User | null;
     session: Session | null;
-    profile: any | null;
+    profile: Record<string, unknown> | null;
     loading: boolean;
     role: 'admin' | 'contractor' | 'user' | 'homeowner' | 'business' | null;
-    signIn: (email: string, password: string) => Promise<{ data: { user: User | null, session: Session | null }, error: any }>;
-    signUp: (email: string, password: string, fullName: string, role: 'user' | 'contractor' | 'homeowner' | 'business', phone?: string) => Promise<{ data: { user: User | null, session: Session | null }, error: any }>;
-    resetPassword: (email: string) => Promise<{ data: any, error: any }>;
-    updateUserPassword: (password: string) => Promise<{ data: { user: User | null }, error: any }>;
+    signIn: (email: string, password: string) => Promise<{ data: { user: User | null, session: Session | null }, error: AuthError | null }>;
+    signUp: (email: string, password: string, fullName: string, role: 'user' | 'contractor' | 'homeowner' | 'business', phone?: string) => Promise<{ data: { user: User | null, session: Session | null }, error: AuthError | null }>;
+    resetPassword: (email: string) => Promise<{ data: Record<string, unknown> | null, error: AuthError | null }>;
+    updateUserPassword: (password: string) => Promise<{ data: { user: User | null }, error: AuthError | null }>;
     signOut: () => Promise<void>;
     refreshProfile: () => Promise<void>;
 }
@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(true);
     const [isInitialCheckDone, setIsInitialCheckDone] = useState(false);
 
-    const [profile, setProfile] = useState<any | null>(null);
+    const [profile, setProfile] = useState<Record<string, unknown> | null>(null);
 
     const fetchProfile = async (userId: string) => {
         try {
@@ -140,6 +140,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const signOut = async () => {
+        sessionStorage.removeItem('pending_assessor_registration');
+        sessionStorage.removeItem('pending_business_registration');
         await supabase.auth.signOut();
         setRole(null);
         setUser(null);

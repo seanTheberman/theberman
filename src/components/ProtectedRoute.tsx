@@ -21,7 +21,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    if (allowedRoles && role && !allowedRoles.includes(role)) {
+    if (allowedRoles && (!role || !allowedRoles.includes(role))) {
         // Logged in but wrong role -> Go to their respective dashboard
         if (role === 'admin') return <Navigate to="/admin" replace />;
         if (role === 'contractor') return <Navigate to="/dashboard/ber-assessor" replace />;
@@ -29,11 +29,17 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         return <Navigate to="/dashboard/user" replace />;
     }
 
-    // Stage 1 Gating: Redirect pending businesses to onboarding/membership
+    // Stage 1 Gating: Redirect pending businesses to membership payment if they haven't paid
     if (role === 'business' && profile?.registration_status === 'pending' &&
         location.pathname !== '/business-onboarding' &&
-        location.pathname !== '/assessor-membership' &&
+        location.pathname !== '/assessor-onboarding' &&
+        location.pathname !== '/membership-payment' &&
         location.pathname !== '/registration-pending') {
+        return <Navigate to="/membership-payment" replace />;
+    }
+
+    // If role is business but registration status is NOT pending/active, send to onboarding
+    if (role === 'business' && !profile?.registration_status && location.pathname !== '/business-onboarding') {
         return <Navigate to="/business-onboarding" replace />;
     }
 

@@ -46,7 +46,11 @@ export const AssignAssessorModal = ({ assessment, contractors, isUpdating, onClo
                                 </div>
                                 <div className="flex-grow">
                                     <p className="font-bold text-gray-900 text-sm">{contractor.full_name}</p>
-                                    <p className="text-xs text-gray-500">{contractor.email}</p>
+                                    <p className="text-xs text-gray-500">
+                                        {contractor.email}
+                                        {contractor.home_county && ` • Co. ${contractor.home_county}`}
+                                        {contractor.preferred_counties && contractor.preferred_counties.length > 0 && ` (+${contractor.preferred_counties.filter(c => c !== contractor.home_county).length})`}
+                                    </p>
                                 </div>
                                 {isUpdating && <Loader2 className="animate-spin" size={16} />}
                             </button>

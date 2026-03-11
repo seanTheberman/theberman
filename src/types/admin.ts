@@ -27,6 +27,7 @@ export interface Profile {
     phone?: string;
     county?: string;
     home_county?: string;
+    preferred_counties?: string[];
     town?: string;
     seai_number?: string;
     assessor_type?: string;

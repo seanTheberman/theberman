@@ -22,7 +22,7 @@ const IRISH_COUNTIES = [
 const CERTIFICATIONS = ['SafePass', 'SEAI Registered', 'RECI Certified', 'NSAI Certified', 'FQAI Registered', 'Safe Electric'];
 
 const BusinessOnboarding = () => {
-    const { user, profile } = useAuth();
+    const { user, profile, refreshProfile } = useAuth();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const userIdParam = searchParams.get('userId');
@@ -52,6 +52,20 @@ const BusinessOnboarding = () => {
 
     useEffect(() => {
         const initializeForm = async () => {
+            const pendingData = sessionStorage.getItem('pending_business_registration');
+            if (pendingData) {
+                try {
+                    const parsed = JSON.parse(pendingData);
+                    // Only restore if this data belongs to the current user
+                    if (!user || parsed.user_id === user.id) {
+                        setFormData(parsed);
+                        return;
+                    }
+                } catch (e) {
+                    console.error('Error parsing pending business data:', e);
+                }
+            }
+
             if (userIdParam) {
                 const { data: targetProfile } = await supabase
                     .from('profiles')
@@ -166,8 +180,9 @@ const BusinessOnboarding = () => {
             }
 
             toast.success('Information saved! Please complete your registration payment.');
+            await refreshProfile();
             navigate('/membership-payment', { replace: true });
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Onboarding data saving error:', error);
             toast.error('Failed to save registration data');
         } finally {

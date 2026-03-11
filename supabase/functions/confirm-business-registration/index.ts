@@ -68,6 +68,7 @@ serve(async (req: Request) => {
                 role: 'business',
                 company_name: companyName,
                 phone: phone,
+                county: county, // Added this line
                 subscription_status: 'active',
                 subscription_start_date: now.toISOString(),
                 subscription_end_date: oneYearLater.toISOString(),

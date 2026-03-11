@@ -132,7 +132,7 @@ const Admin = () => {
         new Set(users_list.filter(u => u.role === 'user' || u.role === 'homeowner').map(u => u.county || u.home_county).filter(Boolean))
     ).sort() as string[];
     const uniqueAssessorLocations = Array.from(
-        new Set(users_list.filter(u => u.role === 'contractor').map(u => u.home_county || u.county).filter(Boolean))
+        new Set(users_list.filter(u => u.role === 'contractor').flatMap(u => [u.home_county, u.county, ...(u.preferred_counties || [])]).filter(Boolean))
     ).sort() as string[];
     const uniqueBusinessLocations = Array.from(
         new Set(users_list.filter(u => u.role === 'business').map(u => u.county || u.home_county).filter(Boolean))
@@ -176,7 +176,7 @@ const Admin = () => {
         pendingQuotes: assessments.filter(a => a.status === 'submitted' || a.status === 'pending_quote').length,
         acceptedQuotes: assessments.filter(a => a.status === 'quote_accepted' || a.status === 'scheduled' || a.status === 'completed').length,
         businessLeads: users_list.filter(u => u.role === 'business').length,
-        pendingOnboarding: users_list.filter(u => u.role === 'business' && !listings.some(l => l.user_id === u.id)).length,
+        pendingOnboarding: users_list.filter(u => u.role === 'business' && !listings.some(l => l.user_id === u.id || l.owner_id === u.id)).length,
     };
 
     // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -569,6 +569,38 @@ const Admin = () => {
             toast.success('Permanently deleted from database');
         } catch (error: any) {
             toast.error(error.message || 'Failed to permanently delete');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const handleBulkRestore = async (items: {id: string, type: 'lead' | 'assessment' | 'user'}[]) => {
+        try {
+            const tableMap = { lead: 'leads', assessment: 'assessments', user: 'profiles' } as const;
+            for (const item of items) {
+                const { error } = await supabase.from(tableMap[item.type]).update({ deleted_at: null }).eq('id', item.id);
+                if (error) throw error;
+            }
+            setDeletedItems(prev => prev.filter(i => !items.some(item => item.id === i.id && item.type === i.type)));
+            toast.success(`${items.length} items restored successfully`);
+        } catch (error: any) {
+             toast.error(error.message || 'Failed to restore some items');
+        }
+    };
+
+    const handleBulkPermanentDelete = async (items: {id: string, type: 'lead' | 'assessment' | 'user'}[]) => {
+        if (!confirm(`This will permanently delete ${items.length} items from the database. This cannot be undone. Continue?`)) return;
+        setIsDeleting(true);
+        try {
+            const tableMap = { lead: 'leads', assessment: 'assessments', user: 'profiles' } as const;
+            for (const item of items) {
+                const { error } = await supabase.from(tableMap[item.type]).delete().eq('id', item.id);
+                if (error) throw error;
+            }
+            setDeletedItems(prev => prev.filter(i => !items.some(item => item.id === i.id && item.type === i.type)));
+            toast.success(`${items.length} items permanently deleted`);
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to delete some items');
         } finally {
             setIsDeleting(false);
         }
@@ -1320,8 +1352,8 @@ const Admin = () => {
     };
 
     // ─── Render ───────────────────────────────────────────────────────────────────
-    const pendingAssessors = users_list.filter(u => u.role === 'contractor' && u.registration_status === 'pending').length;
-    const pendingBusinesses = users_list.filter(u => u.role === 'business' && u.registration_status === 'pending').length;
+    const pendingAssessors = users_list.filter(u => u.role === 'contractor' && u.registration_status === 'pending' && !listings.some(l => l.user_id === u.id || l.owner_id === u.id)).length;
+    const pendingBusinesses = users_list.filter(u => u.role === 'business' && u.registration_status === 'pending' && !listings.some(l => l.user_id === u.id || l.owner_id === u.id)).length;
 
     const NAV_ITEMS: { id: string; label: string; icon: React.ElementType; badge: number }[] = [
         { id: 'stats',            label: 'Overview',         icon: BarChart2,     badge: 0 },
@@ -1596,6 +1628,8 @@ const Admin = () => {
                         isDeleting={isDeleting}
                         onRestore={handleRestoreItem}
                         onPermanentDelete={handlePermanentDelete}
+                        onBulkRestore={handleBulkRestore}
+                        onBulkPermanentDelete={handleBulkPermanentDelete}
                     />
                 ) : null}
                 </main>

@@ -65,7 +65,13 @@ const MembershipPayment = () => {
                     setPriceData({ subtotal, vat, total: subtotal + vat });
                 } else {
                     toast.error('Registration data not found. Please restart registration.');
-                    navigate('/signup');
+                    if (profile?.role === 'business') {
+                        navigate('/business-onboarding');
+                    } else if (profile?.role === 'contractor') {
+                        navigate('/assessor-onboarding');
+                    } else {
+                        navigate('/signup');
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching prices:', error);

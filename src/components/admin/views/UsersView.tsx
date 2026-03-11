@@ -43,7 +43,9 @@ export const UsersView = ({
         const q = searchTerm.toLowerCase();
         const matchSearch = !q || u.full_name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q) ||
             u.seai_number?.toLowerCase().includes(q) || u.home_county?.toLowerCase().includes(q);
-        const matchLoc = !locationFilter || (isAssessors ? u.home_county === locationFilter : u.county === locationFilter || u.home_county === locationFilter);
+        const matchLoc = !locationFilter || (isAssessors ? 
+            (u.home_county === locationFilter || u.county === locationFilter || u.preferred_counties?.includes(locationFilter)) : 
+            (u.county === locationFilter || u.home_county === locationFilter));
         const matchType = !typeFilter || !isAssessors || (u.assessor_type?.toLowerCase() === typeFilter.toLowerCase());
         return matchRole && matchSearch && matchLoc && matchType;
     });
@@ -74,7 +76,9 @@ export const UsersView = ({
                             {uniqueUserLocations.map(loc => {
                                 const count = users_list.filter(u => {
                                     const matchRole = isAssessors ? u.role === 'contractor' : (u.role === 'user' || u.role === 'homeowner');
-                                    const matchLoc = isAssessors ? u.home_county === loc : u.county === loc || u.home_county === loc;
+                                    const matchLoc = isAssessors ? 
+                                        (u.home_county === loc || u.county === loc || u.preferred_counties?.includes(loc)) : 
+                                        (u.county === loc || u.home_county === loc);
                                     return matchRole && matchLoc;
                                 }).length;
                                 return <option key={loc} value={loc}>{loc} ({count})</option>;
@@ -149,8 +153,11 @@ export const UsersView = ({
                                     <td className="px-5 py-3">
                                         <div className="font-semibold text-gray-800 text-[13px] leading-tight">{u.full_name || u.email}</div>
                                         {!isAssessors && u.full_name && <div className="text-[11px] text-gray-400 mt-0.5">{u.email}</div>}
-                                                    {isAssessors && u.home_county && (
-                                            <div className="text-[10px] text-gray-400 mt-0.5">Co. {u.home_county}</div>
+                                        {isAssessors && u.home_county && (
+                                            <div className="text-[10px] text-gray-400 mt-0.5" title={u.preferred_counties?.join(', ')}>
+                                                Co. {u.home_county}
+                                                {u.preferred_counties && u.preferred_counties.length > 0 && ` (+${u.preferred_counties.filter(c => c !== u.home_county).length})`}
+                                            </div>
                                         )}
                                         {isAssessors && u.assessor_type && (
                                             <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 import { Check, Plus, X } from 'lucide-react';
@@ -38,6 +38,21 @@ const ContractorOnboarding = () => {
     });
 
     const [featureInput, setFeatureInput] = useState('');
+
+    useEffect(() => {
+        const pendingData = sessionStorage.getItem('pending_assessor_registration');
+        if (pendingData) {
+            try {
+                const parsed = JSON.parse(pendingData);
+                // Only restore if this data belongs to the current user (if user is loaded)
+                if (!user || parsed.user_id === user.id) {
+                    setFormData(parsed);
+                }
+            } catch (e) {
+                console.error('Error parsing pending assessor data:', e);
+            }
+        }
+    }, [user]);
 
 
     const handleServiceAreaToggle = (county: string) => {
@@ -114,12 +129,19 @@ const ContractorOnboarding = () => {
                     registration_status: 'pending',
                     phone: formData.phone,
                     home_county: formData.homeCounty,
-                    seai_number: formData.seaiNumber
+                    seai_number: formData.seaiNumber,
+                    insurance_holder: formData.insuranceHolder,
+                    vat_registered: formData.vatRegistered,
+                    assessor_type: formData.assessorTypes.join(' & '),
+                    preferred_counties: formData.serviceAreas,
+                    company_name: formData.companyName,
+                    website_url: formData.website,
                 })
                 .eq('id', user?.id);
 
             if (profileUpdateError) {
                 console.error('Failed to update initial profile:', profileUpdateError);
+                throw profileUpdateError;
             }
 
             // Fire-and-forget admin notification (non-blocking)
@@ -129,9 +151,10 @@ const ContractorOnboarding = () => {
 
             toast.success('Registration submitted! Your account is pending admin approval.');
             await refreshProfile();
+            sessionStorage.removeItem('pending_assessor_registration');
             navigate('/dashboard/ber-assessor', { replace: true });
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Onboarding Processing Error:', error);
             toast.error('Failed to process information. Please try again.');
         } finally {

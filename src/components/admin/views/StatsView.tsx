@@ -63,7 +63,7 @@ export const StatsView = ({
 }: Props) => {
     const [userType, setUserType] = useState<UserType>('all');
 
-    const allLocations = Array.from(new Set(users_list.map(u => u.county || u.home_county).filter(Boolean))).sort() as string[];
+    const allLocations = Array.from(new Set(users_list.flatMap(u => [u.home_county, u.county, ...(u.preferred_counties || [])]).filter(Boolean))).sort() as string[];
 
     const activeLocations =
         userType === 'assessors' ? uniqueAssessorLocations :
@@ -79,7 +79,10 @@ export const StatsView = ({
             (u.role === 'user' || u.role === 'homeowner');
         const q = searchTerm.toLowerCase();
         const matchSearch = !q || u.full_name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q);
-        const matchLocation = !locationFilter || u.county === locationFilter || u.home_county === locationFilter;
+        const matchLocation = !locationFilter || 
+            u.county === locationFilter || 
+            u.home_county === locationFilter || 
+            u.preferred_counties?.includes(locationFilter);
         return matchRole && matchSearch && matchLocation;
     });
 
@@ -94,7 +97,7 @@ export const StatsView = ({
         : userType === 'businesses' ? users_list.filter(u => u.role === 'business')
         : userType === 'homeowners' ? users_list.filter(u => u.role === 'user' || u.role === 'homeowner')
         : users_list.filter(u => u.role !== 'admin');
-    const countForLoc = (loc: string) => typeGroup.filter(u => u.county === loc || u.home_county === loc).length;
+    const countForLoc = (loc: string) => typeGroup.filter(u => u.county === loc || u.home_county === loc || u.preferred_counties?.includes(loc)).length;
 
     return (
         <div className="space-y-5">
