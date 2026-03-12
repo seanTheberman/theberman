@@ -56,7 +56,6 @@ export const UserDetailsModal = ({
     const listing = listings.find(l => l.user_id === user.id || l.owner_id === user.id);
     const accountState = getAccountState(user);
     const paymentInfo = decodePayment(user.stripe_payment_id);
-
     const endDate = user.subscription_end_date ? new Date(user.subscription_end_date) : null;
     const now = new Date();
     const daysLeft = endDate ? Math.ceil((endDate.getTime() - now.getTime()) / 86400000) : null;
@@ -151,6 +150,30 @@ export const UserDetailsModal = ({
                                 value={(user.home_county || user.county) ? `Co. ${user.home_county || user.county}` : undefined}
                                 icon={<MapPin size={11} />}
                             />
+                         {user.role === 'contractor' && (
+    <div className="col-span-2 p-3 bg-gray-50 rounded-xl border border-gray-100">
+        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1">
+            <MapPin size={11} />
+            <span>Preferred Service Locations</span>
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+            {user.preferred_counties && user.preferred_counties.length > 0 ? (
+                user.preferred_counties.map((county) => (
+                    <span
+                        key={county}
+                        className="inline-flex items-center text-[10px] font-bold px-2.5 py-1 rounded-lg bg-green-50 text-green-700 border border-green-100 shadow-sm"
+                    >
+                        Co. {county}
+                    </span>
+                ))
+            ) : (
+                <span className="text-xs text-gray-400 italic font-medium">
+                    No preferred locations set
+                </span>
+            )}
+        </div>
+    </div>
+)}
                             <InfoCard label="Member Since" value={new Date(user.created_at).toLocaleDateString('en-GB')} icon={<Calendar size={11} />} />
                             <InfoCard
                                 label="Last Login"
