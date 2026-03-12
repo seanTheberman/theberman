@@ -50,7 +50,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     const isContractor = role === 'contractor';
 
     // If contractor and missing SEAI number, they haven't completed onboarding yet → redirect
-    if (isContractor && (!profile?.seai_number || profile?.seai_number.trim() === '') && location.pathname !== '/assessor-onboarding') {
+    if (isContractor && (!profile?.seai_number || (profile.seai_number as string).trim() === '') && location.pathname !== '/assessor-onboarding') {
         return <Navigate to="/assessor-onboarding" replace />;
     }
 

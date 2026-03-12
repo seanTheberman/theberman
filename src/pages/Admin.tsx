@@ -128,12 +128,6 @@ const Admin = () => {
 
     // ─── Derived state ───────────────────────────────────────────────────────────
     // Only show counties where that specific role actually has users
-    const uniqueUserLocations = Array.from(
-        new Set(users_list.filter(u => u.role === 'user' || u.role === 'homeowner').map(u => u.county || u.home_county).filter(Boolean))
-    ).sort() as string[];
-    const uniqueAssessorLocations = Array.from(
-        new Set(users_list.filter(u => u.role === 'contractor').flatMap(u => [u.home_county, u.county, ...(u.preferred_counties || [])]).filter(Boolean))
-    ).sort() as string[];
     const uniqueBusinessLocations = Array.from(
         new Set(users_list.filter(u => u.role === 'business').map(u => u.county || u.home_county).filter(Boolean))
     ).sort() as string[];
@@ -1544,9 +1538,6 @@ const Admin = () => {
                         assessments={assessments} payments={payments}
                         searchTerm={searchTerm} setSearchTerm={setSearchTerm}
                         locationFilter={locationFilter} setLocationFilter={setLocationFilter}
-                        uniqueUserLocations={uniqueUserLocations}
-                        uniqueAssessorLocations={uniqueAssessorLocations}
-                        uniqueBusinessLocations={uniqueBusinessLocations}
                         handleOpenCatalogueView={handleOpenCatalogueView}
                         setSelectedUser={setSelectedUser}
                         setItemToSuspend={setItemToSuspend} setShowSuspendModal={setShowSuspendModal}
@@ -1776,7 +1767,7 @@ const Admin = () => {
                     newUserRole={newUserRole}
                     newUserFormData={newUserFormData} setNewUserFormData={setNewUserFormData}
                     isUpdating={isUpdating}
-                    onClose={() => { setShowAddUserModal(false); setNewUserFormData({ fullName: '', email: '', password: '', phone: '', county: '', town: '', seaiNumber: '', assessorType: 'Domestic Assessor', companyName: '', businessAddress: '', website: '', description: '', companyNumber: '', vatNumber: '' }); }}
+                    onClose={() => { setShowAddUserModal(false); setNewUserFormData({ fullName: '', email: '', phone: '', county: '', town: '', seaiNumber: '', assessorType: 'Domestic Assessor', companyName: '', businessAddress: '', website: '', description: '', companyNumber: '', vatNumber: '' }); }}
                     onSubmit={handleAddUser}
                 />
             )}

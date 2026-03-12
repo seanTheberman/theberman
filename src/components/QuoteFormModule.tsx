@@ -124,7 +124,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
     const [sizeUnit, setSizeUnit] = useState<'ft' | 'm'>('m'); // Default to m²
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [assessmentId, setAssessmentId] = useState<string | null>(null);
-    const [emailError, setEmailError] = useState<string | null>(null);
+    const [emailError, _setEmailError] = useState<string | null>(null);
 
     const [formData, setFormData] = useState<FormData>({
         jobType: '',

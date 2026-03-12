@@ -83,8 +83,8 @@ const BusinessOnboarding = () => {
             } else {
                 setFormData(prev => ({
                     ...prev,
-                    companyName: profile?.full_name || '',
-                    email: user?.email || '',
+                    companyName: (profile?.full_name as string) || '',
+                    email: (user?.email as string) || '',
                 }));
             }
         };

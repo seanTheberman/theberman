@@ -168,7 +168,7 @@ const UserDashboard = () => {
         setSubmittingAssessmentId(id);
         try {
             // 1. Fetch assessment details for notification
-            const { data: assessment, error: fetchError } = await supabase
+            const { error: fetchError } = await supabase
                 .from('assessments')
                 .select('*, profiles(full_name, email)')
                 .eq('id', id)
