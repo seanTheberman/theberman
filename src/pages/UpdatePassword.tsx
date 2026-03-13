@@ -6,7 +6,7 @@ import * as z from 'zod';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { useNavigate, Link } from 'react-router-dom';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const updatePasswordSchema = z.object({
@@ -42,7 +42,7 @@ const UpdatePassword = () => {
         // We have a hash but no user yet — wait for onAuthStateChange to fire
         const timer = setTimeout(() => {
             setAuthWait(false);
-        }, 1500); 
+        }, 1500);
 
         return () => clearTimeout(timer);
     }, [user]);
@@ -125,7 +125,7 @@ const UpdatePassword = () => {
         try {
             // Force a session refresh to be absolutely sure we have one
             const { data: sessionData } = await supabase.auth.getSession();
-            
+
             if (!sessionData.session) {
                 // If it's a cold start with hash, Supabase might need an extra ms to parse it
                 await new Promise(resolve => setTimeout(resolve, 500));

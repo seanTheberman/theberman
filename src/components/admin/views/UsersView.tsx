@@ -34,7 +34,6 @@ export const UsersView = React.memo(({
     setShowSuspendModal, setNewUserRole, setShowAddUserModal,
     handleDeleteClick
 }: Props) => {
-    const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'pending' | 'rejected' | 'suspended'>('all');
     const isAssessors = view === 'assessors';
     const [typeFilter, setTypeFilter] = useState('');
 
@@ -157,7 +156,7 @@ export const UsersView = React.memo(({
                             <TrendingUp size={14} /> Add Assessor
                         </button>
                     )}
-                    <span className="text-xs text-gray-400">{filtered.length} result{filtered.length !== 1 ? 's' : ''}{locationFilter && ` · ${locationFilter}`}</span>
+                    <span className="text-xs text-gray-400">{filtered.length} result{filtered.length !== 1 ? 's' : ''}{locationFilter && ` · ${locationFilter} `}</span>
                 </div>
             </div>
 
@@ -179,7 +178,7 @@ export const UsersView = React.memo(({
                         <tbody className="divide-y divide-gray-50">
                             {filtered.length === 0 ? (
                                 <tr><td colSpan={isAssessors ? 7 : 5} className="px-5 py-12 text-center text-gray-300 text-sm italic">
-                                    No {isAssessors ? 'assessors' : 'users'} found{locationFilter ? ` in ${locationFilter}` : ''}.
+                                    No {isAssessors ? 'assessors' : 'users'} found{locationFilter ? ` in ${locationFilter} ` : ''}.
                                 </td></tr>
                             ) : filtered.map(u => {
                                 const listing = listings.find(l => l.user_id === u.id || l.owner_id === u.id);
