@@ -1,22 +1,23 @@
+import React, { useMemo } from 'react';
 import { Search, Plus, Briefcase, AlertTriangle, Edit2, Trash2, ExternalLink, Star } from 'lucide-react';
-import type { Profile } from '../../../types/admin';
+import type { Profile, CatalogueListing } from '../../../types/admin';
 
 interface Props {
-    listings: any[];
+    listings: CatalogueListing[];
     users_list: Profile[];
     searchTerm: string;
     setSearchTerm: (v: string) => void;
-    handleOpenCatalogueView: (business: Profile | null, existingListing?: any) => void;
+    handleOpenCatalogueView: (business: Profile | null, existingListing?: CatalogueListing) => void;
     toggleCatalogueStatus: (id: string, currentStatus: boolean) => void;
     toggleCatalogueFeatured: (id: string, currentFeatured: boolean) => void;
     handleDeleteListing: (id: string) => void;
 }
 
-export const CatalogueView = ({
+export const CatalogueView = React.memo(({
     listings, users_list, searchTerm, setSearchTerm,
     handleOpenCatalogueView, toggleCatalogueStatus, toggleCatalogueFeatured, handleDeleteListing,
 }: Props) => {
-    const filtered = listings.filter(l => {
+    const filtered = useMemo(() => listings.filter(l => {
         const query = searchTerm.toLowerCase();
         return (l.company_name || l.name || '').toLowerCase().includes(query) ||
             (l.email || '').toLowerCase().includes(query) ||
@@ -24,7 +25,7 @@ export const CatalogueView = ({
             (l.county || '').toLowerCase().includes(query) ||
             (l.town || '').toLowerCase().includes(query) ||
             (l.additional_addresses || []).some((addr: string) => addr.toLowerCase().includes(query));
-    });
+    }), [listings, searchTerm]);
 
     return (
         <div className="space-y-4">
@@ -77,7 +78,11 @@ export const CatalogueView = ({
                                     const uniqueCounties = Array.from(new Set(allCounties));
 
                                     return (
-                                        <tr key={l.id} className="hover:bg-gray-50/50 transition-colors group">
+                                        <tr
+                                            key={l.id}
+                                            onClick={() => handleOpenCatalogueView(null, l)}
+                                            className="hover:bg-gray-50/50 transition-colors group cursor-pointer"
+                                        >
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
                                                     {l.logo_url ? (
@@ -106,7 +111,7 @@ export const CatalogueView = ({
                                                     {uniqueCounties.length === 0 && <span className="text-[10px] text-gray-300 italic">No locations</span>}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-4" onClick={e => e.stopPropagation()}>
                                                 {isOwnerSuspended ? (
                                                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700">
                                                         <AlertTriangle size={12} /> Suspended
@@ -121,7 +126,7 @@ export const CatalogueView = ({
                                                     </button>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-4" onClick={e => e.stopPropagation()}>
                                                 <button
                                                     onClick={() => toggleCatalogueFeatured(l.id, l.featured)}
                                                     className={`p-2 rounded-lg transition-all ${l.featured ? 'text-amber-500 bg-amber-50' : 'text-gray-300 hover:text-gray-400'}`}
@@ -131,7 +136,7 @@ export const CatalogueView = ({
                                                 </button>
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                <div className="flex items-center justify-end gap-2">
+                                                <div className="flex items-center justify-end gap-2" onClick={e => e.stopPropagation()}>
                                                     <button onClick={() => handleOpenCatalogueView(null, l)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Edit Listing"><Edit2 size={16} /></button>
                                                     <button onClick={() => handleDeleteListing(l.id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all" title="Delete Listing"><Trash2 size={16} /></button>
                                                     <a href={`/catalogue/${l.slug}`} target="_blank" rel="noreferrer" className="p-2 text-gray-400 hover:text-[#007F00] hover:bg-green-50 rounded-lg transition-all" title="View Publicly"><ExternalLink size={16} /></a>
@@ -147,4 +152,4 @@ export const CatalogueView = ({
             </div>
         </div>
     );
-};
+});

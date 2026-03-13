@@ -1,3 +1,4 @@
+import React from 'react';
 import { RefreshCw, Newspaper, Pencil, Trash2, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { NewsArticle } from '../../../types/admin';
@@ -9,7 +10,7 @@ interface Props {
     handleDeleteNewsArticle: (id: string) => void;
 }
 
-export const NewsView = ({ newsArticles, loading, fetchNewsArticles, handleDeleteNewsArticle }: Props) => {
+export const NewsView = React.memo(({ newsArticles, loading, fetchNewsArticles, handleDeleteNewsArticle }: Props) => {
     const navigate = useNavigate();
 
     return (
@@ -49,7 +50,11 @@ export const NewsView = ({ newsArticles, loading, fetchNewsArticles, handleDelet
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {newsArticles.map((article) => (
-                            <tr key={article.id} className="hover:bg-gray-50 transition-colors">
+                            <tr
+                                key={article.id}
+                                onClick={() => navigate(`/admin/news/edit/${article.id}`)}
+                                className="hover:bg-gray-50 transition-colors cursor-pointer"
+                            >
                                 <td className="px-6 py-4 max-w-sm">
                                     <div className="flex items-center gap-4">
                                         {article.image_url && (
@@ -78,7 +83,7 @@ export const NewsView = ({ newsArticles, loading, fetchNewsArticles, handleDelet
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 text-right">
-                                    <div className="flex items-center justify-end gap-2 text-[#007EA7]">
+                                    <div className="flex items-center justify-end gap-2 text-[#007EA7]" onClick={e => e.stopPropagation()}>
                                         <button
                                             onClick={() => navigate(`/admin/news/edit/${article.id}`)}
                                             className="p-1.5 hover:bg-blue-50 rounded-lg transition-colors"
@@ -105,6 +110,7 @@ export const NewsView = ({ newsArticles, loading, fetchNewsArticles, handleDelet
                                     </div>
                                 </td>
                             </tr>
+
                         ))}
                         {newsArticles.length === 0 && (
                             <tr>
@@ -118,4 +124,4 @@ export const NewsView = ({ newsArticles, loading, fetchNewsArticles, handleDelet
             </div>
         </div>
     );
-};
+});

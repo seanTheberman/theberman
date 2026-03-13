@@ -1,39 +1,40 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Search, TrendingUp, Briefcase, Home, Eye, AlertTriangle, Mail, Edit2, Plus, CheckCircle2, X, Trash2 } from 'lucide-react';
 import { Filter as FilterIcon } from 'lucide-react';
-import type { Profile, Assessment, AdminView } from '../../../types/admin';
+import type { Profile, Assessment, AdminView, CatalogueListing } from '../../../types/admin';
 import { StatusCell, PaymentStatusBadge } from '../StatusBadges';
 
 interface Props {
     view: AdminView;
     users_list: Profile[];
     assessments: Assessment[];
-    listings: any[];
+    listings: CatalogueListing[];
     searchTerm: string;
     setSearchTerm: (v: string) => void;
     locationFilter: string;
     setLocationFilter: (v: string) => void;
     isUpdating: boolean;
-    handleSendRenewalReminder: (u: any) => void;
-    handleOpenCatalogueView: (business: Profile | null, existingListing?: any) => void;
-    updateRegistrationStatus: (userId: string, status: 'active' | 'rejected') => void;
+    handleSendRenewalReminder: (u: Profile) => void;
+    handleOpenCatalogueView: (u: Profile | null, listing?: CatalogueListing) => void;
+    updateRegistrationStatus: (id: string, status: 'active' | 'rejected') => void;
     setSelectedUser: (u: Profile | null) => void;
-    setItemToSuspend: (item: { id: string; name: string; currentStatus: boolean } | null) => void;
+    setItemToSuspend: (u: { id: string; name: string; currentStatus: boolean } | null) => void;
     setShowSuspendModal: (v: boolean) => void;
-    setNewUserRole: (role: 'contractor' | 'business') => void;
+    setNewUserRole: (v: 'contractor' | 'business') => void;
     setShowAddUserModal: (v: boolean) => void;
-    handleDeleteClick: (id: string, type: 'lead' | 'sponsor' | 'assessment' | 'user') => void;
+    handleDeleteClick: (id: string, type: 'user') => void;
 }
 
 
-export const UsersView = ({
+export const UsersView = React.memo(({
     view, users_list, assessments, listings,
     searchTerm, setSearchTerm, locationFilter, setLocationFilter,
-    isUpdating,
-    handleSendRenewalReminder,
-    handleOpenCatalogueView, updateRegistrationStatus, setSelectedUser, setItemToSuspend, setShowSuspendModal,
-    setNewUserRole, setShowAddUserModal, handleDeleteClick,
+    isUpdating, handleSendRenewalReminder, handleOpenCatalogueView,
+    updateRegistrationStatus, setSelectedUser, setItemToSuspend,
+    setShowSuspendModal, setNewUserRole, setShowAddUserModal,
+    handleDeleteClick
 }: Props) => {
+    const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'pending' | 'rejected' | 'suspended'>('all');
     const isAssessors = view === 'assessors';
     const [typeFilter, setTypeFilter] = useState('');
 
@@ -188,7 +189,11 @@ export const UsersView = ({
                                     : assessments.filter(a => a.user_id === u.id).length;
 
                                 return (
-                                    <tr key={u.id} className={`hover:bg-gray-50/60 transition-colors ${isPending ? 'bg-amber-50/20' : ''}`}>
+                                    <tr
+                                        key={u.id}
+                                        onClick={() => setSelectedUser(u)}
+                                        className={`hover:bg-gray-50/60 transition-colors cursor-pointer ${isPending ? 'bg-amber-50/20' : ''}`}
+                                    >
 
                                         {/* Status */}
                                         <td className="px-5 py-3">
@@ -248,7 +253,7 @@ export const UsersView = ({
 
                                         {/* Approval (assessors only) */}
                                         {isAssessors && (
-                                            <td className="px-5 py-3">
+                                            <td className="px-5 py-3" onClick={e => e.stopPropagation()}>
                                                 {isPending ? (
                                                     <div className="flex items-center gap-1.5">
                                                         <button
@@ -283,7 +288,7 @@ export const UsersView = ({
 
                                         {/* Actions */}
                                         <td className="px-5 py-3">
-                                            <div className="flex items-center justify-end gap-1">
+                                            <div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
                                                 {/* Reminder only for assessors without active subscription */}
                                                 {u.role === 'contractor' && u.subscription_status !== 'active' && (
                                                     <button onClick={() => handleSendRenewalReminder(u)} title="Send subscription reminder" className="p-1.5 text-amber-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all"><Mail size={14} /></button>
@@ -302,6 +307,7 @@ export const UsersView = ({
                                             </div>
                                         </td>
                                     </tr>
+
                                 );
                             })}
                         </tbody>
@@ -310,4 +316,4 @@ export const UsersView = ({
             </div>
         </div>
     );
-};
+});

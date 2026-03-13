@@ -1,45 +1,38 @@
+import React, { useState, useMemo } from 'react';
 import { Trash2, RotateCcw, AlertTriangle, Loader2, User, ClipboardList, Inbox, CheckSquare, Square, Search, Filter as FilterIcon } from 'lucide-react';
+import type { DeletedItem } from '../../../types/admin';
 
-interface DeletedRow {
-    id: string;
-    type: 'lead' | 'assessment' | 'user';
-    deleted_at: string;
-    label: string;
-    email?: string;
-    details?: string;
-}
-import { useState } from 'react';
 interface Props {
-    deletedItems: DeletedRow[];
+    deletedItems: DeletedItem[];
     loading: boolean;
     isDeleting: boolean;
     searchTerm: string;
     setSearchTerm: (v: string) => void;
-    onRestore: (id: string, type: DeletedRow['type']) => void;
-    onPermanentDelete: (id: string, type: DeletedRow['type']) => void;
-    onBulkRestore: (items: { id: string, type: DeletedRow['type'] }[]) => void;
-    onBulkPermanentDelete: (items: { id: string, type: DeletedRow['type'] }[]) => void;
+    onRestore: (id: string, type: DeletedItem['type']) => void;
+    onPermanentDelete: (id: string, type: DeletedItem['type']) => void;
+    onBulkRestore: (items: { id: string, type: DeletedItem['type'] }[]) => void;
+    onBulkPermanentDelete: (items: { id: string, type: DeletedItem['type'] }[]) => void;
 }
 
-const TYPE_ICONS: Record<DeletedRow['type'], React.ElementType> = {
+const TYPE_ICONS: Record<DeletedItem['type'], React.ElementType> = {
     lead: Inbox,
     assessment: ClipboardList,
     user: User,
 };
 
-const TYPE_LABELS: Record<DeletedRow['type'], string> = {
+const TYPE_LABELS: Record<DeletedItem['type'], string> = {
     lead: 'Lead',
     assessment: 'Assessment',
     user: 'User',
 };
 
-const TYPE_COLORS: Record<DeletedRow['type'], string> = {
+const TYPE_COLORS: Record<DeletedItem['type'], string> = {
     lead: 'bg-blue-50 text-blue-600',
     assessment: 'bg-purple-50 text-purple-600',
     user: 'bg-amber-50 text-amber-600',
 };
 
-export const RecentlyDeletedView = ({
+export const RecentlyDeletedView = React.memo(({
     deletedItems, loading, isDeleting,
     searchTerm, setSearchTerm,
     onRestore, onPermanentDelete, onBulkRestore, onBulkPermanentDelete
@@ -47,7 +40,7 @@ export const RecentlyDeletedView = ({
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [typeFilter, setTypeFilter] = useState<string>('');
 
-    const filteredItems = deletedItems.filter(item => {
+    const filteredItems = useMemo(() => deletedItems.filter(item => {
         const q = searchTerm.toLowerCase();
         const matchesSearch = !q ||
             item.label?.toLowerCase().includes(q) ||
@@ -57,7 +50,7 @@ export const RecentlyDeletedView = ({
         const matchesType = !typeFilter || item.type === typeFilter;
 
         return matchesSearch && matchesType;
-    });
+    }), [deletedItems, searchTerm, typeFilter]);
 
     const toggleSelectAll = () => {
         if (selectedIds.size === filteredItems.length && filteredItems.length > 0) {
@@ -215,8 +208,12 @@ export const RecentlyDeletedView = ({
                                     const typeId = `${item.type}-${item.id}`;
                                     const isSelected = selectedIds.has(typeId);
                                     return (
-                                        <tr key={typeId} className={`transition-colors ${isSelected ? 'bg-green-50/30' : 'hover:bg-gray-50'}`}>
-                                            <td className="px-5 py-3.5">
+                                        <tr
+                                            key={typeId}
+                                            onClick={() => toggleSelect(typeId)}
+                                            className={`transition-colors cursor-pointer ${isSelected ? 'bg-green-50/30' : 'hover:bg-gray-50'}`}
+                                        >
+                                            <td className="px-5 py-3.5" onClick={e => e.stopPropagation()}>
                                                 <button onClick={() => toggleSelect(typeId)} className="text-gray-400 hover:text-gray-600 transition-colors flex items-center justify-center">
                                                     {isSelected ? <CheckSquare size={16} className="text-[#007F00]" /> : <Square size={16} />}
                                                 </button>
@@ -238,7 +235,7 @@ export const RecentlyDeletedView = ({
                                                     hour: '2-digit', minute: '2-digit'
                                                 })}
                                             </td>
-                                            <td className="px-5 py-3.5">
+                                            <td className="px-5 py-3.5" onClick={e => e.stopPropagation()}>
                                                 <div className="flex items-center justify-end gap-2">
                                                     <button
                                                         onClick={() => onRestore(item.id, item.type)}
@@ -270,4 +267,4 @@ export const RecentlyDeletedView = ({
             </div>
         </div>
     );
-};
+});

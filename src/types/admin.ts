@@ -97,7 +97,7 @@ export interface Payment {
     status: 'pending' | 'completed' | 'failed' | 'refunded';
     assessment_id: string;
     user_id: string;
-    metadata?: any;
+    metadata?: Record<string, unknown>;
     profiles?: {
         full_name: string;
         email: string;
@@ -179,4 +179,41 @@ export interface DeletedItem {
     label: string;
     email?: string;
     details?: string;
+}
+
+export interface CatalogueListing {
+    id: string;
+    name: string;
+    slug: string;
+    company_name: string;
+    description: string;
+    email: string;
+    phone: string | null;
+    address: string | null;
+    county: string;
+    town?: string;
+    website: string | null;
+    logo_url: string | null;
+    owner_id: string | null;
+    user_id?: string;
+    is_active: boolean;
+    featured: boolean;
+    latitude: number | null;
+    longitude: number | null;
+    company_number: string | null;
+    registration_no: string | null;
+    vat_number: string | null;
+    banner_url: string | null;
+    social_media?: {
+        facebook?: string;
+        instagram?: string;
+        linkedin?: string;
+        twitter?: string;
+        whatsapp?: string;
+        youtube?: string;
+        snapchat?: string;
+        tiktok?: string;
+    };
+    additional_addresses?: string[];
+    features?: string[];
 }

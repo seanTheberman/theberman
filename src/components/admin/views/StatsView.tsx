@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Home, ClipboardList, Building2, DollarSign, Briefcase, TrendingUp, ArrowRight, Hourglass, CheckCircle2, AlertTriangle, Edit2, Plus, Eye, MapPin, Users, Trash2, Filter as FilterIcon } from 'lucide-react';
 import { Search } from 'lucide-react';
-import type { Profile, Assessment, Payment, AdminView } from '../../../types/admin';
+import type { Profile, Assessment, Payment, AdminView, CatalogueListing } from '../../../types/admin';
 import { StatusCell, PaymentStatusBadge } from '../StatusBadges';
 
 interface Stats {
@@ -21,14 +21,14 @@ interface Stats {
 interface Props {
     stats: Stats;
     users_list: Profile[];
-    listings: any[];
+    listings: CatalogueListing[];
     assessments: Assessment[];
     payments: Payment[];
     searchTerm: string;
     setSearchTerm: (v: string) => void;
     locationFilter: string;
     setLocationFilter: (v: string) => void;
-    handleOpenCatalogueView: (business: Profile | null, existingListing?: any) => void;
+    handleOpenCatalogueView: (business: Profile | null, existingListing?: CatalogueListing) => void;
     setSelectedUser: (u: Profile | null) => void;
     setItemToSuspend: (item: { id: string; name: string; currentStatus: boolean } | null) => void;
     setShowSuspendModal: (v: boolean) => void;
@@ -52,7 +52,7 @@ const TYPE_TABS: { id: UserType; label: string; icon: React.ElementType; color: 
     { id: 'businesses', label: 'Businesses', icon: Building2, color: 'text-purple-600 border-purple-200 bg-purple-50', activeColor: 'bg-purple-600 text-white border-purple-600', count: s => s.businessLeads },
 ];
 
-export const StatsView = ({
+export const StatsView = React.memo(({
     stats, users_list, listings, assessments, payments,
     searchTerm, setSearchTerm, locationFilter, setLocationFilter,
     handleOpenCatalogueView, setSelectedUser, setItemToSuspend, setShowSuspendModal, setView, handleDeleteClick,
@@ -268,7 +268,11 @@ export const StatsView = ({
                                     : assessments.filter(a => a.user_id === u.id).length;
 
                                 return (
-                                    <tr key={u.id} className="hover:bg-gray-50/60 transition-colors">
+                                    <tr
+                                        key={u.id}
+                                        onClick={() => setSelectedUser(u)}
+                                        className="hover:bg-gray-50/60 transition-colors cursor-pointer"
+                                    >
                                         <td className="px-5 py-3">
                                             <StatusCell profile={u} />
                                         </td>
@@ -312,7 +316,7 @@ export const StatsView = ({
                                             </td>
                                         )}
                                         <td className="px-5 py-3">
-                                            <div className="flex items-center justify-end gap-1">
+                                            <div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
                                                 {(userType === 'assessors' || (userType === 'all' && isContractor)) && (
                                                     listing
                                                         ? <button onClick={() => handleOpenCatalogueView(u, listing)} className="p-1.5 text-blue-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Edit Listing"><Edit2 size={14} /></button>
@@ -332,6 +336,7 @@ export const StatsView = ({
                                             </div>
                                         </td>
                                     </tr>
+
                                 );
                             })}
                         </tbody>
@@ -340,4 +345,4 @@ export const StatsView = ({
             </div>
         </div>
     );
-};
+});

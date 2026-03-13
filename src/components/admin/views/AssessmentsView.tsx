@@ -1,5 +1,5 @@
-import { Eye, Trash2, Search } from 'lucide-react';
-import { MapPin } from 'lucide-react';
+import React from 'react';
+import { Eye, Trash2, Search, MapPin } from 'lucide-react';
 import type { Assessment, Profile } from '../../../types/admin';
 import { getStatusColor } from '../adminUtils';
 
@@ -12,7 +12,7 @@ interface Props {
     setLocationFilter: (v: string) => void;
     setSelectedAssessment: (a: Assessment | null) => void;
     setShowAssessmentDetailModal: (v: boolean) => void;
-    handleDeleteClick: (id: string, type: 'lead' | 'sponsor' | 'assessment' | 'user') => void;
+    handleDeleteClick: (id: string, type: 'assessment') => void;
 }
 
 const paymentBadge = (status?: string) => {
@@ -21,7 +21,7 @@ const paymentBadge = (status?: string) => {
     return 'bg-gray-100 text-gray-500';
 };
 
-export const AssessmentsView = ({
+export const AssessmentsView = React.memo(({
     filteredAssessments, users_list,
     searchTerm, setSearchTerm, locationFilter, setLocationFilter,
     setSelectedAssessment, setShowAssessmentDetailModal, handleDeleteClick
@@ -87,7 +87,11 @@ export const AssessmentsView = ({
                                     No assessments found{locationFilter ? ` in ${locationFilter}` : ''}.
                                 </td></tr>
                             ) : filteredAssessments.map(a => (
-                                <tr key={a.id} className="hover:bg-gray-50/60 transition-colors group">
+                                <tr
+                                    key={a.id}
+                                    onClick={() => { setSelectedAssessment(a); setShowAssessmentDetailModal(true); }}
+                                    className="hover:bg-gray-50/60 transition-colors group cursor-pointer"
+                                >
                                     <td className="px-5 py-3">
                                         <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${getStatusColor(a.status)}`}>
                                             {a.status.replace(/_/g, ' ')}
@@ -121,7 +125,7 @@ export const AssessmentsView = ({
                                         </span>
                                     </td>
                                     <td className="px-5 py-3">
-                                        <div className="flex items-center justify-end gap-1">
+                                        <div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
                                             <button
                                                 onClick={() => { setSelectedAssessment(a); setShowAssessmentDetailModal(true); }}
                                                 className="p-1.5 text-gray-300 hover:text-[#007F00] hover:bg-green-50 rounded-lg transition-all"
@@ -135,6 +139,7 @@ export const AssessmentsView = ({
                                         </div>
                                     </td>
                                 </tr>
+
                             ))}
                         </tbody>
                     </table>
@@ -142,4 +147,4 @@ export const AssessmentsView = ({
             </div>
         </div>
     );
-};
+});

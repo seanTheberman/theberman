@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import { LogOut, RefreshCw, BarChart2, Building2, BookOpen, ClipboardList, HardHat, Home, Inbox, DollarSign, Newspaper, Settings as SettingsIcon, Users, Layers, Menu, X, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { geocodeAddress, COUNTY_COORDINATES } from '../lib/geocoding';
 
 // Types
-import type { Lead, Assessment, Profile, Payment, Sponsor, AppSettings, NewsArticle, CatalogueFormData, AdminView, DeletedItem } from '../types/admin';
+import type { Lead, Assessment, Profile, Payment, Sponsor, AppSettings, NewsArticle, CatalogueFormData, AdminView, DeletedItem, CatalogueListing } from '../types/admin';
 
 // Views
 import { StatsView } from '../components/admin/views/StatsView';
@@ -38,6 +38,8 @@ import { AddUserModal } from '../components/admin/modals/AddUserModal';
 
 const Admin = () => {
     // ─── State ──────────────────────────────────────────────────────────────────
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [desktopExpanded, setDesktopExpanded] = useState(true);
     const [leads, setLeads] = useState<Lead[]>([]);
     const [assessments, setAssessments] = useState<Assessment[]>([]);
     const [users_list, setUsersList] = useState<Profile[]>([]);
@@ -45,7 +47,7 @@ const Admin = () => {
     const [sponsors, setSponsors] = useState<Sponsor[]>([]);
     const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
     const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
-    const [listings, setListings] = useState<any[]>([]);
+    const [listings, setListings] = useState<CatalogueListing[]>([]);
     const [catalogueCategories, setCatalogueCategories] = useState<{ id: string; name: string }[]>([]);
     const [deletedItems, setDeletedItems] = useState<DeletedItem[]>([]);
 
@@ -64,10 +66,6 @@ const Admin = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [locationFilter, setLocationFilter] = useState('');
     const [customMonths, setCustomMonths] = useState<number>(1);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [desktopExpanded, setDesktopExpanded] = useState(false);
-    const menuRef = useRef<HTMLDivElement>(null);
 
     // Selected items
     const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -107,7 +105,7 @@ const Admin = () => {
 
     // Catalogue form
     const [selectedBusinessForCatalogue, setSelectedBusinessForCatalogue] = useState<Profile | null>(null);
-    const [selectedListingForEdit, setSelectedListingForEdit] = useState<any | null>(null);
+    const [selectedListingForEdit, setSelectedListingForEdit] = useState<CatalogueListing | null>(null);
     const [catalogueFormData, setCatalogueFormData] = useState<CatalogueFormData>({
         companyName: '', description: '', email: '', phone: '', address: '', county: '',
         website: '', logoUrl: '', featured: false, selectedCategories: [],
@@ -127,18 +125,16 @@ const Admin = () => {
     const navigate = useNavigate();
 
     // ─── Derived state ───────────────────────────────────────────────────────────
-
-    // All unique counties for business users (both county & home_county)
-    const uniqueBusinessLocations = Array.from(
+    const uniqueBusinessLocations = useMemo(() => Array.from(
         new Set(
             users_list
                 .filter(u => u.role === 'business')
                 .flatMap(u => [u.county, u.home_county])
                 .filter(Boolean)
         )
-    ).sort() as string[];
+    ).sort() as string[], [users_list]);
 
-    const filteredLeads = leads.filter(l => {
+    const filteredLeads = useMemo(() => leads.filter(l => {
         const q = searchTerm.toLowerCase();
         return (
             l.name?.toLowerCase().includes(q) ||
@@ -146,10 +142,10 @@ const Admin = () => {
             l.town?.toLowerCase().includes(q) ||
             (l.status || 'new').toLowerCase().includes(q)
         );
-    });
+    }), [leads, searchTerm]);
 
     // Assessments: search + location filter
-    const filteredAssessments = assessments.filter(a => {
+    const filteredAssessments = useMemo(() => assessments.filter(a => {
         const q = searchTerm.toLowerCase();
         const matchSearch =
             a.property_address?.toLowerCase().includes(q) ||
@@ -162,10 +158,10 @@ const Admin = () => {
             a.county === locationFilter ||
             a.town?.toLowerCase() === locationFilter.toLowerCase();
         return matchSearch && matchLocation;
-    });
+    }), [assessments, searchTerm, locationFilter]);
 
     // Businesses: search + location filter (checks both county and home_county)
-    const filteredBusinessLeads = users_list
+    const filteredBusinessLeads = useMemo(() => users_list
         .filter(u => u.role === 'business')
         .filter(u => {
             const query = searchTerm.toLowerCase();
@@ -181,9 +177,9 @@ const Admin = () => {
                 u.county === locationFilter ||
                 u.home_county === locationFilter;
             return matchSearch && matchLocation;
-        });
+        }), [users_list, searchTerm, locationFilter]);
 
-    const stats = {
+    const stats = useMemo(() => ({
         totalUsers: users_list.length,
         homeowners: users_list.filter(u => u.role === 'homeowner' || u.role === 'user').length,
         contractors: users_list.filter(u => u.role === 'contractor').length,
@@ -195,7 +191,7 @@ const Admin = () => {
         acceptedQuotes: assessments.filter(a => a.status === 'quote_accepted' || a.status === 'scheduled' || a.status === 'completed').length,
         businessLeads: users_list.filter(u => u.role === 'business').length,
         pendingOnboarding: users_list.filter(u => u.role === 'business' && !listings.some(l => l.user_id === u.id || l.owner_id === u.id)).length,
-    };
+    }), [users_list, leads, payments, assessments, listings]);
 
     // ─── Helpers ─────────────────────────────────────────────────────────────────
     const getFallbackPhone = (profile: Profile) => {
@@ -204,7 +200,7 @@ const Admin = () => {
         return linked?.contact_phone || linked?.profiles?.phone || 'N/A';
     };
 
-    const logAudit = async (action: string, entityType: string, entityId: string, details: any) => {
+    const logAudit = useCallback(async (action: string, entityType: string, entityId: string, details: Record<string, unknown>) => {
         try {
             await supabase.from('audit_logs').insert({
                 user_id: user?.id, action, entity_type: entityType, entity_id: entityId, details
@@ -212,7 +208,204 @@ const Admin = () => {
         } catch (error) {
             console.error('Audit log error:', error);
         }
-    };
+    }, [user?.id]);
+
+    // ─── Data Fetching ────────────────────────────────────────────────────────────
+    const fetchLeads = useCallback(async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false });
+            if (error) throw error;
+            setLeads((data || []).filter((r: any) => !r.deleted_at));
+        } catch (error) {
+            console.error('Error fetching leads:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, [setLeads, setLoading]);
+
+    const checkAndDisableExpiredSubscriptions = useCallback(async (users: Profile[]) => {
+        const now = new Date();
+        const expiredUserIds = users
+            .filter(u => (u.role === 'business' || u.role === 'contractor') &&
+                u.is_active !== false &&
+                u.subscription_end_date &&
+                new Date(u.subscription_end_date) < now)
+            .map(u => u.id);
+
+        if (expiredUserIds.length > 0) {
+            const { error } = await supabase
+                .from('profiles')
+                .update({ is_active: false, subscription_status: 'expired' })
+                .in('id', expiredUserIds);
+            if (!error) {
+                toast(`Auto - disabled ${expiredUserIds.length} expired accounts.`, { icon: 'ℹ️' });
+            }
+        }
+    }, []);
+
+    const fetchUsers = useCallback(async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
+            if (error) {
+                if (error.message?.includes('column "registration_status" does not exist')) {
+                    toast.error('Registration status column missing. Please run the SQL migration.');
+                } else throw error;
+            }
+            const users = (data || []).filter((r: any) => !r.deleted_at);
+            setUsersList(users);
+            checkAndDisableExpiredSubscriptions(users);
+        } catch (error: any) {
+            console.error('Error fetching users:', error);
+            toast.error(error.message || 'Failed to load users');
+        } finally {
+            setLoading(false);
+        }
+    }, [setUsersList, setLoading, checkAndDisableExpiredSubscriptions]);
+
+    const fetchListings = useCallback(async () => {
+        try {
+            const { data, error } = await supabase.from('catalogue_listings').select('*');
+            if (error) throw error;
+            setListings(data || []);
+        } catch (error) {
+            console.error('Error fetching listings:', error);
+        }
+    }, [setListings]);
+
+    const fetchCatalogueCategories = useCallback(async () => {
+        try {
+            const { data, error } = await supabase.from('catalogue_categories').select('id, name').order('name');
+            if (error) throw error;
+            setCatalogueCategories(data || []);
+        } catch (error) {
+            console.error('Error fetching catalogue categories:', error);
+        }
+    }, [setCatalogueCategories]);
+
+    const fetchAssessments = useCallback(async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('assessments')
+                .select('*, profiles:user_id (full_name, email, phone), referred_by:referred_by_listing_id (name, company_name)')
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            setAssessments((data || []).filter((r: any) => !r.deleted_at));
+        } catch (error) {
+            console.error('Error fetching assessments:', error);
+            toast.error('Failed to load assessments');
+        } finally {
+            setLoading(false);
+        }
+    }, [setAssessments, setLoading]);
+
+    const fetchPayments = useCallback(async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('payments')
+                .select('*, profiles (full_name, email)')
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            setPayments(data || []);
+        } catch (error) {
+            console.error('Error fetching payments:', error);
+            toast.error('Failed to load payments');
+        } finally {
+            setLoading(false);
+        }
+    }, [setPayments, setLoading]);
+
+    const fetchAppSettings = useCallback(async () => {
+        try {
+            const { data, error } = await supabase.from('app_settings').select('*').single();
+            if (error) throw error;
+            setAppSettings(data);
+        } catch (error) {
+            console.error('Error fetching settings:', error);
+        }
+    }, [setAppSettings]);
+
+    const fetchNewsArticles = useCallback(async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('news_articles')
+                .select('*')
+                .order('published_at', { ascending: false })
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            setNewsArticles(data || []);
+        } catch (error) {
+            console.error('Error fetching news:', error);
+            toast.error('Failed to load news articles');
+        } finally {
+            setLoading(false);
+        }
+    }, [setNewsArticles, setLoading]);
+
+    const fetchSponsors = useCallback(async () => {
+        try {
+            const { data, error } = await supabase.from('sponsors').select('*').order('created_at', { ascending: true });
+            if (error) throw error;
+            setSponsors(data || []);
+        } catch (error) {
+            console.error('Error fetching sponsors:', error);
+        }
+    }, [setSponsors]);
+
+    const fetchDeletedItems = useCallback(async () => {
+        try {
+            const [leadsRes, assessmentsRes, profilesRes] = await Promise.all([
+                supabase.from('leads').select('id, name, email, deleted_at, message').not('deleted_at', 'is', null).order('deleted_at', { ascending: false }).then(r => r.error?.code === '42703' ? { data: [], error: null } : r),
+                supabase.from('assessments').select('id, property_address, deleted_at, status, profiles:user_id(email)').not('deleted_at', 'is', null).order('deleted_at', { ascending: false }).then(r => r.error?.code === '42703' ? { data: [], error: null } : r),
+                supabase.from('profiles').select('id, full_name, email, deleted_at, role').not('deleted_at', 'is', null).order('deleted_at', { ascending: false }).then(r => r.error?.code === '42703' ? { data: [], error: null } : r),
+            ]);
+
+            const items: DeletedItem[] = [
+                ...(leadsRes.data || []).map((l: any) => ({
+                    id: l.id, type: 'lead' as const,
+                    deleted_at: l.deleted_at,
+                    label: l.name || 'Unnamed Lead',
+                    email: l.email,
+                    details: l.message ? l.message.slice(0, 60) + (l.message.length > 60 ? '...' : '') : undefined,
+                })),
+                ...(assessmentsRes.data || []).map((a: any) => ({
+                    id: a.id, type: 'assessment' as const,
+                    deleted_at: a.deleted_at,
+                    label: a.property_address || 'Unknown Address',
+                    email: a.profiles?.email,
+                    details: a.status,
+                })),
+                ...(profilesRes.data || []).map((p: any) => ({
+                    id: p.id, type: 'user' as const,
+                    deleted_at: p.deleted_at,
+                    label: p.full_name || 'Unknown User',
+                    email: p.email,
+                    details: p.role,
+                })),
+            ].sort((a, b) => new Date(b.deleted_at).getTime() - new Date(a.deleted_at).getTime());
+
+            setDeletedItems(items);
+        } catch (error) {
+            console.error('Error fetching deleted items:', error);
+        }
+    }, [setDeletedItems]);
+
+    const fetchPromoSettings = useCallback(async () => {
+        try {
+            const { data } = await supabase.from('promo_settings').select('*').eq('id', 1).maybeSingle();
+            if (data) {
+                setPromoSettings(data);
+            } else {
+                setPromoSettings({ id: 1, is_enabled: false, headline: 'Considering Solar Panels?', sub_text: 'Compare the Best Solar Deals', image_url: '', destination_url: '' });
+            }
+        } catch (error) {
+            console.error('Error fetching promo settings:', error);
+        }
+    }, [setPromoSettings]);
 
     // ─── Effects ─────────────────────────────────────────────────────────────────
     useEffect(() => {
@@ -239,15 +432,6 @@ const Admin = () => {
         }
     }, [selectedUser]);
 
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-                setIsMenuOpen(false);
-            }
-        };
-        if (isMenuOpen) document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [isMenuOpen]);
 
     useEffect(() => {
         const fetchViewData = async () => {
@@ -296,232 +480,36 @@ const Admin = () => {
             .subscribe();
 
         return () => { supabase.removeChannel(channel); };
-    }, [view]);
+    }, [view, fetchLeads, fetchAssessments, fetchUsers, fetchPayments, fetchListings, fetchCatalogueCategories, fetchAppSettings, fetchPromoSettings, fetchSponsors, fetchNewsArticles, fetchDeletedItems]);
 
-    // ─── Data Fetching ────────────────────────────────────────────────────────────
-    const fetchLeads = async () => {
-        setLoading(true);
-        try {
-            const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false });
-            if (error) throw error;
-            setLeads((data || []).filter((r: any) => !r.deleted_at));
-        } catch (error) {
-            console.error('Error fetching leads:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const checkAndDisableExpiredSubscriptions = async (users: Profile[]) => {
-        const now = new Date();
-        const expiredUserIds = users
-            .filter(u => (u.role === 'business' || u.role === 'contractor') &&
-                u.is_active !== false &&
-                u.subscription_end_date &&
-                new Date(u.subscription_end_date) < now)
-            .map(u => u.id);
-
-        if (expiredUserIds.length > 0) {
-            const { error } = await supabase
-                .from('profiles')
-                .update({ is_active: false, subscription_status: 'expired' })
-                .in('id', expiredUserIds);
-            if (!error) {
-                toast(`Auto-disabled ${expiredUserIds.length} expired accounts.`, { icon: 'ℹ️' });
-            }
-        }
-    };
-
-    const fetchUsers = async () => {
-        setLoading(true);
-        try {
-            const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
-            if (error) {
-                if (error.message?.includes('column "registration_status" does not exist')) {
-                    toast.error('Registration status column missing. Please run the SQL migration.');
-                } else throw error;
-            }
-            const users = (data || []).filter((r: any) => !r.deleted_at);
-            setUsersList(users);
-            checkAndDisableExpiredSubscriptions(users);
-        } catch (error: any) {
-            console.error('Error fetching users:', error);
-            toast.error(error.message || 'Failed to load users');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchListings = async () => {
-        try {
-            const { data, error } = await supabase.from('catalogue_listings').select('*');
-            if (error) throw error;
-            setListings(data || []);
-        } catch (error) {
-            console.error('Error fetching listings:', error);
-        }
-    };
-
-    const fetchCatalogueCategories = async () => {
-        try {
-            const { data, error } = await supabase.from('catalogue_categories').select('id, name').order('name');
-            if (error) throw error;
-            setCatalogueCategories(data || []);
-        } catch (error) {
-            console.error('Error fetching catalogue categories:', error);
-        }
-    };
-
-    const fetchAssessments = async () => {
-        setLoading(true);
-        try {
-            const { data, error } = await supabase
-                .from('assessments')
-                .select('*, profiles:user_id (full_name, email, phone), referred_by:referred_by_listing_id (name, company_name)')
-                .order('created_at', { ascending: false });
-            if (error) throw error;
-            setAssessments((data || []).filter((r: any) => !r.deleted_at));
-        } catch (error) {
-            console.error('Error fetching assessments:', error);
-            toast.error('Failed to load assessments');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchPayments = async () => {
-        setLoading(true);
-        try {
-            const { data, error } = await supabase
-                .from('payments')
-                .select('*, profiles (full_name, email)')
-                .order('created_at', { ascending: false });
-            if (error) throw error;
-            setPayments(data || []);
-        } catch (error) {
-            console.error('Error fetching payments:', error);
-            toast.error('Failed to load payments');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchAppSettings = async () => {
-        try {
-            const { data, error } = await supabase.from('app_settings').select('*').single();
-            if (error) throw error;
-            setAppSettings(data);
-        } catch (error) {
-            console.error('Error fetching settings:', error);
-        }
-    };
-
-    const fetchNewsArticles = async () => {
-        setLoading(true);
-        try {
-            const { data, error } = await supabase
-                .from('news_articles')
-                .select('*')
-                .order('published_at', { ascending: false })
-                .order('created_at', { ascending: false });
-            if (error) throw error;
-            setNewsArticles(data || []);
-        } catch (error) {
-            console.error('Error fetching news:', error);
-            toast.error('Failed to load news articles');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchSponsors = async () => {
-        try {
-            const { data, error } = await supabase.from('sponsors').select('*').order('created_at', { ascending: true });
-            if (error) throw error;
-            setSponsors(data || []);
-        } catch (error) {
-            console.error('Error fetching sponsors:', error);
-        }
-    };
-
-    const fetchDeletedItems = async () => {
-        try {
-            const [leadsRes, assessmentsRes, profilesRes] = await Promise.all([
-                supabase.from('leads').select('id, name, email, deleted_at, message').not('deleted_at', 'is', null).order('deleted_at', { ascending: false }).then(r => r.error?.code === '42703' ? { data: [], error: null } : r),
-                supabase.from('assessments').select('id, property_address, deleted_at, status, profiles:user_id(email)').not('deleted_at', 'is', null).order('deleted_at', { ascending: false }).then(r => r.error?.code === '42703' ? { data: [], error: null } : r),
-                supabase.from('profiles').select('id, full_name, email, deleted_at, role').not('deleted_at', 'is', null).order('deleted_at', { ascending: false }).then(r => r.error?.code === '42703' ? { data: [], error: null } : r),
-            ]);
-
-            const items: DeletedItem[] = [
-                ...(leadsRes.data || []).map((l: any) => ({
-                    id: l.id, type: 'lead' as const,
-                    deleted_at: l.deleted_at,
-                    label: l.name || 'Unnamed Lead',
-                    email: l.email,
-                    details: l.message ? l.message.slice(0, 60) + (l.message.length > 60 ? '...' : '') : undefined,
-                })),
-                ...(assessmentsRes.data || []).map((a: any) => ({
-                    id: a.id, type: 'assessment' as const,
-                    deleted_at: a.deleted_at,
-                    label: a.property_address || 'Unknown Address',
-                    email: a.profiles?.email,
-                    details: a.status,
-                })),
-                ...(profilesRes.data || []).map((p: any) => ({
-                    id: p.id, type: 'user' as const,
-                    deleted_at: p.deleted_at,
-                    label: p.full_name || 'Unknown User',
-                    email: p.email,
-                    details: p.role,
-                })),
-            ].sort((a, b) => new Date(b.deleted_at).getTime() - new Date(a.deleted_at).getTime());
-
-            setDeletedItems(items);
-        } catch (error) {
-            console.error('Error fetching deleted items:', error);
-        }
-    };
-
-    const fetchPromoSettings = async () => {
-        try {
-            const { data } = await supabase.from('promo_settings').select('*').eq('id', 1).maybeSingle();
-            if (data) {
-                setPromoSettings(data);
-            } else {
-                setPromoSettings({ id: 1, is_enabled: false, headline: 'Considering Solar Panels?', sub_text: 'Compare the Best Solar Deals', image_url: '', destination_url: '' });
-            }
-        } catch (error) {
-            console.error('Error fetching promo settings:', error);
-        }
-    };
 
     // ─── Handlers ─────────────────────────────────────────────────────────────────
-    const handleSignOut = async () => {
+    const handleSignOut = useCallback(async () => {
         await signOut();
         navigate('/login');
-    };
+    }, [signOut, navigate]);
 
-    const updateStatus = async (id: string, newStatus: string) => {
+    const updateStatus = useCallback(async (id: string, newStatus: string) => {
         setIsUpdating(true);
         try {
             const { error } = await supabase.from('leads').update({ status: newStatus }).eq('id', id);
             if (error) throw error;
-            setLeads(leads.map(lead => lead.id === id ? { ...lead, status: newStatus } : lead));
-            if (selectedLead?.id === id) setSelectedLead({ ...selectedLead, status: newStatus });
+            setLeads(prevLeads => prevLeads.map(lead => lead.id === id ? { ...lead, status: newStatus } : lead));
+            setSelectedLead(prevSelected => prevSelected?.id === id ? { ...prevSelected, status: newStatus } : prevSelected);
             toast.success('Status updated');
         } catch (error: any) {
             toast.error(error.message || 'Failed to update status');
         } finally {
             setIsUpdating(false);
         }
-    };
+    }, []);
 
-    const handleDeleteClick = (id: string, type: 'lead' | 'sponsor' | 'assessment' | 'user') => {
+    const handleDeleteClick = useCallback((id: string, type: 'lead' | 'sponsor' | 'assessment' | 'user') => {
         setItemToDelete({ id, type });
         setShowDeleteModal(true);
-    };
+    }, []);
 
-    const confirmDelete = async () => {
+    const confirmDelete = useCallback(async () => {
         if (!itemToDelete) return;
         setIsDeleting(true);
         try {
@@ -529,7 +517,7 @@ const Admin = () => {
                 // Sponsors are permanently deleted immediately (no soft delete needed)
                 const { error } = await supabase.from('sponsors').delete().eq('id', itemToDelete.id);
                 if (error) throw error;
-                setSponsors(sponsors.filter(s => s.id !== itemToDelete.id));
+                setSponsors(prev => prev.filter(s => s.id !== itemToDelete.id));
                 toast.success('Sponsor deleted successfully');
             } else {
                 // Soft delete: set deleted_at, move to "Recently Deleted"
@@ -544,27 +532,27 @@ const Admin = () => {
                 if (error) throw error;
 
                 if (itemToDelete.type === 'lead') {
-                    setLeads(leads.filter(l => l.id !== itemToDelete.id));
+                    setLeads(prev => prev.filter(l => l.id !== itemToDelete.id));
                     if (selectedLead?.id === itemToDelete.id) setSelectedLead(null);
                 } else if (itemToDelete.type === 'assessment') {
-                    setAssessments(assessments.filter(a => a.id !== itemToDelete.id));
+                    setAssessments(prev => prev.filter(a => a.id !== itemToDelete.id));
                     if (selectedAssessment?.id === itemToDelete.id) setSelectedAssessment(null);
                 } else if (itemToDelete.type === 'user') {
-                    setUsersList(users_list.filter(u => u.id !== itemToDelete.id));
+                    setUsersList(prev => prev.filter(u => u.id !== itemToDelete.id));
                     if (selectedUser?.id === itemToDelete.id) setSelectedUser(null);
                 }
                 toast.success('Moved to Recently Deleted. You can restore or permanently delete from there.');
             }
             setShowDeleteModal(false);
         } catch (error: any) {
-            toast.error(error.message || `Failed to delete ${itemToDelete.type}`);
+            toast.error(error.message || `Failed to delete ${itemToDelete.type} `);
         } finally {
             setIsDeleting(false);
             setItemToDelete(null);
         }
-    };
+    }, [itemToDelete, selectedLead, selectedAssessment, selectedUser]);
 
-    const handleRestoreItem = async (id: string, type: 'lead' | 'assessment' | 'user') => {
+    const handleRestoreItem = useCallback(async (id: string, type: 'lead' | 'assessment' | 'user') => {
         try {
             const tableMap = { lead: 'leads', assessment: 'assessments', user: 'profiles' } as const;
             const { error } = await supabase.from(tableMap[type]).update({ deleted_at: null }).eq('id', id);
@@ -574,9 +562,9 @@ const Admin = () => {
         } catch (error: any) {
             toast.error(error.message || 'Failed to restore item');
         }
-    };
+    }, [setDeletedItems]);
 
-    const handlePermanentDelete = async (id: string, type: 'lead' | 'assessment' | 'user') => {
+    const handlePermanentDelete = useCallback(async (id: string, type: 'lead' | 'assessment' | 'user') => {
         if (!confirm('This will permanently delete the item from the database. This cannot be undone. Continue?')) return;
         setIsDeleting(true);
         try {
@@ -599,9 +587,9 @@ const Admin = () => {
         } finally {
             setIsDeleting(false);
         }
-    };
+    }, [setDeletedItems]);
 
-    const handleBulkRestore = async (items: { id: string, type: 'lead' | 'assessment' | 'user' }[]) => {
+    const handleBulkRestore = useCallback(async (items: { id: string, type: 'lead' | 'assessment' | 'user' }[]) => {
         try {
             const tableMap = { lead: 'leads', assessment: 'assessments', user: 'profiles' } as const;
             for (const item of items) {
@@ -613,10 +601,10 @@ const Admin = () => {
         } catch (error: any) {
             toast.error(error.message || 'Failed to restore some items');
         }
-    };
+    }, [setDeletedItems]);
 
-    const handleBulkPermanentDelete = async (items: { id: string, type: 'lead' | 'assessment' | 'user' }[]) => {
-        if (!confirm(`This will permanently delete ${items.length} items from the database. This cannot be undone. Continue?`)) return;
+    const handleBulkPermanentDelete = useCallback(async (items: { id: string, type: 'lead' | 'assessment' | 'user' }[]) => {
+        if (!confirm(`This will permanently delete ${items.length} items from the database.This cannot be undone.Continue ? `)) return;
         setIsDeleting(true);
         try {
             for (const item of items) {
@@ -640,9 +628,9 @@ const Admin = () => {
         } finally {
             setIsDeleting(false);
         }
-    };
+    }, [setDeletedItems]);
 
-    const handleAddUser = async (e: React.FormEvent) => {
+    const handleAddUser = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         setIsUpdating(true);
         try {
@@ -689,7 +677,7 @@ const Admin = () => {
             }
 
             if (fnData?.user) {
-                setUsersList([fnData.user, ...users_list]);
+                setUsersList(prev => [fnData.user, ...prev]);
                 logAudit('create_user', 'user', fnData.user.id, { role: newUserRole });
             }
             setShowAddUserModal(false);
@@ -703,9 +691,9 @@ const Admin = () => {
         } finally {
             setIsUpdating(false);
         }
-    };
+    }, [newUserFormData, newUserRole, logAudit]);
 
-    const handleUpdateProfile = async () => {
+    const handleUpdateProfile = useCallback(async () => {
         if (!selectedUser) return;
         setIsUpdating(true);
         try {
@@ -733,17 +721,17 @@ const Admin = () => {
                 role: editForm.role as any,
                 assessor_type: editForm.assessor_type || undefined
             };
-            setUsersList(users_list.map(u => u.id === selectedUser.id ? { ...u, ...updates } : u));
-            setSelectedUser({ ...selectedUser, ...updates });
+            setUsersList(prev => prev.map(u => u.id === selectedUser.id ? { ...u, ...updates } : u));
+            setSelectedUser(prev => prev ? { ...prev, ...updates } : null);
             toast.success('Profile updated successfully');
         } catch (error: any) {
             toast.error('Failed to update profile');
         } finally {
             setIsUpdating(false);
         }
-    };
+    }, [selectedUser, editForm]);
 
-    const handleManualRenewal = async (userId: string, monthsToAdd: number = 12) => {
+    const handleManualRenewal = useCallback(async (userId: string, monthsToAdd: number = 12) => {
         setIsUpdating(true);
         try {
             const userToUpdate = users_list.find(u => u.id === userId);
@@ -776,8 +764,8 @@ const Admin = () => {
             const { error } = await supabase.from('profiles').update(updateData).eq('id', userId);
             if (error) throw error;
 
-            setUsersList(users_list.map(u => u.id === userId ? { ...u, ...updateData } : u));
-            if (selectedUser?.id === userId) setSelectedUser({ ...selectedUser, ...updateData } as Profile);
+            setUsersList(prev => prev.map(u => u.id === userId ? { ...u, ...updateData } as Profile : u));
+            setSelectedUser(prev => prev?.id === userId ? { ...prev, ...updateData } as Profile : prev);
             toast.success(`Subscription updated for ${monthsToAdd} months & account activated!`);
             fetchUsers();
         } catch (error: any) {
@@ -785,17 +773,17 @@ const Admin = () => {
         } finally {
             setIsUpdating(false);
         }
-    };
+    }, [users_list, fetchUsers]);
 
-    const handleCancelSubscription = async (userId: string) => {
+    const handleCancelSubscription = useCallback(async (userId: string) => {
         if (!confirm('Are you sure you want to cancel this subscription? The user will be instantly disabled.')) return;
         setIsUpdating(true);
         try {
             const updates = { subscription_status: 'cancelled', is_active: false, stripe_payment_id: 'CANCELLED', registration_status: 'pending' as const };
             const { error } = await supabase.from('profiles').update(updates).eq('id', userId);
             if (error) throw error;
-            setUsersList(users_list.map(u => u.id === userId ? { ...u, ...updates } : u));
-            if (selectedUser?.id === userId) setSelectedUser({ ...selectedUser, ...updates });
+            setUsersList(prev => prev.map(u => u.id === userId ? { ...u, ...updates } : u));
+            setSelectedUser(prev => prev?.id === userId ? { ...prev, ...updates } : prev);
             toast.success('Subscription cancelled and status updated.');
             fetchUsers();
         } catch (error: any) {
@@ -803,9 +791,9 @@ const Admin = () => {
         } finally {
             setIsUpdating(false);
         }
-    };
+    }, [fetchUsers]);
 
-    const handleSendRenewalReminder = async (u: any) => {
+    const handleSendRenewalReminder = useCallback(async (u: Profile) => {
         setSendingEmailId(u.id);
         const toastId = toast.loading('Sending renewal reminder...');
         try {
@@ -831,14 +819,15 @@ const Admin = () => {
         } finally {
             setSendingEmailId(null);
         }
-    };
+    }, []);
 
-    const toggleUserStatus = async () => {
+
+    const toggleUserStatus = useCallback(async () => {
         if (!itemToSuspend) return;
         setIsUpdating(true);
         try {
             const isSuspending = itemToSuspend.currentStatus === true;
-            const updateData: any = { is_active: !itemToSuspend.currentStatus };
+            const updateData: Partial<Profile> = { is_active: !itemToSuspend.currentStatus };
             if (isSuspending) {
                 updateData.stripe_payment_id = 'SUSPENDED';
                 updateData.registration_status = 'pending';
@@ -858,9 +847,9 @@ const Admin = () => {
                 stripe_payment_id: isSuspending ? 'SUSPENDED' : 'MANUAL_BY_ADMIN',
                 registration_status: (isSuspending ? 'pending' : 'active') as 'pending' | 'active',
             };
-            setUsersList(users_list.map(u => u.id === itemToSuspend.id ? { ...u, ...profileUpdates } : u));
+            setUsersList(prev => prev.map(u => u.id === itemToSuspend.id ? { ...u, ...profileUpdates } : u));
             setListings(prev => prev.map(l => (l.user_id === itemToSuspend.id || l.owner_id === itemToSuspend.id) ? { ...l, is_active: !itemToSuspend.currentStatus } : l));
-            if (selectedUser?.id === itemToSuspend.id) setSelectedUser({ ...selectedUser, ...profileUpdates });
+            setSelectedUser(prev => prev?.id === itemToSuspend.id ? { ...prev, ...profileUpdates } as Profile : prev);
 
             toast.success(`User ${isSuspending ? 'suspended' : 'activated'} successfully`);
             setShowSuspendModal(false);
@@ -870,11 +859,10 @@ const Admin = () => {
         } finally {
             setIsUpdating(false);
         }
-    };
+    }, [itemToSuspend, selectedUser?.id]);
 
-    const updateRegistrationStatus = async (userId: string, status: 'active' | 'rejected') => {
+    const updateRegistrationStatus = useCallback(async (userId: string, status: 'active' | 'rejected') => {
         setIsUpdating(true);
-        const previousUsers = [...users_list];
         const targetUser = users_list.find(u => u.id === userId);
         const isAssessor = targetUser?.role === 'contractor';
 
@@ -888,22 +876,22 @@ const Admin = () => {
             }
         }
 
-        setUsersList(users_list.map(u => u.id === userId ? { ...u, ...updateData } : u));
         try {
             const { data, error } = await supabase.from('profiles').update(updateData).eq('id', userId).select();
             if (error) throw error;
             if (!data || data.length === 0) throw new Error('Update failed: No rows were changed.');
+            
+            setUsersList(prev => prev.map(u => u.id === userId ? { ...u, ...updateData } : u));
             toast.success(`${isAssessor ? 'Assessor' : 'Business'} account ${status === 'active' ? 'approved & activated' : 'rejected'} successfully`);
             fetchUsers();
         } catch (error: any) {
-            setUsersList(previousUsers);
             toast.error(error.message || 'Failed to update registration status');
         } finally {
             setIsUpdating(false);
         }
-    };
+    }, [users_list, fetchUsers]);
 
-    const handleSendOnboardingEmail = async (u: any) => {
+    const handleSendOnboardingEmail = useCallback(async (u: Profile) => {
         setSendingEmailId(u.id);
         try {
             const { error } = await supabase.functions.invoke('send-onboarding-link', {
@@ -923,15 +911,19 @@ const Admin = () => {
         } finally {
             setSendingEmailId(null);
         }
-    };
+    }, []);
 
-    const handleAssignContractor = async (contractorId: string) => {
+    const handleAssignContractor = useCallback(async (contractorId: string) => {
         if (!selectedAssessmentForAssignment) return;
         setIsUpdating(true);
         try {
-            const { error } = await supabase.from('assessments').update({ contractor_id: contractorId, status: 'assigned' }).eq('id', selectedAssessmentForAssignment.id);
+            const assessmentId = selectedAssessmentForAssignment.id;
+            const previousStatus = selectedAssessmentForAssignment.status;
+            
+            const { error } = await supabase.from('assessments').update({ contractor_id: contractorId, status: 'assigned' }).eq('id', assessmentId);
             if (error) throw error;
-            await logAudit('assign_contractor', 'assessment', selectedAssessmentForAssignment.id, { contractor_id: contractorId, previous_status: selectedAssessmentForAssignment.status });
+            
+            await logAudit('assign_contractor', 'assessment', assessmentId, { contractor_id: contractorId, previous_status: previousStatus });
             toast.success('Assessor assigned successfully');
             setShowAssignModal(false);
             setSelectedAssessmentForAssignment(null);
@@ -941,9 +933,9 @@ const Admin = () => {
         } finally {
             setIsUpdating(false);
         }
-    };
+    }, [selectedAssessmentForAssignment, logAudit, fetchAssessments]);
 
-    const handleGenerateQuote = async (e: React.FormEvent) => {
+    const handleGenerateQuote = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedAssessment) return;
         setIsUpdating(true);
@@ -973,9 +965,9 @@ const Admin = () => {
         } finally {
             setIsUpdating(false);
         }
-    };
+    }, [selectedAssessment, quoteData, user?.id, logAudit, fetchAssessments]);
 
-    const handleSchedule = async (e: React.FormEvent) => {
+    const handleSchedule = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedAssessment || !selectedDate) return;
         setIsUpdating(true);
@@ -997,9 +989,9 @@ const Admin = () => {
         } finally {
             setIsUpdating(false);
         }
-    };
+    }, [selectedAssessment, selectedDate, logAudit, fetchAssessments]);
 
-    const handleComplete = async (e: React.FormEvent) => {
+    const handleComplete = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedAssessment) return;
         setIsUpdating(true);
@@ -1021,16 +1013,16 @@ const Admin = () => {
         } finally {
             setIsUpdating(false);
         }
-    };
+    }, [selectedAssessment, certUrl, logAudit, fetchAssessments]);
 
-    const handleSendMessage = async (e: React.FormEvent) => {
+    const handleSendMessage = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedAssessment || !messageContent.trim()) return;
         setIsUpdating(true);
         try {
             const clientEmail = selectedAssessment.profiles?.email;
             if (!clientEmail) { toast.error('Client email not found'); return; }
-            const subject = encodeURIComponent(`Update regarding your BER Assessment - ${selectedAssessment.property_address}`);
+            const subject = encodeURIComponent(`Update regarding your BER Assessment - ${selectedAssessment.property_address} `);
             const body = encodeURIComponent(messageContent);
             window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${clientEmail}&su=${subject}&body=${body}`, '_blank');
             toast.success('Opening Gmail...');
@@ -1042,9 +1034,9 @@ const Admin = () => {
         } finally {
             setIsUpdating(false);
         }
-    };
+    }, [selectedAssessment, messageContent, logAudit]);
 
-    const handleSaveSponsor = async (e: React.FormEvent) => {
+    const handleSaveSponsor = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         const formData = new FormData(e.target as HTMLFormElement);
         const updates = {
@@ -1061,12 +1053,12 @@ const Admin = () => {
             if (editingSponsor) {
                 const { data, error } = await supabase.from('sponsors').update(updates).eq('id', editingSponsor.id).select().single();
                 if (error) throw error;
-                setSponsors(sponsors.map(s => s.id === editingSponsor.id ? data : s));
+                setSponsors(prev => prev.map(s => s.id === editingSponsor.id ? data : s));
                 toast.success(`Sponsor "${data.name}" updated successfully!`);
             } else {
                 const { data, error } = await supabase.from('sponsors').insert(updates).select().single();
                 if (error) throw error;
-                setSponsors([...sponsors, data]);
+                setSponsors(prev => [...prev, data]);
                 toast.success(`Sponsor "${data.name}" added successfully!`);
             }
             setShowSponsorModal(false);
@@ -1076,11 +1068,11 @@ const Admin = () => {
         } finally {
             setIsUpdating(false);
         }
-    };
+    }, [editingSponsor, sponsors]);
 
-    const handleDeleteSponsor = (id: string) => handleDeleteClick(id, 'sponsor');
+    const handleDeleteSponsor = useCallback((id: string) => handleDeleteClick(id, 'sponsor'), [handleDeleteClick]);
 
-    const savePromoSettings = async (e: React.FormEvent) => {
+    const savePromoSettings = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         setIsUpdatingBanner(true);
         try {
@@ -1100,9 +1092,9 @@ const Admin = () => {
         } finally {
             setIsUpdatingBanner(false);
         }
-    };
+    }, [promoSettings, fetchPromoSettings]);
 
-    const handleExportPayments = () => {
+    const handleExportPayments = useCallback(() => {
         if (payments.length === 0) { toast.error('No payments to export'); return; }
         const headers = ['ID', 'Amount', 'Currency', 'Status', 'User', 'Email', 'Date', 'Assessment ID'];
         const csvRows = [
@@ -1117,24 +1109,24 @@ const Admin = () => {
         link.click();
         document.body.removeChild(link);
         toast.success('Payments report exported successfully');
-    };
+    }, [payments]);
 
-    const handleDeleteNewsArticle = async (id: string) => {
+    const handleDeleteNewsArticle = useCallback(async (id: string) => {
         if (!confirm('Are you sure you want to delete this article?')) return;
         setIsUpdating(true);
         try {
             const { error } = await supabase.from('news_articles').delete().eq('id', id);
             if (error) throw error;
-            setNewsArticles(newsArticles.filter(a => a.id !== id));
+            setNewsArticles(prev => prev.filter(a => a.id !== id));
             toast.success('Article deleted successfully');
         } catch (error: any) {
             toast.error('Failed to delete article');
         } finally {
             setIsUpdating(false);
         }
-    };
+    }, [newsArticles]);
 
-    const handleOpenCatalogueView = (business: Profile | null, existingListing?: any) => {
+    const handleOpenCatalogueView = useCallback((business: Profile | null, existingListing?: any) => {
         setSelectedBusinessForCatalogue(business);
         setSelectedListingForEdit(existingListing || null);
         if (existingListing) {
@@ -1192,18 +1184,18 @@ const Admin = () => {
             });
         }
         setView('add-to-catalogue');
-    };
+    }, []);
 
-    const toggleCatalogueCategory = (categoryId: string) => {
+    const toggleCatalogueCategory = useCallback((categoryId: string) => {
         setCatalogueFormData(prev => ({
             ...prev,
             selectedCategories: prev.selectedCategories.includes(categoryId)
                 ? prev.selectedCategories.filter(id => id !== categoryId)
                 : [...prev.selectedCategories, categoryId]
         }));
-    };
+    }, []);
 
-    const toggleCatalogueStatus = async (id: string, currentStatus: boolean) => {
+    const toggleCatalogueStatus = useCallback(async (id: string, currentStatus: boolean) => {
         try {
             const { error } = await supabase.from('catalogue_listings').update({ is_active: !currentStatus }).eq('id', id);
             if (error) throw error;
@@ -1212,9 +1204,9 @@ const Admin = () => {
         } catch (error) {
             toast.error('Failed to update status');
         }
-    };
+    }, [listings]);
 
-    const toggleCatalogueFeatured = async (id: string, currentFeatured: boolean) => {
+    const toggleCatalogueFeatured = useCallback(async (id: string, currentFeatured: boolean) => {
         try {
             const { error } = await supabase.from('catalogue_listings').update({ featured: !currentFeatured }).eq('id', id);
             if (error) throw error;
@@ -1223,9 +1215,9 @@ const Admin = () => {
         } catch (error) {
             toast.error('Failed to update featured status');
         }
-    };
+    }, [listings]);
 
-    const handleDeleteListing = async (id: string) => {
+    const handleDeleteListing = useCallback(async (id: string) => {
         if (!confirm('Are you sure you want to delete this listing? This action cannot be undone.')) return;
         setIsSavingCatalogue(true);
         try {
@@ -1240,9 +1232,9 @@ const Admin = () => {
         } finally {
             setIsSavingCatalogue(false);
         }
-    };
+    }, [listings]);
 
-    const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleLogoUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
         if (!file.type.startsWith('image/')) { toast.error('Please upload an image file'); return; }
@@ -1259,10 +1251,10 @@ const Admin = () => {
             setIsUploadingLogo(false);
             e.target.value = '';
         }
-    };
+    }, []);
 
 
-    const handleGalleryUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleGalleryUpload = useCallback(async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
         if (file.type !== 'image/jpeg' && file.type !== 'image/png') { toast.error('Please upload a JPG or PNG image file'); return; }
@@ -1283,9 +1275,9 @@ const Admin = () => {
             setIsUploadingGallery(prev => ({ ...prev, [index]: false }));
             e.target.value = '';
         }
-    };
+    }, []);
 
-    const handleSaveCatalogueEntry = async (e: React.FormEvent) => {
+    const handleSaveCatalogueEntry = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         if (!catalogueFormData.companyName.trim() || !catalogueFormData.email.trim()) { toast.error('Company name and email are required'); return; }
         if (catalogueFormData.selectedCategories.length === 0) { toast.error('Please select at least one category'); return; }
@@ -1382,10 +1374,10 @@ const Admin = () => {
         } finally {
             setIsSavingCatalogue(false);
         }
-    };
+    }, [catalogueFormData, selectedListingForEdit, selectedBusinessForCatalogue, fetchListings]);
 
     // ─── View title helpers ───────────────────────────────────────────────────────
-    const getViewTitle = () => {
+    const getViewTitle = useCallback(() => {
         const titles: Record<string, string> = {
             stats: 'System Overview', leads: 'Leads & Inquiries', assessments: 'BER Assessments',
             businesses: 'Business Directory', catalogue: 'Business Catalogue', assessors: 'BER Assessors',
@@ -1393,9 +1385,9 @@ const Admin = () => {
             'recently-deleted': 'Recently Deleted',
         };
         return titles[view] || 'Admin';
-    };
+    }, [view]);
 
-    const getViewSubtitle = () => {
+    const getViewSubtitle = useCallback(() => {
         const subs: Record<string, string> = {
             stats: 'Key metrics and business performance.', leads: 'Manage your website submissions.',
             assessments: 'Manage homeowner assessment requests.', businesses: 'Review business interest and send onboarding links.',
@@ -1405,13 +1397,13 @@ const Admin = () => {
             'recently-deleted': 'Restore items or permanently delete them from the database.',
         };
         return subs[view] || '';
-    };
+    }, [view]);
 
     // ─── Render ───────────────────────────────────────────────────────────────────
     const pendingAssessors = users_list.filter(u => u.role === 'contractor' && u.registration_status === 'pending' && !listings.some(l => l.user_id === u.id || l.owner_id === u.id)).length;
     const pendingBusinesses = users_list.filter(u => u.role === 'business' && u.registration_status === 'pending' && !listings.some(l => l.user_id === u.id || l.owner_id === u.id)).length;
 
-    const NAV_ITEMS: { id: string; label: string; icon: React.ElementType; badge: number }[] = [
+    const NAV_ITEMS: any[] = [
         { id: 'stats', label: 'Overview', icon: BarChart2, badge: 0 },
         { id: 'leads', label: 'Leads', icon: Inbox, badge: 0 },
         { id: 'assessments', label: 'Assessments', icon: ClipboardList, badge: 0 },
@@ -1425,7 +1417,7 @@ const Admin = () => {
         { id: 'settings', label: 'Settings', icon: SettingsIcon, badge: 0 },
     ];
 
-    const navClick = (id: string) => { setView(id as AdminView); setLocationFilter(''); setSearchTerm(''); setSidebarOpen(false); };
+    const navClick = (id: string) => { setView(id as AdminView); setLocationFilter(''); setSearchTerm(''); };
 
     return (
         <div className="min-h-screen bg-gray-100 font-sans flex">
