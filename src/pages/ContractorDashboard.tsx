@@ -1,7 +1,7 @@
 import { useEffect, useState, Fragment } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, DollarSign, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, AlertCircle, Settings, MessageCircle, User, Menu, Plus, Search } from 'lucide-react';
+import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, AlertCircle, Settings, MessageCircle, User, Menu, Plus, Search } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { DatePicker } from '../components/ui/DatePicker';
 import { geocodeAddress } from '../lib/geocoding';
