@@ -11,6 +11,7 @@ import {
     Instagram,
     Linkedin,
     Twitter,
+    MessageCircle,
     MapPin,
     Tags,
     CheckCircle,
@@ -51,6 +52,7 @@ interface CatalogueListing {
         instagram?: string;
         linkedin?: string;
         twitter?: string;
+        whatsapp?: string;
     };
     images?: { id: string, url: string, description: string, display_order: number }[];
     banner_url?: string;
@@ -309,8 +311,8 @@ const BusinessDashboard = () => {
             return;
         }
 
-        if (file.size > 2 * 1024 * 1024) {
-            toast.error('Image must be less than 2MB');
+        if (file.size > 10 * 1024 * 1024) {
+            toast.error('Image must be less than 10MB');
             return;
         }
 
@@ -344,8 +346,8 @@ const BusinessDashboard = () => {
             return;
         }
 
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error('Banner image must be less than 5MB');
+        if (file.size > 15 * 1024 * 1024) {
+            toast.error('Banner image must be less than 15MB');
             return;
         }
 
@@ -753,6 +755,10 @@ const BusinessDashboard = () => {
                                                 <div>
                                                     <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2"><Twitter size={12} /> Twitter / X</label>
                                                     <input name="social_twitter" value={listing.social_media?.twitter || ''} onChange={handleProfileChange} placeholder="https://twitter.com/handle" className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold shadow-inner" />
+                                                </div>
+                                                <div>
+                                                    <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2"><MessageCircle size={12} /> WhatsApp</label>
+                                                    <input name="social_whatsapp" value={listing.social_media?.whatsapp || ''} onChange={handleProfileChange} placeholder="+35312345678" className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold shadow-inner" />
                                                 </div>
                                             </div>
                                         </div>
