@@ -99,7 +99,9 @@ Deno.serve(async (req: Request) => {
                 console.error(`[send-job-live-email] [SMTP ERROR] Failed to notify customer ${email}:`, custErr);
             }
 
-            // 2. Notify Relevant Contractors
+            // 2. Notify Relevant Contractors - TEMPORARILY DISABLED
+            // console.log(`[send-job-live-email] Contractor notifications are currently disabled.`);
+            /*
             const { data: existingQuotes } = await supabase
                 .from('quotes')
                 .select('created_by')
@@ -133,6 +135,7 @@ Deno.serve(async (req: Request) => {
                     }
                 }
             }
+            */
 
             await client.close();
             return new Response(JSON.stringify({ success: true, message: 'Process completed' }), { headers: responseHeaders });
