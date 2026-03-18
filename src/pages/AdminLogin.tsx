@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Shield, Lock, Mail, Eye, EyeOff, AlertTriangle, ArrowLeft, LogOut } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { checkRateLimit, recordFailedAttempt, recordSuccessfulLogin } from '../lib/rateLimiter';
 
 const adminLoginSchema = z.object({
     email: z.string().email('Invalid email address'),
@@ -59,9 +60,22 @@ const AdminLogin = () => {
         
         try {
             const email = data.email.trim();
+            
+            // Check rate limiting
+            const rateLimitResult = checkRateLimit(email);
+            if (!rateLimitResult.allowed) {
+                if (rateLimitResult.lockoutRemaining) {
+                    throw new Error(`Too many failed attempts. Account locked for ${rateLimitResult.lockoutRemaining} minutes.`);
+                }
+                throw new Error('Login temporarily blocked. Please try again later.');
+            }
+            
             const { data: authData, error } = await signIn(email, data.password);
 
             if (error) {
+                // Record failed attempt for rate limiting
+                recordFailedAttempt(email);
+                
                 const errorMessage = error.message.toLowerCase();
                 if (errorMessage.includes('email not confirmed')) {
                     throw new Error('Please confirm your email address before logging in.');
@@ -85,6 +99,9 @@ const AdminLogin = () => {
                     throw new Error('Access denied. This account does not have admin privileges.');
                 }
 
+                // Record successful login (clears rate limit)
+                recordSuccessfulLogin(email);
+                
                 toast.success('Admin login successful!');
                 
                 // Redirect will happen in useEffect
@@ -160,7 +177,7 @@ const AdminLogin = () => {
                                 <input
                                     {...register('email')}
                                     type="email"
-                                    placeholder="admin@theberman.eu"
+                                    placeholder="email"
                                     className="w-full pl-10 pr-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
                                     disabled={isSubmitting}
                                 />
@@ -180,7 +197,7 @@ const AdminLogin = () => {
                                 <input
                                     {...register('password')}
                                     type={showPassword ? 'text' : 'password'}
-                                    placeholder="Enter your admin password"
+                                    placeholder=""
                                     className="w-full pl-10 pr-12 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
                                     disabled={isSubmitting}
                                 />

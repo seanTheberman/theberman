@@ -65,7 +65,7 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
                                 <input
                                     type="text"
                                     required
-                                    placeholder={newUserRole === 'contractor' ? 'e.g. John Doe' : 'e.g. Acme Energy'}
+                                    placeholder={newUserRole === 'contractor' ? 'Full name' : 'Full business name'}
                                     value={newUserFormData.fullName}
                                     onChange={(e) => setNewUserFormData({ ...newUserFormData, fullName: e.target.value })}
                                     className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
@@ -76,7 +76,7 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
                                 <input
                                     type="email"
                                     required
-                                    placeholder="john@example.com"
+                                    placeholder="email"
                                     value={newUserFormData.email}
                                     onChange={(e) => setNewUserFormData({ ...newUserFormData, email: e.target.value })}
                                     className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"

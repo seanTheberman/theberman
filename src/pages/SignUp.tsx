@@ -7,6 +7,7 @@ import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { trackReferral } from '../lib/referralTracking';
+import { supabase } from '../lib/supabase';
 
 const signupSchema = z.object({
     fullName: z.string().min(2, 'Full name must be at least 2 characters'),
@@ -80,21 +81,21 @@ const SignUp = () => {
                     title: 'Assessor Registration',
                     subtitle: 'Join our network of professional BER assessors.',
                     nameLabel: 'Full Name',
-                    namePlaceholder: 'John Doe'
+                    namePlaceholder: 'Full name'
                 };
             case 'business':
                 return {
                     title: 'Business Registration',
                     subtitle: 'Register your company in our Home Energy Catalogue.',
                     nameLabel: 'Full Business Name',
-                    namePlaceholder: 'Acme Energy Solutions'
+                    namePlaceholder: 'Full business name'
                 };
             default:
                 return {
-                    title: 'Create Account',
+                    title: 'Homeowner Registration',
                     subtitle: 'Sign up to get started.',
                     nameLabel: 'Full Name',
-                    namePlaceholder: 'John Doe'
+                    namePlaceholder: 'Full name'
                 };
         }
     };
@@ -111,6 +112,7 @@ const SignUp = () => {
             // Get referral code from URL
             const params = new URLSearchParams(location.search);
             const referralCode = params.get('ref');
+            const redirectParam = params.get('redirect');
 
             const { error, data: authData } = await signUp(
                 data.email.trim(),
@@ -125,6 +127,32 @@ const SignUp = () => {
                 // Track referral if this is a business signup with referral code
                 if (data.role === 'business' && referralCode) {
                     await trackReferral(authData.user.id, referralCode);
+                }
+
+                // Handle pending quote if coming from quick quote flow
+                if (redirectParam === 'quote' && data.role === 'contractor') {
+                    const pendingQuote = sessionStorage.getItem('pendingQuote');
+                    if (pendingQuote) {
+                        const { assessmentId, quoteData, contactInfo } = JSON.parse(pendingQuote);
+                        
+                        // Submit the quote with the new contractor ID
+                        const { error: quoteError } = await supabase
+                            .from('quotes')
+                            .insert({
+                                assessment_id: assessmentId,
+                                created_by: authData.user.id,
+                                price: parseFloat(quoteData.price),
+                                notes: quoteData.notes,
+                                status: 'pending'
+                            });
+                        
+                        if (!quoteError) {
+                            toast.success('Account created and quote submitted successfully!');
+                            sessionStorage.removeItem('pendingQuote');
+                        } else {
+                            toast.error('Account created but failed to submit quote. Please try again from your dashboard.');
+                        }
+                    }
                 }
 
                 const isConfirmationRequired = !authData.session;
@@ -219,7 +247,7 @@ const SignUp = () => {
                                 {...register('email')}
                                 type="email"
                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                placeholder="name@email.com"
+                                placeholder="email"
                             />
                             {errors.email && <p className="text-red-500 text-xs mt-1 font-medium ml-1">{errors.email.message}</p>}
                         </div>

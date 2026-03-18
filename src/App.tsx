@@ -25,6 +25,7 @@ import RegistrationPending from './pages/RegistrationPending';
 import ForgotPassword from './pages/ForgotPassword';
 import UpdatePassword from './pages/UpdatePassword';
 import QuoteForm from './pages/QuoteForm';
+import QuickQuotePage from './pages/QuickQuotePage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import CookiePolicy from './pages/CookiePolicy';
@@ -90,6 +91,7 @@ function App() {
                     {/* No Layout wrapper for cleaner UX */}
                     <Route path="/membership-payment" element={<MembershipPayment />} />
                     <Route path="/get-quote" element={<QuoteForm />} />
+                    <Route path="/quote/:id" element={<QuickQuotePage />} />
 
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/update-password" element={<UpdatePassword />} />

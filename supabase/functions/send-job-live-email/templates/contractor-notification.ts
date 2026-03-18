@@ -1,8 +1,8 @@
-export const generateContractorEmail = (customerCounty: string, customerTown: string, contractorName: string, promoHtml: string, websiteUrl: string = "https://theberman.eu", jobType?: string) => {
+export const generateContractorEmail = (customerCounty: string, customerTown: string, contractorName: string, promoHtml: string, websiteUrl: string = "https://theberman.eu", jobType?: string, eircode?: string, propertyAddress?: string, assessmentId?: string) => {
     const isCommercial = jobType === 'commercial';
     const jobTitle = isCommercial ? 'Commercial BER Certificate' : 'Domestic BER Certificate';
     const locationStr = `${customerTown}${customerTown && customerCounty ? ', Co. ' : ''}${customerCounty}`;
-    const dashboardUrl = `${websiteUrl}/dashboard/ber-assessor`;
+    const dashboardUrl = `${websiteUrl}/quote/${assessmentId || ''}`;
     const currentYear = new Date().getFullYear();
 
     return `
@@ -40,6 +40,19 @@ export const generateContractorEmail = (customerCounty: string, customerTown: st
                             <p style="margin: 0 0 30px 0; font-size: 16px; color: #555555; line-height: 1.8;">
                                 A client in <strong>${locationStr}</strong> is looking for a <strong>${jobTitle}</strong>.
                             </p>
+                            ${propertyAddress ? `
+                            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #007F00;">
+                                <h4 style="margin: 0 0 15px 0; font-size: 15px; color: #007F00; font-weight: bold;">Property Details</h4>
+                                <p style="margin: 0 0 10px 0; font-size: 14px; color: #555555; line-height: 1.6;">
+                                    <strong>Address:</strong> ${propertyAddress}
+                                </p>
+                                ${eircode ? `
+                                <p style="margin: 0; font-size: 14px; color: #555555; line-height: 1.6;">
+                                    <strong>Eircode:</strong> <span style="color: #007F00; font-weight: bold;">${eircode}</span>
+                                </p>
+                                ` : ''}
+                            </div>
+                            ` : ''}
                         </td>
                     </tr>
 
