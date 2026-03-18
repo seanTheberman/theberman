@@ -125,7 +125,7 @@ const Login = () => {
                         throw new Error('This account is registered as a Business. Please use the "Business" tab to log in.');
                     }
                 } else if (activeTab === 'business') {
-                    if (userRole !== 'business' && userRole !== 'admin') {
+                    if (userRole !== 'business') {
                         await signOut();
                         throw new Error('This account is not registered as a Business.');
                     }

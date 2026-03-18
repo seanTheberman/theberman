@@ -6,6 +6,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { trackReferral } from '../lib/referralTracking';
 
 const signupSchema = z.object({
     fullName: z.string().min(2, 'Full name must be at least 2 characters'),
@@ -107,6 +108,10 @@ const SignUp = () => {
 
     const onSubmit = async (data: SignUpFormData) => {
         try {
+            // Get referral code from URL
+            const params = new URLSearchParams(location.search);
+            const referralCode = params.get('ref');
+
             const { error, data: authData } = await signUp(
                 data.email.trim(),
                 data.password,
@@ -117,6 +122,11 @@ const SignUp = () => {
             if (error) throw error;
 
             if (authData?.user) {
+                // Track referral if this is a business signup with referral code
+                if (data.role === 'business' && referralCode) {
+                    await trackReferral(authData.user.id, referralCode);
+                }
+
                 const isConfirmationRequired = !authData.session;
 
                 if (isConfirmationRequired) {

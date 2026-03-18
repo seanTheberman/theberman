@@ -22,6 +22,8 @@ import {
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { geocodeAddress } from '../lib/geocoding';
+import ReferralProgram from '../components/business/ReferralProgram';
+import { Gift } from 'lucide-react';
 
 const IRISH_COUNTIES = [
     'Carlow', 'Cavan', 'Clare', 'Cork', 'Donegal', 'Dublin', 'Galway',
@@ -612,6 +614,12 @@ const BusinessDashboard = () => {
                         >
                             <MapPin size={14} /> Locations
                         </button>
+                        <button
+                            onClick={() => document.getElementById('referral-program')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                            className="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-purple-600 hover:bg-purple-50 hover:text-purple-700 transition-all whitespace-nowrap bg-purple-50 border border-purple-100"
+                        >
+                            <Gift size={14} /> Referrals
+                        </button>
                     </div>
 
                     <div className="space-y-16 pb-20">
@@ -942,6 +950,11 @@ const BusinessDashboard = () => {
                                     })}
                                 </div>
                             </div>
+                        </section>
+
+                        {/* Section 5: Referral Program */}
+                        <section id="referral-program">
+                            <ReferralProgram />
                         </section>
                     </div>
                 </div>

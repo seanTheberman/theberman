@@ -14,6 +14,7 @@ import ListingDetail from './pages/ListingDetail';
 import Admin from './pages/Admin';
 import AdminNewsAction from './pages/AdminNewsAction';
 import Login from './pages/Login';
+import AdminLogin from './pages/AdminLogin';
 import UserDashboard from './pages/UserDashboard';
 import ContractorDashboard from './pages/ContractorDashboard';
 import BusinessDashboard from './pages/BusinessDashboard';
@@ -77,6 +78,7 @@ function App() {
                         <Route path="cookie-policy" element={<CookiePolicy />} />
                         <Route path="assessor-terms" element={<AssessorTerms />} />
                         <Route path="login" element={<Login />} />
+                        <Route path="login/admin" element={<AdminLogin />} />
                         <Route path="signup" element={<SignUp />} />
                         <Route path="faq" element={<FAQ />} />
                         <Route path="news" element={<News />} />
