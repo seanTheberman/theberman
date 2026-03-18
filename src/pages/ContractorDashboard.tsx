@@ -1785,13 +1785,17 @@ const ContractorDashboard = () => {
                         </div>
 
                         <div className="p-8 space-y-8">
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                 <div className="space-y-1">
                                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Location</span>
                                     <p className="text-sm font-bold text-gray-900 flex items-center gap-2">
                                         <MapPin size={14} className="text-[#007EA7]" />
                                         {selectedJob.town}, {selectedJob.county}
                                     </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Eircode</span>
+                                    <p className="text-sm font-bold text-blue-600">{selectedJob.eircode || 'N/A'}</p>
                                 </div>
                                 <div className="space-y-1">
                                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Size</span>
@@ -1988,7 +1992,7 @@ const ContractorDashboard = () => {
                                                 </div>
                                                 <div className="flex justify-between px-4 py-3">
                                                     <span className="text-gray-600">Eircode:</span>
-                                                    <a href="#" className="font-medium text-blue-600 underline">{selectedJob.property_address?.slice(0, 7) || 'N/A'}</a>
+                                                    <span className="font-medium text-blue-600">{selectedJob.eircode || 'N/A'}</span>
                                                 </div>
                                                 <div className="flex justify-between px-4 py-3">
                                                     <span className="text-gray-600">Property Type:</span>
