@@ -12,7 +12,7 @@ const getStatusConfig = (profile: Profile) => {
         return { label: 'Pending', bg: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' };
     if (profile.registration_status === 'active' && profile.is_active === false)
         return { label: 'Inactive', bg: 'bg-gray-100 text-gray-600', dot: 'bg-gray-400' };
-    if (profile.registration_status === 'active')
+    if (profile.registration_status === 'active' || profile.registration_status === 'completed')
         return { label: 'Active', bg: 'bg-green-100 text-green-700', dot: 'bg-green-500 animate-pulse' };
     return { label: 'Unknown', bg: 'bg-gray-100 text-gray-500', dot: 'bg-gray-300' };
 };
@@ -68,7 +68,7 @@ export const StatusCell = ({ profile, lastLogin }: { profile: Profile; lastLogin
                     <span>{formatLogin(lastLogin || profile.last_login)}</span>
                 </div>
                 <span className="text-[9px]" title="Payment status">{paymentIcon()}</span>
-                {(profile.role === 'contractor' || profile.role === 'business') && profile.subscription_status !== 'active' && profile.registration_status === 'active' && (
+                {(profile.role === 'contractor' || profile.role === 'business') && profile.subscription_status !== 'active' && (profile.registration_status === 'active' || profile.registration_status === 'completed') && (
                     <span className="text-[8px] font-bold text-amber-600 uppercase bg-amber-50 px-1 rounded">No Sub</span>
                 )}
             </div>
