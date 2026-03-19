@@ -356,6 +356,7 @@ const BusinessOnboarding = () => {
                                         id="insuranceExpiry"
                                         className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
                                         value={formData.insuranceExpiry}
+                                        min={new Date().toISOString().split('T')[0]}
                                         onChange={(e) => setFormData({ ...formData, insuranceExpiry: e.target.value })}
                                     />
                                 </div>
