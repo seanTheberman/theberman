@@ -48,6 +48,7 @@ const BusinessOnboarding = () => {
         instagram: '',
         linkedin: '',
         twitter: '',
+        whatsapp: '',
     });
 
     useEffect(() => {
@@ -92,7 +93,8 @@ const BusinessOnboarding = () => {
         initializeForm();
         fetchCategories();
         fetchLocations();
-    }, [profile, user, userIdParam]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?.id, userIdParam]);
 
     const fetchCategories = async () => {
         const { data } = await supabase
@@ -174,7 +176,29 @@ const BusinessOnboarding = () => {
                 .single();
 
             if (currentProfile?.stripe_payment_id === 'MANUAL_BY_ADMIN') {
-                toast.success('Business profile updated! Your account is active.');
+                // Check if listing already exists before creating
+                const { data: existingListing } = await supabase
+                    .from('catalogue_listings')
+                    .select('id')
+                    .eq('owner_id', user.id)
+                    .maybeSingle();
+
+                if (!existingListing) {
+                    // Refresh session to ensure valid JWT before calling edge function
+                    await supabase.auth.refreshSession();
+                    const { error: fnError } = await supabase.functions.invoke('confirm-business-registration', {
+                        body: { registrationData, paymentIntentId: 'MANUAL_BY_ADMIN' }
+                    });
+                    if (fnError) {
+                        console.error('Edge function error:', fnError);
+                        toast.error('Failed to create business profile. Please try again.');
+                        setLoading(false);
+                        return;
+                    }
+                }
+
+                await refreshProfile();
+                toast.success('Business profile created! Your account is active.');
                 navigate('/dashboard/business', { replace: true });
                 return;
             }
@@ -453,6 +477,16 @@ const BusinessOnboarding = () => {
                                         value={formData.twitter}
                                         onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
                                         placeholder="https://x.com/..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-gray-500 mb-1 ml-1">WhatsApp</label>
+                                    <input
+                                        type="tel"
+                                        className="block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors text-sm"
+                                        value={formData.whatsapp}
+                                        onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+                                        placeholder="+353 87 123 4567"
                                     />
                                 </div>
                             </div>

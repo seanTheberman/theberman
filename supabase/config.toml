@@ -3,3 +3,9 @@ project_id = "theberman"
 
 [functions.create-admin-user]
 verify_jwt = false
+
+[functions.confirm-business-registration]
+verify_jwt = false
+
+[functions.confirm-assessor-registration]
+verify_jwt = false

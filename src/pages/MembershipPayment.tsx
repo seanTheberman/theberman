@@ -10,7 +10,7 @@ import SEOHead from '../components/SEOHead';
 
 const MembershipPayment = () => {
     const navigate = useNavigate();
-    const { refreshProfile } = useAuth();
+    const { refreshProfile, user } = useAuth();
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [finalizing, setFinalizing] = useState(false);
     const [registrationType, setRegistrationType] = useState<'assessor' | 'business' | null>(null);
@@ -43,15 +43,25 @@ const MembershipPayment = () => {
                 // Check if user is already marked as paid (manual activation)
                 const { data: profile } = await supabase
                     .from('profiles')
-                    .select('stripe_payment_id, role')
-                    .eq('id', (await supabase.auth.getUser()).data.user?.id)
+                    .select('stripe_payment_id, role, registration_status')
+                    .eq('id', user?.id)
                     .single();
 
                 if (profile?.stripe_payment_id === 'MANUAL_BY_ADMIN') {
-                    if (profile.role === 'contractor') {
-                        navigate('/dashboard/ber-assessor', { replace: true });
-                    } else if (profile.role === 'business') {
-                        navigate('/dashboard/business', { replace: true });
+                    if (profile.registration_status !== 'active') {
+                        // Admin activated but onboarding not completed yet — send to onboarding
+                        if (profile.role === 'business') {
+                            navigate('/business-onboarding', { replace: true });
+                        } else if (profile.role === 'contractor') {
+                            navigate('/assessor-onboarding', { replace: true });
+                        }
+                    } else {
+                        // Fully active — go to dashboard
+                        if (profile.role === 'contractor') {
+                            navigate('/dashboard/ber-assessor', { replace: true });
+                        } else if (profile.role === 'business') {
+                            navigate('/dashboard/business', { replace: true });
+                        }
                     }
                     return;
                 }
@@ -132,7 +142,8 @@ const MembershipPayment = () => {
         };
 
         fetchSettingsAndCalculate();
-    }, [navigate, handleFreeAssessorRegistration]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handlePaymentSuccess = async (paymentIntentId: string) => {
         setFinalizing(true);
