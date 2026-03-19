@@ -77,6 +77,7 @@ export const AssessmentsView = React.memo(({
                                 <th className="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Property</th>
                                 <th className="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Client</th>
                                 <th className="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Assessor</th>
+                                <th className="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Referred By</th>
                                 <th className="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Scheduled</th>
                                 <th className="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Payment</th>
                                 <th className="px-5 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">Actions</th>
@@ -84,7 +85,7 @@ export const AssessmentsView = React.memo(({
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                             {filteredAssessments.length === 0 ? (
-                                <tr><td colSpan={7} className="px-5 py-12 text-center text-gray-300 text-sm italic">
+                                <tr><td colSpan={8} className="px-5 py-12 text-center text-gray-300 text-sm italic">
                                     No assessments found{locationFilter ? ` in ${locationFilter}` : ''}.
                                 </td></tr>
                             ) : filteredAssessments.map(a => (
@@ -115,6 +116,20 @@ export const AssessmentsView = React.memo(({
                                             </span>
                                         ) : (
                                             <span className="text-[11px] text-gray-300 italic">Unassigned</span>
+                                        )}
+                                    </td>
+                                    <td className="px-5 py-3">
+                                        {a.referred_by ? (
+                                            <div>
+                                                <div className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
+                                                    {a.referred_by.name}
+                                                </div>
+                                                {a.referred_by.company_name && (
+                                                    <div className="text-[9px] text-gray-400 mt-0.5">{a.referred_by.company_name}</div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <span className="text-[11px] text-gray-300 italic">Direct</span>
                                         )}
                                     </td>
                                     <td className="px-5 py-3 text-[12px] text-gray-400 whitespace-nowrap">

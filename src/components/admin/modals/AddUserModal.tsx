@@ -65,7 +65,7 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
                                 <input
                                     type="text"
                                     required
-                                    placeholder={newUserRole === 'contractor' ? 'e.g. John Doe' : 'e.g. Acme Energy'}
+                                    placeholder={newUserRole === 'contractor' ? 'Full name' : 'Full business name'}
                                     value={newUserFormData.fullName}
                                     onChange={(e) => setNewUserFormData({ ...newUserFormData, fullName: e.target.value })}
                                     className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
@@ -76,7 +76,7 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
                                 <input
                                     type="email"
                                     required
-                                    placeholder="john@example.com"
+                                    placeholder="email"
                                     value={newUserFormData.email}
                                     onChange={(e) => setNewUserFormData({ ...newUserFormData, email: e.target.value })}
                                     className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
@@ -228,22 +228,39 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
                     </div>
                 </div>
 
-                <div className="px-5 sm:px-8 py-4 sm:py-6 border-t border-gray-100 flex gap-3 shrink-0 bg-gray-50/50 rounded-b-2xl sm:rounded-b-3xl">
-                    <button
-                        type="submit"
-                        disabled={isUpdating}
-                        className="flex-[2] py-3 sm:py-4 bg-[#007F00] text-white font-bold rounded-xl sm:rounded-2xl hover:bg-green-700 transition-all shadow-lg shadow-green-100 flex items-center justify-center gap-2 disabled:opacity-50"
-                    >
-                        {isUpdating ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
-                        {isUpdating ? 'Adding...' : `Add ${newUserRole === 'contractor' ? 'Assessor' : 'Business'}`}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="flex-1 py-4 bg-white border border-gray-200 text-gray-500 font-bold rounded-2xl hover:bg-gray-50 hover:text-gray-700 transition-all text-sm"
-                    >
-                        Cancel
-                    </button>
+                <div className="px-5 sm:px-8 py-4 sm:py-6 border-t border-gray-100 flex flex-col gap-3 shrink-0 bg-gray-50/50 rounded-b-2xl sm:rounded-b-3xl">
+                    {isUpdating && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <div className="flex items-center gap-3">
+                                <Loader2 size={20} className="animate-spin text-blue-600" />
+                                <div className="flex-1">
+                                    <p className="text-sm font-bold text-blue-900">Creating {newUserRole === 'contractor' ? 'assessor' : 'business'} account...</p>
+                                    <p className="text-xs text-blue-600 mt-1">This usually takes 5-10 seconds</p>
+                                </div>
+                            </div>
+                            <div className="mt-3 bg-blue-100 rounded-full h-1.5 overflow-hidden">
+                                <div className="h-full bg-blue-600 rounded-full animate-pulse" style={{ width: '60%', animation: 'pulse 2s ease-in-out infinite' }} />
+                            </div>
+                        </div>
+                    )}
+                    <div className="flex gap-3">
+                        <button
+                            type="submit"
+                            disabled={isUpdating}
+                            className="flex-[2] py-3 sm:py-4 bg-[#007F00] text-white font-bold rounded-xl sm:rounded-2xl hover:bg-green-700 transition-all shadow-lg shadow-green-100 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isUpdating ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
+                            {isUpdating ? 'Creating...' : `Add ${newUserRole === 'contractor' ? 'Assessor' : 'Business'}`}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            disabled={isUpdating}
+                            className="flex-1 py-4 bg-white border border-gray-200 text-gray-500 font-bold rounded-2xl hover:bg-gray-50 hover:text-gray-700 transition-all text-sm disabled:opacity-50"
+                        >
+                            Cancel
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>

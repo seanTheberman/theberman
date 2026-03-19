@@ -103,7 +103,7 @@ export const BusinessesView = React.memo(({
                         ) : filteredBusinessLeads.map(u => {
                             const listing = listings.find(l => l.user_id === u.id || l.owner_id === u.id);
                             const isPending = u.registration_status === 'pending';
-                            const isActive = u.registration_status === 'active';
+                            const isActive = u.registration_status === 'active' || u.registration_status === 'completed';
 
                             return (
                                 <tr

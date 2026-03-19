@@ -11,10 +11,10 @@ const NAV_LINKS = [
     { label: 'About', path: '/about' },
     { label: 'Home Energy Upgrade Catalogue', path: '/catalogue' },
     { label: 'Speak to an Energy Advisor', path: '/hire-agent' },
-    { label: 'Book Ber Assessors', path: '/contact' },
+    { label: 'Book Ber Assessors', path: '/contact-us' },
     { label: 'Our News', path: '/news' },
     { label: 'Location', path: '/locations' },
-    { label: 'Contact', path: '/contact' },
+    { label: 'Contact', path: '/contact-us' },
 ];
 
 const PROVINCES: Record<string, string[]> = {
@@ -90,7 +90,7 @@ const Layout = () => {
     }, [user, role]);
 
     const getDashboardLink = () => {
-        if (!user) return '/contact';
+        if (!user) return '/contact-us';
         if (role === 'admin') return '/admin';
         if (role === 'contractor') return '/dashboard/ber-assessor';
         if (role === 'business') return '/dashboard/business';
@@ -378,7 +378,7 @@ const Layout = () => {
                                     { label: 'Book BER Assessors', path: '/' },
                                     { label: 'Locations', path: '/locations' },
                                     { label: 'Our News', path: '/news' },
-                                    { label: 'Contact Us', path: '/contact' },
+                                    { label: 'Contact Us', path: '/contact-us' },
                                     { label: 'Login to Portal', path: '/login' },
                                     { label: 'Sign Up', path: '/signup' }
                                 ].map(link => (

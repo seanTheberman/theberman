@@ -68,9 +68,11 @@ const ContractorOnboarding = () => {
                     homeCounty: profile.county || prev.homeCounty,
                     homeTown: profile.town || prev.homeTown,
                     seaiNumber: profile.seai_number || prev.seaiNumber,
-                    // assessor_type stored as "Domestic Assessor & Commercial Assessor" or single
+                    // assessor_type stored as "Both", "Domestic Assessor", "Commercial Assessor" or "Domestic Assessor & Commercial Assessor"
                     assessorTypes: profile.assessor_type
-                        ? profile.assessor_type.split(' & ').filter(Boolean)
+                        ? profile.assessor_type === 'Both' 
+                            ? ['Domestic Assessor', 'Commercial Assessor']
+                            : profile.assessor_type.split(' & ').filter(Boolean)
                         : prev.assessorTypes,
                     companyName: profile.company_name || prev.companyName,
                     website: profile.website_url || prev.website,
@@ -154,7 +156,7 @@ const ContractorOnboarding = () => {
                     seai_number: formData.seaiNumber,
                     insurance_holder: formData.insuranceHolder,
                     vat_registered: formData.vatRegistered,
-                    assessor_type: formData.assessorTypes.join(' & '),
+                    assessor_type: formData.assessorTypes.length === 2 ? 'Both' : formData.assessorTypes.join(' & '),
                     preferred_counties: formData.serviceAreas,
                     company_name: formData.companyName,
                     website_url: formData.website,

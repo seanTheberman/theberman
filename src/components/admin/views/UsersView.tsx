@@ -266,7 +266,7 @@ export const UsersView = React.memo(({
                                                             className="flex items-center gap-1 text-[11px] font-semibold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 px-2.5 py-1 rounded-lg transition-all disabled:opacity-50"
                                                         ><X size={11} /> Reject</button>
                                                     </div>
-                                                ) : u.registration_status === 'active' ? (
+                                                ) : u.registration_status === 'active' || u.registration_status === 'completed' ? (
                                                     <div className="flex flex-col gap-1">
                                                         <span className="text-[11px] text-green-600 font-semibold flex items-center gap-1"><CheckCircle2 size={11} /> Active</span>
                                                         {listing ? (

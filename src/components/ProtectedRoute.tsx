@@ -17,8 +17,9 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     }
 
     if (!user) {
-        // Not logged in -> Go to login
-        return <Navigate to="/login" state={{ from: location }} replace />;
+        // Not logged in -> Go to login (admin-specific if trying to access admin)
+        const loginPath = location.pathname.startsWith('/admin') ? '/login/admin' : '/login';
+        return <Navigate to={loginPath} state={{ from: location }} replace />;
     }
 
     if (allowedRoles && (!role || !allowedRoles.includes(role))) {

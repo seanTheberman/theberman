@@ -1,10 +1,37 @@
 User-agent: *
 Allow: /
-Disallow: /admin
+
+# Sitemap
+Sitemap: https://www.theberman.eu/sitemap.xml
+
+# Block common non-content paths
 Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /api/
+Disallow: /membership-payment
+Disallow: /registration-pending
+Disallow: /assessor-terms
 Disallow: /assessor-onboarding
 Disallow: /business-onboarding
 Disallow: /update-password
-Disallow: /registration-pending
 
-Sitemap: https://theberman.eu/sitemap.xml
+# Allow search engines to crawl main content
+Allow: /
+Allow: /about
+Allow: /services
+Allow: /pricing
+Allow: /contact-us
+Allow: /catalogue
+Allow: /locations
+Allow: /faq
+Allow: /news
+Allow: /hire-agent
+Allow: /get-quote
+Allow: /privacy
+Allow: /terms
+Allow: /cookie-policy
+Allow: /signup
+Allow: /login
+
+# Crawl delay (optional, be respectful)
+Crawl-delay: 1

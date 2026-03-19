@@ -14,6 +14,7 @@ import ListingDetail from './pages/ListingDetail';
 import Admin from './pages/Admin';
 import AdminNewsAction from './pages/AdminNewsAction';
 import Login from './pages/Login';
+import AdminLogin from './pages/AdminLogin';
 import UserDashboard from './pages/UserDashboard';
 import ContractorDashboard from './pages/ContractorDashboard';
 import BusinessDashboard from './pages/BusinessDashboard';
@@ -24,6 +25,7 @@ import RegistrationPending from './pages/RegistrationPending';
 import ForgotPassword from './pages/ForgotPassword';
 import UpdatePassword from './pages/UpdatePassword';
 import QuoteForm from './pages/QuoteForm';
+import QuickQuotePage from './pages/QuickQuotePage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import CookiePolicy from './pages/CookiePolicy';
@@ -67,7 +69,7 @@ function App() {
                         <Route path="about" element={<About />} />
                         <Route path="services" element={<Services />} />
                         <Route path="pricing" element={<Pricing />} />
-                        <Route path="contact" element={<Contact />} />
+                        <Route path="contact-us" element={<Contact />} />
                         <Route path="catalogue" element={<Catalogue />} />
                         <Route path="catalogue/:slug" element={<ListingDetail />} />
                         <Route path="locations" element={<Locations />} />
@@ -77,6 +79,7 @@ function App() {
                         <Route path="cookie-policy" element={<CookiePolicy />} />
                         <Route path="assessor-terms" element={<AssessorTerms />} />
                         <Route path="login" element={<Login />} />
+                        <Route path="login/admin" element={<AdminLogin />} />
                         <Route path="signup" element={<SignUp />} />
                         <Route path="faq" element={<FAQ />} />
                         <Route path="news" element={<News />} />
@@ -88,6 +91,7 @@ function App() {
                     {/* No Layout wrapper for cleaner UX */}
                     <Route path="/membership-payment" element={<MembershipPayment />} />
                     <Route path="/get-quote" element={<QuoteForm />} />
+                    <Route path="/quote/:id" element={<QuickQuotePage />} />
 
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/update-password" element={<UpdatePassword />} />

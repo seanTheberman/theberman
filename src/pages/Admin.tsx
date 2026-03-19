@@ -635,7 +635,13 @@ const Admin = () => {
         e.preventDefault();
         setIsUpdating(true);
         try {
-            const { data: fnData, error: fnError } = await supabase.functions.invoke('create-admin-user', {
+            // Create a timeout promise (60 seconds for business creation)
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Request timeout - please try again')), 60000)
+            );
+
+            // Race between the function call and timeout
+            const functionPromise = supabase.functions.invoke('create-admin-user', {
                 body: {
                     fullName: newUserFormData.fullName,
                     email: newUserFormData.email,
@@ -653,6 +659,9 @@ const Admin = () => {
                     role: newUserRole,
                 }
             });
+
+            const { data: fnData, error: fnError } = await Promise.race([functionPromise, timeoutPromise]) as any;
+            
             if (fnError) throw new Error(fnError.message || 'Edge function failed');
             if (!fnData?.success) throw new Error(fnData?.error || 'Failed to create user');
 
@@ -688,11 +697,22 @@ const Admin = () => {
                 businessAddress: '', website: '', description: '', companyNumber: '', vatNumber: '',
             });
         } catch (error: any) {
-            toast.error(error.message || 'Failed to add user');
+            console.error('Add user error:', error);
+            
+            // Check if it's a timeout error
+            if (error.message?.includes('timeout') || error.message?.includes('LockManager')) {
+                toast.error('Request timed out. The user may have been created - please refresh and check the list.', {
+                    duration: 6000
+                });
+                // Refresh the user list in case it was created
+                setTimeout(() => fetchUsers(), 2000);
+            } else {
+                toast.error(error.message || 'Failed to add user');
+            }
         } finally {
             setIsUpdating(false);
         }
-    }, [newUserFormData, newUserRole, logAudit]);
+    }, [newUserFormData, newUserRole, fetchUsers, logAudit]);
 
     const handleUpdateProfile = useCallback(async () => {
         if (!selectedUser) return;

@@ -1,7 +1,7 @@
 import { useEffect, useState, Fragment } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, DollarSign, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, AlertCircle, Settings, MessageCircle, User, Menu, Plus, Search } from 'lucide-react';
+import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, AlertCircle, Settings, MessageCircle, User, Menu, Plus, Search } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { DatePicker } from '../components/ui/DatePicker';
 import { geocodeAddress } from '../lib/geocoding';
@@ -521,10 +521,6 @@ const ContractorDashboard = () => {
     };
 
     const stats = {
-        earnings: myQuotes.filter(q => q.status === 'accepted').reduce((sum, q) => sum + Number(q.price), 0),
-        pending: myQuotes.filter(q => q.status === 'pending').length,
-        completed: activeJobs.filter(j => j.status === 'completed').length,
-        totalQuotes: myQuotes.length,
         loyaltyJobs: profile?.completed_jobs_count || 0
     };
 
@@ -544,7 +540,7 @@ const ContractorDashboard = () => {
                             <Link to="/" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">Home</Link>
                             <Link to="/catalogue" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">Catalogue</Link>
                             <Link to="/news" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">News</Link>
-                            <Link to="/contact" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">Contact</Link>
+                            <Link to="/contact-us" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">Contact</Link>
                         </nav>
                         <button
                             onClick={handleSignOut}
@@ -711,80 +707,65 @@ const ContractorDashboard = () => {
                 </div>
             ) : null}
 
-            <main className="w-full px-6 py-8">
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 bg-green-50 text-green-600 rounded-lg">
-                                <DollarSign size={20} />
+            <main className="w-full px-4 md:px-6 py-6">
+                {/* Live Jobs Section - BerCert Style */}
+                <div className="bg-white flex flex-col">
+                    {/* Live Jobs Header - Green banner matching BerCert */}
+                    <div className="bg-[#c8e6c9] py-6 px-6 text-center">
+                        <h2 className="text-2xl font-bold italic text-gray-900 mb-1">
+                            {view === 'available' ? 'Live Jobs' :
+                                view === 'my_quotes' ? 'My Active Quotes' :
+                                    view === 'active' ? 'My Assessment Clients' :
+                                        view === 'settings' ? 'Assessor Settings' : 'Dashboard'}
+                        </h2>
+                        {view === 'available' && (
+                            <div className="text-sm italic text-gray-800">
+                                <p>{availableJobs.length > 0
+                                    ? 'You have not yet submitted a quote for these jobs.'
+                                    : 'No jobs available right now.'}</p>
+                                <p>{availableJobs.length > 0
+                                    ? 'Submit your quote below.'
+                                    : 'We\'ll notify you when new requests come in.'}</p>
                             </div>
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Earnings</span>
-                        </div>
-                        <p className="text-2xl font-black text-gray-900">€{stats.earnings.toLocaleString()}</p>
-                    </div>
-                    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                                <Clock size={20} />
-                            </div>
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Pending Quotes</span>
-                        </div>
-                        <p className="text-2xl font-black text-gray-900">{stats.pending}</p>
-                    </div>
-                    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                                <CheckCircle2 size={20} />
-                            </div>
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Jobs Done</span>
-                        </div>
-                        <p className="text-2xl font-black text-gray-900">{stats.completed}</p>
-                    </div>
-                    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 bg-orange-50 text-orange-600 rounded-lg">
-                                <TrendingUp size={20} />
-                            </div>
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Quote Success</span>
-                        </div>
-                        <p className="text-2xl font-black text-gray-900">
-                            {stats.totalQuotes > 0 ? Math.round((stats.completed / stats.totalQuotes) * 100) : 0}%
-                        </p>
-                    </div>
-                </div>
-
-
-
-                {/* Main Content Area */}
-                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden min-h-[600px] flex flex-col">
-                    <div className="px-8 py-10 border-b border-gray-100 bg-gray-50/30">
-                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                            <div className="flex-1">
-                                <h2 className="text-3xl font-black text-gray-900 mb-2">
-                                    {view === 'available' ? 'Available Assessment Leads' :
-                                        view === 'my_quotes' ? 'My Active Quotes' :
-                                            view === 'active' ? 'My Assessment Clients' :
-                                                view === 'settings' ? 'Assessor Settings' : 'Dashboard'}
-                                </h2>
-                                <p className="text-gray-500 font-medium max-w-2xl">
-                                    {view === 'available' ? 'Browse and quote for energy assessment leads in your Preference location.' :
-                                        view === 'my_quotes' ? "Track and manage quotes you've submitted to homeowners." :
-                                            view === 'active' ? 'Manage your current inspection schedule and client communications.' :
-                                                view === 'settings' ? 'Configure your notification preferences and service area.' :
-                                                    'Welcome to your professional assessor dashboard.'}
-                                </p>
-                            </div>
-                            {view === 'available' && availableJobs.length > 0 && (
-                                <div className="flex items-center gap-2 bg-[#007EA7]/10 text-[#007EA7] px-4 py-2 rounded-xl border border-[#007EA7]/20">
-                                    <Briefcase size={16} />
-                                    <span className="text-sm font-bold">{availableJobs.length} New Leads Available</span>
-                                </div>
-                            )}
-                        </div>
+                        )}
+                        {view === 'my_quotes' && <p className="text-sm italic text-gray-800">Track and manage quotes you've submitted to homeowners.</p>}
+                        {view === 'active' && <p className="text-sm italic text-gray-800">Manage your current inspection schedule and client communications.</p>}
+                        {view === 'settings' && <p className="text-sm italic text-gray-800">Configure your notification preferences and service area.</p>}
                     </div>
 
-                    <div className="flex-1 p-6">
+                    {/* Filters Row */}
+                    {view === 'available' && availableJobs.length > 0 && (
+                        <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex flex-col md:flex-row gap-3 items-center">
+                            <div className="flex-1 relative w-full">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                                <input
+                                    type="text"
+                                    placeholder="Search by town, county, type, eircode..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full pl-9 pr-8 py-2 bg-white border border-gray-300 rounded text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#007EA7]"
+                                />
+                                {searchQuery && (
+                                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                        <X size={14} />
+                                    </button>
+                                )}
+                            </div>
+                            <div className="flex gap-2 flex-shrink-0">
+                                <span className="px-3 py-1.5 bg-[#007EA7] text-white rounded text-xs font-bold">
+                                    All ({availableJobs.length})
+                                </span>
+                                <span className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded text-xs font-bold">
+                                    Dom ({availableJobs.filter(j => j.job_type !== 'commercial').length})
+                                </span>
+                                <span className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded text-xs font-bold">
+                                    Comm ({availableJobs.filter(j => j.job_type === 'commercial').length})
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex-1">
                         {loading ? (
                             <div className="h-full flex flex-col items-center justify-center py-20">
                                 <div className="w-10 h-10 border-4 border-blue-50 border-t-[#007EA7] rounded-full animate-spin"></div>
@@ -800,129 +781,105 @@ const ContractorDashboard = () => {
                                     <p className="text-gray-500 max-w-sm">We'll notify you when new assessment requests are submitted by homeowners in your area.</p>
                                 </div>
                             ) : (
-                                <div className="overflow-x-auto">
-                                    {/* Desktop Table View */}
-                                    <table className="w-full text-sm hidden md:table">
-                                        <thead>
-                                            <tr className="bg-gray-50 border-b border-gray-200">
-                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Posted</th>
-                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Job</th>
-                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Town</th>
-                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">County</th>
-                                                <th className="text-left py-3 px-4 text-xs font-bold text-blue-600 uppercase tracking-wider">Eircode</th>
-                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Type</th>
-                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Sq. Mt.</th>
-                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Beds</th>
-                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Heat Pump</th>
-                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Purpose</th>
-                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Addition</th>
-                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Preferred Date</th>
-                                                <th className="text-left py-3 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {availableJobs.map((job, index) => {
-                                                const daysSincePosted = Math.floor((Date.now() - new Date(job.created_at).getTime()) / (1000 * 60 * 60 * 24));
-                                                const isRecent = daysSincePosted <= 2;
-                                                return (
-                                                    <tr
-                                                        key={job.id}
-                                                        className={`border-b border-gray-100 hover:bg-amber-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}
-                                                    >
-                                                        <td className="py-3 px-4 text-gray-600 font-medium">
+                                <div>
+                                    {/* Excel-style Spreadsheet Table */}
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-[13px] border-collapse">
+                                            <thead>
+                                                <tr className="border-b-2 border-gray-300">
+                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Job<br/><span className="font-bold">Posted</span></th>
+                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Town</th>
+                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">County</th>
+                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Type</th>
+                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Sq. Mt.</th>
+                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Beds</th>
+                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Heat Pump</th>
+                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Purpose</th>
+                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Addition</th>
+                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Preferred<br/>Date</th>
+                                                    <th className="py-3 px-3"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {availableJobs
+                                                    .filter(job => {
+                                                        if (!searchQuery.trim()) return true;
+                                                        const s = searchQuery.toLowerCase();
+                                                        return (
+                                                            job.town?.toLowerCase().includes(s) ||
+                                                            job.county?.toLowerCase().includes(s) ||
+                                                            job.property_type?.toLowerCase().includes(s) ||
+                                                            job.eircode?.toLowerCase().includes(s) ||
+                                                            (job.ber_purpose || '')?.toLowerCase().includes(s) ||
+                                                            (job.building_type || '')?.toLowerCase().includes(s)
+                                                        );
+                                                    })
+                                                    .map((job) => (
+                                                    <tr key={job.id} className="border-b border-gray-200 hover:bg-gray-50">
+                                                        <td className="py-3 px-3 text-gray-700 whitespace-nowrap">
                                                             {new Date(job.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
                                                         </td>
-                                                        <td className="py-3 px-4">
-                                                            <span className={`px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider ${job.job_type === 'commercial' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                                                                {job.job_type === 'commercial' ? 'Comm' : 'Dom'}
-                                                            </span>
-                                                        </td>
-                                                        <td className="py-3 px-4 text-gray-900 font-bold">{job.town}</td>
-                                                        <td className="py-3 px-4 text-gray-600">{job.county}</td>
-                                                        <td className="py-3 px-4 text-blue-600 font-medium">{job.eircode}</td>
-                                                        <td className="py-3 px-4 text-gray-600">{job.job_type === 'commercial' ? (job.building_type || '-') : job.property_type}</td>
-                                                        <td className="py-3 px-4 text-gray-600">{job.job_type === 'commercial' ? (job.floor_area || '-') : job.property_size}</td>
-                                                        <td className="py-3 px-4 text-gray-600">{job.job_type === 'commercial' ? '-' : job.bedrooms}</td>
-                                                        <td className="py-3 px-4 text-gray-600">{job.heat_pump || '-'}</td>
-                                                        <td className="py-3 px-4">
-                                                            <span className={`px-2 py-1 rounded text-xs font-bold ${(job.ber_purpose || job.assessment_purpose || '')?.toLowerCase().includes('mortgage') ? 'bg-blue-100 text-blue-700' :
-                                                                (job.ber_purpose || job.assessment_purpose || '')?.toLowerCase().includes('grant') || (job.ber_purpose || job.assessment_purpose || '')?.toLowerCase().includes('funding') ? 'bg-green-100 text-green-700' :
-                                                                    (job.ber_purpose || job.assessment_purpose || '')?.toLowerCase().includes('letting') || (job.ber_purpose || job.assessment_purpose || '')?.toLowerCase().includes('leasing') ? 'bg-amber-100 text-amber-700' :
-                                                                        (job.ber_purpose || job.assessment_purpose || '')?.toLowerCase().includes('selling') ? 'bg-purple-100 text-purple-700' :
-                                                                            'bg-gray-100 text-gray-600'
-                                                                }`}>
-                                                                {job.ber_purpose || job.assessment_purpose || '-'}
-                                                            </span>
-                                                        </td>
-                                                        <td className="py-3 px-4">
-                                                            <span className="px-2 py-1 rounded text-xs font-bold bg-gray-100 text-gray-600 capitalize">
-                                                                {job.status.replace('_', ' ')}
-                                                            </span>
-                                                        </td>
-                                                        <td className="py-3 px-4 text-gray-600">
-                                                            {job.additional_features?.length > 0 ? job.additional_features.join(', ') : 'None'}
-                                                        </td>
-                                                        <td className="py-3 px-4 text-gray-600">{job.preferred_date || 'Flexible'}</td>
-                                                        <td className="py-3 px-4">
+                                                        <td className="py-3 px-3 text-gray-900">{job.town}</td>
+                                                        <td className="py-3 px-3 text-gray-700">{job.county}</td>
+                                                        <td className="py-3 px-3 text-gray-700">{job.job_type === 'commercial' ? (job.building_type || 'Commercial') : job.property_type}</td>
+                                                        <td className="py-3 px-3 text-gray-700">{job.job_type === 'commercial' ? (job.floor_area || '-') : job.property_size}</td>
+                                                        <td className="py-3 px-3 text-gray-700">{job.job_type === 'commercial' ? '-' : job.bedrooms}</td>
+                                                        <td className="py-3 px-3 text-gray-700">{job.heat_pump || 'None'}</td>
+                                                        <td className="py-3 px-3 text-gray-700">{job.ber_purpose || job.assessment_purpose || '-'}</td>
+                                                        <td className="py-3 px-3 text-gray-700">{job.additional_features?.length > 0 ? job.additional_features.join(', ') : 'None'}</td>
+                                                        <td className="py-3 px-3 text-gray-700 whitespace-nowrap">{job.preferred_date || 'Flexible'}</td>
+                                                        <td className="py-3 px-3">
                                                             <button
                                                                 onClick={() => {
                                                                     setSelectedJob(job);
                                                                     handleStartQuote();
                                                                 }}
-                                                                className={`px-4 py-2 text-white rounded-lg text-xs font-bold transition-all shadow-sm ${isRecent
-                                                                    ? 'bg-yellow-500 hover:bg-yellow-600'
-                                                                    : 'bg-green-600 hover:bg-green-700'
-                                                                    }`}
+                                                                className="px-4 py-1.5 bg-[#e8a838] hover:bg-[#d4962f] text-white rounded text-xs font-bold transition-colors"
                                                             >
                                                                 Quote
                                                             </button>
                                                         </td>
                                                     </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
 
                                     {/* Mobile Card View */}
-                                    <div className="md:hidden space-y-4">
-                                        {availableJobs.map(job => (
-                                            <div key={job.id} className="bg-white border border-gray-200 rounded-2xl p-4">
-                                                <div className="flex justify-between items-start mb-3">
+                                    <div className="md:hidden space-y-3 p-4">
+                                        {availableJobs
+                                            .filter(job => {
+                                                if (!searchQuery.trim()) return true;
+                                                const s = searchQuery.toLowerCase();
+                                                return (
+                                                    job.town?.toLowerCase().includes(s) ||
+                                                    job.county?.toLowerCase().includes(s) ||
+                                                    job.property_type?.toLowerCase().includes(s) ||
+                                                    job.eircode?.toLowerCase().includes(s)
+                                                );
+                                            })
+                                            .map(job => (
+                                            <div key={job.id} className="bg-white border border-gray-200 rounded-lg p-4">
+                                                <div className="flex justify-between items-start mb-2">
                                                     <div>
-                                                        <p className="font-bold text-gray-900">{job.town}, {job.county}</p>
-                                                        <p className="text-[10px] text-blue-600 font-bold">{job.eircode}</p>
+                                                        <p className="font-bold text-gray-900 text-sm">{job.town}, {job.county}</p>
                                                         <p className="text-xs text-gray-500">{job.job_type === 'commercial' ? (job.building_type || 'Commercial') : job.property_type} {job.job_type !== 'commercial' && `• ${job.bedrooms} beds`}</p>
-                                                        <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${job.job_type === 'commercial' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                                                            {job.job_type === 'commercial' ? 'Commercial' : 'Domestic'}
-                                                        </span>
                                                     </div>
                                                     <span className="text-xs text-gray-400">
                                                         {new Date(job.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
                                                     </span>
                                                 </div>
-                                                <div className="flex flex-wrap gap-2 mb-4">
-                                                    <span className="text-[10px] font-bold bg-gray-100 text-gray-600 px-2 py-1 rounded">{job.ber_purpose}</span>
-                                                    <span className="text-[10px] font-bold bg-gray-100 text-gray-600 px-2 py-1 rounded">{job.heat_pump}</span>
+                                                <div className="flex flex-wrap gap-1 mb-3 text-[11px]">
+                                                    <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{job.ber_purpose || '-'}</span>
+                                                    <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{job.heat_pump || 'None'}</span>
+                                                    <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{job.preferred_date || 'Flexible'}</span>
                                                 </div>
-                                                {(() => {
-                                                    const daysSincePosted = Math.floor((Date.now() - new Date(job.created_at).getTime()) / (1000 * 60 * 60 * 24));
-                                                    const isRecent = daysSincePosted <= 2;
-                                                    return (
-                                                        <button
-                                                            onClick={() => {
-                                                                setSelectedJob(job);
-                                                                setJobDetailsModalOpen(true);
-                                                            }}
-                                                            className={`w-full py-3 text-white rounded-xl font-bold transition-all ${isRecent
-                                                                ? 'bg-yellow-500 hover:bg-yellow-600'
-                                                                : 'bg-green-600 hover:bg-green-700'
-                                                                }`}
-                                                        >
-                                                            Quote
-                                                        </button>
-                                                    );
-                                                })()}
+                                                <button
+                                                    onClick={() => { setSelectedJob(job); setJobDetailsModalOpen(true); }}
+                                                    className="w-full py-2.5 bg-[#e8a838] hover:bg-[#d4962f] text-white rounded font-bold text-sm transition-colors"
+                                                >
+                                                    Quote
+                                                </button>
                                             </div>
                                         ))}
                                     </div>
@@ -1828,13 +1785,17 @@ const ContractorDashboard = () => {
                         </div>
 
                         <div className="p-8 space-y-8">
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                 <div className="space-y-1">
                                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Location</span>
                                     <p className="text-sm font-bold text-gray-900 flex items-center gap-2">
                                         <MapPin size={14} className="text-[#007EA7]" />
                                         {selectedJob.town}, {selectedJob.county}
                                     </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Eircode</span>
+                                    <p className="text-sm font-bold text-blue-600">{selectedJob.eircode || 'N/A'}</p>
                                 </div>
                                 <div className="space-y-1">
                                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Size</span>
@@ -2031,7 +1992,7 @@ const ContractorDashboard = () => {
                                                 </div>
                                                 <div className="flex justify-between px-4 py-3">
                                                     <span className="text-gray-600">Eircode:</span>
-                                                    <a href="#" className="font-medium text-blue-600 underline">{selectedJob.property_address?.slice(0, 7) || 'N/A'}</a>
+                                                    <span className="font-medium text-blue-600">{selectedJob.eircode || 'N/A'}</span>
                                                 </div>
                                                 <div className="flex justify-between px-4 py-3">
                                                     <span className="text-gray-600">Property Type:</span>

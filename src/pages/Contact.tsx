@@ -79,7 +79,7 @@ const Contact = () => {
             <SEOHead
                 title="Contact Us"
                 description="Get in touch with The Berman for BER assessments, energy ratings, and home energy upgrades across Ireland."
-                canonical="/contact"
+                canonical="/contact-us"
             />
 
             {/* 1. COMPACT HERO */}
@@ -152,13 +152,13 @@ const Contact = () => {
                                         label="Full Name"
                                         register={register('name')}
                                         error={errors.name}
-                                        placeholder="Enter your name"
+                                        placeholder="Full name"
                                     />
                                     <FormInput
                                         label="Phone Number"
                                         register={register('phone')}
                                         error={errors.phone}
-                                        placeholder="087 123 4567"
+                                        placeholder="phone number"
                                     />
                                 </div>
 
@@ -168,7 +168,7 @@ const Contact = () => {
                                         type="email"
                                         register={register('email')}
                                         error={errors.email}
-                                        placeholder="your@email.com"
+                                        placeholder="email"
                                     />
                                     <div className="space-y-1">
                                         <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">County</label>

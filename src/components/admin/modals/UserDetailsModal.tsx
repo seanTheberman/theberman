@@ -34,7 +34,7 @@ const getAccountState = (user: Profile) => {
     if (isSuspended && user.registration_status !== 'active') return 'suspended';
     if (user.registration_status === 'pending') return 'pending';
     if (user.registration_status === 'rejected') return 'rejected';
-    if (user.registration_status === 'active') return 'active';
+    if (user.registration_status === 'active' || user.registration_status === 'completed') return 'active';
     return 'unknown';
 };
 

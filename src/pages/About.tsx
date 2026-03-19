@@ -158,7 +158,7 @@ const About = () => {
                             <p className="text-gray-500 text-lg mb-10 max-w-xl mx-auto font-medium">
                                 Ready for a professional BER assessment? Our nationwide team is here to help you today.
                             </p>
-                            <Link to="/contact">
+                            <Link to="/contact-us">
                                 <button className="bg-[#007F00] text-white font-black px-12 py-5 rounded-2xl hover:bg-[#006400] transition-all shadow-xl flex items-center gap-3 mx-auto transform hover:-translate-y-1 active:translate-y-0">
                                     Get My Quote <ArrowRight size={20} />
                                 </button>

@@ -11,6 +11,7 @@ import {
     Instagram,
     Linkedin,
     Twitter,
+    MessageCircle,
     MapPin,
     Tags,
     CheckCircle,
@@ -21,6 +22,8 @@ import {
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { geocodeAddress } from '../lib/geocoding';
+import ReferralProgram from '../components/business/ReferralProgram';
+import { Gift } from 'lucide-react';
 
 const IRISH_COUNTIES = [
     'Carlow', 'Cavan', 'Clare', 'Cork', 'Donegal', 'Dublin', 'Galway',
@@ -51,6 +54,7 @@ interface CatalogueListing {
         instagram?: string;
         linkedin?: string;
         twitter?: string;
+        whatsapp?: string;
     };
     images?: { id: string, url: string, description: string, display_order: number }[];
     banner_url?: string;
@@ -309,8 +313,8 @@ const BusinessDashboard = () => {
             return;
         }
 
-        if (file.size > 2 * 1024 * 1024) {
-            toast.error('Image must be less than 2MB');
+        if (file.size > 10 * 1024 * 1024) {
+            toast.error('Image must be less than 10MB');
             return;
         }
 
@@ -344,8 +348,8 @@ const BusinessDashboard = () => {
             return;
         }
 
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error('Banner image must be less than 5MB');
+        if (file.size > 15 * 1024 * 1024) {
+            toast.error('Banner image must be less than 15MB');
             return;
         }
 
@@ -411,7 +415,7 @@ const BusinessDashboard = () => {
                             <Link to="/" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">Home</Link>
                             <Link to="/catalogue" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">Catalogue</Link>
                             <Link to="/news" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">News</Link>
-                            <Link to="/contact" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">Contact</Link>
+                            <Link to="/contact-us" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">Contact</Link>
                         </nav>
                         <button onClick={handleSignOut} className="text-sm font-bold text-gray-500 hover:text-red-500 transition-colors flex items-center gap-2">
                             <LogOut size={16} /> Sign Out
@@ -610,6 +614,12 @@ const BusinessDashboard = () => {
                         >
                             <MapPin size={14} /> Locations
                         </button>
+                        <button
+                            onClick={() => document.getElementById('referral-program')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                            className="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-purple-600 hover:bg-purple-50 hover:text-purple-700 transition-all whitespace-nowrap bg-purple-50 border border-purple-100"
+                        >
+                            <Gift size={14} /> Referrals
+                        </button>
                     </div>
 
                     <div className="space-y-16 pb-20">
@@ -753,6 +763,10 @@ const BusinessDashboard = () => {
                                                 <div>
                                                     <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2"><Twitter size={12} /> Twitter / X</label>
                                                     <input name="social_twitter" value={listing.social_media?.twitter || ''} onChange={handleProfileChange} placeholder="https://twitter.com/handle" className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold shadow-inner" />
+                                                </div>
+                                                <div>
+                                                    <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2"><MessageCircle size={12} /> WhatsApp</label>
+                                                    <input name="social_whatsapp" value={listing.social_media?.whatsapp || ''} onChange={handleProfileChange} placeholder="+35312345678" className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold shadow-inner" />
                                                 </div>
                                             </div>
                                         </div>
@@ -936,6 +950,11 @@ const BusinessDashboard = () => {
                                     })}
                                 </div>
                             </div>
+                        </section>
+
+                        {/* Section 5: Referral Program */}
+                        <section id="referral-program">
+                            <ReferralProgram />
                         </section>
                     </div>
                 </div>

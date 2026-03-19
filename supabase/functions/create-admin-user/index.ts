@@ -47,7 +47,7 @@ Deno.serve(async (req: Request) => {
 
         const userId = authData.user.id;
 
-        // 2. Insert/Update Profile
+        // 2. Insert/Update Profile with correct subscription settings
         let profileData: any = {
             id: userId,
             full_name: fullName,
@@ -56,15 +56,19 @@ Deno.serve(async (req: Request) => {
             phone: phone,
             county: county,
             town: town,
-            registration_status: 'pending',
+            registration_status: role === 'contractor' ? 'completed' : 'pending',
+            is_active: true,
         };
 
+        // Set subscription details based on role
         if (role === 'contractor') {
             profileData = {
                 ...profileData,
                 seai_number: seaiNumber,
                 assessor_type: assessorType,
                 company_name: companyName,
+                subscription_status: 'active',
+                stripe_payment_id: 'FREE_ASSESSOR',
             };
         } else if (role === 'business') {
             profileData = {
@@ -74,6 +78,8 @@ Deno.serve(async (req: Request) => {
                 company_number: companyNumber,
                 vat_number: vatNumber,
                 company_name: companyName,
+                subscription_status: 'inactive',
+                stripe_payment_id: 'MANUAL_BY_ADMIN',
             };
         }
 

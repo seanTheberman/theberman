@@ -86,7 +86,7 @@ const Catalogue = () => {
                                         </li>
                                     ))}
                                 </ul>
-                                <Link to="/contact">
+                                <Link to="/contact-us">
                                     <button className="w-full flex items-center justify-center gap-2 py-3 md:py-4 rounded-xl bg-gray-50 text-gray-900 group-hover:bg-[#007F00] group-hover:text-white transition-all font-black text-xs uppercase tracking-widest border border-gray-100 group-hover:border-[#007F00] cursor-pointer">
                                         Enquire Now <ArrowRight size={14} />
                                     </button>
@@ -102,7 +102,7 @@ const Catalogue = () => {
                                     Our experts can help you design a complete energy upgrade plan tailored to your budget and property.
                                 </p>
                             </div>
-                            <Link to="/contact">
+                            <Link to="/contact-us">
                                 <button className="w-full bg-white text-[#007F00] py-3 md:py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all hover:bg-green-50 shadow-lg cursor-pointer">
                                     Book Assessment
                                 </button>
@@ -121,7 +121,7 @@ const Catalogue = () => {
                             <p className="text-gray-500 text-base md:text-lg mb-8 md:mb-10 max-w-xl mx-auto font-medium">
                                 Join thousands of homeowners who have significantly reduced their energy bills with our help.
                             </p>
-                            <Link to="/contact">
+                            <Link to="/contact-us">
                                 <button className="bg-[#007F00] text-white font-black px-8 md:px-12 py-4 md:py-5 rounded-2xl hover:bg-[#006400] transition-all shadow-xl flex items-center gap-3 mx-auto transform hover:-translate-y-1 active:translate-y-0 text-xs uppercase tracking-widest cursor-pointer">
                                     Enquire Today
                                 </button>

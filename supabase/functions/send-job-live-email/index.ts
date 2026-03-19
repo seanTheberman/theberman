@@ -99,9 +99,9 @@ Deno.serve(async (req: Request) => {
                 console.error(`[send-job-live-email] [SMTP ERROR] Failed to notify customer ${email}:`, custErr);
             }
 
-            // 2. Notify Relevant Contractors - TEMPORARILY DISABLED
-            // console.log(`[send-job-live-email] Contractor notifications are currently disabled.`);
-            /*
+            // 2. Notify Relevant Contractors - RE-ENABLED
+            console.log(`[send-job-live-email] Starting contractor notifications for ${county}...`);
+            
             const { data: existingQuotes } = await supabase
                 .from('quotes')
                 .select('created_by')
@@ -114,7 +114,7 @@ Deno.serve(async (req: Request) => {
                 .select('id, email, full_name, preferred_counties')
                 .eq('role', 'contractor')
                 .eq('is_active', true)
-                .eq('registration_status', 'active');
+                .in('registration_status', ['active', 'completed']);
 
             if (contractors && contractors.length > 0) {
                 const relevantContractors = contractors.filter(c => {
@@ -125,9 +125,26 @@ Deno.serve(async (req: Request) => {
 
                 console.log(`[send-job-live-email] Notifying ${relevantContractors.length} contractors in ${county}`);
 
+                // Get assessment details for Eircode
+                const { data: assessmentDetails } = await supabase
+                    .from('assessments')
+                    .select('eircode, property_address')
+                    .eq('id', assessmentId)
+                    .single();
+
                 for (const contractor of relevantContractors) {
                     try {
-                        const contractorHtml = generateContractorEmail(county, town, contractor.full_name, promoHtml, websiteUrl, jobType);
+                        const contractorHtml = generateContractorEmail(
+                            county, 
+                            town, 
+                            contractor.full_name, 
+                            promoHtml, 
+                            websiteUrl, 
+                            jobType,
+                            assessmentDetails?.eircode,
+                            assessmentDetails?.property_address,
+                            assessmentId
+                        );
                         await client.send(smtpFrom, contractor.email, `New ${jobType === 'commercial' ? 'Commercial' : 'Domestic'} BER Job in ${town || county}`, contractorHtml);
                         console.log(`[send-job-live-email] Notified contractor: ${contractor.email}`);
                     } catch (err) {
@@ -135,7 +152,6 @@ Deno.serve(async (req: Request) => {
                     }
                 }
             }
-            */
 
             await client.close();
             return new Response(JSON.stringify({ success: true, message: 'Process completed' }), { headers: responseHeaders });

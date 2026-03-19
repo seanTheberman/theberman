@@ -42,7 +42,7 @@ const Services = () => {
                             </p>
                         </div>
                         <div className="w-full md:w-auto mt-4 md:mt-0">
-                            <Link to="/contact">
+                            <Link to="/contact-us">
                                 <button className="w-full md:w-auto bg-white text-[#007F00] font-black px-8 py-4 rounded-xl border border-green-100 hover:bg-green-50 transition-all text-xs uppercase tracking-widest shadow-sm cursor-pointer active:scale-95">
                                     Book Now
                                 </button>
@@ -132,7 +132,7 @@ const Services = () => {
                             <p className="text-gray-500 text-lg mb-10 max-w-xl mx-auto font-medium">
                                 Our team is ready to help you optimize your property and ensure full regulatory compliance.
                             </p>
-                            <Link to="/contact">
+                            <Link to="/contact-us">
                                 <button className="bg-[#007F00] text-white font-black px-12 py-5 rounded-2xl hover:bg-[#006400] transition-all shadow-xl flex items-center gap-3 mx-auto transform hover:-translate-y-1 active:translate-y-0 cursor-pointer">
                                     Get Started <ArrowRight size={20} />
                                 </button>

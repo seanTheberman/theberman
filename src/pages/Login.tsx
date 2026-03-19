@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { checkRateLimit, recordFailedAttempt, recordSuccessfulLogin } from '../lib/rateLimiter';
 
 const loginSchema = z.object({
     email: z.string().email('Invalid email address'),
@@ -26,6 +27,10 @@ const Login = () => {
 
     // Default redirect to /admin if no previous path
     const from = location.state?.from?.pathname;
+    
+    // Check for redirect parameter from URL
+    const params = new URLSearchParams(location.search);
+    const redirectParam = params.get('redirect');
 
     // Redirect if already authenticated
     useEffect(() => {
@@ -56,7 +61,17 @@ const Login = () => {
                 }
             }
 
-            if (from) {
+            if (redirectParam === 'quote' && role === 'contractor') {
+                // Check if there's a pending quote to show
+                const pendingQuote = sessionStorage.getItem('pendingQuote');
+                if (pendingQuote) {
+                    toast.success('Login successful! Your quote has been submitted.');
+                    sessionStorage.removeItem('pendingQuote');
+                    navigate('/dashboard/ber-assessor', { replace: true });
+                } else {
+                    navigate('/dashboard/ber-assessor', { replace: true });
+                }
+            } else if (from) {
                 navigate(from, { replace: true });
             } else {
                 if (role === 'admin') navigate('/admin', { replace: true });
@@ -79,9 +94,22 @@ const Login = () => {
         signingIn.current = true;
         try {
             const email = data.email.trim();
+            
+            // Check rate limiting (more lenient for regular users)
+            const rateLimitResult = checkRateLimit(email);
+            if (!rateLimitResult.allowed) {
+                if (rateLimitResult.lockoutRemaining) {
+                    throw new Error(`Too many failed attempts. Account locked for ${rateLimitResult.lockoutRemaining} minutes.`);
+                }
+                throw new Error('Login temporarily blocked. Please try again later.');
+            }
+            
             const { data: authData, error } = await signIn(email, data.password);
 
             if (error) {
+                // Record failed attempt for rate limiting
+                recordFailedAttempt(email);
+                
                 const errorMessage = error.message.toLowerCase();
                 if (errorMessage.includes('email not confirmed')) {
                     throw new Error('Please confirm your email address before logging in.');
@@ -94,6 +122,9 @@ const Login = () => {
 
             // Redirection logic
             if (authData.user) {
+                // Record successful login (clears rate limit)
+                recordSuccessfulLogin(email);
+                
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('role, registration_status, subscription_status, is_active')
@@ -125,7 +156,7 @@ const Login = () => {
                         throw new Error('This account is registered as a Business. Please use the "Business" tab to log in.');
                     }
                 } else if (activeTab === 'business') {
-                    if (userRole !== 'business' && userRole !== 'admin') {
+                    if (userRole !== 'business') {
                         await signOut();
                         throw new Error('This account is not registered as a Business.');
                     }

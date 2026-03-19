@@ -120,7 +120,7 @@ const Pricing = () => {
                             <p className="text-gray-500 text-lg mb-10 max-w-xl mx-auto font-medium">
                                 For large portfolios or specialized industrial units, our team can provide a tailored proposal.
                             </p>
-                            <Link to="/contact">
+                            <Link to="/contact-us">
                                 <button className="bg-[#007F00] text-white font-black px-12 py-5 rounded-2xl hover:bg-[#006400] transition-all shadow-xl flex items-center gap-3 mx-auto transform hover:-translate-y-1 active:translate-y-0 cursor-pointer">
                                     Contact Sales <ArrowRight size={20} />
                                 </button>
@@ -142,7 +142,7 @@ const PricingCard = ({
     features,
     isPopular = false,
     ctaText = "Book Now",
-    ctaLink = "/contact"
+    ctaLink = "/contact-us"
 }: {
     title: string,
     price: string,
