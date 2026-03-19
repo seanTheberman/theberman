@@ -19,7 +19,7 @@ export interface Profile {
     email: string;
     role: 'admin' | 'contractor' | 'user' | 'homeowner' | 'business';
     is_active?: boolean;
-    registration_status?: 'pending' | 'active' | 'rejected';
+    registration_status?: 'pending' | 'active' | 'rejected' | 'completed';
     subscription_status?: string;
     subscription_start_date?: string;
     subscription_end_date?: string;

@@ -45,22 +45,43 @@ Deno.serve(async (req: Request) => {
 
         if (contractorsError) throw contractorsError;
 
-        // 2. Fetch all live assessments
+        // 2. Fetch all live assessments (exclude jobs older than 15 days)
+        const fifteenDaysAgo = new Date();
+        fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
+        
         const { data: assessments, error: assessmentsError } = await supabase
             .from('assessments')
             .select('*')
-            .in('status', ['live', 'submitted', 'pending_quote']);
+            .in('status', ['live', 'submitted', 'pending_quote'])
+            .gte('created_at', fifteenDaysAgo.toISOString());
 
         if (assessmentsError) throw assessmentsError;
 
-        // 3. Fetch all quotes to exclude jobs already quoted for
+        // 3. Auto-close jobs older than 15 days
+        const { error: closeError } = await supabase
+            .from('assessments')
+            .update({ 
+                status: 'completed', 
+                completed_at: new Date().toISOString(),
+                notes: 'Auto-completed - job older than 15 days'
+            })
+            .lt('created_at', fifteenDaysAgo.toISOString())
+            .in('status', ['live', 'submitted', 'pending_quote']);
+
+        if (closeError) {
+            console.error('[send-job-reminder-cron] Error auto-closing old jobs:', closeError);
+        } else {
+            console.log(`[send-job-reminder-cron] Auto-closed jobs older than 15 days`);
+        }
+
+        // 4. Fetch all quotes to exclude jobs already quoted for
         const { data: allQuotes, error: quotesError } = await supabase
             .from('quotes')
             .select('assessment_id, created_by');
 
         if (quotesError) throw quotesError;
 
-        // 4. Fetch Sponsors for Promo Section
+        // 5. Fetch Sponsors for Promo Section
         const { data: sponsors } = await supabase.from('sponsors').select('*').eq('is_active', true).limit(3);
         const promoHtml = generatePromoHtml(sponsors || []);
 

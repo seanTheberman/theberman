@@ -868,12 +868,15 @@ const Admin = () => {
         const isAssessor = targetUser?.role === 'contractor';
 
         // When approving, also activate subscription (assessors get free membership, businesses paid via Stripe)
-        const updateData: Partial<Profile> = { registration_status: status };
+        const updateData: Partial<Profile> = { registration_status: status === 'active' ? 'completed' : status };
         if (status === 'active') {
             updateData.is_active = true;
             if (isAssessor) {
                 updateData.subscription_status = 'active';
                 updateData.stripe_payment_id = 'FREE_ASSESSOR';
+            } else {
+                // For businesses, mark as manually approved by admin
+                updateData.stripe_payment_id = 'MANUAL_BY_ADMIN';
             }
         }
 

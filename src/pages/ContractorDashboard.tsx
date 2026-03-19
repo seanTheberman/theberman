@@ -191,15 +191,10 @@ const ContractorDashboard = () => {
 
             if (jobsError) throw jobsError;
 
-            // Filter out jobs older than 5 days
-            const activeJobs = (jobs || []).filter(job => {
-                const createdAt = new Date(job.created_at);
-                const now = new Date();
-                const diffInDays = (now.getTime() - createdAt.getTime()) / (1000 * 3600 * 24);
-                return diffInDays <= 5;
-            });
+            // Remove 5-day filter - allow assessors to see jobs immediately when posted
+            const activeJobs = jobs || [];
 
-            // 3. Fetch My Quotes with assessment details
+            // 2. Fetch My Quotes with assessment details
             const { data: quotes, error: quotesError } = await supabase
                 .from('quotes')
                 .select(`
@@ -242,16 +237,16 @@ const ContractorDashboard = () => {
                 }
             });
 
-            // Filter out quotes for expired assessments (unless accepted)
+            // Filter out quotes for expired assessments (unless accepted) - remove 5-day limit
             const uniqueQuotes = Array.from(uniqueQuotesMap.values()).filter((q: any) => {
                 if (q.status === 'accepted') return true;
                 const createdAt = new Date(q.assessment?.created_at || q.created_at);
                 const now = new Date();
                 const diffInDays = (now.getTime() - createdAt.getTime()) / (1000 * 3600 * 24);
-                return diffInDays <= 5;
+                return diffInDays <= 30; // Increased to 30 days from 5 days
             });
 
-            // 4. Fetch lowest quotes for these assessments
+            // 3. Fetch lowest quotes for these assessments
             const assessmentIds = uniqueQuotes.map(q => q.assessment_id);
             let enrichedQuotes = uniqueQuotes;
 
@@ -272,7 +267,7 @@ const ContractorDashboard = () => {
                 }
             }
 
-            // 5. Update states
+            // 4. Update states
             setMyQuotes(enrichedQuotes);
 
             // Available jobs filtering:

@@ -16,6 +16,27 @@ const MembershipPayment = () => {
     const [registrationType, setRegistrationType] = useState<'assessor' | 'business' | null>(null);
     const [priceData, setPriceData] = useState<{ subtotal: number, vat: number, total: number } | null>(null);
 
+    const handleFreeAssessorRegistration = async (registrationData: any) => {
+        setFinalizing(true);
+        try {
+            const { error } = await supabase.functions.invoke('confirm-assessor-registration', {
+                body: { registrationData, paymentIntentId: 'FREE_ASSESSOR' }
+            });
+            if (error) throw error;
+
+            await refreshProfile();
+            toast.success('Free assessor registration complete! Your profile is pending admin approval and will be live shortly.', { duration: 6000 });
+            sessionStorage.removeItem('pending_assessor_registration');
+            setTimeout(() => navigate('/dashboard/ber-assessor'), 2000);
+        } catch (error: unknown) {
+            const err = error as Error;
+            console.error('Free Registration Error:', err);
+            toast.error('Failed to complete free registration. Please contact support.');
+        } finally {
+            setFinalizing(false);
+        }
+    };
+
     useEffect(() => {
         const fetchSettingsAndCalculate = async () => {
             try {
@@ -57,7 +78,13 @@ const MembershipPayment = () => {
                     }
 
                     const vat = subtotal * (settings.vat_rate / 100);
-                    setPriceData({ subtotal, vat, total: subtotal + vat });
+                    const total = subtotal + vat;
+                    setPriceData({ subtotal, vat, total });
+
+                    // If assessor is free, automatically complete registration
+                    if (total === 0) {
+                        await handleFreeAssessorRegistration(data);
+                    }
                 } else if (businessData) {
                     setRegistrationType('business');
                     const subtotal = settings.business_registration_price || REGISTRATION_PRICES.BUSINESS_REGISTRATION;
@@ -88,7 +115,13 @@ const MembershipPayment = () => {
                         : REGISTRATION_PRICES.DOMESTIC_ASSESSOR;
 
                     const vat = subtotal * VAT_RATE;
-                    setPriceData({ subtotal, vat, total: subtotal + vat });
+                    const total = subtotal + vat;
+                    setPriceData({ subtotal, vat, total });
+
+                    // If assessor is free, automatically complete registration
+                    if (total === 0) {
+                        await handleFreeAssessorRegistration(data);
+                    }
                 } else if (businessData) {
                     setRegistrationType('business');
                     const subtotal = REGISTRATION_PRICES.BUSINESS_REGISTRATION;
@@ -99,7 +132,7 @@ const MembershipPayment = () => {
         };
 
         fetchSettingsAndCalculate();
-    }, [navigate]);
+    }, [navigate, handleFreeAssessorRegistration]);
 
     const handlePaymentSuccess = async (paymentIntentId: string) => {
         setFinalizing(true);
@@ -146,6 +179,9 @@ const MembershipPayment = () => {
     };
 
     if (!registrationType || !priceData) return null;
+
+    // If it's a free assessor (total = 0), don't render payment UI
+    if (priceData.total === 0) return null;
 
     return (
         <div className="font-sans text-gray-900 bg-white h-screen flex flex-col justify-center items-center px-4">
