@@ -765,7 +765,7 @@ const fetchAssessments = useCallback(async () => {
                 assessor_type: editForm.assessor_type || undefined
             };
             setUsersList(prev => prev.map(u => u.id === selectedUser.id ? { ...u, ...updates } : u));
-            setSelectedUser(prev => prev ? { ...prev, ...updates } : null);
+            setSelectedUser(null);
             toast.success('Profile updated successfully');
         } catch (error: any) {
             toast.error('Failed to update profile');

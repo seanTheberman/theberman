@@ -34,7 +34,8 @@ serve(async (req: Request) => {
             facebook,
             instagram,
             linkedin,
-            twitter
+            twitter,
+            whatsapp
         } = registrationData
 
         // Initialize Supabase Admin Client
@@ -100,6 +101,7 @@ serve(async (req: Request) => {
                     instagram: instagram || undefined,
                     linkedin: linkedin || undefined,
                     twitter: twitter || undefined,
+                    whatsapp: whatsapp || undefined,
                 }
             })
             .select('id')

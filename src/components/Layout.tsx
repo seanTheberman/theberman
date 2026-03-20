@@ -316,8 +316,6 @@ const Layout = () => {
                         <Link to="/locations" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">Locations</Link>
                         <span className="text-white/20 text-[8px]">|</span>
                         <Link to="/news" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">News</Link>
-                        <span className="text-white/20 text-[8px]">|</span>
-                        <Link to="/catalogue" className="px-3 py-1 text-[9px] font-black text-[#9ACD32] uppercase tracking-widest transition-colors whitespace-nowrap">Catalogue</Link>
                     </nav>
                 )}
 

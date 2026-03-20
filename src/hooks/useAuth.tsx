@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { type User, type Session, type AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
@@ -27,8 +27,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [isInitialCheckDone, setIsInitialCheckDone] = useState(false);
 
     const [profile, setProfile] = useState<Record<string, unknown> | null>(null);
+    const isFetchingProfile = useRef(false);
 
     const fetchProfile = async (userId: string) => {
+        if (isFetchingProfile.current) return;
+        isFetchingProfile.current = true;
         try {
             // Update last_login first
             await supabase
@@ -58,6 +61,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             console.error('Error fetching profile:', err);
             setRole('user');
             setProfile(null);
+        } finally {
+            isFetchingProfile.current = false;
         }
     };
 
@@ -81,9 +86,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Listen for changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             // Only update state if it changed to prevent unnecessary re-renders
-            if (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY' || event === 'INITIAL_SESSION') {
+            if (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY') {
                 // PASSWORD_RECOVERY fires when user clicks the admin-sent magic link.
                 // We set the session so UpdatePassword page can call updateUser().
+                // INITIAL_SESSION is excluded here because getSession() above already handles it.
                 setSession(session);
                 setUser(session?.user ?? null);
                 if (session?.user?.id) {
