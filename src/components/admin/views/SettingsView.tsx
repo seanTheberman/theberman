@@ -1,4 +1,4 @@
-import { TrendingUp, Briefcase, Loader2 } from 'lucide-react';
+import { TrendingUp, Briefcase, Loader2, CreditCard } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import type { AppSettings } from '../../../types/admin';
 import { REGISTRATION_PRICES } from '../../../constants/pricing';
@@ -21,6 +21,8 @@ interface Props {
     setIsSavingSettings: (v: boolean) => void;
     isSavingRegistrationFees: boolean;
     setIsSavingRegistrationFees: (v: boolean) => void;
+    isSavingSubscription: boolean;
+    setIsSavingSubscription: (v: boolean) => void;
     isUpdatingBanner: boolean;
     fetchAppSettings: () => void;
     savePromoSettings: (e: React.FormEvent) => void;
@@ -30,6 +32,7 @@ export const SettingsView = ({
     appSettings, promoSettings, setPromoSettings,
     isSavingSettings, setIsSavingSettings,
     isSavingRegistrationFees, setIsSavingRegistrationFees,
+    isSavingSubscription, setIsSavingSubscription,
     isUpdatingBanner,
     fetchAppSettings, savePromoSettings,
 }: Props) => (
@@ -87,6 +90,76 @@ export const SettingsView = ({
                     >
                         {isSavingSettings ? <Loader2 className="animate-spin" size={18} /> : null}
                         {isSavingSettings ? 'Saving...' : 'Save Configurations'}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        {/* Business Subscription Settings */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <CreditCard size={20} className="text-purple-600" />
+                Business Subscription Settings
+            </h3>
+            <form
+                onSubmit={async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.target as HTMLFormElement);
+                    try {
+                        setIsSavingSubscription(true);
+                        const subscriptionAmount = parseFloat(formData.get('business_subscription_amount') as string);
+                        const { error } = await supabase.from('app_settings').update({
+                            business_subscription_amount: subscriptionAmount,
+                        }).eq('id', appSettings?.id);
+                        if (error) throw error;
+                        toast.success('Business subscription amount updated!');
+                        fetchAppSettings();
+                    } catch (err: any) {
+                        toast.error(err.message);
+                    } finally {
+                        setIsSavingSubscription(false);
+                    }
+                }}
+                className="space-y-6"
+            >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">
+                            Monthly Subscription Amount (€)
+                        </label>
+                        <input 
+                            name="business_subscription_amount" 
+                            type="number" 
+                            step="0.01" 
+                            min="0"
+                            defaultValue={appSettings?.business_subscription_amount ?? 29.99} 
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" 
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                            Set to 0 to make subscriptions FREE for all businesses
+                        </p>
+                    </div>
+                    <div className="flex items-center">
+                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 w-full">
+                            <p className="text-sm font-bold text-purple-900">
+                                Current Status: {appSettings?.business_subscription_amount === 0 ? 'FREE' : `€${appSettings?.business_subscription_amount?.toFixed(2) || '29.99'}/month`}
+                            </p>
+                            <p className="text-xs text-purple-700 mt-1">
+                                {appSettings?.business_subscription_amount === 0 
+                                    ? 'All businesses can subscribe without payment' 
+                                    : 'Businesses will be charged this amount monthly'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex justify-end">
+                    <button
+                        type="submit"
+                        disabled={isSavingSubscription}
+                        className="bg-purple-600 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:bg-purple-700"
+                    >
+                        {isSavingSubscription ? <Loader2 className="animate-spin" size={18} /> : null}
+                        {isSavingSubscription ? 'Saving...' : 'Update Subscription Amount'}
                     </button>
                 </div>
             </form>

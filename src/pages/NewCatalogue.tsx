@@ -115,7 +115,8 @@ const NewCatalogue = () => {
                     *,
                     categories:catalogue_listing_categories(catalogue_categories(*)),
                     locations:catalogue_listing_locations(catalogue_locations(*))
-                `);
+                `)
+                .is('deleted_at', null);
 
             if (searchQuery) {
                 query = query.ilike('name', `%${searchQuery}%`);

@@ -106,8 +106,8 @@ export const AssessmentsView = React.memo(({
                                         )}
                                     </td>
                                     <td className="px-5 py-3">
-                                        <div className="font-medium text-gray-700 text-[12px]">{a.profiles?.full_name || a.contact_name || '—'}</div>
-                                        <div className="text-[10px] text-gray-400">{a.profiles?.email || a.contact_email}</div>
+                                        <div className="font-medium text-gray-700 text-[12px]">{a.user?.full_name || a.contact_name || '—'}</div>
+                                        <div className="text-[10px] text-gray-400">{a.user?.email || a.contact_email}</div>
                                     </td>
                                     <td className="px-5 py-3">
                                         {a.contractor_id ? (

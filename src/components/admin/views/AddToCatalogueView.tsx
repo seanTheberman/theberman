@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Briefcase, MapPin, ImageIcon, Globe, Facebook, Instagram, Linkedin, Twitter, Plus, Star, Check, CheckCircle2, Loader2, UploadCloud, Youtube, MessageCircle, ChevronRight } from 'lucide-react';
+import { X, Briefcase, MapPin, ImageIcon, Globe, Facebook, Instagram, Linkedin, Twitter, Plus, Star, Check, CheckCircle2, Loader2, UploadCloud, Youtube, MessageCircle, ChevronRight, CreditCard } from 'lucide-react';
 import type { Profile, CatalogueFormData, AdminView } from '../../../types/admin';
 
 const IRISH_COUNTIES = [
@@ -91,14 +91,48 @@ export const AddToCatalogueView = ({
                                     <div><label className={lbl}>BER Assessor Registration</label><input type="text" value={catalogueFormData.registrationNo} onChange={e => setCatalogueFormData({ ...catalogueFormData, registrationNo: e.target.value })} className={inp} placeholder="e.g. BER-12345" /></div>
                                     <div><label className={lbl}>VAT Number</label><input type="text" value={catalogueFormData.vatNumber} onChange={e => setCatalogueFormData({ ...catalogueFormData, vatNumber: e.target.value })} className={inp} placeholder="e.g. IE1234567T" /></div>
                                     <div><label className={lbl}>County</label>
-                                        <select value={catalogueFormData.county} onChange={e => setCatalogueFormData({ ...catalogueFormData, county: e.target.value })} className={inp + " bg-white"}>
+                                        <select value={catalogueFormData.county} onChange={(e) => setCatalogueFormData({ ...catalogueFormData, county: e.target.value })} className={inp + " bg-white"}>
                                             <option value="">Select County</option>
-                                            {IRISH_COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                            {IRISH_COUNTIES.map((c, index) => (
+                                                <option key={index} value={c}>{c}</option>
+                                            ))}
                                         </select>
                                     </div>
                                     <div className="md:col-span-2"><label className={lbl}>Primary Address</label><input type="text" value={catalogueFormData.address} onChange={e => setCatalogueFormData({ ...catalogueFormData, address: e.target.value })} className={inp} placeholder="123 Industrial Estate, Dublin 12" /></div>
                                     <div className="md:col-span-2"><label className={lbl}>Company Description</label>
                                         <textarea value={catalogueFormData.description} onChange={e => setCatalogueFormData({ ...catalogueFormData, description: e.target.value })} rows={3} className={inp + " resize-none"} placeholder="Describe the services and expertise..." />
+                                    </div>
+                                </div>
+
+                                {/* Registration Amount */}
+                                <div className="pt-4 border-t border-gray-100">
+                                    <div className="flex items-center gap-2 mb-3"><CreditCard size={14} className="text-purple-600" /><span className="text-xs font-bold text-gray-700">Business Registration Amount</span></div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className={lbl}>Registration Fee (€)</label>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                value={catalogueFormData.registrationAmount || ''}
+                                                onChange={e => setCatalogueFormData({ ...catalogueFormData, registrationAmount: parseFloat(e.target.value) || 0 })}
+                                                className={inp}
+                                                placeholder="0.00"
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1">Set to 0 for free registration, or specify the amount this business should pay</p>
+                                        </div>
+                                        <div className="flex items-center">
+                                            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 w-full">
+                                                <p className="text-sm font-bold text-purple-900">
+                                                    Registration Fee: {catalogueFormData.registrationAmount === 0 ? 'FREE' : `€${catalogueFormData.registrationAmount.toFixed(2)}`}
+                                                </p>
+                                                <p className="text-xs text-purple-700 mt-1">
+                                                    {catalogueFormData.registrationAmount === 0
+                                                        ? 'This business can register without payment'
+                                                        : 'This business will be asked to pay this amount when registering'}
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 

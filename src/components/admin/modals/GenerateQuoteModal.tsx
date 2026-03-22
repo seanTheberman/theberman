@@ -55,13 +55,13 @@ export const GenerateQuoteModal = ({ assessment, quoteData, setQuoteData, isUpda
                         <h4 className="text-[10px] font-bold text-[#007F00] uppercase tracking-widest mb-2">Client Information</h4>
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-green-100 text-[#007F00] flex items-center justify-center font-bold text-xs">
-                                {(assessment.profiles?.full_name || assessment.contact_name || 'U').charAt(0)}
+                                {(assessment.user?.full_name || assessment.contact_name || 'U').charAt(0)}
                             </div>
                             <div>
-                                <p className="text-xs font-bold text-gray-900">{assessment.profiles?.full_name || assessment.contact_name || 'Unknown Client'}</p>
-                                <p className="text-[10px] text-gray-500">{assessment.profiles?.email || assessment.contact_email}</p>
-                                {(assessment.profiles?.phone || assessment.contact_phone) && (
-                                    <p className="text-[10px] text-gray-400 font-medium mt-0.5">{assessment.profiles?.phone || assessment.contact_phone}</p>
+                                <p className="text-xs font-bold text-gray-900">{assessment.user?.full_name || assessment.contact_name || 'Unknown Client'}</p>
+                                <p className="text-[10px] text-gray-500">{assessment.user?.email || assessment.contact_email}</p>
+                                {(assessment.user?.phone || assessment.contact_phone) && (
+                                    <p className="text-[10px] text-gray-400 font-medium mt-0.5">{assessment.user?.phone || assessment.contact_phone}</p>
                                 )}
                             </div>
                         </div>

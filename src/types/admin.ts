@@ -86,7 +86,7 @@ export interface Assessment {
     contact_email?: string;
     contact_phone?: string;
     job_type?: 'domestic' | 'commercial';
-    profiles?: {
+    user?: {
         full_name: string;
         email: string;
         phone?: string;
@@ -140,6 +140,7 @@ export interface AppSettings {
     commercial_assessor_price: number;
     bundle_assessor_price: number;
     business_registration_price: number;
+    business_subscription_amount: number;
 }
 
 export interface NewsArticle {
@@ -181,6 +182,7 @@ export interface CatalogueFormData {
     socialTiktok: string;
     galleryImages: { url: string; description: string }[];
     features: string[];
+    registrationAmount: number;
 }
 
 export type AdminView =

@@ -114,6 +114,7 @@ Deno.serve(async (req: Request) => {
                 .select('id, email, full_name, preferred_counties')
                 .eq('role', 'contractor')
                 .eq('is_active', true)
+                .is('deleted_at', null)
                 .in('registration_status', ['active', 'completed']);
 
             if (contractors && contractors.length > 0) {

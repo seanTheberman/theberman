@@ -41,7 +41,8 @@ Deno.serve(async (req: Request) => {
         const { data: contractors, error: contractorsError } = await supabase
             .from('profiles')
             .select('id, email, full_name, role, preferred_counties, assessor_type')
-            .eq('role', 'contractor');
+            .eq('role', 'contractor')
+            .is('deleted_at', null);
 
         if (contractorsError) throw contractorsError;
 

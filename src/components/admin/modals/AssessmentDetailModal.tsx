@@ -45,36 +45,36 @@ export const AssessmentDetailModal = ({
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div>
                                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Full Name</span>
-                                <p className="text-sm font-bold text-gray-900 mt-1">{assessment.profiles?.full_name || assessment.contact_name || 'N/A'}</p>
+                                <p className="text-sm font-bold text-gray-900 mt-1">{assessment.user?.full_name || assessment.contact_name || 'N/A'}</p>
                             </div>
                             <div>
                                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Email</span>
-                                <p className="text-sm font-bold text-blue-600 mt-1">{assessment.profiles?.email || assessment.contact_email || 'N/A'}</p>
+                                <p className="text-sm font-bold text-blue-600 mt-1">{assessment.user?.email || assessment.contact_email || 'N/A'}</p>
                             </div>
                             <div>
                                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Phone</span>
-                                <p className="text-sm font-bold text-gray-900 mt-1">{assessment.profiles?.phone || assessment.contact_phone || 'Not provided'}</p>
+                                <p className="text-sm font-bold text-gray-900 mt-1">{assessment.user?.phone || assessment.contact_phone || 'Not provided'}</p>
                             </div>
                             <div>
                                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">County</span>
-                                <p className="text-sm font-bold text-gray-900 mt-1">{assessment.profiles?.county || assessment.county || 'N/A'}</p>
+                                <p className="text-sm font-bold text-gray-900 mt-1">{assessment.user?.county || assessment.county || 'N/A'}</p>
                             </div>
                             <div>
                                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Town</span>
-                                <p className="text-sm font-bold text-gray-900 mt-1">{assessment.profiles?.town || assessment.town || 'N/A'}</p>
+                                <p className="text-sm font-bold text-gray-900 mt-1">{assessment.user?.town || assessment.town || 'N/A'}</p>
                             </div>
                             <div>
                                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Registration Status</span>
-                                <p className="text-sm font-bold text-gray-900 mt-1">{assessment.profiles?.registration_status || 'N/A'}</p>
+                                <p className="text-sm font-bold text-gray-900 mt-1">{assessment.user?.registration_status || 'N/A'}</p>
                             </div>
                             <div>
                                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Account Active</span>
-                                <p className="text-sm font-bold text-gray-900 mt-1">{assessment.profiles?.is_active ? 'Yes' : 'No'}</p>
+                                <p className="text-sm font-bold text-gray-900 mt-1">{assessment.user?.is_active ? 'Yes' : 'No'}</p>
                             </div>
                             <div>
                                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Member Since</span>
                                 <p className="text-sm font-bold text-gray-900 mt-1">
-                                    {assessment.profiles?.created_at ? new Date(assessment.profiles.created_at).toLocaleDateString('en-GB') : 'N/A'}
+                                    {assessment.user?.created_at ? new Date(assessment.user.created_at).toLocaleDateString('en-GB') : 'N/A'}
                                 </p>
                             </div>
                         </div>

@@ -57,6 +57,7 @@ const Admin = () => {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isSavingSettings, setIsSavingSettings] = useState(false);
     const [isSavingRegistrationFees, setIsSavingRegistrationFees] = useState(false);
+    const [isSavingSubscription, setIsSavingSubscription] = useState(false);
     const [isUpdatingBanner, setIsUpdatingBanner] = useState(false);
     const [isSavingCatalogue, setIsSavingCatalogue] = useState(false);
     const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -114,6 +115,7 @@ const Admin = () => {
         socialWhatsapp: '', socialYoutube: '', socialSnapchat: '', socialTiktok: '',
         galleryImages: Array(10).fill(null).map(() => ({ url: '', description: '' })),
         features: [],
+        registrationAmount: 0,
     });
 
     // Promo settings
@@ -152,7 +154,7 @@ const Admin = () => {
             a.town?.toLowerCase().includes(q) ||
             a.county?.toLowerCase().includes(q) ||
             a.status?.toLowerCase().includes(q) ||
-            (a.profiles?.full_name || '').toLowerCase().includes(q);
+            (a.user?.full_name || '').toLowerCase().includes(q);
         const matchLocation =
             !locationFilter ||
             a.county === locationFilter ||
@@ -197,8 +199,8 @@ const Admin = () => {
     // ─── Helpers ─────────────────────────────────────────────────────────────────
     const getFallbackPhone = (profile: Profile) => {
         if (profile.phone && profile.phone !== 'N/A') return profile.phone;
-        const linked = assessments.find(a => a.user_id === profile.id && (a.contact_phone || a.profiles?.phone));
-        return linked?.contact_phone || linked?.profiles?.phone || 'N/A';
+        const linked = assessments.find(a => a.user_id === profile.id && (a.contact_phone || a.user?.phone));
+        return linked?.contact_phone || linked?.user?.phone || 'N/A';
     };
 
     const logAudit = useCallback(async (action: string, entityType: string, entityId: string, details: Record<string, unknown>) => {
@@ -292,24 +294,14 @@ const fetchAssessments = useCallback(async () => {
             .from('assessments')
             .select(`
                 *,
-                profiles:profiles(id, full_name, email, phone, county, town, registration_status, is_active, created_at),
+                user:profiles!assessments_user_id_fkey(id, full_name, email, phone, county, town, registration_status, is_active, created_at),
                 quotes (
                     id,
                     price,
                     notes,
                     status,
                     created_at,
-                    created_by,
-                    contractor:profiles!quotes_created_by_fkey(
-                        id,
-                        full_name,
-                        email,
-                        phone,
-                        seai_number,
-                        assessor_type,
-                        company_name,
-                        county
-                    )
+                    created_by
                 )
             `)
             .order('created_at', { ascending: false });
@@ -993,7 +985,7 @@ const fetchAssessments = useCallback(async () => {
             await supabase.functions.invoke('send-job-live-email', {
                 body: {
                     email: selectedAssessment.contact_email,
-                    customerName: selectedAssessment.profiles?.full_name || selectedAssessment.contact_name,
+                    customerName: selectedAssessment.user?.full_name || selectedAssessment.contact_name,
                     county: selectedAssessment.county,
                     town: selectedAssessment.town,
                     assessmentId: selectedAssessment.id,
@@ -1097,7 +1089,7 @@ const fetchAssessments = useCallback(async () => {
         if (!selectedAssessment || !messageContent.trim()) return;
         setIsUpdating(true);
         try {
-            const clientEmail = selectedAssessment.profiles?.email;
+            const clientEmail = selectedAssessment.user?.email;
             if (!clientEmail) { toast.error('Client email not found'); return; }
             const subject = encodeURIComponent(`Update regarding your BER Assessment - ${selectedAssessment.property_address} `);
             const body = encodeURIComponent(messageContent);
@@ -1233,6 +1225,7 @@ const fetchAssessments = useCallback(async () => {
                 socialTiktok: existingListing.social_media?.tiktok || '',
                 galleryImages: Array(10).fill(null).map(() => ({ url: '', description: '' })),
                 features: existingListing.features || [],
+                registrationAmount: 0,
             });
             (async () => {
                 const { data: catData } = await supabase.from('catalogue_listing_categories').select('category_id').eq('listing_id', existingListing.id);
@@ -1258,6 +1251,7 @@ const fetchAssessments = useCallback(async () => {
                 socialWhatsapp: '', socialYoutube: '', socialSnapchat: '', socialTiktok: '',
                 galleryImages: Array(10).fill(null).map(() => ({ url: '', description: '' })),
                 features: [],
+                registrationAmount: 0,
             });
         }
         setView('add-to-catalogue');
@@ -1443,6 +1437,37 @@ const fetchAssessments = useCallback(async () => {
             }
 
             toast.success(selectedListingForEdit ? 'Listing updated successfully!' : 'Business added to catalogue successfully!');
+            
+            // Send email notification to business if it's a new listing
+            if (!selectedListingForEdit && catalogueFormData.email) {
+                try {
+                    const websiteUrl = window.location.origin.replace(/\/$/, '');
+                    const catalogueUrl = `${websiteUrl}/catalogue#${slug}`;
+                    const adminName = user?.email?.split('@')[0] || 'Admin';
+                    
+                    const { error } = await supabase.functions.invoke('send-business-notification', {
+                        body: {
+                            companyName: catalogueFormData.companyName,
+                            email: catalogueFormData.email,
+                            phone: catalogueFormData.phone || '',
+                            address: fullAddress || '',
+                            website: catalogueFormData.website || '',
+                            catalogueUrl,
+                            adminName,
+                            registrationAmount: catalogueFormData.registrationAmount || 0
+                        }
+                    });
+                    
+                    if (error) {
+                        console.error('Failed to send business notification email:', error);
+                    } else {
+                        console.log('Business notification email sent successfully');
+                    }
+                } catch (emailError) {
+                    console.error('Error sending business notification email:', emailError);
+                }
+            }
+            
             setView('catalogue');
             setSelectedListingForEdit(null);
             await fetchListings();
@@ -1741,6 +1766,7 @@ const fetchAssessments = useCallback(async () => {
                             promoSettings={promoSettings} setPromoSettings={setPromoSettings}
                             isSavingSettings={isSavingSettings} setIsSavingSettings={setIsSavingSettings}
                             isSavingRegistrationFees={isSavingRegistrationFees} setIsSavingRegistrationFees={setIsSavingRegistrationFees}
+                            isSavingSubscription={isSavingSubscription} setIsSavingSubscription={setIsSavingSubscription}
                             isUpdatingBanner={isUpdatingBanner}
                             fetchAppSettings={fetchAppSettings}
                             savePromoSettings={savePromoSettings}
