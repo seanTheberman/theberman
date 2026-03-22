@@ -1,4 +1,4 @@
-import { X, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react';
+import { X, AlertTriangle, CheckCircle2, Loader2, CreditCard } from 'lucide-react';
 import { TOWNS_BY_COUNTY } from '../../../data/irishTowns';
 
 const IRISH_COUNTIES = [
@@ -23,6 +23,7 @@ interface NewUserFormData {
     description: string;
     companyNumber: string;
     vatNumber: string;
+    registrationAmount: number;
 }
 
 interface Props {
@@ -215,6 +216,41 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
                                         onChange={(e) => setNewUserFormData({ ...newUserFormData, description: e.target.value })}
                                         className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all resize-none"
                                     />
+                                </div>
+                            </div>
+
+                            {/* Registration Amount Section */}
+                            <div className="mt-6 pt-6 border-t border-gray-200">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <CreditCard size={14} className="text-purple-600" />
+                                    <span className="text-[10px] font-black text-purple-900 uppercase tracking-widest">Registration Fee</span>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Amount to Pay (€)</label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            placeholder="0.00"
+                                            value={newUserFormData.registrationAmount || ''}
+                                            onChange={(e) => setNewUserFormData({ ...newUserFormData, registrationAmount: parseFloat(e.target.value) || 0 })}
+                                            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
+                                        />
+                                        <p className="text-[10px] text-gray-500 mt-1.5">Set to 0 for free registration</p>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 w-full">
+                                            <p className="text-sm font-bold text-purple-900">
+                                                Fee: {newUserFormData.registrationAmount === 0 ? 'FREE' : `€${newUserFormData.registrationAmount.toFixed(2)}`}
+                                            </p>
+                                            <p className="text-xs text-purple-700 mt-1">
+                                                {newUserFormData.registrationAmount === 0
+                                                    ? 'Business can register without payment'
+                                                    : 'Business must pay this amount to complete registration'}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

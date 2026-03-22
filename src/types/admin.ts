@@ -40,6 +40,7 @@ export interface Profile {
     stripe_payment_id?: string;
     is_admin_created?: boolean;
     last_login?: string;
+    registration_amount?: number;
 }
 
 export interface Quote {

@@ -102,6 +102,7 @@ const Admin = () => {
         fullName: '', email: '', phone: '', county: '', town: '',
         seaiNumber: '', assessorType: 'Domestic Assessor', companyName: '',
         businessAddress: '', website: '', description: '', companyNumber: '', vatNumber: '',
+        registrationAmount: 0,
     });
 
     // Catalogue form
@@ -670,6 +671,7 @@ const fetchAssessments = useCallback(async () => {
                     description: newUserFormData.description || null,
                     companyNumber: newUserFormData.companyNumber || null,
                     vatNumber: newUserFormData.vatNumber || null,
+                    registrationAmount: newUserFormData.registrationAmount || 0,
                     role: newUserRole,
                 }
             });
@@ -702,13 +704,14 @@ const fetchAssessments = useCallback(async () => {
 
             if (fnData?.user) {
                 setUsersList(prev => [fnData.user, ...prev]);
-                logAudit('create_user', 'user', fnData.user.id, { role: newUserRole });
+                logAudit('create_user', 'user', fnData.user.id, { role: newUserRole, registrationAmount: newUserFormData.registrationAmount });
             }
             setShowAddUserModal(false);
             setNewUserFormData({
                 fullName: '', email: '', phone: '', county: '', town: '',
                 seaiNumber: '', assessorType: 'Domestic Assessor', companyName: '',
                 businessAddress: '', website: '', description: '', companyNumber: '', vatNumber: '',
+                registrationAmount: 0,
             });
         } catch (error: any) {
             console.error('Add user error:', error);
@@ -901,17 +904,15 @@ const fetchAssessments = useCallback(async () => {
         const targetUser = users_list.find(u => u.id === userId);
         const isAssessor = targetUser?.role === 'contractor';
 
-        // When approving, also activate subscription (assessors get free membership, businesses paid via Stripe)
+        // When approving, also activate subscription for assessors. For businesses, approval just activates the account — they still need to pay subscription to be listed on catalogue.
         const updateData: Partial<Profile> = { registration_status: status === 'active' ? 'completed' : status };
         if (status === 'active') {
             updateData.is_active = true;
             if (isAssessor) {
                 updateData.subscription_status = 'active';
                 updateData.stripe_payment_id = 'FREE_ASSESSOR';
-            } else {
-                // For businesses, mark as manually approved by admin
-                updateData.stripe_payment_id = 'MANUAL_BY_ADMIN';
             }
+            // For businesses: don't touch stripe_payment_id — it tracks registration fee payment
         }
 
         try {
@@ -1912,7 +1913,7 @@ const fetchAssessments = useCallback(async () => {
                     newUserRole={newUserRole}
                     newUserFormData={newUserFormData} setNewUserFormData={setNewUserFormData}
                     isUpdating={isUpdating}
-                    onClose={() => { setShowAddUserModal(false); setNewUserFormData({ fullName: '', email: '', phone: '', county: '', town: '', seaiNumber: '', assessorType: 'Domestic Assessor', companyName: '', businessAddress: '', website: '', description: '', companyNumber: '', vatNumber: '' }); }}
+                    onClose={() => { setShowAddUserModal(false); setNewUserFormData({ fullName: '', email: '', phone: '', county: '', town: '', seaiNumber: '', assessorType: 'Domestic Assessor', companyName: '', businessAddress: '', website: '', description: '', companyNumber: '', vatNumber: '', registrationAmount: 0 }); }}
                     onSubmit={handleAddUser}
                 />
             )}
