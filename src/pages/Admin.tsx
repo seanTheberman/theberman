@@ -62,8 +62,7 @@ const Admin = () => {
     const [isSavingCatalogue, setIsSavingCatalogue] = useState(false);
     const [isUploadingLogo, setIsUploadingLogo] = useState(false);
     const [isUploadingGallery, setIsUploadingGallery] = useState<{ [key: number]: boolean }>({});
-    const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
-
+    
     const [searchTerm, setSearchTerm] = useState('');
     const [locationFilter, setLocationFilter] = useState('');
     const [customMonths, setCustomMonths] = useState<number>(1);
@@ -832,7 +831,6 @@ const fetchAssessments = useCallback(async () => {
     }, [fetchUsers]);
 
     const handleSendRenewalReminder = useCallback(async (u: Profile) => {
-        setSendingEmailId(u.id);
         const toastId = toast.loading('Sending renewal reminder...');
         try {
             const expiryDate = u.subscription_end_date ? new Date(u.subscription_end_date).toLocaleDateString('en-GB') : 'Soon';
@@ -854,8 +852,6 @@ const fetchAssessments = useCallback(async () => {
         } catch (error: any) {
             console.error('Email error:', error);
             toast.error(error.message || 'Failed to send renewal reminder', { id: toastId });
-        } finally {
-            setSendingEmailId(null);
         }
     }, []);
 
@@ -920,37 +916,53 @@ const fetchAssessments = useCallback(async () => {
             if (error) throw error;
             if (!data || data.length === 0) throw new Error('Update failed: No rows were changed.');
 
+            // For businesses: also activate their catalogue listing if it exists
+            if (status === 'active' && !isAssessor && targetUser) {
+                const { error: listingError } = await supabase
+                    .from('catalogue_listings')
+                    .update({ is_active: true })
+                    .eq('owner_id', userId);
+                
+                if (listingError) {
+                    console.error('Failed to activate catalogue listing:', listingError);
+                } else {
+                    toast.success('Business and catalogue listing both approved!');
+                }
+            }
+
             setUsersList(prev => prev.map(u => u.id === userId ? { ...u, ...updateData } : u));
             toast.success(`${isAssessor ? 'Assessor' : 'Business'} account ${status === 'active' ? 'approved & activated' : 'rejected'} successfully`);
+
+            // Send catalogue form invitation when approving a business
+            if (status === 'active' && !isAssessor && targetUser) {
+                const websiteUrl = import.meta.env.VITE_PUBLIC_WEBSITE_URL?.replace(/\/$/, '') || 'https://theberman.eu';
+                const catalogueFormUrl = `${websiteUrl}/business-onboarding?userId=${targetUser.id}`;
+                
+                supabase.functions.invoke('send-onboarding-link', {
+                    body: {
+                        fullName: targetUser.full_name,
+                        email: targetUser.email,
+                        catalogueFormUrl: catalogueFormUrl,
+                        companyName: targetUser.company_name || 'Your Business',
+                        role: 'business'
+                    }
+                }).then(({ data: emailData }) => {
+                    if (emailData?.success) {
+                        toast.success('Catalogue form invitation sent successfully!');
+                    }
+                }).catch(err => console.error('Failed to send catalogue form invitation:', err));
+            }
+
             fetchUsers();
+            if (status === 'active' && !isAssessor) {
+                fetchListings(); // Refresh listings to show the newly activated catalogue
+            }
         } catch (error: any) {
             toast.error(error.message || 'Failed to update registration status');
         } finally {
             setIsUpdating(false);
         }
-    }, [users_list, fetchUsers]);
-
-    const handleSendOnboardingEmail = useCallback(async (u: Profile) => {
-        setSendingEmailId(u.id);
-        try {
-            const { error } = await supabase.functions.invoke('send-onboarding-link', {
-                body: {
-                    fullName: u.full_name,
-                    email: u.email,
-                    password: 'Welcome@TheBerman123',
-                    town: u.company_name || u.town || 'Your Business Profile',
-                    userId: u.id,
-                    role: 'business'
-                }
-            });
-            if (error) throw error;
-            toast.success('Onboarding email sent successfully!');
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to send onboarding email');
-        } finally {
-            setSendingEmailId(null);
-        }
-    }, []);
+    }, [users_list, fetchUsers, fetchListings]);
 
     const handleAssignContractor = useCallback(async (contractorId: string) => {
         if (!selectedAssessmentForAssignment) return;
@@ -1313,8 +1325,8 @@ const fetchAssessments = useCallback(async () => {
         if (file.size > 2 * 1024 * 1024) { toast.error('Image must be less than 2MB'); return; }
         try {
             setIsUploadingLogo(true);
-            const { uploadImageToCloudinary } = await import('../lib/cloudinary');
-            const publicUrl = await uploadImageToCloudinary(file);
+            const { uploadLogoToCloudinary } = await import('../lib/cloudinary');
+            const publicUrl = await uploadLogoToCloudinary(file);
             setCatalogueFormData(prev => ({ ...prev, logoUrl: publicUrl }));
             toast.success('Logo uploaded successfully');
         } catch (error: any) {
@@ -1333,8 +1345,8 @@ const fetchAssessments = useCallback(async () => {
         try {
             setIsUploadingGallery(prev => ({ ...prev, [index]: true }));
             toast.loading('Uploading gallery image...', { id: 'gallery-upload' });
-            const { uploadImageToCloudinary } = await import('../lib/cloudinary');
-            const publicUrl = await uploadImageToCloudinary(file);
+            const { uploadGalleryToCloudinary } = await import('../lib/cloudinary');
+            const publicUrl = await uploadGalleryToCloudinary(file);
             setCatalogueFormData(prev => {
                 const newImages = [...prev.galleryImages];
                 newImages[index].url = publicUrl;
@@ -1718,11 +1730,10 @@ const fetchAssessments = useCallback(async () => {
                             searchTerm={searchTerm} setSearchTerm={setSearchTerm}
                             locationFilter={locationFilter} setLocationFilter={setLocationFilter}
                             uniqueUserLocations={uniqueBusinessLocations}
-                            isUpdating={isUpdating} sendingEmailId={sendingEmailId}
+                            isUpdating={isUpdating}
                             handleManualRenewal={handleManualRenewal}
                             handleSendRenewalReminder={handleSendRenewalReminder}
                             handleCancelSubscription={handleCancelSubscription}
-                            handleSendOnboardingEmail={handleSendOnboardingEmail}
                             handleOpenCatalogueView={handleOpenCatalogueView}
                             setSelectedUser={setSelectedUser} setEditForm={setEditForm}
                             setItemToSuspend={setItemToSuspend} setShowSuspendModal={setShowSuspendModal}

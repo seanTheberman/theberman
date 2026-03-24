@@ -321,8 +321,8 @@ const BusinessDashboard = () => {
         try {
             setIsUploadingGallery(prev => ({ ...prev, [index]: true }));
             setIsSavingGallery(true);
-            const { uploadImageToCloudinary } = await import('../lib/cloudinary');
-            const publicUrl = await uploadImageToCloudinary(file);
+            const { uploadGalleryToCloudinary } = await import('../lib/cloudinary');
+            const publicUrl = await uploadGalleryToCloudinary(file);
 
             const newImages = [...listingImages];
             newImages[index].url = publicUrl;
@@ -355,8 +355,8 @@ const BusinessDashboard = () => {
 
         try {
             setIsUploadingBanner(true);
-            const { uploadImageToCloudinary } = await import('../lib/cloudinary');
-            const publicUrl = await uploadImageToCloudinary(file);
+            const { uploadBannerToCloudinary } = await import('../lib/cloudinary');
+            const publicUrl = await uploadBannerToCloudinary(file);
 
             setListing(prev => {
                 const updated = { ...prev!, banner_url: publicUrl };

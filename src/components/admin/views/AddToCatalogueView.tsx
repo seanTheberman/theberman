@@ -145,14 +145,14 @@ export const AddToCatalogueView = ({
                                                 {isUploadingLogo ? <Loader2 size={13} className="animate-spin" /> : <UploadCloud size={13} />}
                                                 {isUploadingLogo ? 'Uploading...' : 'Upload Logo'}
                                             </label>
-                                            <p className="text-[10px] text-gray-400 mt-1">Square PNG/JPG · Max 2MB · Used as profile photo on listing page</p>
+                                            <p className="text-[10px] text-gray-400 mt-1">Recommended: 400×400px square PNG/JPG · Max 2MB</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Gallery */}
                                 <div className="pt-4 border-t border-gray-100">
-                                    <div className="flex items-center gap-2 mb-3"><ImageIcon size={14} className="text-blue-500" /><span className="text-xs font-bold text-gray-700">Gallery Photos (up to 10)</span></div>
+                                    <div className="flex items-center gap-2 mb-3"><ImageIcon size={14} className="text-blue-500" /><span className="text-xs font-bold text-gray-700">Gallery Photos (up to 10)</span><span className="text-[9px] text-gray-400 ml-auto">Recommended: 800×600px · JPG/PNG · Max 10MB each</span></div>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                                         {catalogueFormData.galleryImages.map((img, index) => (
                                             <div key={index} className="flex flex-col gap-1.5">

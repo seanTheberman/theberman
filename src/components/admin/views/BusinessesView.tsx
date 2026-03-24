@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Briefcase, AlertTriangle, CheckCircle2, Mail, Pencil, Plus, Eye, RefreshCw, XCircle, X, Trash2 } from 'lucide-react';
+import { Search, Briefcase, AlertTriangle, CheckCircle2, Mail, Pencil, Eye, RefreshCw, XCircle, X, Trash2 } from 'lucide-react';
 import { Filter as FilterIcon } from 'lucide-react';
 import type { Profile, CatalogueListing } from '../../../types/admin';
 import { StatusCell, SubscriptionInfo } from '../StatusBadges';
@@ -14,11 +14,9 @@ interface Props {
     setLocationFilter: (v: string) => void;
     uniqueUserLocations: string[];
     isUpdating: boolean;
-    sendingEmailId: string | null;
     handleManualRenewal: (userId: string, months: number) => void;
     handleSendRenewalReminder: (u: Profile) => void;
     handleCancelSubscription: (userId: string) => void;
-    handleSendOnboardingEmail: (u: Profile) => void;
     handleOpenCatalogueView: (u: Profile | null, listing?: CatalogueListing) => void;
     setSelectedUser: (u: Profile | null) => void;
     setEditForm: (form: Partial<Profile>) => void;
@@ -33,9 +31,9 @@ interface Props {
 export const BusinessesView = React.memo(({
     filteredBusinessLeads, users_list, listings,
     searchTerm, setSearchTerm, locationFilter, setLocationFilter, uniqueUserLocations,
-    isUpdating, sendingEmailId,
+    isUpdating,
     handleManualRenewal, handleSendRenewalReminder, handleCancelSubscription,
-    handleSendOnboardingEmail, handleOpenCatalogueView,
+    handleOpenCatalogueView,
     setSelectedUser, setEditForm, setItemToSuspend, setShowSuspendModal,
     updateRegistrationStatus,
     setNewUserRole, setShowAddUserModal,
@@ -151,33 +149,18 @@ export const BusinessesView = React.memo(({
                                             <span className="text-xs font-semibold text-red-500 flex items-center gap-1"><AlertTriangle size={12} /> Suspended</span>
                                         ) : isPending ? (
                                             <div className="flex flex-col gap-1.5">
-                                                {/* Check if all completion criteria are met before showing approve/reject */}
+                                                {/* Show approve/reject for pending businesses - approval sends catalogue form */}
                                                 {(() => {
-                                                    const needsOnboarding = !u.last_login;
-                                                    const needsPayment = (u.registration_amount || 0) > 0 && !u.stripe_payment_id;
-                                                    const needsDetails = !u.company_name || !u.business_address;
-                                                    const allComplete = !needsOnboarding && !needsPayment && !needsDetails;
-                                                    
-                                                    if (!allComplete) {
-                                                        return (
-                                                            <div className="flex flex-col gap-1">
-                                                                <span className="text-[10px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full w-fit">⏳ Incomplete</span>
-                                                                <div className="text-[10px] text-gray-500">
-                                                                    {needsOnboarding && <div>• Needs onboarding</div>}
-                                                                    {needsPayment && <div>• Needs payment</div>}
-                                                                    {needsDetails && <div>• Needs details</div>}
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    }
-                                                    
                                                     return (
                                                         <div className="flex flex-col gap-1.5">
                                                             <span className="text-[10px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full w-fit">⏳ Awaiting Review</span>
+                                                            <div className="text-[10px] text-gray-500 mb-1">
+                                                                Click approve to send catalogue form invitation
+                                                            </div>
                                                             <div className="flex gap-1.5">
                                                                 <button onClick={() => updateRegistrationStatus(u.id, 'active')} disabled={isUpdating}
                                                                     className="flex items-center gap-1 text-[11px] font-semibold text-green-700 bg-green-50 border border-green-200 hover:bg-green-100 px-2.5 py-1 rounded-lg transition-all disabled:opacity-50">
-                                                                    <CheckCircle2 size={11} /> Approve
+                                                                    <CheckCircle2 size={11} /> Approve & Send Form
                                                                 </button>
                                                                 <button onClick={() => updateRegistrationStatus(u.id, 'rejected')} disabled={isUpdating}
                                                                     className="flex items-center gap-1 text-[11px] font-semibold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 px-2.5 py-1 rounded-lg transition-all disabled:opacity-50">
@@ -196,17 +179,11 @@ export const BusinessesView = React.memo(({
                                                 </button>
                                             </div>
                                         ) : isActive && !listing ? (
-                                            <div className="flex gap-1.5 flex-wrap">
-                                                <button onClick={() => handleSendOnboardingEmail(u)} disabled={sendingEmailId === u.id}
-                                                    className="flex items-center gap-1 text-[11px] font-semibold text-green-700 bg-green-50 border border-green-200 hover:bg-green-100 px-2.5 py-1 rounded-lg transition-all disabled:opacity-50">
-                                                    {sendingEmailId === u.id
-                                                        ? <div className="w-3 h-3 border-2 border-green-300 border-t-green-700 rounded-full animate-spin" />
-                                                        : <><Mail size={11} /> Send Form</>}
-                                                </button>
-                                                <button onClick={() => handleOpenCatalogueView(u)}
-                                                    className="flex items-center gap-1 text-[11px] font-semibold text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition-all">
-                                                    <Plus size={11} /> Add Listing
-                                                </button>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full w-fit">⏳ Awaiting Catalogue</span>
+                                                <div className="text-[10px] text-gray-500">
+                                                    Business has been sent catalogue form invitation
+                                                </div>
                                             </div>
                                         ) : (
                                             <span className="text-[11px] text-red-500 font-semibold">Rejected</span>
