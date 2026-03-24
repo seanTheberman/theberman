@@ -1745,6 +1745,7 @@ const fetchAssessments = useCallback(async () => {
                         <CatalogueView
                             listings={listings} users_list={users_list}
                             searchTerm={searchTerm} setSearchTerm={setSearchTerm}
+                            locationFilter={locationFilter} setLocationFilter={setLocationFilter}
                             handleOpenCatalogueView={handleOpenCatalogueView}
                             toggleCatalogueStatus={toggleCatalogueStatus}
                             toggleCatalogueFeatured={toggleCatalogueFeatured}

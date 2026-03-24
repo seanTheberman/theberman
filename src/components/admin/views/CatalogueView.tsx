@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Search, Plus, Briefcase, AlertTriangle, Edit2, Trash2, ExternalLink, Star } from 'lucide-react';
+import { Search, Plus, Briefcase, AlertTriangle, Edit2, Trash2, ExternalLink, Star, Filter } from 'lucide-react';
 import type { Profile, CatalogueListing } from '../../../types/admin';
 
 interface Props {
@@ -7,6 +7,8 @@ interface Props {
     users_list: Profile[];
     searchTerm: string;
     setSearchTerm: (v: string) => void;
+    locationFilter: string;
+    setLocationFilter: (v: string) => void;
     handleOpenCatalogueView: (business: Profile | null, existingListing?: CatalogueListing) => void;
     toggleCatalogueStatus: (id: string, currentStatus: boolean) => void;
     toggleCatalogueFeatured: (id: string, currentFeatured: boolean) => void;
@@ -14,39 +16,104 @@ interface Props {
 }
 
 export const CatalogueView = React.memo(({
-    listings, users_list, searchTerm, setSearchTerm,
+    listings, users_list, searchTerm, setSearchTerm, locationFilter, setLocationFilter,
     handleOpenCatalogueView, toggleCatalogueStatus, toggleCatalogueFeatured, handleDeleteListing,
 }: Props) => {
+    // Get unique counties from all listings
+    const uniqueCounties = useMemo(() => {
+        const allCounties = new Set<string>();
+        listings.forEach(l => {
+            // Add main county
+            if (l.county) allCounties.add(l.county);
+            
+            // Also check additional addresses for counties
+            if (l.additional_addresses && Array.isArray(l.additional_addresses)) {
+                l.additional_addresses.forEach((addr: string) => {
+                    if (typeof addr === 'string') {
+                        if (addr.includes('|||')) {
+                            const county = addr.split('|||')[1];
+                            if (county && county.trim()) allCounties.add(county.trim());
+                        } else {
+                            // If it's just a county name without the ||| separator
+                            const trimmed = addr.trim();
+                            if (trimmed && !trimmed.includes('+') && trimmed.length > 2) {
+                                allCounties.add(trimmed);
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        return Array.from(allCounties).filter(Boolean).sort();
+    }, [listings]);
+
     const filtered = useMemo(() => listings.filter(l => {
         const query = searchTerm.toLowerCase();
-        return (l.company_name || l.name || '').toLowerCase().includes(query) ||
+        const matchSearch = (l.company_name || l.name || '').toLowerCase().includes(query) ||
             (l.email || '').toLowerCase().includes(query) ||
             (l.address || '').toLowerCase().includes(query) ||
             (l.county || '').toLowerCase().includes(query) ||
             (l.town || '').toLowerCase().includes(query) ||
             (l.additional_addresses || []).some((addr: string) => addr.toLowerCase().includes(query));
-    }), [listings, searchTerm]);
+        
+        const matchLocation = !locationFilter || 
+            l.county === locationFilter ||
+            (l.additional_addresses && Array.isArray(l.additional_addresses) && l.additional_addresses.some((addr: string) => {
+                if (typeof addr === 'string') {
+                    if (addr.includes('|||')) {
+                        const county = addr.split('|||')[1];
+                        return county === locationFilter;
+                    } else {
+                        return addr.trim() === locationFilter;
+                    }
+                }
+                return false;
+            }));
+        
+        return matchSearch && matchLocation;
+    }), [listings, searchTerm, locationFilter]);
 
     return (
         <div className="space-y-4">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 gap-4">
-                <div className="relative w-full max-w-md">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                    <input
-                        type="text"
-                        placeholder="Search catalogue by name or email..."
-                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] transition-all text-sm"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                <div className="flex flex-col md:flex-row gap-2 flex-1 max-w-xl">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <input
+                            type="text"
+                            placeholder="Search catalogue by name or email..."
+                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] transition-all text-sm"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className="relative w-full md:w-44">
+                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                        <select
+                            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] outline-none transition-all bg-gray-50 appearance-none text-gray-600"
+                            value={locationFilter}
+                            onChange={(e) => setLocationFilter(e.target.value)}
+                        >
+                            <option value="">All Counties</option>
+                            {uniqueCounties.map(county => (
+                                <option key={county} value={county}>{county}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
-                <button
-                    onClick={() => handleOpenCatalogueView(null)}
-                    className="flex items-center gap-2 bg-[#007F00] text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-md whitespace-nowrap"
-                >
-                    <Plus size={18} />
-                    Add New Listing
-                </button>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => handleOpenCatalogueView(null)}
+                        className="flex items-center gap-2 bg-[#007F00] text-white px-6 py-3 rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-md whitespace-nowrap"
+                    >
+                        <Plus size={18} />
+                        Add New Listing
+                    </button>
+                    <span className="text-xs text-gray-400">
+                        {filtered.length} / {listings.length}
+                        {locationFilter && ` · ${locationFilter}`}
+                    </span>
+                </div>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
