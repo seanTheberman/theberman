@@ -22,7 +22,7 @@ interface Props {
     isUploadingGallery: { [key: number]: boolean };
     handleSaveCatalogueEntry: (e: React.FormEvent) => void;
     handleLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-
+    handleBannerUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
     handleGalleryUpload: (index: number, e: React.ChangeEvent<HTMLInputElement>) => void;
     toggleCatalogueCategory: (categoryId: string) => void;
     setView: (v: AdminView) => void;
@@ -34,7 +34,7 @@ export const AddToCatalogueView = ({
     catalogueFormData, setCatalogueFormData, catalogueCategories,
     selectedBusinessForCatalogue, selectedListingForEdit,
     isSavingCatalogue, isUploadingLogo, isUpdatingBanner, isUploadingGallery,
-    handleSaveCatalogueEntry, handleLogoUpload, handleGalleryUpload,
+    handleSaveCatalogueEntry, handleLogoUpload, handleBannerUpload, handleGalleryUpload,
     toggleCatalogueCategory, setView,
 }: Props) => {
     const [activeTab, setActiveTab] = useState<Tab>('info');
@@ -146,6 +146,71 @@ export const AddToCatalogueView = ({
                                                 {isUploadingLogo ? 'Uploading...' : 'Upload Logo'}
                                             </label>
                                             <p className="text-[10px] text-gray-400 mt-1">Recommended: 400×400px square PNG/JPG · Max 2MB</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Catalogue Card Banner */}
+                                <div className="pt-4 border-t border-gray-100">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <ImageIcon size={14} className="text-[#007F00]" />
+                                        <span className="text-xs font-bold text-gray-700">Catalogue Card Banner</span>
+                                        <span className="text-[9px] text-gray-400 ml-auto">Portrait · 800×1000px · This appears on the catalogue grid</span>
+                                    </div>
+                                    <p className="text-[10px] text-gray-400 mb-3">This image is shown as the main visual on the catalogue listing cards on the public website.</p>
+
+                                    <div className="flex flex-col md:flex-row gap-6 items-start">
+                                        {/* Upload area */}
+                                        <div className="flex-1">
+                                            {catalogueFormData.bannerUrl ? (
+                                                <div className="relative w-full max-w-[200px] aspect-[4/5] rounded-xl overflow-hidden border border-gray-200 bg-gray-50 group">
+                                                    <img src={catalogueFormData.bannerUrl} alt="Banner" className="w-full h-full object-cover" />
+                                                    <button type="button"
+                                                        onClick={() => setCatalogueFormData({ ...catalogueFormData, bannerUrl: '' })}
+                                                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow"
+                                                    ><X size={12} /></button>
+                                                </div>
+                                            ) : (
+                                                <label htmlFor="catalogue-banner-upload" className={`flex flex-col items-center justify-center w-full max-w-[200px] aspect-[4/5] rounded-xl border-2 border-dashed cursor-pointer transition-all ${isUpdatingBanner ? 'border-gray-200 bg-gray-50' : 'border-gray-300 bg-gray-50 hover:border-[#007F00] hover:bg-green-50'}`}>
+                                                    {isUpdatingBanner ? (
+                                                        <><Loader2 size={24} className="animate-spin text-[#007F00] mb-2" /><span className="text-[10px] font-bold text-gray-400">Uploading...</span></>
+                                                    ) : (
+                                                        <><UploadCloud size={24} className="text-gray-300 mb-2" /><span className="text-[10px] font-bold text-gray-400 text-center px-4">Click to upload portrait banner</span></>
+                                                    )}
+                                                </label>
+                                            )}
+                                            <input type="file" id="catalogue-banner-upload" className="hidden" accept="image/*" onChange={handleBannerUpload} disabled={isUpdatingBanner} />
+                                            {!catalogueFormData.bannerUrl && (
+                                                <label htmlFor="catalogue-banner-upload" className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold cursor-pointer border border-gray-200 bg-white hover:bg-gray-50 transition-all">
+                                                    {isUpdatingBanner ? <Loader2 size={13} className="animate-spin" /> : <UploadCloud size={13} />}
+                                                    {isUpdatingBanner ? 'Uploading...' : 'Upload Banner'}
+                                                </label>
+                                            )}
+                                        </div>
+
+                                        {/* Live preview */}
+                                        <div className="flex-1">
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">Live Preview — How it looks on the catalogue</p>
+                                            <div className="relative w-[160px] aspect-[4/5] overflow-hidden border border-gray-100 rounded-lg shadow-md">
+                                                <img
+                                                    src={catalogueFormData.bannerUrl || catalogueFormData.logoUrl || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=400'}
+                                                    alt="Preview"
+                                                    className="absolute inset-0 w-full h-full object-cover"
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                                                <div className="absolute bottom-3 left-3 right-3">
+                                                    <p className="text-[9px] font-black text-white uppercase tracking-tight leading-tight drop-shadow-lg">
+                                                        {catalogueFormData.companyName || 'Company Name'}
+                                                    </p>
+                                                    <p className="text-[8px] text-white/60 mt-0.5">{catalogueFormData.county || 'Ireland'}</p>
+                                                </div>
+                                                {catalogueFormData.bannerUrl && (
+                                                    <div className="absolute top-2 right-2 bg-green-500 text-white text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider">Live</div>
+                                                )}
+                                            </div>
+                                            <p className="text-[9px] text-gray-400 mt-1.5">
+                                                {catalogueFormData.bannerUrl ? '✓ Banner set — will show on catalogue' : 'No banner — logo/fallback will be used'}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>

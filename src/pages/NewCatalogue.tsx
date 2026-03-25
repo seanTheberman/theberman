@@ -34,6 +34,7 @@ interface CatalogueListing {
     description: string;
     long_description: string | null;
     logo_url: string | null;
+    banner_url: string | null;
     phone: string | null;
     email: string | null;
     website: string | null;
@@ -385,7 +386,7 @@ const NewCatalogue = () => {
                                 >
                                     <div className="relative aspect-[4/5] md:aspect-square lg:aspect-[4/5] overflow-hidden border border-gray-100 transform transition-transform duration-300 ease-out hover:-translate-y-2">
                                         <img
-                                            src={listing.logo_url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=400'}
+                                            src={listing.banner_url || listing.logo_url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=400'}
                                             alt={listing.company_name || listing.name}
                                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700"
                                         />

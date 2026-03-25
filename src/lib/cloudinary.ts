@@ -55,9 +55,9 @@ export const uploadGalleryToCloudinary = async (file: File): Promise<string> => 
 };
 
 /**
- * Upload a banner image — returns a URL with 1200x400 crop transformation.
+ * Upload a banner image — returns a URL with 800x1000 portrait crop transformation (4:5 ratio matching catalogue cards).
  */
 export const uploadBannerToCloudinary = async (file: File): Promise<string> => {
     const rawUrl = await uploadImageToCloudinary(file);
-    return applyTransformation(rawUrl, 'c_fill,w_1200,h_400,g_auto,q_auto,f_auto');
+    return applyTransformation(rawUrl, 'c_fill,w_800,h_1000,g_auto,q_auto,f_auto');
 };
