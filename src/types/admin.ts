@@ -190,6 +190,7 @@ export type AdminView =
     | 'stats'
     | 'leads'
     | 'assessments'
+    | 'jobs'
     | 'homeowners'
     | 'businesses'
     | 'assessors'

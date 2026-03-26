@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, RefreshCw, BarChart2, Building2, BookOpen, ClipboardList, HardHat, Home, Inbox, DollarSign, Newspaper, Settings as SettingsIcon, Users, Layers, Menu, X, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
+import { LogOut, RefreshCw, BarChart2, Building2, BookOpen, ClipboardList, HardHat, Home, Inbox, DollarSign, Newspaper, Settings as SettingsIcon, Users, Layers, Menu, X, ChevronLeft, ChevronRight, Trash2, Briefcase } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { geocodeAddress, COUNTY_COORDINATES } from '../lib/geocoding';
@@ -13,6 +13,7 @@ import type { Lead, Assessment, Profile, Payment, Sponsor, AppSettings, NewsArti
 import { StatsView } from '../components/admin/views/StatsView';
 import { LeadsView } from '../components/admin/views/LeadsView';
 import { AssessmentsView } from '../components/admin/views/AssessmentsView';
+import { JobsView } from '../components/admin/views/JobsView';
 import { UsersView } from '../components/admin/views/UsersView';
 import { BusinessesView } from '../components/admin/views/BusinessesView';
 import { CatalogueView } from '../components/admin/views/CatalogueView';
@@ -267,6 +268,46 @@ const Admin = () => {
         }
     }, [setUsersList, setLoading, checkAndDisableExpiredSubscriptions]);
 
+    const enrichQuotesWithContractors = useCallback(async (assessments: Assessment[]) => {
+        // Get all unique contractor IDs from quotes
+        const contractorIds = new Set<string>();
+        assessments.forEach(assessment => {
+            assessment.quotes?.forEach(quote => {
+                if (quote.created_by) {
+                    contractorIds.add(quote.created_by);
+                }
+            });
+        });
+
+        if (contractorIds.size === 0) return assessments;
+
+        // Fetch contractor profiles
+        const { data: contractors, error } = await supabase
+            .from('profiles')
+            .select('id, full_name, email, phone, seai_number, assessor_type, company_name, county')
+            .in('id', Array.from(contractorIds));
+
+        if (error) {
+            console.error('Failed to fetch contractors:', error);
+            return assessments;
+        }
+
+        // Create contractor lookup map
+        const contractorMap = new Map();
+        contractors?.forEach(contractor => {
+            contractorMap.set(contractor.id, contractor);
+        });
+
+        // Enrich quotes with contractor details
+        return assessments.map(assessment => ({
+            ...assessment,
+            quotes: assessment.quotes?.map(quote => ({
+                ...quote,
+                contractor: contractorMap.get(quote.created_by) || null
+            })) || []
+        }));
+    }, []);
+
     const fetchListings = useCallback(async () => {
         try {
             const { data, error } = await supabase.from('catalogue_listings').select('*');
@@ -307,14 +348,17 @@ const fetchAssessments = useCallback(async () => {
             .order('created_at', { ascending: false });
 
         if (error) throw error;
-        setAssessments(data || []);
+        
+        // Enrich quotes with contractor details
+        const enrichedAssessments = await enrichQuotesWithContractors(data || []);
+        setAssessments(enrichedAssessments);
     } catch (error: any) {
         console.error('Failed to fetch assessments:', error);
         toast.error('Failed to load assessments');
     } finally {
         setLoading(false);
     }
-}, []);
+}, [enrichQuotesWithContractors]);
 
     const fetchPayments = useCallback(async () => {
         setLoading(true);
@@ -454,6 +498,7 @@ const fetchAssessments = useCallback(async () => {
             try {
                 if (view === 'leads') await fetchLeads();
                 else if (view === 'assessments') await fetchAssessments();
+                else if (view === 'jobs') await fetchAssessments();
                 else if (view === 'homeowners') await fetchUsers();
                 else if (view === 'businesses') {
                     await fetchUsers();
@@ -1514,7 +1559,7 @@ const fetchAssessments = useCallback(async () => {
     const getViewTitle = useCallback(() => {
         const titles: Record<string, string> = {
             stats: 'System Overview', leads: 'Leads & Inquiries', assessments: 'BER Assessments',
-            businesses: 'Business Directory', catalogue: 'Business Catalogue', assessors: 'BER Assessors',
+            jobs: 'Jobs Management', businesses: 'Business Directory', catalogue: 'Business Catalogue', assessors: 'BER Assessors',
             homeowners: 'Homeowners', payments: 'Financials', news: 'News & Updates', settings: 'Settings',
             'recently-deleted': 'Recently Deleted',
         };
@@ -1524,7 +1569,7 @@ const fetchAssessments = useCallback(async () => {
     const getViewSubtitle = useCallback(() => {
         const subs: Record<string, string> = {
             stats: 'Key metrics and business performance.', leads: 'Manage your website submissions.',
-            assessments: 'Manage homeowner assessment requests.', businesses: 'Review business interest and send onboarding links.',
+            assessments: 'Manage homeowner assessment requests.', jobs: 'Manage and track all assessment jobs and quote submissions.', businesses: 'Review business interest and send onboarding links.',
             catalogue: 'Manage and edit business catalogue listings.', assessors: 'Manage BER Assessors and their jobs.',
             homeowners: 'Manage homeowners.', payments: 'View and export payment records.',
             settings: 'Configure global platform settings.',
@@ -1541,10 +1586,11 @@ const fetchAssessments = useCallback(async () => {
         { id: 'stats', label: 'Overview', icon: BarChart2, badge: 0 },
         { id: 'leads', label: 'Leads', icon: Inbox, badge: 0 },
         { id: 'assessments', label: 'Assessments', icon: ClipboardList, badge: 0 },
-        { id: 'assessors', label: 'BER Assessors', icon: HardHat, badge: pendingAssessors },
-        { id: 'businesses', label: 'Businesses', icon: Building2, badge: pendingBusinesses },
-        { id: 'catalogue', label: 'Catalogue', icon: BookOpen, badge: 0 },
+        { id: 'jobs', label: 'Jobs', icon: Briefcase, badge: 0 },
         { id: 'homeowners', label: 'Homeowners', icon: Home, badge: 0 },
+        { id: 'businesses', label: 'Businesses', icon: Building2, badge: 0 },
+        { id: 'assessors', label: 'BER Assessors', icon: HardHat, badge: pendingAssessors },
+        { id: 'catalogue', label: 'Catalogue', icon: BookOpen, badge: 0 },
         { id: 'payments', label: 'Payments', icon: DollarSign, badge: 0 },
         { id: 'news', label: 'News', icon: Newspaper, badge: 0 },
         { id: 'recently-deleted', label: 'Recently Deleted', icon: Trash2, badge: deletedItems.length },
@@ -1728,6 +1774,14 @@ const fetchAssessments = useCallback(async () => {
                             setSelectedAssessment={setSelectedAssessment}
                             setShowAssessmentDetailModal={setShowAssessmentDetailModal}
                             handleDeleteClick={handleDeleteClick}
+                        />
+                    ) : view === 'jobs' ? (
+                        <JobsView
+                            assessments={assessments}
+                            searchTerm={searchTerm} setSearchTerm={setSearchTerm}
+                            locationFilter={locationFilter} setLocationFilter={setLocationFilter}
+                            onAssessmentClick={setSelectedAssessment}
+                            loading={loading}
                         />
                     ) : view === 'homeowners' || view === 'assessors' ? (
                         <UsersView
