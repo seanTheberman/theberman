@@ -1,6 +1,8 @@
-import React, { useMemo } from 'react';
-import { Search, Plus, Briefcase, AlertTriangle, Edit2, Trash2, ExternalLink, Star, Filter } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Search, Plus, Briefcase, AlertTriangle, Edit2, Trash2, ExternalLink, Star, Filter, Building2, HardHat } from 'lucide-react';
 import type { Profile, CatalogueListing } from '../../../types/admin';
+
+type CatalogueViewType = 'businesses' | 'assessors';
 
 interface Props {
     listings: CatalogueListing[];
@@ -19,6 +21,26 @@ export const CatalogueView = React.memo(({
     listings, users_list, searchTerm, setSearchTerm, locationFilter, setLocationFilter,
     handleOpenCatalogueView, toggleCatalogueStatus, toggleCatalogueFeatured, handleDeleteListing,
 }: Props) => {
+    // State for toggling between Businesses and BER Assessors
+    const [activeView, setActiveView] = useState<CatalogueViewType>('businesses');
+
+    // Helper function to get owner role for a listing
+    const getOwnerRole = (listing: CatalogueListing): string | null => {
+        const owner = users_list.find(u => u.id === listing.user_id || u.id === listing.owner_id);
+        return owner?.role || null;
+    };
+
+    // Filter listings based on active view (Businesses vs Assessors)
+    const filteredByType = useMemo(() => {
+        return listings.filter(l => {
+            const ownerRole = getOwnerRole(l);
+            if (activeView === 'businesses') {
+                return ownerRole === 'business';
+            } else {
+                return ownerRole === 'contractor';
+            }
+        });
+    }, [listings, activeView, users_list]);
     // Get unique counties from all listings
     const uniqueCounties = useMemo(() => {
         const allCounties = new Set<string>();
@@ -47,7 +69,7 @@ export const CatalogueView = React.memo(({
         return Array.from(allCounties).filter(Boolean).sort();
     }, [listings]);
 
-    const filtered = useMemo(() => listings.filter(l => {
+    const filtered = useMemo(() => filteredByType.filter(l => {
         const query = searchTerm.toLowerCase();
         const matchSearch = (l.company_name || l.name || '').toLowerCase().includes(query) ||
             (l.email || '').toLowerCase().includes(query) ||
@@ -71,10 +93,38 @@ export const CatalogueView = React.memo(({
             }));
         
         return matchSearch && matchLocation;
-    }), [listings, searchTerm, locationFilter]);
+    }), [filteredByType, searchTerm, locationFilter]);
 
     return (
         <div className="space-y-4">
+            {/* View Toggle Buttons - Businesses vs BER Assessors */}
+            <div className="bg-white p-2 rounded-xl shadow-sm border border-gray-100">
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setActiveView('businesses')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${
+                            activeView === 'businesses'
+                                ? 'bg-[#007F00] text-white shadow-md'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                    >
+                        <Building2 size={18} />
+                        Businesses
+                    </button>
+                    <button
+                        onClick={() => setActiveView('assessors')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${
+                            activeView === 'assessors'
+                                ? 'bg-[#007F00] text-white shadow-md'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                    >
+                        <HardHat size={18} />
+                        BER Assessors
+                    </button>
+                </div>
+            </div>
+
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 gap-4">
                 <div className="flex flex-col md:flex-row gap-2 flex-1 max-w-xl">
                     <div className="relative flex-1">
@@ -121,7 +171,7 @@ export const CatalogueView = React.memo(({
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-gray-50 border-b border-gray-100 text-[10px] font-black uppercase tracking-widest text-gray-400">
-                                <th className="px-6 py-4">Business</th>
+                                <th className="px-6 py-4">{activeView === 'businesses' ? 'Business' : 'BER Assessor'}</th>
                                 <th className="px-6 py-4">Contact</th>
                                 <th className="px-6 py-4">Locations</th>
                                 <th className="px-6 py-4">Status</th>
@@ -132,7 +182,9 @@ export const CatalogueView = React.memo(({
                         <tbody className="divide-y divide-gray-50">
                             {filtered.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic">No listings found.</td>
+                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic">
+                                        No {activeView === 'businesses' ? 'businesses' : 'BER assessors'} found.
+                                    </td>
                                 </tr>
                             ) : (
                                 filtered.map((l) => {

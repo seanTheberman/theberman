@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabase';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Shield, Lock, Mail, Eye, EyeOff, AlertTriangle, ArrowLeft, LogOut } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { checkRateLimit, recordFailedAttempt, recordSuccessfulLogin } from '../lib/rateLimiter';
+import { checkRateLimit, recordFailedAttempt, recordSuccessfulLogin, verifySecurityCode, resendVerificationCode, isAccountLocked, validateEmail, validatePassword } from '../lib/rateLimiter';
 
 const adminLoginSchema = z.object({
     email: z.string().email('Invalid email address'),
@@ -22,6 +22,12 @@ const AdminLogin = () => {
     const location = useLocation();
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    // Security verification state
+    const [requiresVerification, setRequiresVerification] = useState(false);
+    const [verificationCode, setVerificationCode] = useState('');
+    const [lockoutMessage, setLockoutMessage] = useState('');
+    const [lastEmail, setLastEmail] = useState('');
     
     // Prevents useEffect from redirecting mid-submission
     const signingIn = React.useRef(false);
@@ -60,28 +66,71 @@ const AdminLogin = () => {
         
         try {
             const email = data.email.trim();
+            const password = data.password;
+            
+            // Store email for verification flow
+            setLastEmail(email);
+            
+            // SQL Injection Protection - Validate inputs
+            if (!validateEmail(email)) {
+                throw new Error('Invalid email format. Please check your email address.');
+            }
+            
+            const passwordValidation = validatePassword(password);
+            if (!passwordValidation.valid) {
+                throw new Error(passwordValidation.message || 'Invalid password format.');
+            }
+            
+            // Check if account is locked or requires verification
+            const accountStatus = isAccountLocked(email);
+            if (accountStatus.locked && accountStatus.requiresVerification) {
+                setRequiresVerification(true);
+                setLockoutMessage('Account locked after 3 failed attempts. Please enter the verification code sent to your email.');
+                setIsSubmitting(false);
+                signingIn.current = false;
+                return;
+            }
+            
+            if (accountStatus.locked && accountStatus.lockoutRemaining) {
+                throw new Error(`Account locked. Please try again in ${accountStatus.lockoutRemaining} minutes.`);
+            }
             
             // Check rate limiting
             const rateLimitResult = checkRateLimit(email);
             if (!rateLimitResult.allowed) {
+                if (rateLimitResult.requiresVerification) {
+                    setRequiresVerification(true);
+                    setLockoutMessage('Account locked after 3 failed attempts. Please enter the verification code sent to your email.');
+                    setIsSubmitting(false);
+                    signingIn.current = false;
+                    return;
+                }
                 if (rateLimitResult.lockoutRemaining) {
                     throw new Error(`Too many failed attempts. Account locked for ${rateLimitResult.lockoutRemaining} minutes.`);
                 }
                 throw new Error('Login temporarily blocked. Please try again later.');
             }
             
-            const { data: authData, error } = await signIn(email, data.password);
+            const { data: authData, error } = await signIn(email, password);
 
             if (error) {
-                // Record failed attempt for rate limiting
-                recordFailedAttempt(email);
+                // Record failed attempt for rate limiting (now async)
+                const failedResult = await recordFailedAttempt(email);
+                
+                if (failedResult.requiresVerification) {
+                    setRequiresVerification(true);
+                    setLockoutMessage(failedResult.message || 'Account locked after 3 failed attempts. Please enter the verification code sent to your email.');
+                    setIsSubmitting(false);
+                    signingIn.current = false;
+                    return;
+                }
                 
                 const errorMessage = error.message.toLowerCase();
                 if (errorMessage.includes('email not confirmed')) {
                     throw new Error('Please confirm your email address before logging in.');
                 }
                 if (error.status === 400 || errorMessage.includes('invalid credentials')) {
-                    throw new Error('Invalid admin credentials. Please try again.');
+                    throw new Error(`Invalid admin credentials. ${failedResult.message || 'Please try again.'}`);
                 }
                 throw error;
             }
@@ -102,6 +151,11 @@ const AdminLogin = () => {
                 // Record successful login (clears rate limit)
                 recordSuccessfulLogin(email);
                 
+                // Reset verification state
+                setRequiresVerification(false);
+                setVerificationCode('');
+                setLockoutMessage('');
+                
                 toast.success('Admin login successful!');
                 
                 // Redirect will happen in useEffect
@@ -117,6 +171,51 @@ const AdminLogin = () => {
         } finally {
             setIsSubmitting(false);
             signingIn.current = false;
+        }
+    };
+    
+    // Handle verification code submission
+    const handleVerifyCode = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!verificationCode.trim() || !lastEmail) return;
+        
+        setIsSubmitting(true);
+        
+        try {
+            const isValid = verifySecurityCode(lastEmail, verificationCode);
+            
+            if (isValid) {
+                toast.success('Verification successful! You can now log in.');
+                setRequiresVerification(false);
+                setVerificationCode('');
+                setLockoutMessage('');
+            } else {
+                toast.error('Invalid or expired verification code. Please try again or request a new code.');
+            }
+        } catch (error: any) {
+            toast.error('Verification failed. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+    
+    // Handle resend verification code
+    const handleResendCode = async () => {
+        if (!lastEmail) return;
+        
+        setIsSubmitting(true);
+        
+        try {
+            const sent = await resendVerificationCode(lastEmail);
+            if (sent) {
+                toast.success('New verification code sent! Please check your email.');
+            } else {
+                toast.error('Failed to send verification code. Please try again later.');
+            }
+        } catch (error: any) {
+            toast.error('Failed to resend code. Please try again later.');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -233,6 +332,54 @@ const AdminLogin = () => {
                             )}
                         </button>
                     </form>
+
+                    {/* Verification Code Form - Shows after 3 failed attempts */}
+                    {requiresVerification && (
+                        <form onSubmit={handleVerifyCode} className="mt-6 space-y-4 border-t border-gray-700 pt-6">
+                            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
+                                <h3 className="text-amber-400 font-semibold mb-2 flex items-center gap-2">
+                                    <Lock size={16} />
+                                    Security Verification Required
+                                </h3>
+                                <p className="text-amber-300/80 text-sm mb-4">
+                                    {lockoutMessage || 'Account locked after 3 failed attempts. Please enter the verification code sent to your email.'}
+                                </p>
+                                
+                                <div className="space-y-3">
+                                    <label className="block text-sm font-medium text-gray-300">
+                                        Verification Code
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={verificationCode}
+                                        onChange={(e) => setVerificationCode(e.target.value)}
+                                        placeholder="Enter 6-digit code"
+                                        maxLength={6}
+                                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-center text-lg tracking-widest"
+                                        disabled={isSubmitting}
+                                    />
+                                    
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="submit"
+                                            disabled={isSubmitting || verificationCode.length !== 6}
+                                            className="flex-1 bg-amber-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {isSubmitting ? 'Verifying...' : 'Verify Code'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={handleResendCode}
+                                            disabled={isSubmitting}
+                                            className="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all disabled:opacity-50"
+                                        >
+                                            Resend Code
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    )}
 
                     {/* Footer */}
                     <div className="mt-6 pt-6 border-t border-gray-700">

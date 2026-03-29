@@ -1296,20 +1296,23 @@ const fetchAssessments = useCallback(async () => {
             })();
         } else {
             setCatalogueFormData({
-                companyName: business ? ((business as any).company_name || business.full_name || '') : '',
-                description: '',
+                companyName: business ? (business.company_name || business.full_name || '') : '',
+                description: business?.description || '',
                 email: business?.email || '',
-                phone: business ? ((business as any).phone || '') : '',
-                address: business ? ((business as any).business_address || '') : '',
-                county: business ? ((business as any).county || '') : '',
-                website: business ? ((business as any).website || '') : '',
+                phone: business?.phone || '',
+                address: business?.business_address || '',
+                county: business?.county || '',
+                website: business?.website || '',
                 logoUrl: '', featured: false, selectedCategories: [], additionalAddresses: [],
-                companyNumber: '', registrationNo: '', vatNumber: '', bannerUrl: '',
+                companyNumber: business?.company_number || '',
+                registrationNo: business?.seai_number || '',
+                vatNumber: business?.vat_number || '',
+                bannerUrl: '',
                 socialFacebook: '', socialInstagram: '', socialLinkedin: '', socialTwitter: '',
                 socialWhatsapp: '', socialYoutube: '', socialSnapchat: '', socialTiktok: '',
                 galleryImages: Array(10).fill(null).map(() => ({ url: '', description: '' })),
                 features: [],
-                registrationAmount: 0,
+                registrationAmount: business?.registration_amount || 0,
             });
         }
         setView('add-to-catalogue');
