@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Search, MapPin, Star, Loader2, ChevronDown, Zap, Sparkles, ArrowRight } from 'lucide-react';
+import { Search, MapPin, Star, Loader2, ChevronDown, Zap, Sparkles, ArrowRight, Building2, HardHat } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
 import SEOHead from '../components/SEOHead';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
+
+type CatalogueViewType = 'businesses' | 'assessors';
 
 const HERO_SLIDES = [
     { image: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=1600' },
@@ -74,6 +76,9 @@ const NewCatalogue = () => {
     const [selectedLocation, setSelectedLocation] = useState<string>('');
     const [selectedCounty, setSelectedCounty] = useState<string>(searchParams.get('county') || '');
     const [sortBy, setSortBy] = useState('Featured');
+    
+    // View toggle - Businesses vs BER Assessors
+    const [activeView, setActiveView] = useState<CatalogueViewType>('businesses');
 
     // Carousel State
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -84,7 +89,7 @@ const NewCatalogue = () => {
 
     useEffect(() => {
         fetchListings();
-    }, [searchQuery, selectedCategory, selectedLocation, selectedCounty]);
+    }, [searchQuery, selectedCategory, selectedLocation, selectedCounty, activeView]);
 
     useEffect(() => {
         const county = searchParams.get('county');
@@ -129,6 +134,31 @@ const NewCatalogue = () => {
             if (error) throw error;
 
             let filteredData = (data as any[]) || [];
+            
+            // Fetch owner profiles separately to determine role
+            const ownerIds = [...new Set(filteredData.map(item => item.owner_id).filter(Boolean))];
+            let ownerRoles: Record<string, string> = {};
+            
+            if (ownerIds.length > 0) {
+                const { data: profilesData } = await supabase
+                    .from('profiles')
+                    .select('id, role')
+                    .in('id', ownerIds);
+                
+                profilesData?.forEach((profile: any) => {
+                    ownerRoles[profile.id] = profile.role;
+                });
+            }
+            
+            // Filter by view type (businesses vs assessors)
+            filteredData = filteredData.filter(item => {
+                const ownerRole = ownerRoles[item.owner_id];
+                if (activeView === 'businesses') {
+                    return ownerRole === 'business';
+                } else {
+                    return ownerRole === 'contractor';
+                }
+            });
 
             if (selectedCategory) {
                 filteredData = filteredData.filter(item =>
@@ -343,10 +373,44 @@ const NewCatalogue = () => {
             })()}
 
             <div className="container mx-auto px-4 sm:px-6 max-w-7xl">
+                {/* View Toggle Buttons - Businesses vs BER Assessors */}
+                <div className="flex justify-center my-6 md:my-8">
+                    <div className="bg-white p-2 rounded-xl shadow-sm border border-gray-100 inline-flex">
+                        <button
+                            onClick={() => setActiveView('businesses')}
+                            className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${
+                                activeView === 'businesses'
+                                    ? 'bg-[#007F00] text-white shadow-md'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            }`}
+                        >
+                            <Building2 size={18} />
+                            Businesses
+                        </button>
+                        <button
+                            onClick={() => setActiveView('assessors')}
+                            className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${
+                                activeView === 'assessors'
+                                    ? 'bg-[#007F00] text-white shadow-md'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            }`}
+                        >
+                            <HardHat size={18} />
+                            BER Assessors
+                        </button>
+                    </div>
+                </div>
+
                 <div className="flex flex-col md:flex-row justify-between items-center my-8 md:my-12 gap-6 md:gap-8">
                     <div className="text-center md:text-left">
-                        <h2 className="text-2xl md:text-4xl font-black text-gray-900 uppercase tracking-tight mb-2">Operators and Energy Consultants</h2>
-                        <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] md:text-xs">Find Operators and Energy Consultants in Your Local Area Today</p>
+                        <h2 className="text-2xl md:text-4xl font-black text-gray-900 uppercase tracking-tight mb-2">
+                            {activeView === 'businesses' ? 'Businesses and Energy Consultants' : 'BER Assessors'}
+                        </h2>
+                        <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] md:text-xs">
+                            {activeView === 'businesses' 
+                                ? 'Find Businesses and Energy Consultants in Your Local Area Today'
+                                : 'Find Certified BER Assessors in Your Local Area Today'}
+                        </p>
                     </div>
 
                     <div className="relative group/sort min-w-[200px]">
