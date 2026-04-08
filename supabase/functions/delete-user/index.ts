@@ -46,7 +46,32 @@ Deno.serve(async (req: Request) => {
             throw new Error('Missing required fields: userId');
         }
 
-        // Delete user from Auth (profile cascades via FK)
+        // Clean up all related records before deleting auth user
+        // Nullify owner_id on catalogue listings (preserve the listing)
+        await supabaseAdmin.from('catalogue_listings').update({ owner_id: null }).eq('owner_id', userId);
+
+        // Delete records from tables that reference profiles.id
+        const tablesToClean = [
+            { table: 'assessments', column: 'user_id' },
+            { table: 'payments', column: 'user_id' },
+            { table: 'referrals', column: 'referred_user_id' },
+            { table: 'referral_points', column: 'user_id' },
+            { table: 'referral_redemptions', column: 'user_id' },
+            { table: 'quotes', column: 'created_by' },
+            { table: 'notifications', column: 'target_user_id' },
+        ];
+
+        for (const { table, column } of tablesToClean) {
+            const { error: cleanErr } = await supabaseAdmin.from(table).delete().eq(column, userId);
+            if (cleanErr) {
+                console.warn(`Warning: Could not clean ${table}.${column}: ${cleanErr.message}`);
+            }
+        }
+
+        // Delete profile explicitly
+        await supabaseAdmin.from('profiles').delete().eq('id', userId);
+
+        // Delete user from Auth
         const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
         if (authError) {
