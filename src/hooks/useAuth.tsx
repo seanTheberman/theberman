@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { type User, type Session, type AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { clearRateLimit } from '../lib/rateLimiter';
 
 interface AuthContextType {
     user: User | null;
@@ -155,6 +156,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (result.data?.user) {
             setUser(result.data.user);
             setSession(prev => prev ? { ...prev, user: result.data.user! } : prev);
+            // Clear any rate limiting for this user since they've successfully reset their password
+            if (result.data.user.email) {
+                clearRateLimit(result.data.user.email);
+            }
         }
         return result;
     };

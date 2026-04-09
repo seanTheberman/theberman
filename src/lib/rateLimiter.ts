@@ -12,10 +12,10 @@ interface LoginAttempt {
 
 const loginAttempts = new Map<string, LoginAttempt>();
 
-const MAX_ATTEMPTS = 3; // Changed from 5 to 3 as requested
-const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
-const ATTEMPT_WINDOW = 5 * 60 * 1000; // 5 minutes
-const CODE_EXPIRY = 10 * 60 * 1000; // 10 minutes for verification code
+const MAX_ATTEMPTS = 3; // Max failed attempts before lockout
+const LOCKOUT_DURATION = 24 * 60 * 60 * 1000; // 24 hours - users can try again after 24 hours
+const ATTEMPT_WINDOW = 60 * 60 * 1000; // 1 hour - attempt counter resets after 1 hour of no attempts
+const CODE_EXPIRY = 60 * 60 * 1000; // 1 hour for verification code
 
 // Generate random 6-digit code
 const generateVerificationCode = (): string => {
@@ -194,21 +194,23 @@ export const resendVerificationCode = async (email: string): Promise<boolean> =>
     return await sendVerificationEmail(normalizedEmail, code);
 };
 
-export const isAccountLocked = (email: string): { locked: boolean; requiresVerification?: boolean; lockoutRemaining?: number } => {
+export const isAccountLocked = (email: string): { locked: boolean; requiresVerification?: boolean; lockoutRemaining?: number; canResetPassword?: boolean } => {
     const normalizedEmail = email.toLowerCase().trim();
     const now = Date.now();
     const attempts = loginAttempts.get(normalizedEmail);
 
     if (!attempts) {
-        return { locked: false };
+        return { locked: false, canResetPassword: true };
     }
 
-    // Check if locked out
+    // Check if locked out (24 hours)
     if (attempts.lockedUntil && attempts.lockedUntil > now) {
+        const hoursRemaining = Math.ceil((attempts.lockedUntil - now) / 1000 / 60 / 60);
         return {
             locked: true,
             requiresVerification: attempts.requiresVerification,
-            lockoutRemaining: Math.ceil((attempts.lockedUntil - now) / 1000 / 60)
+            lockoutRemaining: hoursRemaining,
+            canResetPassword: true // Always allow password reset even when locked
         };
     }
 
@@ -216,11 +218,18 @@ export const isAccountLocked = (email: string): { locked: boolean; requiresVerif
     if (attempts.requiresVerification) {
         return {
             locked: true,
-            requiresVerification: true
+            requiresVerification: true,
+            canResetPassword: true // Always allow password reset
         };
     }
 
-    return { locked: false };
+    return { locked: false, canResetPassword: true };
+};
+
+// Clear rate limit for a user - used after successful password reset
+export const clearRateLimit = (email: string): void => {
+    const normalizedEmail = email.toLowerCase().trim();
+    loginAttempts.delete(normalizedEmail);
 };
 
 // SQL Injection Protection Helpers
