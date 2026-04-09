@@ -47,9 +47,13 @@ const UpdatePassword = () => {
         return () => clearTimeout(timer);
     }, [user]);
 
-    // Only redirect when requires_password_change is explicitly set to FALSE.
+    // Only redirect when requires_password_change is explicitly set to FALSE
+    // AND the user did NOT just arrive via a password-recovery link.
     useEffect(() => {
         if (!user) return;
+        // If the URL contains an access_token hash, the user clicked a reset link
+        // — always show the form so they can set a new password.
+        if (window.location.hash.includes('access_token')) return;
         const needsChange = user.user_metadata?.requires_password_change;
         if (needsChange === false) {
             // Password was just changed — redirect to onboarding or dashboard
