@@ -2,9 +2,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Calendar, User, Clock, ChevronLeft, Share2, Facebook, Twitter, Linkedin } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { Calendar, User, Clock, ChevronLeft } from 'lucide-react';
 import SEOHead from '../components/SEOHead';
+import ArticleSocialShare from '../components/ArticleSocialShare';
+import ArticleCTABanner from '../components/ArticleCTABanner';
+import ArticleNewsletter from '../components/ArticleNewsletter';
 
 interface NewsArticle {
     id: string;
@@ -166,77 +168,12 @@ const NewsDetail = () => {
                         }
                     `}</style>
 
-                    {/* Social Share */}
-                    <div className="mt-16 pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-6">
-                        <div className="flex items-center gap-4">
-                            <span className="text-sm font-bold text-gray-400 uppercase tracking-widest">Share this story</span>
-                            <div className="flex items-center gap-2">
-                                <a
-                                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="p-2 hover:bg-gray-50 rounded-full transition-colors text-gray-400 hover:text-blue-600"
-                                    title="Share on Facebook"
-                                >
-                                    <Facebook size={20} />
-                                </a>
-                                <a
-                                    href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(article.title)}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="p-2 hover:bg-gray-50 rounded-full transition-colors text-gray-400 hover:text-sky-500"
-                                    title="Share on Twitter"
-                                >
-                                    <Twitter size={20} />
-                                </a>
-                                <a
-                                    href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="p-2 hover:bg-gray-50 rounded-full transition-colors text-gray-400 hover:text-blue-700"
-                                    title="Share on LinkedIn"
-                                >
-                                    <Linkedin size={20} />
-                                </a>
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => {
-                                navigator.clipboard.writeText(window.location.href);
-                                toast.success('Link copied to clipboard');
-                            }}
-                            className="flex items-center gap-2 px-6 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-full text-xs font-bold uppercase tracking-widest transition-colors"
-                        >
-                            <Share2 size={16} />
-                            Copy Link
-                        </button>
-                    </div>
+                    <ArticleSocialShare title={article.title} label="Share this story" />
                 </div>
             </article>
 
-            {/* Related News Quick Grid */}
-            <section className="mt-20 py-20 bg-gray-50 border-t border-gray-100">
-                <div className="container mx-auto px-6 max-w-4xl">
-                    <h2 className="text-2xl font-black text-gray-900 mb-10 uppercase tracking-tight italic">More from The Berman</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                        {/* This would ideally fetch 2 other articles, excluding the current one */}
-                        <div className="group">
-                            <Link to="/news" className="block">
-                                <span className="text-[10px] font-black text-[#007F00] uppercase tracking-[0.2em] block mb-4">Latest Update</span>
-                                <h3 className="text-xl font-bold group-hover:underline decoration-1 underline-offset-4">Return to the Newsroom</h3>
-                                <p className="text-gray-500 text-sm mt-3 leading-relaxed">Stay updated with the latest energy efficiency grants and sustainability news from across Ireland.</p>
-                            </Link>
-                        </div>
-                        <div className="group">
-                            <Link to="/catalogue" className="block">
-                                <span className="text-[10px] font-black text-[#007F00] uppercase tracking-[0.2em] block mb-4">Marketplace</span>
-                                <h3 className="text-xl font-bold group-hover:underline decoration-1 underline-offset-4">Browse our Specialist Catalogue</h3>
-                                <p className="text-gray-500 text-sm mt-3 leading-relaxed">Find registered contractors and energy advisors for your next home upgrade project.</p>
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            <ArticleCTABanner />
+            <ArticleNewsletter />
         </div>
     );
 };

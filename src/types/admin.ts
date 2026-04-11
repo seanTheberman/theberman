@@ -150,11 +150,52 @@ export interface NewsArticle {
     published_at: string;
     title: string;
     excerpt: string;
+    content?: string;
     author: string;
     image_url: string;
     category: string;
     is_live: boolean;
+    show_badge?: boolean;
     read_time: string;
+}
+
+export interface BlogArticle {
+    id: string;
+    created_at: string;
+    published_at: string;
+    title: string;
+    subtitle?: string;
+    excerpt: string;
+    content: string;
+    author: string;
+    image_url: string;
+    category: string;
+    is_live: boolean;
+    show_badge?: boolean;
+    read_time: string;
+    slug?: string;
+}
+
+export interface FaqItem {
+    id: string;
+    slug: string;
+    title: string;
+    content: string;
+    category: string;
+    sort_order: number;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface PageContent {
+    id: string;
+    page: string;
+    section: string;
+    content: Record<string, any>;
+    sort_order: number;
+    is_active: boolean;
+    updated_at: string;
 }
 
 export interface CatalogueFormData {
@@ -197,6 +238,9 @@ export type AdminView =
     | 'payments'
     | 'settings'
     | 'news'
+    | 'blog'
+    | 'faq-management'
+    | 'page-content'
     | 'add-to-catalogue'
     | 'catalogue'
     | 'recently-deleted';

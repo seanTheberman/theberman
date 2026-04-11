@@ -24,7 +24,7 @@ const NewsPage = () => {
     const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState('All');
 
-    const categories = ['All', 'Company News', 'Solar Energy', 'Industry Updates', 'Sustainability', 'Community'];
+    const categories = ['All', 'Company News', 'Solar Energy', 'Industry Insights', 'Policy & Regulation', 'Technology & Innovation', 'Sustainability', 'Community'];
 
     const fetchArticles = async () => {
         setLoading(true);
