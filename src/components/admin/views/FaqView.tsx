@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { RefreshCw, HelpCircle, Pencil, Trash2, Plus, Save, X, GripVertical } from 'lucide-react';
+import { RefreshCw, Pencil, Trash2, Plus, Save, X, GripVertical } from 'lucide-react';
 import type { FaqItem } from '../../../types/admin';
 import { supabase } from '../../../lib/supabase';
 import toast from 'react-hot-toast';
