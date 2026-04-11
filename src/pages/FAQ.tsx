@@ -86,10 +86,10 @@ const FAQ = () => {
                     '@type': 'FAQPage',
                     mainEntity: faqItems.map(item => ({
                         '@type': 'Question',
-                        name: item.title,
+                        name: item.title.charAt(0).toUpperCase() + item.title.slice(1),
                         acceptedAnswer: {
                             '@type': 'Answer',
-                            text: item.title
+                            text: item.title.charAt(0).toUpperCase() + item.title.slice(1)
                         }
                     }))
                 }}
@@ -97,10 +97,10 @@ const FAQ = () => {
             <div className="container mx-auto px-6 max-w-7xl">
                 <div className="grid lg:grid-cols-12 gap-16 items-start">
                     {/* Main Content (Left) */}
-                    <div className="lg:col-span-8 order-2 lg:order-1 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="lg:col-span-8 order-2 lg:order-1 animate-in fade-in slide-in-from-bottom-4 duration-500 min-w-0 overflow-hidden">
                         <div className="max-w-3xl">
                             <h2 className="text-3xl md:text-4xl font-black text-[#007F00] mb-8 leading-tight uppercase tracking-tight">
-                                {activeItem.title}
+                                {activeItem.title.charAt(0).toUpperCase() + activeItem.title.slice(1)}
                             </h2>
                             <div
                                 className="prose prose-lg max-w-none text-gray-700 leading-relaxed font-medium space-y-6 faq-content-body"
@@ -130,7 +130,7 @@ const FAQ = () => {
                     <div className="lg:col-span-4 order-1 lg:order-2 sticky top-32">
                         <div className="border-l border-gray-100 pl-8">
                             <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-8">BER FAQ</h3>
-                            <nav className="space-y-4 max-h-[70vh] overflow-y-auto pr-4 custom-scrollbar cursor-pointer">
+                            <nav className="flex flex-col gap-5 max-h-[70vh] overflow-y-auto pr-4 custom-scrollbar">
                                 {faqItems.map((item) => (
                                     <button
                                         key={item.id}
@@ -138,12 +138,12 @@ const FAQ = () => {
                                             setActiveId(item.slug);
                                             window.scrollTo({ top: 0, behavior: 'smooth' });
                                         }}
-                                        className={`w-full text-left text-[13px] font-bold transition-all leading-tight cursor-pointer hover:text-[#007F00] ${activeId === item.slug
+                                        className={`w-full text-left text-[13px] font-bold transition-all leading-normal py-1 cursor-pointer hover:text-[#007F00] ${activeId === item.slug
                                             ? 'text-[#007F00]'
                                             : 'text-gray-500'
                                             }`}
                                     >
-                                        {item.title}
+                                        {item.title.charAt(0).toUpperCase() + item.title.slice(1)}
                                     </button>
                                 ))}
                             </nav>
