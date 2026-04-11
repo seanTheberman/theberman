@@ -1654,9 +1654,11 @@ const fetchAssessments = useCallback(async () => {
         { id: 'assessors', label: 'BER Assessors', icon: HardHat, badge: pendingAssessors },
         { id: 'catalogue', label: 'Catalogue', icon: BookOpen, badge: 0 },
         { id: 'payments', label: 'Payments', icon: DollarSign, badge: 0 },
+        { type: 'divider', group: 'CMS' },
         { id: 'news', label: 'News', icon: Newspaper, badge: 0 },
         { id: 'blog', label: 'Blog', icon: Layers, badge: 0 },
         { id: 'faq-management', label: 'FAQ', icon: HelpCircle, badge: 0 },
+        { type: 'divider', group: '' },
         { id: 'recently-deleted', label: 'Recently Deleted', icon: Trash2, badge: deletedItems.length },
         { id: 'settings', label: 'Settings', icon: SettingsIcon, badge: 0 },
     ];
@@ -1709,7 +1711,18 @@ const fetchAssessments = useCallback(async () => {
                         </button>
                     </div>
                     <p className={`text-[9px] font-black text-white/30 uppercase tracking-[0.2em] px-4 mb-2 block ${desktopExpanded ? 'md:block' : 'md:hidden'} lg:block`}>Navigation</p>
-                    {NAV_ITEMS.map(({ id, label, icon: Icon, badge }) => {
+                    {NAV_ITEMS.map((item: any, idx: number) => {
+                        if (item.type === 'divider') {
+                            return (
+                                <div key={`divider-${idx}`}>
+                                    <div className="mx-4 my-2 border-t border-white/10" />
+                                    {item.group && (
+                                        <p className={`text-[9px] font-black text-[#9ACD32]/70 uppercase tracking-[0.2em] px-4 mb-1 mt-2 block ${desktopExpanded ? 'md:block' : 'md:hidden'} lg:block`}>{item.group}</p>
+                                    )}
+                                </div>
+                            );
+                        }
+                        const { id, label, icon: Icon, badge } = item;
                         const isActive = view === id;
                         return (
                             <button
@@ -1728,7 +1741,6 @@ const fetchAssessments = useCallback(async () => {
                                         {badge}
                                     </span>
                                 )}
-                                {/* Badge dot on tablet icon-only mode */}
                                 {badge > 0 && !desktopExpanded && (
                                     <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500 hidden md:block lg:hidden" />
                                 )}
