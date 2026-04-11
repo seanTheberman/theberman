@@ -1,16 +1,16 @@
 import React from 'react';
-import { RefreshCw, Newspaper, Pencil, Trash2, Eye } from 'lucide-react';
+import { RefreshCw, BookOpen, Pencil, Trash2, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import type { NewsArticle } from '../../../types/admin';
+import type { BlogArticle } from '../../../types/admin';
 
 interface Props {
-    newsArticles: NewsArticle[];
+    blogArticles: BlogArticle[];
     loading: boolean;
-    fetchNewsArticles: () => void;
-    handleDeleteNewsArticle: (id: string) => void;
+    fetchBlogArticles: () => void;
+    handleDeleteBlogArticle: (id: string) => void;
 }
 
-export const NewsView = React.memo(({ newsArticles, loading, fetchNewsArticles, handleDeleteNewsArticle }: Props) => {
+export const BlogView = React.memo(({ blogArticles, loading, fetchBlogArticles, handleDeleteBlogArticle }: Props) => {
     const navigate = useNavigate();
 
     return (
@@ -18,23 +18,23 @@ export const NewsView = React.memo(({ newsArticles, loading, fetchNewsArticles, 
             {/* Header */}
             <div className="p-4 sm:p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 gap-3">
                 <div className="min-w-0">
-                    <h3 className="text-lg font-bold text-gray-900">Website News Articles</h3>
-                    <p className="text-sm text-gray-500 hidden sm:block">Manage the content appearing on the News page.</p>
+                    <h3 className="text-lg font-bold text-gray-900">Blog Articles</h3>
+                    <p className="text-sm text-gray-500 hidden sm:block">Manage blog posts visible on the Blog page.</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                     <button
-                        onClick={fetchNewsArticles}
+                        onClick={fetchBlogArticles}
                         className="p-2 text-gray-400 hover:text-[#007EA7] transition-colors"
-                        title="Refresh news"
+                        title="Refresh blog"
                     >
                         <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
                     </button>
                     <button
-                        onClick={() => navigate('/admin/news/new')}
+                        onClick={() => navigate('/admin/blog/new')}
                         className="bg-[#007F00] text-white px-3 sm:px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#006600] transition-colors flex items-center gap-2"
                     >
-                        <Newspaper size={16} />
-                        <span className="hidden sm:inline">Add New Article</span>
+                        <BookOpen size={16} />
+                        <span className="hidden sm:inline">Add Blog Post</span>
                         <span className="sm:hidden">Add</span>
                     </button>
                 </div>
@@ -42,10 +42,10 @@ export const NewsView = React.memo(({ newsArticles, loading, fetchNewsArticles, 
 
             {/* Mobile card list */}
             <div className="sm:hidden divide-y divide-gray-100">
-                {newsArticles.map((article) => (
+                {blogArticles.map((article) => (
                     <div
                         key={article.id}
-                        onClick={() => navigate(`/admin/news/edit/${article.id}`)}
+                        onClick={() => navigate(`/admin/blog/edit/${article.id}`)}
                         className="p-4 flex gap-3 cursor-pointer hover:bg-gray-50 transition-colors"
                     >
                         {article.image_url && (
@@ -62,26 +62,26 @@ export const NewsView = React.memo(({ newsArticles, loading, fetchNewsArticles, 
                                     {article.is_live ? 'Live' : 'Draft'}
                                 </span>
                             </div>
-                            <div className="text-xs text-gray-400 line-clamp-2 mt-0.5">{article.excerpt}</div>
+                            {article.subtitle && <div className="text-xs text-gray-500 line-clamp-1 mt-0.5">{article.subtitle}</div>}
                             <div className="text-xs text-gray-400 mt-0.5">{article.author} &bull; {article.category}</div>
                             <div className="text-xs text-gray-400">{new Date(article.published_at).toLocaleDateString()}</div>
                             <div className="flex items-center gap-2 mt-2" onClick={e => e.stopPropagation()}>
                                 <button
-                                    onClick={() => navigate(`/admin/news/edit/${article.id}`)}
+                                    onClick={() => navigate(`/admin/blog/edit/${article.id}`)}
                                     className="p-1.5 hover:bg-blue-50 rounded-lg transition-colors text-[#007EA7]"
-                                    title="Edit Article"
+                                    title="Edit Post"
                                 >
                                     <Pencil size={15} />
                                 </button>
                                 <button
-                                    onClick={() => handleDeleteNewsArticle(article.id)}
+                                    onClick={() => handleDeleteBlogArticle(article.id)}
                                     className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                    title="Delete Article"
+                                    title="Delete Post"
                                 >
                                     <Trash2 size={15} />
                                 </button>
                                 <a
-                                    href="/news"
+                                    href={`/blog/${article.slug || article.id}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="p-1.5 hover:bg-gray-50 rounded-lg transition-colors text-gray-400"
@@ -93,8 +93,8 @@ export const NewsView = React.memo(({ newsArticles, loading, fetchNewsArticles, 
                         </div>
                     </div>
                 ))}
-                {newsArticles.length === 0 && (
-                    <div className="px-6 py-12 text-center text-gray-400 italic">No news articles found.</div>
+                {blogArticles.length === 0 && (
+                    <div className="px-6 py-12 text-center text-gray-400 italic">No blog articles found.</div>
                 )}
             </div>
 
@@ -111,10 +111,10 @@ export const NewsView = React.memo(({ newsArticles, loading, fetchNewsArticles, 
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                        {newsArticles.map((article) => (
+                        {blogArticles.map((article) => (
                             <tr
                                 key={article.id}
-                                onClick={() => navigate(`/admin/news/edit/${article.id}`)}
+                                onClick={() => navigate(`/admin/blog/edit/${article.id}`)}
                                 className="hover:bg-gray-50 transition-colors cursor-pointer"
                             >
                                 <td className="px-6 py-4 max-w-sm">
@@ -128,13 +128,14 @@ export const NewsView = React.memo(({ newsArticles, loading, fetchNewsArticles, 
                                         )}
                                         <div>
                                             <div className="font-bold text-gray-900 line-clamp-1">{article.title}</div>
-                                            <div className="text-xs text-gray-400 line-clamp-2 mt-0.5">{article.excerpt}</div>
+                                            {article.subtitle && <div className="text-xs text-gray-500 line-clamp-1">{article.subtitle}</div>}
+                                            <div className="text-xs text-gray-400 line-clamp-1 mt-0.5">{article.excerpt}</div>
                                         </div>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="font-medium text-gray-700">{article.author}</div>
-                                    <div className="text-xs text-gray-500 capitalize">{article.category} • {article.read_time}</div>
+                                    <div className="text-xs text-gray-500 capitalize">{article.category} &bull; {article.read_time}</div>
                                 </td>
                                 <td className="px-6 py-4 text-gray-500">
                                     {new Date(article.published_at).toLocaleDateString()}
@@ -147,21 +148,21 @@ export const NewsView = React.memo(({ newsArticles, loading, fetchNewsArticles, 
                                 <td className="px-6 py-4 text-right">
                                     <div className="flex items-center justify-end gap-2 text-[#007EA7]" onClick={e => e.stopPropagation()}>
                                         <button
-                                            onClick={() => navigate(`/admin/news/edit/${article.id}`)}
+                                            onClick={() => navigate(`/admin/blog/edit/${article.id}`)}
                                             className="p-1.5 hover:bg-blue-50 rounded-lg transition-colors"
-                                            title="Edit Article"
+                                            title="Edit Post"
                                         >
                                             <Pencil size={16} />
                                         </button>
                                         <button
-                                            onClick={() => handleDeleteNewsArticle(article.id)}
+                                            onClick={() => handleDeleteBlogArticle(article.id)}
                                             className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                            title="Delete Article"
+                                            title="Delete Post"
                                         >
                                             <Trash2 size={16} />
                                         </button>
                                         <a
-                                            href="/news"
+                                            href={`/blog/${article.slug || article.id}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="p-1.5 hover:bg-gray-50 rounded-lg transition-colors text-gray-400"
@@ -173,10 +174,10 @@ export const NewsView = React.memo(({ newsArticles, loading, fetchNewsArticles, 
                                 </td>
                             </tr>
                         ))}
-                        {newsArticles.length === 0 && (
+                        {blogArticles.length === 0 && (
                             <tr>
                                 <td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">
-                                    No news articles found.
+                                    No blog articles found.
                                 </td>
                             </tr>
                         )}

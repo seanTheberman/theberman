@@ -13,6 +13,9 @@ import Catalogue from './pages/NewCatalogue';
 import ListingDetail from './pages/ListingDetail';
 import Admin from './pages/Admin';
 import AdminNewsAction from './pages/AdminNewsAction';
+import AdminBlogAction from './pages/AdminBlogAction';
+import Blog from './pages/Blog';
+import BlogDetail from './pages/BlogDetail';
 import Login from './pages/Login';
 import AdminLogin from './pages/AdminLogin';
 import UserDashboard from './pages/UserDashboard';
@@ -84,6 +87,8 @@ function App() {
                         <Route path="faq" element={<FAQ />} />
                         <Route path="news" element={<News />} />
                         <Route path="news/:id" element={<NewsDetail />} />
+                        <Route path="blog" element={<Blog />} />
+                        <Route path="blog/:slug" element={<BlogDetail />} />
                         <Route path="hire-agent" element={<HireAgent />} />
                         <Route path="registration-pending" element={<RegistrationPending />} />
                     </Route>
@@ -118,6 +123,22 @@ function App() {
                         element={
                             <ProtectedRoute allowedRoles={['admin']}>
                                 <AdminNewsAction />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/blog/new"
+                        element={
+                            <ProtectedRoute allowedRoles={['admin']}>
+                                <AdminBlogAction />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin/blog/edit/:id"
+                        element={
+                            <ProtectedRoute allowedRoles={['admin']}>
+                                <AdminBlogAction />
                             </ProtectedRoute>
                         }
                     />

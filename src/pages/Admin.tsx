@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, RefreshCw, BarChart2, Building2, BookOpen, ClipboardList, HardHat, Home, Inbox, DollarSign, Newspaper, Settings as SettingsIcon, Users, Layers, Menu, X, ChevronLeft, ChevronRight, Trash2, Briefcase } from 'lucide-react';
+import { LogOut, RefreshCw, BarChart2, Building2, BookOpen, ClipboardList, HardHat, Home, Inbox, DollarSign, Newspaper, Settings as SettingsIcon, Users, Layers, Menu, X, ChevronLeft, ChevronRight, Trash2, Briefcase, HelpCircle } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { geocodeAddress, COUNTY_COORDINATES } from '../lib/geocoding';
 
 // Types
-import type { Lead, Assessment, Profile, Payment, Sponsor, AppSettings, NewsArticle, CatalogueFormData, AdminView, DeletedItem, CatalogueListing } from '../types/admin';
+import type { Lead, Assessment, Profile, Payment, Sponsor, AppSettings, NewsArticle, BlogArticle, FaqItem, CatalogueFormData, AdminView, DeletedItem, CatalogueListing } from '../types/admin';
 
 // Views
 import { StatsView } from '../components/admin/views/StatsView';
@@ -20,6 +20,8 @@ import { CatalogueView } from '../components/admin/views/CatalogueView';
 import { AddToCatalogueView } from '../components/admin/views/AddToCatalogueView';
 import { PaymentsView } from '../components/admin/views/PaymentsView';
 import { NewsView } from '../components/admin/views/NewsView';
+import { BlogView } from '../components/admin/views/BlogView';
+import { FaqView } from '../components/admin/views/FaqView';
 import { SettingsView } from '../components/admin/views/SettingsView';
 import { RecentlyDeletedView } from '../components/admin/views/RecentlyDeletedView';
 
@@ -48,6 +50,8 @@ const Admin = () => {
     const [sponsors, setSponsors] = useState<Sponsor[]>([]);
     const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
     const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
+    const [blogArticles, setBlogArticles] = useState<BlogArticle[]>([]);
+    const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
     const [listings, setListings] = useState<CatalogueListing[]>([]);
     const [catalogueCategories, setCatalogueCategories] = useState<{ id: string; name: string }[]>([]);
     const [deletedItems, setDeletedItems] = useState<DeletedItem[]>([]);
@@ -405,6 +409,40 @@ const fetchAssessments = useCallback(async () => {
         }
     }, [setNewsArticles, setLoading]);
 
+    const fetchBlogArticles = useCallback(async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('blog_articles')
+                .select('*')
+                .order('published_at', { ascending: false });
+            if (error) throw error;
+            setBlogArticles(data || []);
+        } catch (error) {
+            console.error('Error fetching blog:', error);
+            toast.error('Failed to load blog articles');
+        } finally {
+            setLoading(false);
+        }
+    }, [setBlogArticles, setLoading]);
+
+    const fetchFaqItems = useCallback(async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('faq_items')
+                .select('*')
+                .order('sort_order');
+            if (error) throw error;
+            setFaqItems(data || []);
+        } catch (error) {
+            console.error('Error fetching FAQ items:', error);
+            toast.error('Failed to load FAQ items');
+        } finally {
+            setLoading(false);
+        }
+    }, [setFaqItems, setLoading]);
+
     const fetchSponsors = useCallback(async () => {
         try {
             const { data, error } = await supabase.from('sponsors').select('*').order('created_at', { ascending: true });
@@ -519,6 +557,10 @@ const fetchAssessments = useCallback(async () => {
                     await Promise.all([fetchLeads(), fetchAssessments(), fetchUsers(), fetchPayments()]);
                 } else if (view === 'news') {
                     await fetchNewsArticles();
+                } else if (view === 'blog') {
+                    await fetchBlogArticles();
+                } else if (view === 'faq-management') {
+                    await fetchFaqItems();
                 } else if (view === 'recently-deleted') {
                     await fetchDeletedItems();
                 }
@@ -537,10 +579,12 @@ const fetchAssessments = useCallback(async () => {
             .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchUsers())
             .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, () => fetchPayments())
             .on('postgres_changes', { event: '*', schema: 'public', table: 'app_settings' }, () => fetchAppSettings())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'blog_articles' }, () => fetchBlogArticles())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'faq_items' }, () => fetchFaqItems())
             .subscribe();
 
         return () => { supabase.removeChannel(channel); };
-    }, [view, fetchLeads, fetchAssessments, fetchUsers, fetchPayments, fetchListings, fetchCatalogueCategories, fetchAppSettings, fetchPromoSettings, fetchSponsors, fetchNewsArticles, fetchDeletedItems]);
+    }, [view, fetchLeads, fetchAssessments, fetchUsers, fetchPayments, fetchListings, fetchCatalogueCategories, fetchAppSettings, fetchPromoSettings, fetchSponsors, fetchNewsArticles, fetchBlogArticles, fetchFaqItems, fetchDeletedItems]);
 
 
     // ─── Handlers ─────────────────────────────────────────────────────────────────
@@ -1253,6 +1297,21 @@ const fetchAssessments = useCallback(async () => {
         }
     }, [newsArticles]);
 
+    const handleDeleteBlogArticle = useCallback(async (id: string) => {
+        if (!confirm('Are you sure you want to delete this blog post?')) return;
+        setIsUpdating(true);
+        try {
+            const { error } = await supabase.from('blog_articles').delete().eq('id', id);
+            if (error) throw error;
+            setBlogArticles(prev => prev.filter(a => a.id !== id));
+            toast.success('Blog post deleted');
+        } catch (error: any) {
+            toast.error('Failed to delete blog post');
+        } finally {
+            setIsUpdating(false);
+        }
+    }, [blogArticles]);
+
     const handleOpenCatalogueView = useCallback((business: Profile | null, existingListing?: any) => {
         setSelectedBusinessForCatalogue(business);
         setSelectedListingForEdit(existingListing || null);
@@ -1595,7 +1654,11 @@ const fetchAssessments = useCallback(async () => {
         { id: 'assessors', label: 'BER Assessors', icon: HardHat, badge: pendingAssessors },
         { id: 'catalogue', label: 'Catalogue', icon: BookOpen, badge: 0 },
         { id: 'payments', label: 'Payments', icon: DollarSign, badge: 0 },
+        { type: 'divider', group: 'CMS' },
         { id: 'news', label: 'News', icon: Newspaper, badge: 0 },
+        { id: 'blog', label: 'Blog', icon: Layers, badge: 0 },
+        { id: 'faq-management', label: 'FAQ', icon: HelpCircle, badge: 0 },
+        { type: 'divider', group: '' },
         { id: 'recently-deleted', label: 'Recently Deleted', icon: Trash2, badge: deletedItems.length },
         { id: 'settings', label: 'Settings', icon: SettingsIcon, badge: 0 },
     ];
@@ -1648,7 +1711,18 @@ const fetchAssessments = useCallback(async () => {
                         </button>
                     </div>
                     <p className={`text-[9px] font-black text-white/30 uppercase tracking-[0.2em] px-4 mb-2 block ${desktopExpanded ? 'md:block' : 'md:hidden'} lg:block`}>Navigation</p>
-                    {NAV_ITEMS.map(({ id, label, icon: Icon, badge }) => {
+                    {NAV_ITEMS.map((item: any, idx: number) => {
+                        if (item.type === 'divider') {
+                            return (
+                                <div key={`divider-${idx}`}>
+                                    <div className="mx-4 my-2 border-t border-white/10" />
+                                    {item.group && (
+                                        <p className={`text-[9px] font-black text-[#9ACD32]/70 uppercase tracking-[0.2em] px-4 mb-1 mt-2 block ${desktopExpanded ? 'md:block' : 'md:hidden'} lg:block`}>{item.group}</p>
+                                    )}
+                                </div>
+                            );
+                        }
+                        const { id, label, icon: Icon, badge } = item;
                         const isActive = view === id;
                         return (
                             <button
@@ -1667,7 +1741,6 @@ const fetchAssessments = useCallback(async () => {
                                         {badge}
                                     </span>
                                 )}
-                                {/* Badge dot on tablet icon-only mode */}
                                 {badge > 0 && !desktopExpanded && (
                                     <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-500 hidden md:block lg:hidden" />
                                 )}
@@ -1849,6 +1922,17 @@ const fetchAssessments = useCallback(async () => {
                             newsArticles={newsArticles} loading={loading}
                             fetchNewsArticles={fetchNewsArticles}
                             handleDeleteNewsArticle={handleDeleteNewsArticle}
+                        />
+                    ) : view === 'blog' ? (
+                        <BlogView
+                            blogArticles={blogArticles} loading={loading}
+                            fetchBlogArticles={fetchBlogArticles}
+                            handleDeleteBlogArticle={handleDeleteBlogArticle}
+                        />
+                    ) : view === 'faq-management' ? (
+                        <FaqView
+                            faqItems={faqItems} loading={loading}
+                            fetchFaqItems={fetchFaqItems}
                         />
                     ) : view === 'settings' ? (
                         <SettingsView
