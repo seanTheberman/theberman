@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { RefreshCw, HelpCircle, Pencil, Trash2, Plus, Save, X, ChevronUp, ChevronDown } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { RefreshCw, Pencil, Trash2, Plus, Save, X, GripVertical } from 'lucide-react';
 import type { FaqItem } from '../../../types/admin';
 import { supabase } from '../../../lib/supabase';
 import toast from 'react-hot-toast';
@@ -18,6 +18,8 @@ const generateSlug = (title: string) =>
 export const FaqView = React.memo(({ faqItems, loading, fetchFaqItems }: Props) => {
     const [editingItem, setEditingItem] = useState<Partial<FaqItem> | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const draggedId = useRef<string | null>(null);
+    const [dragOverId, setDragOverId] = useState<string | null>(null);
 
     const handleSave = async () => {
         if (!editingItem?.title || !editingItem?.content) {
@@ -68,15 +70,24 @@ export const FaqView = React.memo(({ faqItems, loading, fetchFaqItems }: Props) 
         }
     };
 
-    const handleReorder = async (id: string, direction: 'up' | 'down') => {
-        const idx = faqItems.findIndex(f => f.id === id);
-        if (idx < 0) return;
-        const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
-        if (swapIdx < 0 || swapIdx >= faqItems.length) return;
+    const handleDrop = async (targetId: string) => {
+        const fromId = draggedId.current;
+        if (!fromId || fromId === targetId) return;
+
+        const fromIdx = faqItems.findIndex(f => f.id === fromId);
+        const toIdx = faqItems.findIndex(f => f.id === targetId);
+        if (fromIdx < 0 || toIdx < 0) return;
+
+        const reordered = [...faqItems];
+        const [moved] = reordered.splice(fromIdx, 1);
+        reordered.splice(toIdx, 0, moved);
 
         try {
-            await supabase.from('faq_items').update({ sort_order: faqItems[swapIdx].sort_order }).eq('id', faqItems[idx].id);
-            await supabase.from('faq_items').update({ sort_order: faqItems[idx].sort_order }).eq('id', faqItems[swapIdx].id);
+            await Promise.all(
+                reordered.map((item, i) =>
+                    supabase.from('faq_items').update({ sort_order: i }).eq('id', item.id)
+                )
+            );
             fetchFaqItems();
         } catch {
             toast.error('Failed to reorder');
@@ -183,15 +194,19 @@ export const FaqView = React.memo(({ faqItems, loading, fetchFaqItems }: Props) 
 
                 {/* FAQ Items List */}
                 <div className="divide-y divide-gray-100">
-                    {faqItems.map((item, idx) => (
-                        <div key={item.id} className={`p-4 flex items-center gap-4 ${!item.is_active ? 'opacity-50' : ''}`}>
-                            <div className="flex flex-col gap-1">
-                                <button onClick={() => handleReorder(item.id, 'up')} disabled={idx === 0} className="p-1 text-gray-300 hover:text-gray-600 disabled:opacity-30">
-                                    <ChevronUp size={14} />
-                                </button>
-                                <button onClick={() => handleReorder(item.id, 'down')} disabled={idx === faqItems.length - 1} className="p-1 text-gray-300 hover:text-gray-600 disabled:opacity-30">
-                                    <ChevronDown size={14} />
-                                </button>
+                    {faqItems.map((item) => (
+                        <div
+                            key={item.id}
+                            draggable
+                            onDragStart={() => { draggedId.current = item.id; }}
+                            onDragOver={(e) => { e.preventDefault(); setDragOverId(item.id); }}
+                            onDragLeave={() => setDragOverId(null)}
+                            onDrop={() => { setDragOverId(null); handleDrop(item.id); }}
+                            onDragEnd={() => { draggedId.current = null; setDragOverId(null); }}
+                            className={`p-4 flex items-center gap-4 transition-colors ${!item.is_active ? 'opacity-50' : ''} ${dragOverId === item.id ? 'bg-green-50 border-t-2 border-[#007F00]' : ''}`}
+                        >
+                            <div className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 transition-colors">
+                                <GripVertical size={18} />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="font-bold text-gray-900 text-sm">{item.title}</div>

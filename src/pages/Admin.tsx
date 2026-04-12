@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { geocodeAddress, COUNTY_COORDINATES } from '../lib/geocoding';
 
 // Types
-import type { Lead, Assessment, Profile, Payment, Sponsor, AppSettings, NewsArticle, BlogArticle, FaqItem, PageContent, CatalogueFormData, AdminView, DeletedItem, CatalogueListing } from '../types/admin';
+import type { Lead, Assessment, Profile, Payment, Sponsor, AppSettings, NewsArticle, BlogArticle, FaqItem, CatalogueFormData, AdminView, DeletedItem, CatalogueListing } from '../types/admin';
 
 // Views
 import { StatsView } from '../components/admin/views/StatsView';

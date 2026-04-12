@@ -132,7 +132,7 @@ const BlogDetail = () => {
     const contentWithIds = useMemo(() => {
         if (!article?.content) return '';
         let idx = 0;
-        return article.content.replace(/<(h[23])>/gi, (match, tag) => {
+        return article.content.replace(/<(h[23])>/gi, (_match, tag) => {
             return `<${tag} id="heading-${idx++}">`;
         });
     }, [article?.content]);

@@ -15,12 +15,13 @@ export const NewsView = React.memo(({ newsArticles, loading, fetchNewsArticles, 
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                <div>
+            {/* Header */}
+            <div className="p-4 sm:p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 gap-3">
+                <div className="min-w-0">
                     <h3 className="text-lg font-bold text-gray-900">Website News Articles</h3>
-                    <p className="text-sm text-gray-500">Manage the content appearing on the News page.</p>
+                    <p className="text-sm text-gray-500 hidden sm:block">Manage the content appearing on the News page.</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 shrink-0">
                     <button
                         onClick={fetchNewsArticles}
                         className="p-2 text-gray-400 hover:text-[#007EA7] transition-colors"
@@ -30,14 +31,75 @@ export const NewsView = React.memo(({ newsArticles, loading, fetchNewsArticles, 
                     </button>
                     <button
                         onClick={() => navigate('/admin/news/new')}
-                        className="bg-[#007F00] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#006600] transition-colors flex items-center gap-2"
+                        className="bg-[#007F00] text-white px-3 sm:px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#006600] transition-colors flex items-center gap-2"
                     >
                         <Newspaper size={16} />
-                        Add New Article
+                        <span className="hidden sm:inline">Add New Article</span>
+                        <span className="sm:hidden">Add</span>
                     </button>
                 </div>
             </div>
-            <div className="overflow-x-auto">
+
+            {/* Mobile card list */}
+            <div className="sm:hidden divide-y divide-gray-100">
+                {newsArticles.map((article) => (
+                    <div
+                        key={article.id}
+                        onClick={() => navigate(`/admin/news/edit/${article.id}`)}
+                        className="p-4 flex gap-3 cursor-pointer hover:bg-gray-50 transition-colors"
+                    >
+                        {article.image_url && (
+                            <img
+                                src={article.image_url}
+                                alt=""
+                                className="w-14 h-14 rounded-lg object-cover border border-gray-100 shrink-0"
+                            />
+                        )}
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                                <div className="font-bold text-gray-900 text-sm line-clamp-1">{article.title}</div>
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase shrink-0 ${article.is_live ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                    {article.is_live ? 'Live' : 'Draft'}
+                                </span>
+                            </div>
+                            <div className="text-xs text-gray-400 line-clamp-2 mt-0.5">{article.excerpt}</div>
+                            <div className="text-xs text-gray-400 mt-0.5">{article.author} &bull; {article.category}</div>
+                            <div className="text-xs text-gray-400">{new Date(article.published_at).toLocaleDateString()}</div>
+                            <div className="flex items-center gap-2 mt-2" onClick={e => e.stopPropagation()}>
+                                <button
+                                    onClick={() => navigate(`/admin/news/edit/${article.id}`)}
+                                    className="p-1.5 hover:bg-blue-50 rounded-lg transition-colors text-[#007EA7]"
+                                    title="Edit Article"
+                                >
+                                    <Pencil size={15} />
+                                </button>
+                                <button
+                                    onClick={() => handleDeleteNewsArticle(article.id)}
+                                    className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    title="Delete Article"
+                                >
+                                    <Trash2 size={15} />
+                                </button>
+                                <a
+                                    href="/news"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-1.5 hover:bg-gray-50 rounded-lg transition-colors text-gray-400"
+                                    title="View on site"
+                                >
+                                    <Eye size={15} />
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+                {newsArticles.length === 0 && (
+                    <div className="px-6 py-12 text-center text-gray-400 italic">No news articles found.</div>
+                )}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full text-left text-sm text-gray-600">
                     <thead className="bg-gray-50/50 text-gray-900 font-bold uppercase tracking-wider text-xs border-b border-gray-100">
                         <tr>
@@ -110,7 +172,6 @@ export const NewsView = React.memo(({ newsArticles, loading, fetchNewsArticles, 
                                     </div>
                                 </td>
                             </tr>
-
                         ))}
                         {newsArticles.length === 0 && (
                             <tr>
