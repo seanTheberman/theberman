@@ -1,7 +1,7 @@
 import {
     ArrowRight, CheckCircle2, Star, Clock,
     Zap as ZapIcon, ShieldCheck, TrendingUp,
-    Users, Shield, ClipboardList, X, Search, ChevronRight
+    Users, Shield, ClipboardList, X, Search
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
