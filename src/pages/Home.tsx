@@ -178,7 +178,7 @@ const HomePage = () => {
                             </h2>
                             <div className="space-y-6">
                                 {[
-                                    { title: "Lowest Prices Guaranteed", desc: "Our network competes for your job, driving prices down for you." },
+                                    { title: "Lowest Prices Guaranteed", desc: "Receive multiple quotes and choose the best option for you.." },
                                     { title: "BER Registered Assessors Only", desc: "Every assessor is fully certified and vetted for quality." },
                                     { title: "Money-Back Guarantee", desc: "We ensure you get a professional service or your money back." },
                                     { title: "Instant Online Booking", desc: "No back-and-forth phone calls. Book everything in real-time." }
@@ -293,58 +293,7 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* Solar Panel Promotion */}
-            <section className="py-24 bg-gray-900 border-t border-green-900 overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-green-500/10 blur-3xl rounded-full -mr-48 -mt-48"></div>
-                <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#9ACD32]/10 blur-3xl rounded-full -ml-48 -mb-48"></div>
-
-                <div className="container mx-auto px-6 relative z-10">
-                    <div className="flex flex-col lg:flex-row items-center gap-16">
-                        <div className="lg:w-1/2">
-                            <span className="inline-block mb-6 px-4 py-1.5 rounded-full bg-green-500/10 text-[#9ACD32] text-xs font-black tracking-widest uppercase border border-green-500/20">
-                                Eco-Friendly Savings
-                            </span>
-                            <h2 className="text-4xl md:text-5xl font-black text-white mb-8 leading-tight">
-                                Compare Solar Deals
-                            </h2>
-                            <p className="text-gray-400 text-lg mb-10 leading-relaxed max-w-xl">
-                                Reduce your electricity bills and carbon footprint with customized solar solutions. Our partners provide expert installation and the latest technology tailored for your home.
-                            </p>
-                            <a
-                                href="https://solarquotesireland.com/"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-3 bg-[#007F00] hover:bg-[#006400] text-white px-10 py-5 rounded-2xl font-black text-xs md:text-sm uppercase tracking-widest transition-all active:scale-95 shadow-[0_20px_40px_rgba(0,127,0,0.3)] group"
-                            >
-                                Compare Solar Deals
-                                <ChevronRight className="group-hover:translate-x-1 transition-transform" size={18} />
-                            </a>
-                        </div>
-                        <div className="lg:w-1/2 relative">
-                            <div className="relative rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl skew-x-1">
-                                <img
-                                    src="https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=1000"
-                                    alt="Solar Panels installation"
-                                    className="w-full h-[500px] object-cover"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
-                            </div>
-                            {/* Floating Stats */}
-                            <div className="absolute -bottom-8 -left-8 bg-white p-8 rounded-3xl shadow-2xl border border-gray-100 hidden md:block animate-bounce-slow">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-[#007F00]">
-                                        <Star fill="currentColor" size={24} />
-                                    </div>
-                                    <div>
-                                        <p className="text-2xl font-black text-gray-900">Up to 60%</p>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Bill Reduction</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            {/* Solar Panel Promotion - temporarily removed */}
 
             {/* Selling Home Promotion */}
             {/* <section className="py-24 bg-white relative overflow-hidden">
