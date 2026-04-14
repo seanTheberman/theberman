@@ -297,6 +297,36 @@ const ContractorDashboard = () => {
                 }
             });
 
+            // 4. Filter out expired jobs — 7 days with no activity
+            // Activity = quote submitted, buyer accepted/rejected, job scheduled
+            filteredAvailableJobs = filteredAvailableJobs.filter(job => {
+                const jobCreated = new Date(job.created_at).getTime();
+                let lastActivity = jobCreated;
+
+                // Check latest quote submission date
+                if (job.quotes && job.quotes.length > 0) {
+                    for (const q of job.quotes) {
+                        const qDate = new Date(q.created_at).getTime();
+                        if (qDate > lastActivity) lastActivity = qDate;
+                    }
+                    // Buyer action (accepted/rejected) counts as activity
+                    const buyerActed = job.quotes.filter((q: any) => q.status === 'accepted' || q.status === 'rejected');
+                    for (const q of buyerActed) {
+                        const qDate = new Date(q.created_at).getTime();
+                        if (qDate > lastActivity) lastActivity = qDate;
+                    }
+                }
+
+                // Scheduled date = activity
+                if (job.scheduled_date) {
+                    const sd = new Date(job.scheduled_date).getTime();
+                    if (sd > lastActivity) lastActivity = sd;
+                }
+
+                const daysSinceActivity = Math.floor((Date.now() - lastActivity) / (1000 * 60 * 60 * 24));
+                return daysSinceActivity < 7;
+            });
+
             setAvailableJobs(filteredAvailableJobs);
 
             // Active jobs are those where contractor_id matches this contractor

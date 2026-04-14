@@ -1856,7 +1856,7 @@ const fetchAssessments = useCallback(async () => {
                             assessments={assessments}
                             searchTerm={searchTerm} setSearchTerm={setSearchTerm}
                             locationFilter={locationFilter} setLocationFilter={setLocationFilter}
-                            onAssessmentClick={setSelectedAssessment}
+                            onAssessmentClick={(a) => { setSelectedAssessment(a); setShowAssessmentDetailModal(true); }}
                             loading={loading}
                         />
                     ) : view === 'homeowners' || view === 'assessors' ? (

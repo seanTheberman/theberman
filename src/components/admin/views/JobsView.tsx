@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Search, MapPin, Calendar, Clock, User, Mail, Phone, FileText, DollarSign, CheckCircle, AlertCircle, ChevronDown, ChevronRight, Building2, Home } from 'lucide-react';
+import { Search, MapPin, Calendar, Clock, User, Mail, Phone, FileText, DollarSign, CheckCircle, AlertCircle, ChevronDown, ChevronRight, Building2, Home, X, Briefcase, AlertTriangle, XCircle, Eye } from 'lucide-react';
 import type { Assessment, Quote } from '../../../types/admin';
 
 interface Props {
@@ -12,234 +12,80 @@ interface Props {
     loading?: boolean;
 }
 
-interface JobCardProps {
-    assessment: Assessment;
-    onClick: () => void;
-}
+type JobTab = 'live' | 'expired' | 'no_buyer_response' | 'no_assessor_quotes' | 'all';
 
-const JobCard: React.FC<JobCardProps> = ({ assessment, onClick }) => {
-    const [showQuotes, setShowQuotes] = useState(false);
-    
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'draft': return 'bg-gray-100 text-gray-700';
-            case 'submitted': return 'bg-blue-100 text-blue-700';
-            case 'pending': case 'pending_quote': return 'bg-yellow-100 text-yellow-700';
-            case 'quote_accepted': return 'bg-green-100 text-green-700';
-            case 'scheduled': return 'bg-purple-100 text-purple-700';
-            case 'completed': return 'bg-emerald-100 text-emerald-700';
-            case 'assigned': return 'bg-indigo-100 text-indigo-700';
-            case 'live': return 'bg-orange-100 text-orange-700';
-            default: return 'bg-gray-100 text-gray-700';
-        }
-    };
-
-    const getStatusIcon = (status: string) => {
-        switch (status) {
-            case 'draft': return <FileText size={16} />;
-            case 'submitted': return <AlertCircle size={16} />;
-            case 'pending': case 'pending_quote': return <Clock size={16} />;
-            case 'quote_accepted': return <CheckCircle size={16} />;
-            case 'scheduled': return <Calendar size={16} />;
-            case 'completed': return <CheckCircle size={16} />;
-            case 'assigned': return <User size={16} />;
-            case 'live': return <Building2 size={16} />;
-            default: return <FileText size={16} />;
-        }
-    };
-
-    const getQuoteStatusColor = (status: string) => {
-        switch (status) {
-            case 'pending': return 'bg-yellow-100 text-yellow-700';
-            case 'accepted': return 'bg-green-100 text-green-700';
-            case 'rejected': return 'bg-red-100 text-red-700';
-            default: return 'bg-gray-100 text-gray-700';
-        }
-    };
-
-    const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('en-IE', {
-            style: 'currency',
-            currency: 'EUR'
-        }).format(price);
-    };
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-IE', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric'
-        });
-    };
-
-    const hasQuotes = assessment.quotes && assessment.quotes.length > 0;
-    const pendingQuotes = assessment.quotes?.filter((q: Quote) => q.status === 'pending') || [];
-    const acceptedQuotes = assessment.quotes?.filter((q: Quote) => q.status === 'accepted') || [];
-
-    return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all cursor-pointer" onClick={onClick}>
-            <div className="p-6">
-                {/* Header */}
-                <div className="flex justify-between items-start mb-4">
-                    <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 mb-1">{assessment.property_address}</h3>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <MapPin size={14} />
-                            <span>{assessment.town || 'N/A'}, {assessment.county || 'N/A'}</span>
-                            {assessment.property_type && (
-                                <>
-                                    <span>•</span>
-                                    <Home size={14} />
-                                    <span>{assessment.property_type}</span>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                    <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(assessment.status)}`}>
-                        {getStatusIcon(assessment.status)}
-                        <span className="capitalize">{assessment.status.replace('_', ' ')}</span>
-                    </div>
-                </div>
-
-                {/* Customer Info */}
-                <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
-                    <div className="flex items-center gap-1">
-                        <User size={14} />
-                        <span>{assessment.user?.full_name || 'Unknown'}</span>
-                    </div>
-                    {assessment.contact_email && (
-                        <div className="flex items-center gap-1">
-                            <Mail size={14} />
-                            <span>{assessment.contact_email}</span>
-                        </div>
-                    )}
-                    {assessment.contact_phone && (
-                        <div className="flex items-center gap-1">
-                            <Phone size={14} />
-                            <span>{assessment.contact_phone}</span>
-                        </div>
-                    )}
-                </div>
-
-                {/* Job Details */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
-                    <div>
-                        <span className="text-gray-500 block">Job Type</span>
-                        <span className="font-medium capitalize">{assessment.job_type || 'Domestic'}</span>
-                    </div>
-                    {assessment.bedrooms && (
-                        <div>
-                            <span className="text-gray-500 block">Bedrooms</span>
-                            <span className="font-medium">{assessment.bedrooms}</span>
-                        </div>
-                    )}
-                    {assessment.property_size && (
-                        <div>
-                            <span className="text-gray-500 block">Size</span>
-                            <span className="font-medium">{assessment.property_size}</span>
-                        </div>
-                    )}
-                    <div>
-                        <span className="text-gray-500 block">Created</span>
-                        <span className="font-medium">{formatDate(assessment.created_at)}</span>
-                    </div>
-                </div>
-
-                {/* Quotes Section */}
-                <div className="border-t pt-4">
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setShowQuotes(!showQuotes);
-                        }}
-                        className="flex items-center justify-between w-full text-left hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                    >
-                        <div className="flex items-center gap-2">
-                            <DollarSign size={16} className="text-gray-600" />
-                            <span className="font-medium text-gray-900">Quotes</span>
-                            <span className="text-sm text-gray-600">
-                                ({hasQuotes ? assessment.quotes?.length : 0} total)
-                            </span>
-                            {pendingQuotes.length > 0 && (
-                                <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">
-                                    {pendingQuotes.length} pending
-                                </span>
-                            )}
-                            {acceptedQuotes.length > 0 && (
-                                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                                    {acceptedQuotes.length} accepted
-                                </span>
-                            )}
-                        </div>
-                        {showQuotes ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                    </button>
-
-                    {showQuotes && hasQuotes && (
-                        <div className="mt-3 space-y-2">
-                            {assessment.quotes?.map((quote: Quote) => (
-                                <div key={quote.id} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div>
-                                            <div className="font-medium text-gray-900">
-                                                {quote.contractor?.company_name || quote.contractor?.full_name || 'Unknown Contractor'}
-                                            </div>
-                                            <div className="text-sm text-gray-600">
-                                                {quote.contractor?.email}
-                                                {quote.contractor?.phone && ` • ${quote.contractor.phone}`}
-                                            </div>
-                                            {quote.contractor?.seai_number && (
-                                                <div className="text-xs text-gray-500">SEAI: {quote.contractor.seai_number}</div>
-                                            )}
-                                        </div>
-                                        <div className="text-right">
-                                            <div className={`px-2 py-1 rounded-full text-xs font-medium ${getQuoteStatusColor(quote.status)}`}>
-                                                {quote.status}
-                                            </div>
-                                            <div className="font-semibold text-gray-900 mt-1">
-                                                {formatPrice(quote.price)}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {quote.notes && (
-                                        <div className="text-sm text-gray-600 mt-2 p-2 bg-white rounded border border-gray-200">
-                                            <strong>Notes:</strong> {quote.notes}
-                                        </div>
-                                    )}
-                                    <div className="text-xs text-gray-500 mt-1">
-                                        Submitted: {formatDate(quote.created_at)}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-
-                    {showQuotes && !hasQuotes && (
-                        <div className="mt-3 text-center text-gray-500 py-4 bg-gray-50 rounded-lg">
-                            <DollarSign size={24} className="mx-auto mb-2 opacity-50" />
-                            <p>No quotes submitted yet for this job</p>
-                        </div>
-                    )}
-                </div>
-
-                {/* Preferred Date */}
-                {assessment.preferred_date && (
-                    <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar size={14} />
-                        <span>Preferred: {assessment.preferred_date} {assessment.preferred_time && `at ${assessment.preferred_time}`}</span>
-                    </div>
-                )}
-
-                {/* Scheduled Date */}
-                {assessment.scheduled_date && (
-                    <div className="mt-4 flex items-center gap-2 text-sm text-green-600">
-                        <Calendar size={14} />
-                        <span>Scheduled: {formatDate(assessment.scheduled_date)}</span>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
+const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-IE', {
+        day: '2-digit',
+        month: 'short',
+    });
 };
+
+const formatDateFull = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-IE', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+    });
+};
+
+const getStatusBadge = (status: string) => {
+    switch (status) {
+        case 'draft': return { bg: 'bg-gray-100 text-gray-700', label: 'Draft' };
+        case 'submitted': return { bg: 'bg-blue-100 text-blue-700', label: 'Submitted' };
+        case 'pending': return { bg: 'bg-yellow-100 text-yellow-700', label: 'Pending' };
+        case 'pending_quote': return { bg: 'bg-yellow-100 text-yellow-700', label: 'Pending Quote' };
+        case 'quote_accepted': return { bg: 'bg-green-100 text-green-700', label: 'Quote Accepted' };
+        case 'scheduled': return { bg: 'bg-purple-100 text-purple-700', label: 'Scheduled' };
+        case 'completed': return { bg: 'bg-emerald-100 text-emerald-700', label: 'Completed' };
+        case 'assigned': return { bg: 'bg-indigo-100 text-indigo-700', label: 'Assigned' };
+        case 'live': return { bg: 'bg-orange-100 text-orange-700', label: 'Live' };
+        default: return { bg: 'bg-gray-100 text-gray-700', label: status };
+    }
+};
+
+const getDaysSince = (dateString: string) => {
+    const now = new Date();
+    const created = new Date(dateString);
+    return Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+};
+
+// Returns the most recent activity date for a job:
+// - Latest quote submission
+// - Latest quote status change (accepted/rejected quotes are activity)
+// - Falls back to job created_at if no other activity
+const getLastActivityDate = (job: Assessment): Date => {
+    let latest = new Date(job.created_at);
+
+    if (job.quotes && job.quotes.length > 0) {
+        for (const q of job.quotes) {
+            const quoteDate = new Date(q.created_at);
+            if (quoteDate > latest) latest = quoteDate;
+        }
+        // Accepted/rejected quotes = buyer activity, use that date as activity
+        const buyerActedQuotes = job.quotes.filter(q => q.status === 'accepted' || q.status === 'rejected');
+        for (const q of buyerActedQuotes) {
+            const qDate = new Date(q.created_at);
+            if (qDate > latest) latest = qDate;
+        }
+    }
+
+    // Scheduled/assigned = activity happened
+    if (job.scheduled_date) {
+        const sd = new Date(job.scheduled_date);
+        if (sd > latest) latest = sd;
+    }
+
+    return latest;
+};
+
+const getDaysSinceLastActivity = (job: Assessment): number => {
+    const now = new Date();
+    const lastActivity = getLastActivityDate(job);
+    return Math.floor((now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24));
+};
+
+const EXPIRY_DAYS = 7;
 
 export const JobsView: React.FC<Props> = ({
     assessments,
@@ -250,7 +96,9 @@ export const JobsView: React.FC<Props> = ({
     onAssessmentClick,
     loading = false
 }) => {
-    // Get unique counties from assessments
+    const [activeTab, setActiveTab] = useState<JobTab>('live');
+    const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
+
     const uniqueCounties = useMemo(() => {
         const counties = new Set<string>();
         assessments.forEach(a => {
@@ -259,137 +107,586 @@ export const JobsView: React.FC<Props> = ({
         return Array.from(counties).sort();
     }, [assessments]);
 
-    // Filter assessments based on search and location
-    const filteredAssessments = useMemo(() => {
-        return assessments.filter(assessment => {
+    // Categorize assessments based on 7-day inactivity rule
+    // A job expires if there's been no activity for 7 days.
+    // Activity = quote submitted, buyer accepted/rejected a quote, job scheduled.
+    // If any activity happened, the 7-day timer resets from that activity date.
+
+    const liveJobs = useMemo(() =>
+        assessments.filter(a => {
+            if (!['live', 'submitted', 'pending_quote'].includes(a.status)) return false;
+            // Still active if last activity was within 7 days
+            return getDaysSinceLastActivity(a) < EXPIRY_DAYS;
+        }),
+    [assessments]);
+
+    const expiredJobs = useMemo(() =>
+        assessments.filter(a => {
+            if (a.status === 'completed') return true;
+            // Expired = no activity for 7+ days on a live/submitted/pending_quote job
+            if (['live', 'submitted', 'pending_quote'].includes(a.status)) {
+                return getDaysSinceLastActivity(a) >= EXPIRY_DAYS;
+            }
+            return false;
+        }),
+    [assessments]);
+
+    const noBuyerResponseJobs = useMemo(() =>
+        assessments.filter(a => {
+            if (!['pending_quote', 'live', 'submitted'].includes(a.status)) return false;
+            // Has quotes but buyer hasn't accepted or rejected any
+            const hasQuotes = a.quotes && a.quotes.length > 0;
+            const buyerActed = a.quotes?.some(q => q.status === 'accepted' || q.status === 'rejected');
+            if (!hasQuotes || buyerActed) return false;
+            // At least 1 day since last quote was submitted with no buyer response
+            const latestQuoteDate = Math.max(...(a.quotes || []).map(q => new Date(q.created_at).getTime()));
+            const daysSinceLastQuote = Math.floor((Date.now() - latestQuoteDate) / (1000 * 60 * 60 * 24));
+            return daysSinceLastQuote >= 1;
+        }),
+    [assessments]);
+
+    const noAssessorQuotesJobs = useMemo(() =>
+        assessments.filter(a => {
+            // Live/submitted jobs with zero quotes
+            const noQuotes = !a.quotes || a.quotes.length === 0;
+            return noQuotes && ['live', 'submitted', 'pending_quote'].includes(a.status);
+        }),
+    [assessments]);
+
+    // Get active tab's jobs
+    const tabJobs = useMemo(() => {
+        switch (activeTab) {
+            case 'live': return liveJobs;
+            case 'expired': return expiredJobs;
+            case 'no_buyer_response': return noBuyerResponseJobs;
+            case 'no_assessor_quotes': return noAssessorQuotesJobs;
+            case 'all': return assessments;
+        }
+    }, [activeTab, liveJobs, expiredJobs, noBuyerResponseJobs, noAssessorQuotesJobs, assessments]);
+
+    // Apply search & location filters
+    const filteredJobs = useMemo(() => {
+        return tabJobs.filter(assessment => {
             const query = searchTerm.toLowerCase();
-            const matchSearch = 
+            const matchSearch =
                 assessment.property_address?.toLowerCase().includes(query) ||
                 assessment.town?.toLowerCase().includes(query) ||
                 assessment.county?.toLowerCase().includes(query) ||
                 assessment.status?.toLowerCase().includes(query) ||
                 (assessment.user?.full_name || '').toLowerCase().includes(query) ||
                 (assessment.contact_email || '').toLowerCase().includes(query) ||
-                (assessment.contact_phone || '').toLowerCase().includes(query);
-            
+                (assessment.contact_phone || '').toLowerCase().includes(query) ||
+                (assessment.eircode || '').toLowerCase().includes(query);
+
             const matchLocation = !locationFilter || assessment.county === locationFilter;
-            
+
             return matchSearch && matchLocation;
         });
-    }, [assessments, searchTerm, locationFilter]);
+    }, [tabJobs, searchTerm, locationFilter]);
 
-    // Job statistics
-    const jobStats = useMemo(() => ({
+    // Stats
+    const stats = useMemo(() => ({
+        live: liveJobs.length,
+        expired: expiredJobs.length,
+        noBuyerResponse: noBuyerResponseJobs.length,
+        noAssessorQuotes: noAssessorQuotesJobs.length,
         total: assessments.length,
-        pending: assessments.filter(a => a.status === 'pending' || a.status === 'pending_quote').length,
-        scheduled: assessments.filter(a => a.status === 'scheduled').length,
-        completed: assessments.filter(a => a.status === 'completed').length,
-        withQuotes: assessments.filter(a => a.quotes && a.quotes.length > 0).length,
-        pendingQuotes: assessments.reduce((count, a) => count + (a.quotes?.filter((q: Quote) => q.status === 'pending').length || 0), 0)
-    }), [assessments]);
+        totalQuotes: assessments.reduce((c, a) => c + (a.quotes?.length || 0), 0),
+    }), [liveJobs, expiredJobs, noBuyerResponseJobs, noAssessorQuotesJobs, assessments]);
+
+    const tabs: { id: JobTab; label: string; count: number; color: string; icon: React.ReactNode }[] = [
+        { id: 'live', label: 'Live Jobs', count: stats.live, color: 'bg-green-500', icon: <Briefcase size={15} /> },
+        { id: 'expired', label: 'Expired (7d Idle)', count: stats.expired, color: 'bg-gray-500', icon: <Clock size={15} /> },
+        { id: 'no_buyer_response', label: 'No Response from Buyer', count: stats.noBuyerResponse, color: 'bg-amber-500', icon: <AlertTriangle size={15} /> },
+        { id: 'no_assessor_quotes', label: 'No Quotes from Assessors', count: stats.noAssessorQuotes, color: 'bg-red-500', icon: <XCircle size={15} /> },
+        { id: 'all', label: 'All Jobs', count: stats.total, color: 'bg-blue-500', icon: <FileText size={15} /> },
+    ];
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007F00]"></div>
+            <div className="flex flex-col items-center justify-center h-64">
+                <div className="w-10 h-10 border-4 border-blue-50 border-t-[#007F00] rounded-full animate-spin"></div>
+                <p className="mt-4 text-sm font-bold text-gray-400 uppercase tracking-widest">Loading Jobs...</p>
             </div>
         );
     }
 
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">Jobs Management</h1>
-                <p className="text-gray-600">Manage and track all assessment jobs and quote submissions</p>
-                
-                {/* Statistics */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-6">
+        <div className="bg-white flex flex-col min-h-[600px]">
+            {/* Header Banner - matching assessor panel style */}
+            <div className="bg-[#c8e6c9] py-6 px-6 text-center">
+                <h2 className="text-2xl font-bold italic text-gray-900 mb-1">Jobs Management</h2>
+                <p className="text-sm italic text-gray-800">
+                    Manage and track all assessment jobs, quotes, and contractor activity.
+                </p>
+                {/* Quick Stats Row */}
+                <div className="flex items-center justify-center gap-6 mt-4">
                     <div className="text-center">
-                        <div className="text-2xl font-bold text-gray-900">{jobStats.total}</div>
-                        <div className="text-sm text-gray-600">Total Jobs</div>
+                        <div className="text-xl font-black text-gray-900">{stats.total}</div>
+                        <div className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Total</div>
                     </div>
+                    <div className="w-px h-8 bg-gray-400/30"></div>
                     <div className="text-center">
-                        <div className="text-2xl font-bold text-yellow-600">{jobStats.pending}</div>
-                        <div className="text-sm text-gray-600">Pending</div>
+                        <div className="text-xl font-black text-green-700">{stats.live}</div>
+                        <div className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Live</div>
                     </div>
+                    <div className="w-px h-8 bg-gray-400/30"></div>
                     <div className="text-center">
-                        <div className="text-2xl font-bold text-purple-600">{jobStats.scheduled}</div>
-                        <div className="text-sm text-gray-600">Scheduled</div>
+                        <div className="text-xl font-black text-amber-600">{stats.noBuyerResponse}</div>
+                        <div className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Awaiting Buyer</div>
                     </div>
+                    <div className="w-px h-8 bg-gray-400/30"></div>
                     <div className="text-center">
-                        <div className="text-2xl font-bold text-emerald-600">{jobStats.completed}</div>
-                        <div className="text-sm text-gray-600">Completed</div>
+                        <div className="text-xl font-black text-red-600">{stats.noAssessorQuotes}</div>
+                        <div className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">No Quotes</div>
                     </div>
+                    <div className="w-px h-8 bg-gray-400/30"></div>
                     <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-600">{jobStats.withQuotes}</div>
-                        <div className="text-sm text-gray-600">With Quotes</div>
-                    </div>
-                    <div className="text-center">
-                        <div className="text-2xl font-bold text-orange-600">{jobStats.pendingQuotes}</div>
-                        <div className="text-sm text-gray-600">Pending Quotes</div>
+                        <div className="text-xl font-black text-blue-600">{stats.totalQuotes}</div>
+                        <div className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Total Quotes</div>
                     </div>
                 </div>
             </div>
 
-            {/* Filters */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-                <div className="flex flex-col md:flex-row gap-4">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                        <input
-                            type="text"
-                            placeholder="Search jobs by address, customer, status..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] outline-none"
-                        />
-                    </div>
-                    <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                        <select
-                            value={locationFilter}
-                            onChange={(e) => setLocationFilter(e.target.value)}
-                            className="pl-10 pr-8 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] outline-none appearance-none bg-white"
+            {/* Tab Navigation */}
+            <div className="border-b border-gray-200 bg-white overflow-x-auto">
+                <div className="flex">
+                    {tabs.map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`flex items-center gap-2 px-5 py-3.5 text-[11px] font-black uppercase tracking-[0.08em] border-b-2 transition-all whitespace-nowrap ${
+                                activeTab === tab.id
+                                    ? 'border-[#007F00] text-[#007F00] bg-green-50/50'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                            }`}
                         >
-                            <option value="">All Counties</option>
-                            {uniqueCounties.map(county => (
-                                <option key={county} value={county}>{county}</option>
-                            ))}
-                        </select>
-                    </div>
+                            {tab.icon}
+                            {tab.label}
+                            <span className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-black text-white ${tab.color}`}>
+                                {tab.count}
+                            </span>
+                        </button>
+                    ))}
                 </div>
-                {searchTerm || locationFilter ? (
-                    <div className="mt-3 text-sm text-gray-600">
-                        Showing {filteredAssessments.length} of {assessments.length} jobs
-                    </div>
-                ) : null}
             </div>
 
-            {/* Jobs List */}
-            <div className="space-y-4">
-                {filteredAssessments.length === 0 ? (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
-                        <div className="text-gray-400 mb-2">
-                            <Search size={48} className="mx-auto" />
+            {/* Search & Filters */}
+            <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex flex-col md:flex-row gap-3 items-center">
+                <div className="flex-1 relative w-full">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                    <input
+                        type="text"
+                        placeholder="Search by address, town, county, customer, eircode..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-9 pr-8 py-2 bg-white border border-gray-300 rounded text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#007F00] focus:ring-1 focus:ring-[#007F00]/20"
+                    />
+                    {searchTerm && (
+                        <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <X size={14} />
+                        </button>
+                    )}
+                </div>
+                <div className="relative flex-shrink-0">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                    <select
+                        value={locationFilter}
+                        onChange={(e) => setLocationFilter(e.target.value)}
+                        className="pl-9 pr-8 py-2 bg-white border border-gray-300 rounded text-sm text-gray-900 focus:outline-none focus:border-[#007F00] appearance-none cursor-pointer"
+                    >
+                        <option value="">All Counties</option>
+                        {uniqueCounties.map(county => (
+                            <option key={county} value={county}>{county}</option>
+                        ))}
+                    </select>
+                </div>
+                {(searchTerm || locationFilter) && (
+                    <span className="text-xs font-bold text-gray-500">
+                        {filteredJobs.length} of {tabJobs.length} jobs
+                    </span>
+                )}
+            </div>
+
+            {/* Table Content */}
+            <div className="flex-1">
+                {filteredJobs.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center text-center py-20">
+                        <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6 text-gray-300">
+                            <Briefcase size={40} />
                         </div>
-                        <h3 className="text-lg font-medium text-gray-900 mb-1">No jobs found</h3>
-                        <p className="text-gray-600">
-                            {searchTerm || locationFilter 
-                                ? 'Try adjusting your search filters' 
-                                : 'No jobs have been created yet'}
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">No jobs found</h3>
+                        <p className="text-gray-500 max-w-sm">
+                            {searchTerm || locationFilter
+                                ? 'Try adjusting your search filters.'
+                                : activeTab === 'live' ? 'No live jobs at the moment.'
+                                : activeTab === 'expired' ? 'No expired or completed jobs. Jobs expire after 7 days of inactivity.'
+                                : activeTab === 'no_buyer_response' ? 'All buyers have responded to their quotes.'
+                                : activeTab === 'no_assessor_quotes' ? 'All jobs have received at least one quote.'
+                                : 'No jobs have been created yet.'}
                         </p>
                     </div>
                 ) : (
-                    <div className="grid gap-4">
-                        {filteredAssessments.map(assessment => (
-                            <JobCard
-                                key={assessment.id}
-                                assessment={assessment}
-                                onClick={() => onAssessmentClick(assessment)}
-                            />
-                        ))}
-                    </div>
+                    <>
+                        {/* Desktop Table */}
+                        <div className="overflow-x-auto hidden md:block">
+                            <table className="w-full text-[13px] border-collapse">
+                                <thead>
+                                    <tr className="border-b-2 border-gray-300">
+                                        <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Date<br/><span className="font-bold text-[10px] text-gray-500">Posted</span></th>
+                                        <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Status</th>
+                                        <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Customer</th>
+                                        <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Town</th>
+                                        <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">County</th>
+                                        <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Type</th>
+                                        <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Sq. Mt.</th>
+                                        <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Beds</th>
+                                        <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Purpose</th>
+                                        <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Quotes</th>
+                                        <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Last<br/><span className="font-bold text-[10px] text-gray-500">Activity</span></th>
+                                        <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Idle<br/><span className="font-bold text-[10px] text-gray-500">Days</span></th>
+                                        <th className="py-3 px-3 font-bold text-gray-800 whitespace-nowrap text-center">Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredJobs.map((job, index) => {
+                                        const badge = getStatusBadge(job.status);
+                                        const quoteCount = job.quotes?.length || 0;
+                                        const pendingQuotes = job.quotes?.filter(q => q.status === 'pending').length || 0;
+                                        const acceptedQuotes = job.quotes?.filter(q => q.status === 'accepted').length || 0;
+                                        const isExpanded = expandedJobId === job.id;
+                                        const daysSinceActivity = getDaysSinceLastActivity(job);
+                                        const isExpiring = daysSinceActivity >= 5 && daysSinceActivity < EXPIRY_DAYS;
+                                        const isExpired = daysSinceActivity >= EXPIRY_DAYS && ['live', 'submitted', 'pending_quote'].includes(job.status);
+
+                                        return (
+                                            <React.Fragment key={job.id}>
+                                                <tr
+                                                    className={`border-b border-gray-200 hover:bg-green-50/40 cursor-pointer transition-colors ${isExpired ? 'opacity-60' : ''} ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}
+                                                    onClick={() => setExpandedJobId(isExpanded ? null : job.id)}
+                                                >
+                                                    <td className="py-3 px-3 text-gray-700 whitespace-nowrap">
+                                                        <div>{formatDate(job.created_at)}</div>
+                                                        <div className={`text-[10px] font-bold ${isExpired ? 'text-red-500' : isExpiring ? 'text-amber-500' : 'text-gray-400'}`}>
+                                                            {daysSinceActivity === 0 ? 'Active today' : `${daysSinceActivity}d idle`}
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-3 px-3">
+                                                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${badge.bg}`}>
+                                                            {badge.label}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-3 px-3">
+                                                        <div className="font-bold text-gray-900 text-sm">{job.user?.full_name || job.contact_name || 'Unknown'}</div>
+                                                        <div className="text-[11px] text-gray-500">{job.contact_email || job.user?.email || ''}</div>
+                                                    </td>
+                                                    <td className="py-3 px-3 text-gray-900 font-medium">{job.town || '-'}</td>
+                                                    <td className="py-3 px-3 text-gray-700">{job.county || '-'}</td>
+                                                    <td className="py-3 px-3 text-gray-700">
+                                                        {job.job_type === 'commercial' ? 'Commercial' : (job.property_type || 'Domestic')}
+                                                    </td>
+                                                    <td className="py-3 px-3 text-gray-700">{job.property_size || '-'}</td>
+                                                    <td className="py-3 px-3 text-gray-700">{job.bedrooms || '-'}</td>
+                                                    <td className="py-3 px-3 text-gray-700">{job.ber_purpose || '-'}</td>
+                                                    <td className="py-3 px-3">
+                                                        {quoteCount === 0 ? (
+                                                            <span className="text-red-500 font-bold text-xs">0</span>
+                                                        ) : (
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span className="font-bold text-gray-900">{quoteCount}</span>
+                                                                {acceptedQuotes > 0 && (
+                                                                    <span className="w-2 h-2 rounded-full bg-green-500" title={`${acceptedQuotes} accepted`}></span>
+                                                                )}
+                                                                {pendingQuotes > 0 && (
+                                                                    <span className="w-2 h-2 rounded-full bg-yellow-400" title={`${pendingQuotes} pending`}></span>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                    <td className="py-3 px-3 text-gray-700 whitespace-nowrap">
+                                                        {formatDate(getLastActivityDate(job).toISOString())}
+                                                    </td>
+                                                    <td className="py-3 px-3 whitespace-nowrap">
+                                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-black ${
+                                                            daysSinceActivity >= EXPIRY_DAYS ? 'bg-red-100 text-red-700' :
+                                                            daysSinceActivity >= 5 ? 'bg-amber-100 text-amber-700' :
+                                                            daysSinceActivity >= 3 ? 'bg-yellow-100 text-yellow-700' :
+                                                            'bg-green-100 text-green-700'
+                                                        }`}>
+                                                            {daysSinceActivity === 0 ? 'Today' : `${daysSinceActivity}d`}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-3 px-3 text-center">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                onAssessmentClick(job);
+                                                            }}
+                                                            className="px-3 py-1.5 bg-[#007F00] hover:bg-[#006600] text-white rounded text-xs font-bold transition-colors"
+                                                        >
+                                                            View
+                                                        </button>
+                                                    </td>
+                                                </tr>
+
+                                                {/* Expanded Row - Inline Detail */}
+                                                {isExpanded && (
+                                                    <tr className="bg-gray-50">
+                                                        <td colSpan={13} className="p-0">
+                                                            <div className="border-l-4 border-[#007F00] p-5 space-y-4">
+                                                                {/* Top info grid */}
+                                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                                                    <div>
+                                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Property Address</span>
+                                                                        <span className="font-medium text-gray-900">{job.property_address || '-'}</span>
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Eircode</span>
+                                                                        <span className="font-medium text-blue-600">{job.eircode || '-'}</span>
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Heat Pump</span>
+                                                                        <span className="font-medium text-gray-900">{job.heat_pump || 'None'}</span>
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Payment Status</span>
+                                                                        <span className={`inline-flex px-2 py-0.5 rounded text-xs font-bold ${
+                                                                            job.payment_status === 'paid' ? 'bg-green-100 text-green-700' :
+                                                                            job.payment_status === 'refunded' ? 'bg-red-100 text-red-700' :
+                                                                            'bg-gray-100 text-gray-600'
+                                                                        }`}>
+                                                                            {job.payment_status || 'Unpaid'}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Customer Phone</span>
+                                                                        <span className="font-medium text-gray-900">{job.contact_phone || job.user?.phone || '-'}</span>
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Job Type</span>
+                                                                        <span className="font-medium text-gray-900 capitalize">{job.job_type || 'Domestic'}</span>
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Additional Features</span>
+                                                                        <span className="font-medium text-gray-900">{job.additional_features?.length ? job.additional_features.join(', ') : 'None'}</span>
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Scheduled Date</span>
+                                                                        <span className="font-medium text-gray-900">{job.scheduled_date ? formatDateFull(job.scheduled_date) : 'Not scheduled'}</span>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Referral Info */}
+                                                                {job.referred_by && (
+                                                                    <div className="bg-indigo-50 rounded-lg p-3 text-sm">
+                                                                        <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider block mb-1">Referred By</span>
+                                                                        <span className="font-bold text-indigo-700">{job.referred_by.name}</span>
+                                                                        {job.referred_by.company_name && <span className="text-indigo-600"> — {job.referred_by.company_name}</span>}
+                                                                    </div>
+                                                                )}
+
+                                                                {/* Quotes Section */}
+                                                                <div>
+                                                                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                                                        Quotes Received ({job.quotes?.length || 0})
+                                                                    </h4>
+                                                                    {(!job.quotes || job.quotes.length === 0) ? (
+                                                                        <div className="bg-red-50 border border-red-100 rounded-lg p-3 text-center">
+                                                                            <XCircle size={20} className="mx-auto mb-1 text-red-300" />
+                                                                            <p className="text-sm text-red-600 font-medium">No quotes submitted yet</p>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="overflow-x-auto">
+                                                                            <table className="w-full text-[12px] border border-gray-200 rounded-lg overflow-hidden">
+                                                                                <thead>
+                                                                                    <tr className="bg-gray-100">
+                                                                                        <th className="text-left py-2 px-3 font-bold text-gray-600">Assessor</th>
+                                                                                        <th className="text-left py-2 px-3 font-bold text-gray-600">Company</th>
+                                                                                        <th className="text-left py-2 px-3 font-bold text-gray-600">Email</th>
+                                                                                        <th className="text-left py-2 px-3 font-bold text-gray-600">Phone</th>
+                                                                                        <th className="text-left py-2 px-3 font-bold text-gray-600">SEAI #</th>
+                                                                                        <th className="text-left py-2 px-3 font-bold text-gray-600">Price</th>
+                                                                                        <th className="text-left py-2 px-3 font-bold text-gray-600">Status</th>
+                                                                                        <th className="text-left py-2 px-3 font-bold text-gray-600">Date</th>
+                                                                                    </tr>
+                                                                                </thead>
+                                                                                <tbody>
+                                                                                    {job.quotes!.map((quote, qi) => (
+                                                                                        <tr key={quote.id} className={`border-t border-gray-100 ${qi % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                                                                                            <td className="py-2 px-3 font-bold text-gray-900">{quote.contractor?.full_name || 'Unknown'}</td>
+                                                                                            <td className="py-2 px-3 text-gray-700">{quote.contractor?.company_name || '-'}</td>
+                                                                                            <td className="py-2 px-3 text-gray-600">{quote.contractor?.email || '-'}</td>
+                                                                                            <td className="py-2 px-3 text-gray-600">{quote.contractor?.phone || '-'}</td>
+                                                                                            <td className="py-2 px-3 text-gray-600">{quote.contractor?.seai_number || '-'}</td>
+                                                                                            <td className="py-2 px-3 font-black text-gray-900">
+                                                                                                {new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' }).format(quote.price)}
+                                                                                            </td>
+                                                                                            <td className="py-2 px-3">
+                                                                                                <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
+                                                                                                    quote.status === 'accepted' ? 'bg-green-100 text-green-700' :
+                                                                                                    quote.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                                                                                                    'bg-yellow-100 text-yellow-700'
+                                                                                                }`}>{quote.status}</span>
+                                                                                            </td>
+                                                                                            <td className="py-2 px-3 text-gray-500">{formatDate(quote.created_at)}</td>
+                                                                                        </tr>
+                                                                                    ))}
+                                                                                </tbody>
+                                                                            </table>
+                                                                            {job.quotes!.some(q => q.notes) && (
+                                                                                <div className="mt-2 space-y-1">
+                                                                                    {job.quotes!.filter(q => q.notes).map(q => (
+                                                                                        <div key={q.id} className="text-[11px] text-gray-500 bg-white border border-gray-100 rounded px-3 py-1.5">
+                                                                                            <strong>{q.contractor?.full_name}:</strong> {q.notes}
+                                                                                        </div>
+                                                                                    ))}
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {/* Action Row */}
+                                                                <div className="flex items-center justify-end pt-2 border-t border-gray-200">
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            onAssessmentClick(job);
+                                                                        }}
+                                                                        className="flex items-center gap-2 px-4 py-2 bg-[#007F00] hover:bg-[#006600] text-white rounded-lg text-xs font-bold transition-colors"
+                                                                    >
+                                                                        <Eye size={14} />
+                                                                        Open Full Details
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </React.Fragment>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Mobile Card View */}
+                        <div className="md:hidden space-y-3 p-4">
+                            {filteredJobs.map(job => {
+                                const badge = getStatusBadge(job.status);
+                                const quoteCount = job.quotes?.length || 0;
+                                const isExpanded = expandedJobId === job.id;
+
+                                return (
+                                    <div key={job.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                                        <div
+                                            className="p-4 cursor-pointer"
+                                            onClick={() => setExpandedJobId(isExpanded ? null : job.id)}
+                                        >
+                                            <div className="flex justify-between items-start mb-2">
+                                                <div>
+                                                    <p className="font-bold text-gray-900 text-sm">{job.user?.full_name || job.contact_name || 'Unknown'}</p>
+                                                    <p className="text-xs text-gray-500">{job.town}, {job.county}</p>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${badge.bg}`}>
+                                                        {badge.label}
+                                                    </span>
+                                                    <span className="text-xs text-gray-400">
+                                                        {formatDate(job.created_at)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-wrap gap-1 mb-2 text-[11px]">
+                                                <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{job.property_type || 'Domestic'}</span>
+                                                <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{job.ber_purpose || '-'}</span>
+                                                <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{job.preferred_date || 'Flexible'}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <div className="flex items-center gap-2 text-xs">
+                                                    <span className="font-bold text-gray-700">Quotes: {quoteCount}</span>
+                                                    {quoteCount > 0 && (
+                                                        <span className="text-green-600 font-medium">
+                                                            ({job.quotes?.filter(q => q.status === 'accepted').length || 0} accepted)
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {isExpanded ? <ChevronDown size={16} className="text-gray-400" /> : <ChevronRight size={16} className="text-gray-400" />}
+                                            </div>
+                                        </div>
+
+                                        {isExpanded && (
+                                            <div className="border-t border-gray-200 p-4 bg-gray-50 space-y-3">
+                                                <div className="grid grid-cols-2 gap-3 text-xs">
+                                                    <div>
+                                                        <span className="text-[10px] font-bold text-gray-400 uppercase block">Address</span>
+                                                        <span className="text-gray-900">{job.property_address || '-'}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-[10px] font-bold text-gray-400 uppercase block">Eircode</span>
+                                                        <span className="text-blue-600">{job.eircode || '-'}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-[10px] font-bold text-gray-400 uppercase block">Email</span>
+                                                        <span className="text-gray-900">{job.contact_email || job.user?.email || '-'}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-[10px] font-bold text-gray-400 uppercase block">Phone</span>
+                                                        <span className="text-gray-900">{job.contact_phone || job.user?.phone || '-'}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-[10px] font-bold text-gray-400 uppercase block">Heat Pump</span>
+                                                        <span className="text-gray-900">{job.heat_pump || 'None'}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-[10px] font-bold text-gray-400 uppercase block">Payment</span>
+                                                        <span className={`font-bold ${job.payment_status === 'paid' ? 'text-green-600' : 'text-gray-600'}`}>
+                                                            {job.payment_status || 'Unpaid'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Mobile Quote List */}
+                                                {job.quotes && job.quotes.length > 0 && (
+                                                    <div className="space-y-2">
+                                                        <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Quotes</h5>
+                                                        {job.quotes.map(quote => (
+                                                            <div key={quote.id} className="bg-white border border-gray-200 rounded-lg p-3">
+                                                                <div className="flex justify-between items-start mb-1">
+                                                                    <span className="font-bold text-gray-900 text-sm">{quote.contractor?.full_name || 'Unknown'}</span>
+                                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
+                                                                        quote.status === 'accepted' ? 'bg-green-100 text-green-700' :
+                                                                        quote.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                                                                        'bg-yellow-100 text-yellow-700'
+                                                                    }`}>{quote.status}</span>
+                                                                </div>
+                                                                <div className="text-xs text-gray-500">
+                                                                    {quote.contractor?.company_name && <div>{quote.contractor.company_name}</div>}
+                                                                    <div className="font-black text-gray-900 text-sm mt-1">
+                                                                        {new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' }).format(quote.price)}
+                                                                    </div>
+                                                                    <div className="mt-1">{formatDate(quote.created_at)}</div>
+                                                                </div>
+                                                                {quote.notes && <p className="text-[11px] text-gray-500 mt-1 italic">{quote.notes}</p>}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                <button
+                                                    onClick={() => onAssessmentClick(job)}
+                                                    className="w-full py-2.5 bg-[#007F00] hover:bg-[#006600] text-white rounded-lg font-bold text-sm transition-colors flex items-center justify-center gap-2"
+                                                >
+                                                    <Eye size={14} />
+                                                    Open Full Details
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </>
                 )}
             </div>
         </div>
