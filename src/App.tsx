@@ -27,6 +27,8 @@ import BusinessOnboarding from './pages/BusinessOnboarding';
 import RegistrationPending from './pages/RegistrationPending';
 import ForgotPassword from './pages/ForgotPassword';
 import UpdatePassword from './pages/UpdatePassword';
+import AuthError from './pages/AuthError';
+import NotFound from './pages/NotFound';
 import QuoteForm from './pages/QuoteForm';
 import QuickQuotePage from './pages/QuickQuotePage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -100,6 +102,7 @@ function App() {
 
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/update-password" element={<UpdatePassword />} />
+                    <Route path="/auth/error" element={<AuthError />} />
 
                     {/* Admin Dashboard */}
                     <Route
@@ -194,6 +197,9 @@ function App() {
 
                     {/* Public Assessor Profile */}
                     <Route path="/profiles/:id" element={<PublicAssessorProfile />} />
+
+                    {/* 404 Catch-all */}
+                    <Route path="*" element={<NotFound />} />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>
