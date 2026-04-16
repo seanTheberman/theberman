@@ -34,7 +34,7 @@ const UpdatePassword = () => {
         }
 
         // If there's no access token in the URL, don't wait either
-        if (!window.location.hash.includes('access_token') || window.location.search.includes('code=') || window.location.search.includes('type=recovery')) {
+        if (!(window.location.hash.includes('access_token') || window.location.search.includes('code=') || window.location.search.includes('type=recovery'))) {
             setAuthWait(false);
             return;
         }
@@ -108,7 +108,7 @@ const UpdatePassword = () => {
     }
 
     // If no user and no hash after waiting, they probably accessed it directly/invalidly
-    if (!user && !window.location.hash.includes('access_token') || window.location.search.includes('code=') || window.location.search.includes('type=recovery')) {
+    if (!user && !(window.location.hash.includes('access_token') || window.location.search.includes('code=') || window.location.search.includes('type=recovery'))) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
                 <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-10 text-center border border-gray-100">
