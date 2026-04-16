@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Search, MapPin, Calendar, Clock, User, Mail, Phone, FileText, DollarSign, CheckCircle, AlertCircle, ChevronDown, ChevronRight, Building2, Home, X, Briefcase, AlertTriangle, XCircle, Eye } from 'lucide-react';
-import type { Assessment, Quote } from '../../../types/admin';
+import { Search, MapPin, Clock, FileText, ChevronDown, ChevronRight, X, Briefcase, AlertTriangle, XCircle, Eye } from 'lucide-react';
+import type { Assessment } from '../../../types/admin';
 
 interface Props {
     assessments: Assessment[];
@@ -44,11 +44,6 @@ const getStatusBadge = (status: string) => {
     }
 };
 
-const getDaysSince = (dateString: string) => {
-    const now = new Date();
-    const created = new Date(dateString);
-    return Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
-};
 
 // Returns the most recent activity date for a job:
 // - Latest quote submission
