@@ -26,3 +26,4 @@ dist-ssr
 .env
 db.ts
 
+supabase/.temp/cli-latest

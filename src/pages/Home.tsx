@@ -364,7 +364,7 @@ const HomePage = () => {
                                 </Link>
                             </div>
                         </div>
-                        <div className="flex-1 relative w-full max-w-xl mx-auto">
+                        <div className="hidden lg:block flex-1 relative w-full max-w-xl mx-auto">
                             <div className="relative aspect-square bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-gray-100 group">
                                 <img
                                     src="https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=800"
