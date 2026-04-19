@@ -2,6 +2,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { CustomSmtpClient } from "../shared/smtp.ts";
+import { trySendSms } from "../shared/twilio.ts";
 import { generateContractorEmail } from "./templates/contractor-notification.ts";
 import { generatePromoHtml } from "./templates/promo-section.ts";
 
@@ -18,7 +19,7 @@ Deno.serve(async (req: Request) => {
     const responseHeaders = { ...corsHeaders, 'Content-Type': 'application/json' };
 
     try {
-        const { email, customerName, county, town, assessmentId, jobType } = await req.json();
+        const { email, customerName, county, town, assessmentId, jobType, customerPhone } = await req.json();
         const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
         const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
         const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
@@ -58,6 +59,9 @@ Deno.serve(async (req: Request) => {
             const { data: sponsors } = await supabase.from('sponsors').select('*').eq('is_active', true).limit(3);
             const promoHtml = generatePromoHtml(sponsors || []);
 
+            let emailSent = false;
+            let smsSent = false;
+
             // 1. Notify Customer
             try {
                 const customerHtml = `
@@ -94,10 +98,16 @@ Deno.serve(async (req: Request) => {
                     </div>
                 `;
                 await client.send(smtpFrom, email, 'Your job is live on TheBerman.eu', customerHtml);
+                emailSent = true;
                 console.log(`[send-job-live-email] Notified customer: ${email}`);
             } catch (custErr) {
                 console.error(`[send-job-live-email] [SMTP ERROR] Failed to notify customer ${email}:`, custErr);
             }
+
+            // SMS to customer
+            const smsPhone = customerPhone || (assessmentId ? (await supabase.from('assessments').select('contact_phone').eq('id', assessmentId).single()).data?.contact_phone : null);
+            const smsResult = await trySendSms(smsPhone, `Hi ${customerName}, your BER assessment request in ${town || county} is now live on TheBerman.eu! Assessors in your area are being notified. We'll let you know when quotes arrive.`);
+            smsSent = smsResult === true;
 
             // 2. Notify Relevant Contractors - RE-ENABLED
             console.log(`[send-job-live-email] Starting contractor notifications for ${county}...`);
@@ -155,7 +165,17 @@ Deno.serve(async (req: Request) => {
             }
 
             await client.close();
-            return new Response(JSON.stringify({ success: true, message: 'Process completed' }), { headers: responseHeaders });
+
+            // Write notification status back to assessment
+            if (assessmentId) {
+                await supabase.from('assessments').update({
+                    job_live_email_sent: emailSent,
+                    job_live_sms_sent: smsSent,
+                    job_live_notified_at: new Date().toISOString(),
+                }).eq('id', assessmentId);
+            }
+
+            return new Response(JSON.stringify({ success: true, emailSent, smsSent, message: 'Process completed' }), { headers: responseHeaders });
 
         } catch (smtpErr: any) {
             console.error("[send-job-live-email] SMTP GLOBAL ERROR", smtpErr);

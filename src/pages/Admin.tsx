@@ -242,13 +242,10 @@ const Admin = () => {
             .map(u => u.id);
 
         if (expiredUserIds.length > 0) {
-            const { error } = await supabase
+            await supabase
                 .from('profiles')
                 .update({ is_active: false, subscription_status: 'expired' })
                 .in('id', expiredUserIds);
-            if (!error) {
-                toast(`Auto - disabled ${expiredUserIds.length} expired accounts.`, { icon: 'ℹ️' });
-            }
         }
     }, []);
 

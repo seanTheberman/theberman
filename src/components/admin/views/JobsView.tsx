@@ -471,6 +471,31 @@ export const JobsView: React.FC<Props> = ({
                                                                     </div>
                                                                 </div>
 
+                                                                {/* Notification Status */}
+                                                                {job.job_live_notified_at ? (
+                                                                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
+                                                                        <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider block mb-2">Job Live Notifications</span>
+                                                                        <div className="flex items-center gap-3 flex-wrap text-xs">
+                                                                            {job.job_live_email_sent ? (
+                                                                                <span className="flex items-center gap-1 px-2 py-1 rounded bg-green-100 text-green-700 font-bold">✓ Email Sent</span>
+                                                                            ) : (
+                                                                                <span className="flex items-center gap-1 px-2 py-1 rounded bg-red-100 text-red-700 font-bold">✗ Email Not Sent</span>
+                                                                            )}
+                                                                            {job.job_live_sms_sent ? (
+                                                                                <span className="flex items-center gap-1 px-2 py-1 rounded bg-green-100 text-green-700 font-bold">✓ SMS Sent</span>
+                                                                            ) : (
+                                                                                <span className="flex items-center gap-1 px-2 py-1 rounded bg-red-100 text-red-700 font-bold">✗ SMS Not Sent</span>
+                                                                            )}
+                                                                            <span className="text-gray-400 text-[10px]">Notified {formatDate(job.job_live_notified_at)}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="bg-gray-50 border border-gray-100 rounded-lg p-3">
+                                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Job Live Notifications</span>
+                                                                        <span className="text-xs text-gray-400 italic">No notification record — job went live before tracking was enabled.</span>
+                                                                    </div>
+                                                                )}
+
                                                                 {/* Referral Info */}
                                                                 {job.referred_by && (
                                                                     <div className="bg-indigo-50 rounded-lg p-3 text-sm">

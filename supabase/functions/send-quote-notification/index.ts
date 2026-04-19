@@ -2,6 +2,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { CustomSmtpClient } from "../shared/smtp.ts";
+import { trySendSms } from "../shared/twilio.ts";
 import { generateHomeownerQuoteEmail } from "./templates/homeowner-notification.ts";
 import { generatePromoHtml } from "./templates/promo-section.ts";
 
@@ -31,7 +32,7 @@ Deno.serve(async (req: Request) => {
         // 1. Fetch Assessment & Homeowner Details
         const { data: assessment, error: assessmentError } = await supabase
             .from('assessments')
-            .select('contact_name, contact_email, status')
+            .select('contact_name, contact_email, contact_phone, status')
             .eq('id', assessmentId)
             .single();
 
@@ -69,9 +70,12 @@ Deno.serve(async (req: Request) => {
             // 4. Send Email
             await client.send(smtpFrom, assessment.contact_email, 'BER quote received.', emailHtml);
 
+            // SMS to homeowner
+            await trySendSms(assessment.contact_phone, `Hi ${assessment.contact_name}, great news! You've received a new BER quote on TheBerman.eu. Log in to review and compare prices: https://theberman.eu`);
+
             await client.close();
             console.log(`[send-quote-notification] SUCCESS: Notification sent to ${assessment.contact_email}`);
-            return new Response(JSON.stringify({ success: true, message: 'Notification email sent to homeowner' }), { headers: responseHeaders });
+            return new Response(JSON.stringify({ success: true, message: 'Notification email & SMS sent to homeowner' }), { headers: responseHeaders });
 
         } catch (smtpErr: any) {
             console.error("[send-quote-notification] SMTP ERROR", smtpErr);

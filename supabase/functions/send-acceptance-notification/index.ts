@@ -2,6 +2,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { CustomSmtpClient } from "../shared/smtp.ts";
+import { trySendSms } from "../shared/twilio.ts";
 import { generateHomeownerAcceptanceEmail } from "./templates/homeowner-acceptance.ts";
 import { generateContractorBookingEmail } from "./templates/contractor-booking.ts";
 import { generatePromoHtml } from "./templates/promo-section.ts";
@@ -32,7 +33,7 @@ Deno.serve(async (req: Request) => {
         // 1. Fetch Data
         const { data: assessment, error: assessmentError } = await supabase
             .from('assessments')
-            .select('contact_name, contact_email, property_address')
+            .select('contact_name, contact_email, contact_phone, property_address')
             .eq('id', assessmentId)
             .single();
 
@@ -42,7 +43,7 @@ Deno.serve(async (req: Request) => {
 
         const { data: quote, error: quoteError } = await supabase
             .from('quotes')
-            .select('price, created_by, profiles!quotes_created_by_profile_fkey(full_name, email)')
+            .select('price, created_by, profiles!quotes_created_by_profile_fkey(full_name, email, phone)')
             .eq('id', quoteId)
             .single();
 
@@ -98,8 +99,14 @@ Deno.serve(async (req: Request) => {
             await client.send(smtpFrom, contractor.email, 'New Booking Confirmed!', contractorHtml);
             console.log(`[send-acceptance-notification] Notified contractor: ${contractor.email}`);
 
+            // SMS to homeowner
+            await trySendSms(assessment.contact_phone, `Hi ${assessment.contact_name}, your BER booking with ${contractor.full_name} is confirmed! Amount: EUR ${quote.price}. View details at https://theberman.eu`);
+
+            // SMS to contractor
+            await trySendSms(contractor.phone, `Hi ${contractor.full_name}, new booking confirmed! Customer: ${assessment.contact_name}, Address: ${assessment.property_address}. Log in to TheBerman.eu for details.`);
+
             await client.close();
-            return new Response(JSON.stringify({ success: true, message: 'Acceptance notifications sent' }), { headers: responseHeaders });
+            return new Response(JSON.stringify({ success: true, message: 'Acceptance notifications sent (email + SMS)' }), { headers: responseHeaders });
 
         } catch (smtpErr: any) {
             console.error("[send-acceptance-notification] SMTP ERROR", smtpErr);

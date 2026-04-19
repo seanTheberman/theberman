@@ -2,6 +2,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { CustomSmtpClient } from "../shared/smtp.ts";
+import { trySendSms } from "../shared/twilio.ts";
 import { generatePromoHtml } from "./templates/promo-section.ts";
 import { generateStatusEmail } from "./templates/job-status-templates.ts";
 
@@ -31,7 +32,7 @@ Deno.serve(async (req: Request) => {
         // Fetch Assessment & Homeowner Details
         const { data: assessment, error: assessmentError } = await supabase
             .from('assessments')
-            .select('contact_name, contact_email, town, county')
+            .select('contact_name, contact_email, contact_phone, town, county')
             .eq('id', assessmentId)
             .single();
 
@@ -81,9 +82,17 @@ Deno.serve(async (req: Request) => {
             // Send Email
             await client.send(smtpFrom, assessment.contact_email, subjectMap[status] || 'Update on your BER Assessment', emailHtml);
 
+            // SMS to homeowner
+            const smsMessages: Record<string, string> = {
+                'scheduled': `Hi ${assessment.contact_name}, your BER inspection in ${assessment.town || assessment.county} has been scheduled${details?.date ? ' for ' + details.date : ''}. Check your email for details. - TheBerman.eu`,
+                'rescheduled': `Hi ${assessment.contact_name}, your BER inspection date has changed${details?.date ? ' to ' + details.date : ''}. Check your email for updated details. - TheBerman.eu`,
+                'completed': `Hi ${assessment.contact_name}, your BER assessment is complete! Log in to TheBerman.eu to view your results.`,
+            };
+            await trySendSms(assessment.contact_phone, smsMessages[status] || `Hi ${assessment.contact_name}, there's an update on your BER assessment. Check TheBerman.eu for details.`);
+
             await client.close();
             console.log(`[send-job-status-notification] SUCCESS: Notification (${status}) sent to ${assessment.contact_email}`);
-            return new Response(JSON.stringify({ success: true, message: `Notification email (${status}) sent to homeowner` }), { headers: responseHeaders });
+            return new Response(JSON.stringify({ success: true, message: `Notification email + SMS (${status}) sent to homeowner` }), { headers: responseHeaders });
 
         } catch (smtpErr: any) {
             console.error("[send-job-status-notification] SMTP ERROR", smtpErr);

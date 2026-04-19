@@ -103,6 +103,9 @@ export interface Assessment {
         name: string;
         company_name: string;
     } | null;
+    job_live_email_sent?: boolean | null;
+    job_live_sms_sent?: boolean | null;
+    job_live_notified_at?: string | null;
 }
 
 export interface Sponsor {
