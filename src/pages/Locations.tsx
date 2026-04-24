@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { MapPin, Loader2, ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import SEOHead from '../components/SEOHead';
+import { getTenantFromDomain } from '../lib/tenant';
 
 interface Location {
     id: string;
@@ -15,6 +16,27 @@ interface Location {
 const Locations = () => {
     const [locations, setLocations] = useState<Location[]>([]);
     const [loading, setLoading] = useState(true);
+    const tenant = getTenantFromDomain();
+    const isSpanish = tenant === 'spain';
+    const tr = isSpanish ? {
+        seoTitle: 'Certificadores Energéticos por Ubicación',
+        seoDesc: 'Encuentra certificadores energéticos y profesionales de eficiencia en tu zona por toda España. Busca por provincia o región.',
+        heading: 'Explorar por Ubicación',
+        subtitle: 'Encuentra profesionales y proveedores mejor valorados en tu zona. Selecciona una región para ver los listados disponibles.',
+        descFallback: (name: string) => `Consulta los listados disponibles en ${name}.`,
+        viewListings: 'Ver Listados',
+        noLocationsH: 'No se Encontraron Ubicaciones',
+        noLocationsP: 'Actualmente no hay ubicaciones activas.',
+    } : {
+        seoTitle: 'BER Assessors by Location',
+        seoDesc: 'Find BER assessors and energy upgrade professionals in your area across Ireland. Browse by county and region.',
+        heading: 'Browse by Location',
+        subtitle: 'Find top-rated professionals and suppliers in your area. Select a region to see available listings.',
+        descFallback: (name: string) => `Browse listings available in ${name}.`,
+        viewListings: 'View Listings',
+        noLocationsH: 'No Locations Found',
+        noLocationsP: "We couldn't find any active locations at the moment.",
+    };
 
     useEffect(() => {
         fetchLocations();
@@ -47,15 +69,15 @@ const Locations = () => {
     return (
         <div className="min-h-screen bg-white pt-24 pb-20 font-sans">
             <SEOHead
-                title="BER Assessors by Location"
-                description="Find BER assessors and energy upgrade professionals in your area across Ireland. Browse by county and region."
+                title={tr.seoTitle}
+                description={tr.seoDesc}
                 canonical="/locations"
             />
             {/* Header */}
             <div className="container mx-auto px-6 mb-16 text-center">
-                <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Browse by Location</h1>
+                <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">{tr.heading}</h1>
                 <p className="text-xl text-gray-500 max-w-2xl mx-auto font-light">
-                    Find top-rated professionals and suppliers in your area. Select a region to see available listings.
+                    {tr.subtitle}
                 </p>
             </div>
 
@@ -88,10 +110,10 @@ const Locations = () => {
 
                             <div className="p-6">
                                 <p className="text-gray-500 text-sm mb-6 line-clamp-2">
-                                    {location.description || `Browse listings available in ${location.name}.`}
+                                    {location.description || tr.descFallback(location.name)}
                                 </p>
                                 <div className="flex items-center text-[#007EA7] font-bold text-sm uppercase tracking-wide group-hover:gap-2 transition-all">
-                                    View Listings
+                                    {tr.viewListings}
                                     <ArrowRight size={16} className="ml-2 group-hover:ml-0 transition-all" />
                                 </div>
                             </div>
@@ -102,8 +124,8 @@ const Locations = () => {
                 {locations.length === 0 && (
                     <div className="text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
                         <MapPin size={48} className="mx-auto text-gray-300 mb-4" />
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">No Locations Found</h3>
-                        <p className="text-gray-500">We couldn't find any active locations at the moment.</p>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">{tr.noLocationsH}</h3>
+                        <p className="text-gray-500">{tr.noLocationsP}</p>
                     </div>
                 )}
             </div>

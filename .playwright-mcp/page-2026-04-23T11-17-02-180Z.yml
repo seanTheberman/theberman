@@ -1,0 +1,192 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "The Berman Logo" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img "The Berman Logo" [ref=e7]
+      - navigation [ref=e8]:
+        - link "Inicio" [ref=e9] [cursor=pointer]:
+          - /url: /
+        - link "Catálogo" [ref=e10] [cursor=pointer]:
+          - /url: /catalogue
+        - button "Ubicaciones" [ref=e12]:
+          - text: Ubicaciones
+          - img [ref=e13]
+        - link "News" [ref=e15] [cursor=pointer]:
+          - /url: /news
+      - button [ref=e17]:
+        - img [ref=e18]
+  - main [ref=e19]:
+    - generic [ref=e20]:
+      - generic [ref=e29]:
+        - generic [ref=e30]: The Catalogue
+        - heading "The Berman Home Energy Businesses Catalogue." [level=1] [ref=e31]:
+          - text: The Berman Home Energy
+          - text: Businesses Catalogue.
+        - generic [ref=e33]:
+          - generic [ref=e34]:
+            - img [ref=e35]
+            - generic [ref=e38]:
+              - paragraph [ref=e39]: Upgrade Type
+              - combobox [ref=e40] [cursor=pointer]:
+                - option "Select Upgrade..." [selected]
+              - img
+          - generic [ref=e41]:
+            - img [ref=e42]
+            - generic [ref=e45]:
+              - paragraph [ref=e46]: Location
+              - combobox [ref=e47] [cursor=pointer]:
+                - option "All Locations" [selected]
+                - option "Carlow"
+                - option "Cavan"
+                - option "Clare"
+                - option "Cork"
+                - option "Donegal"
+                - option "Dublin"
+                - option "Galway"
+                - option "Kerry"
+                - option "Kildare"
+                - option "Kilkenny"
+                - option "Laois"
+                - option "Leitrim"
+                - option "Limerick"
+                - option "Longford"
+                - option "Louth"
+                - option "Mayo"
+                - option "Meath"
+                - option "Monaghan"
+                - option "Offaly"
+                - option "Roscommon"
+                - option "Sligo"
+                - option "Tipperary"
+                - option "Waterford"
+                - option "Westmeath"
+                - option "Wexford"
+                - option "Wicklow"
+              - img
+          - button "Search" [ref=e48]
+        - generic [ref=e49]:
+          - button [ref=e50]
+          - button [ref=e51]
+          - button [ref=e52]
+      - generic [ref=e53]:
+        - generic [ref=e55]:
+          - button "Businesses" [ref=e56]:
+            - img [ref=e57]
+            - text: Businesses
+          - button "BER Assessors" [ref=e61]:
+            - img [ref=e62]
+            - text: BER Assessors
+        - generic [ref=e67]:
+          - generic [ref=e68]:
+            - heading "Businesses and Energy Consultants" [level=2] [ref=e69]
+            - paragraph [ref=e70]: Find Businesses and Energy Consultants in Your Local Area Today
+          - generic [ref=e72] [cursor=pointer]:
+            - generic [ref=e73]: "Sort By:"
+            - generic [ref=e74]: Featured
+            - img [ref=e75]
+        - generic [ref=e78]:
+          - img [ref=e79]
+          - paragraph [ref=e81]: Loading Partners...
+      - link "Hire An Energy Agent For Free" [ref=e82] [cursor=pointer]:
+        - /url: /hire-agent
+        - img [ref=e84]
+        - text: Hire An Energy Agent For Free
+  - contentinfo [ref=e86]:
+    - generic [ref=e87]:
+      - generic [ref=e88]:
+        - generic [ref=e89]:
+          - generic [ref=e90]:
+            - img "Certificado Energético" [ref=e91]
+            - generic [ref=e92]: Certificado Energético
+          - paragraph [ref=e93]: Su socio de confianza para certificados energéticos y consultoría energética.
+          - generic [ref=e94]:
+            - link [ref=e95] [cursor=pointer]:
+              - /url: https://www.facebook.com/profile.php?id=61578159843471
+              - img [ref=e96]
+            - link [ref=e98] [cursor=pointer]:
+              - /url: https://www.instagram.com/thebermanireland?igsh=amtidXdjNmZrMWJz&utm_source=qr
+              - img [ref=e99]
+            - link [ref=e102] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/the-berman/posts/?feedView=all
+              - img [ref=e103]
+            - link [ref=e107] [cursor=pointer]:
+              - /url: https://twitter.com
+              - img [ref=e108]
+        - generic [ref=e110]:
+          - heading "Enlaces Rápidos" [level=4] [ref=e111]
+          - list [ref=e112]:
+            - listitem [ref=e113]:
+              - link "Inicio" [ref=e114] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e115]:
+              - link "Sobre Nosotros" [ref=e116] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e117]:
+              - link "Catálogo de Eficiencia Energética" [ref=e118] [cursor=pointer]:
+                - /url: /catalogue
+            - listitem [ref=e119]:
+              - link "Habla con un Asesor Energético" [ref=e120] [cursor=pointer]:
+                - /url: /hire-agent
+            - listitem [ref=e121]:
+              - link "Registro de Negocio" [ref=e122] [cursor=pointer]:
+                - /url: /signup?role=business
+            - listitem [ref=e123]:
+              - link "FAQ" [ref=e124] [cursor=pointer]:
+                - /url: /faq
+        - generic [ref=e125]:
+          - heading "Cuenta" [level=4] [ref=e126]
+          - list [ref=e127]:
+            - listitem [ref=e128]:
+              - link "Reservar Certificadores" [ref=e129] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e130]:
+              - link "Ubicaciones" [ref=e131] [cursor=pointer]:
+                - /url: /locations
+            - listitem [ref=e132]:
+              - link "Nuestras Noticias" [ref=e133] [cursor=pointer]:
+                - /url: /news
+            - listitem [ref=e134]:
+              - link "Blog" [ref=e135] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e136]:
+              - link "Contacto" [ref=e137] [cursor=pointer]:
+                - /url: /contact-us
+            - listitem [ref=e138]:
+              - link "Iniciar Sesión" [ref=e139] [cursor=pointer]:
+                - /url: /login
+            - listitem [ref=e140]:
+              - link "Registrarse" [ref=e141] [cursor=pointer]:
+                - /url: /signup
+            - listitem [ref=e142]:
+              - button "Suscribirse a Noticias" [ref=e143] [cursor=pointer]
+        - generic [ref=e144]:
+          - heading "Legal" [level=4] [ref=e145]
+          - list [ref=e146]:
+            - listitem [ref=e147]:
+              - link "Política de Privacidad" [ref=e148] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e149]:
+              - link "Términos y Condiciones" [ref=e150] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e151]:
+              - link "Política de Cookies" [ref=e152] [cursor=pointer]:
+                - /url: /cookie-policy
+        - generic [ref=e153]:
+          - heading "Contacto" [level=4] [ref=e154]
+          - list [ref=e155]:
+            - listitem [ref=e156]:
+              - img [ref=e157]
+              - link "hola@certificadoenergético.eu" [ref=e160] [cursor=pointer]:
+                - /url: mailto:hola@certificadoenergético.eu
+            - listitem [ref=e161]:
+              - img [ref=e162]
+              - link "certificadoenergético.eu" [ref=e165] [cursor=pointer]:
+                - /url: https://certificadoenergético.eu
+      - generic [ref=e166]:
+        - paragraph [ref=e167]: © 2026 Certificado Energético. Todos los derechos reservados.
+        - generic [ref=e168]:
+          - link "Política de Privacidad" [ref=e169] [cursor=pointer]:
+            - /url: /privacy
+          - link "Términos de Servicio" [ref=e170] [cursor=pointer]:
+            - /url: /terms

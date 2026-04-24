@@ -2,6 +2,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { CustomSmtpClient } from "../shared/smtp.ts";
+import { getTenantConfig } from "../shared/tenant.ts";
 import { generateJobReminderEmail } from "./templates/job-reminder-template.ts";
 import { generatePromoHtml } from "./templates/promo-section.ts";
 
@@ -22,20 +23,21 @@ Deno.serve(async (req: Request) => {
         const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
         const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-        const smtpHostname = Deno.env.get('SMTP_HOSTNAME');
-        const smtpPortStr = Deno.env.get('SMTP_PORT');
-        const smtpUsername = Deno.env.get('SMTP_USERNAME');
-        const smtpPassword = Deno.env.get('SMTP_PASSWORD');
-        const smtpFromEnv = Deno.env.get('SMTP_FROM') || 'hello@theberman.eu';
-        const smtpFrom = smtpFromEnv.includes('<') ? smtpFromEnv : `The Berman.eu <${smtpFromEnv}>`;
-        const websiteUrl = Deno.env.get('PUBLIC_WEBSITE_URL') || 'https://theberman.eu';
+        const body = await req.json().catch(() => ({}));
+        const tenant = body.tenant || 'ireland';
+
+        const config = await getTenantConfig(supabase, tenant);
+        const smtpHostname = config.smtp_hostname;
+        const smtpPort = config.smtp_port;
+        const smtpUsername = config.smtp_username;
+        const smtpPassword = config.smtp_password;
+        const smtpFrom = config.smtp_from;
+        const websiteUrl = config.website_url;
 
         if (!smtpHostname || !smtpUsername || !smtpPassword) {
-            console.error("[send-job-reminder-cron] SMTP Secrets missing");
-            return new Response(JSON.stringify({ success: false, error: 'SMTP Secrets missing' }), { status: 500, headers: responseHeaders });
+            console.error(`[send-job-reminder-cron] SMTP not configured for tenant ${tenant}`);
+            return new Response(JSON.stringify({ success: false, error: `SMTP not configured for tenant ${tenant}` }), { status: 500, headers: responseHeaders });
         }
-
-        const smtpPort = parseInt(smtpPortStr || '587');
 
         // 1. Fetch all active contractors and their preferences
         const { data: contractors, error: contractorsError } = await supabase

@@ -2,6 +2,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { CustomSmtpClient } from "../shared/smtp.ts";
+import { getTenantConfig } from "../shared/tenant.ts";
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -18,7 +19,8 @@ Deno.serve(async (req: Request) => {
     try {
         const body = await req.json();
         const email = body.email?.toLowerCase();
-        console.log(`[send-otp] Request received for email: ${email}`);
+        const tenant = body.tenant || 'ireland';
+        console.log(`[send-otp] Request received for email: ${email}, tenant: ${tenant}`);
 
         if (!email) {
             console.error('[send-otp] Email is missing in request');
@@ -49,20 +51,18 @@ Deno.serve(async (req: Request) => {
 
         console.log('[send-otp] Successfully saved code to database');
 
-        const smtpHostname = Deno.env.get('SMTP_HOSTNAME');
-        const smtpPortStr = Deno.env.get('SMTP_PORT');
-        const smtpUsername = Deno.env.get('SMTP_USERNAME');
-        const smtpPassword = Deno.env.get('SMTP_PASSWORD');
-        const smtpFrom = Deno.env.get('SMTP_FROM') || 'hello@theberman.eu';
-        // Ensure we use the clean email address as the base sender to avoid alias issues
-        const authenticatedEmail = smtpUsername || 'hello@theberman.eu';
+        const config = await getTenantConfig(supabase, tenant);
+        const smtpHostname = config.smtp_hostname;
+        const smtpPort = config.smtp_port;
+        const smtpUsername = config.smtp_username;
+        const smtpPassword = config.smtp_password;
+        const authenticatedEmail = config.smtp_from || smtpUsername;
 
         if (!smtpHostname || !smtpUsername || !smtpPassword) {
-            console.error("[send-otp] SMTP Secrets missing (check SMTP_HOSTNAME, SMTP_USERNAME, SMTP_PASSWORD)");
-            return new Response(JSON.stringify({ success: false, error: 'SMTP Secrets missing in project' }), { status: 500, headers: responseHeaders });
+            console.error(`[send-otp] SMTP not configured for tenant ${tenant}`);
+            return new Response(JSON.stringify({ success: false, error: `SMTP not configured for tenant ${tenant}` }), { status: 500, headers: responseHeaders });
         }
 
-        const smtpPort = parseInt(smtpPortStr || '587');
         console.log(`[send-otp] Attempting SMTP connection to ${smtpHostname}:${smtpPort}...`);
         const client = new CustomSmtpClient();
 

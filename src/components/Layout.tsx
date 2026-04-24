@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X, Mail, Facebook, Instagram, Linkedin, ChevronRight, Globe } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from '../hooks/useTranslation';
+import { getTenantDisplayName, getTenantWebsiteUrl, getTenantEmail, getTenantDomain } from '../lib/tenant';
 import { supabase } from '../lib/supabase';
 import QuoteModal from './QuoteModal';
 
@@ -27,6 +29,27 @@ const PROVINCES: Record<string, string[]> = {
 };
 
 const Layout = () => {
+    const { t, isSpanish, tenant } = useTranslation();
+    const tenantDisplayName = getTenantDisplayName(tenant);
+    const tenantWebsiteUrl = getTenantWebsiteUrl(tenant);
+    const tenantEmail = getTenantEmail(tenant);
+    const tenantDomain = getTenantDomain(tenant);
+    const getNavLabel = (label: string) => {
+        if (!isSpanish) return label;
+        const map: Record<string, string> = {
+            'Home': 'Inicio',
+            'About': 'Sobre Nosotros',
+            'Home Energy Upgrade Catalogue': 'Catálogo de Eficiencia Energética',
+            'Speak to an Energy Advisor': 'Habla con un Asesor Energético',
+            'Book Ber Assessors': 'Reservar Certificadores',
+            'Our News': 'Nuestras Noticias',
+            'Blog': 'Blog',
+            'FAQ': 'FAQ',
+            'Location': 'Ubicaciones',
+            'Contact': 'Contacto',
+        };
+        return map[label] || label;
+    };
     const [locations, setLocations] = useState<any[]>([]);
     const [isLocationsOpen, setIsLocationsOpen] = useState(false);
     const [expandedProvince, setExpandedProvince] = useState<string | null>(null);
@@ -113,11 +136,11 @@ const Layout = () => {
                     {/* Catalogue-only inline nav (desktop only) */}
                     {isCatalogueNav && (
                         <nav className="hidden md:flex items-center gap-1">
-                            <Link to="/" className="px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">Home</Link>
-                            <Link to="/catalogue" className="px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">Catalogue</Link>
+                            <Link to="/" className="px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">{isSpanish ? 'Inicio' : 'Home'}</Link>
+                            <Link to="/catalogue" className="px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">{isSpanish ? 'Catálogo' : 'Catalogue'}</Link>
 
                             {/* Mobile: simple Locations link */}
-                            <Link to="/locations" className="flex md:hidden px-2 py-1.5 text-[10px] font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">Locations</Link>
+                            <Link to="/locations" className="flex md:hidden px-2 py-1.5 text-[10px] font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">{isSpanish ? 'Ubicaciones' : 'Locations'}</Link>
 
                             {/* Desktop: Locations hover dropdown */}
                             <div
@@ -127,7 +150,7 @@ const Layout = () => {
                                 onMouseLeave={() => { setIsLocationsHover(false); setHoveredProvince(null); }}
                             >
                                 <button className="px-3 py-2 text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap flex items-center gap-1">
-                                    Locations
+                                    {isSpanish ? 'Ubicaciones' : 'Locations'}
                                     <ChevronRight size={12} className={`transition-transform duration-200 ${isLocationsHover ? 'rotate-90' : ''}`} />
                                 </button>
                                 {isLocationsHover && (
@@ -177,7 +200,7 @@ const Layout = () => {
                             >
                                 <div className="w-2 h-2 rounded-full bg-[#9ACD32] group-hover:animate-pulse"></div>
                                 <span className="text-sm font-black text-white uppercase tracking-wider">
-                                    Home Energy <span className="text-[#9ACD32]">Upgrade Catalogue</span>
+                                    {isSpanish ? 'Catálogo de Eficiencia Energética' : <>Home Energy <span className="text-[#9ACD32]">Upgrade Catalogue</span></>}
                                 </span>
                             </Link>
                         )}
@@ -189,7 +212,7 @@ const Layout = () => {
                         >
                             <div className="w-1.5 h-1.5 rounded-full bg-[#9ACD32]"></div>
                             <span className="text-[10px] font-black text-white uppercase tracking-wider">
-                                Energy <span className="text-[#9ACD32]">Catalogue</span>
+                                {isSpanish ? 'Catálogo Energético' : <>Energy <span className="text-[#9ACD32]">Catalogue</span></>}
                             </span>
                         </Link>}
 
@@ -213,7 +236,7 @@ const Layout = () => {
                                                     onClick={() => { setIsLocationsOpen(!isLocationsOpen); if (!isLocationsOpen) setExpandedProvince(null); }}
                                                     className={`w-full px-5 py-3 text-left text-sm font-semibold uppercase tracking-wide border-b border-gray-100 flex justify-between items-center transition-colors ${isLocationsOpen ? 'bg-gray-50 text-[#007F00]' : 'text-gray-700 hover:bg-gray-50'}`}
                                                 >
-                                                    Location
+                                                    {getNavLabel('Location')}
                                                     <ChevronRight size={16} className={`transition-transform duration-200 ${isLocationsOpen ? 'rotate-90' : ''}`} />
                                                 </button>
                                                 {isLocationsOpen && (
@@ -253,7 +276,7 @@ const Layout = () => {
                                                 onClick={closeMenu}
                                                 className="block px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 uppercase tracking-wide border-b border-gray-100"
                                             >
-                                                {link.label}
+                                                {getNavLabel(link.label)}
                                             </Link>
                                         )
                                     ))}
@@ -270,34 +293,34 @@ const Layout = () => {
                                         }}
                                         className="w-full px-5 py-3 text-left text-sm font-semibold text-gray-700 hover:bg-gray-50 uppercase tracking-wide border-b border-gray-100"
                                     >
-                                        Subscribe to News
+                                        {isSpanish ? 'Suscribirse a Noticias' : 'Subscribe to News'}
                                     </button>
 
                                     <div className="border-t border-gray-200 mt-2 pt-2">
                                         {!user ? (
                                             <>
-                                                <Link to="/login" onClick={closeMenu} className="block px-5 py-3 text-sm font-bold text-[#5CB85C] hover:bg-gray-50 uppercase tracking-wide">Login</Link>
-                                                <Link to="/signup?role=contractor" onClick={closeMenu} className="block px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 uppercase tracking-wide">Assessor Registration</Link>
-                                                <Link to="/signup?role=business" onClick={closeMenu} className="block px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 uppercase tracking-wide">Business Catalogue Registration</Link>
+                                                <Link to="/login" onClick={closeMenu} className="block px-5 py-3 text-sm font-bold text-[#5CB85C] hover:bg-gray-50 uppercase tracking-wide">{t('sign_in')}</Link>
+                                                <Link to="/signup?role=contractor" onClick={closeMenu} className="block px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 uppercase tracking-wide">{isSpanish ? 'Registro de Certificador' : 'Assessor Registration'}</Link>
+                                                <Link to="/signup?role=business" onClick={closeMenu} className="block px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 uppercase tracking-wide">{isSpanish ? 'Registro de Negocio' : 'Business Catalogue Registration'}</Link>
                                             </>
                                         ) : (
                                             <>
                                                 <div className="px-5 py-3 bg-gray-50">
-                                                    <p className="text-xs text-gray-500 font-medium">Signed in as</p>
+                                                    <p className="text-xs text-gray-500 font-medium">{isSpanish ? 'Sesión iniciada como' : 'Signed in as'}</p>
                                                     <p className="text-sm font-bold text-gray-900 truncate">{user.email}</p>
                                                 </div>
                                                 {role && (role !== 'business' || profile?.registration_status === 'active' || profile?.registration_status === 'pending') && (
                                                     <Link to={getDashboardLink()} onClick={closeMenu} className="block px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 uppercase tracking-wide border-b border-gray-100/50">
-                                                        {role === 'business' ? 'Business Portal' : role === 'contractor' ? 'Assessor Dashboard' : 'Dashboard'}
+                                                        {role === 'business' ? (isSpanish ? 'Portal de Negocio' : 'Business Portal') : role === 'contractor' ? (isSpanish ? 'Panel del Certificador' : 'Assessor Dashboard') : t('dashboard')}
                                                     </Link>
                                                 )}
                                                 {role === 'contractor' && hasBusinessListing && (
                                                     <Link to="/dashboard/business" onClick={closeMenu} className="block px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 uppercase tracking-wide border-b border-gray-100/50">
-                                                        Business Portal
+                                                        {isSpanish ? 'Portal de Negocio' : 'Business Portal'}
                                                     </Link>
                                                 )}
                                                 <button onClick={handleLogout} className="w-full px-5 py-3 text-left text-sm font-medium text-red-600 hover:bg-red-50 uppercase tracking-wide">
-                                                    Sign Out
+                                                    {t('sign_out')}
                                                 </button>
                                             </>
                                         )}
@@ -311,13 +334,13 @@ const Layout = () => {
                 {/* Mobile catalogue sub-nav bar */}
                 {isCatalogueNav && (
                     <nav className="md:hidden border-t border-white/10 flex items-center justify-center gap-0 py-2">
-                        <Link to="/" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">Home</Link>
+                        <Link to="/" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">{isSpanish ? 'Inicio' : 'Home'}</Link>
                         <span className="text-white/20 text-[8px]">|</span>
-                        <Link to="/catalogue" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">Catalogue</Link>
+                        <Link to="/catalogue" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">{isSpanish ? 'Catálogo' : 'Catalogue'}</Link>
                         <span className="text-white/20 text-[8px]">|</span>
-                        <Link to="/locations" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">Locations</Link>
+                        <Link to="/locations" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">{isSpanish ? 'Ubicaciones' : 'Locations'}</Link>
                         <span className="text-white/20 text-[8px]">|</span>
-                        <Link to="/news" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">News</Link>
+                        <Link to="/news" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">{isSpanish ? 'Noticias' : 'News'}</Link>
                     </nav>
                 )}
 
@@ -335,11 +358,11 @@ const Layout = () => {
                     <div className="grid md:grid-cols-5 gap-12 mb-12">
                         <div className="col-span-1">
                             <div className="flex items-center gap-2 mb-6">
-                                <img src="/logo.svg" alt="The Berman" className="h-16" />
-                                <span className="text-xl font-serif font-bold">The Berman</span>
+                                <img src="/logo.svg" alt={tenantDisplayName} className="h-16" />
+                                <span className="text-xl font-serif font-bold">{tenantDisplayName}</span>
                             </div>
                             <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                                Ireland's trusted partner for BER assessments and energy consultancy.
+                                {isSpanish ? 'Su socio de confianza para certificados energéticos y consultoría energética.' : "Ireland's trusted partner for BER assessments and energy consultancy."}
                             </p>
                             <div className="flex gap-4">
                                 <a href="https://www.facebook.com/profile.php?id=61578159843471" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#007F00] hover:text-white transition cursor-pointer"><Facebook size={16} /></a>
@@ -354,14 +377,14 @@ const Layout = () => {
                         </div>
 
                         <div>
-                            <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">Quick Links</h4>
+                            <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">{isSpanish ? 'Enlaces Rápidos' : 'Quick Links'}</h4>
                             <ul className="space-y-3">
                                 {[
-                                    { label: 'Home', path: '/' },
-                                    { label: 'About Us', path: '/about' },
-                                    { label: 'Energy Upgrade Catalogue', path: '/catalogue' },
-                                    { label: 'Speak to an Energy Advisor', path: '/hire-agent' },
-                                    { label: 'Business Registration', path: '/signup?role=business' },
+                                    { label: isSpanish ? 'Inicio' : 'Home', path: '/' },
+                                    { label: isSpanish ? 'Sobre Nosotros' : 'About Us', path: '/about' },
+                                    { label: isSpanish ? 'Catálogo de Eficiencia Energética' : 'Energy Upgrade Catalogue', path: '/catalogue' },
+                                    { label: isSpanish ? 'Habla con un Asesor Energético' : 'Speak to an Energy Advisor', path: '/hire-agent' },
+                                    { label: isSpanish ? 'Registro de Negocio' : 'Business Registration', path: '/signup?role=business' },
                                     { label: 'FAQ', path: '/faq' }
                                 ].map(link => (
                                     <li key={link.path}>
@@ -372,16 +395,16 @@ const Layout = () => {
                         </div>
 
                         <div>
-                            <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">Account</h4>
+                            <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">{isSpanish ? 'Cuenta' : 'Account'}</h4>
                             <ul className="space-y-3">
                                 {[
-                                    { label: 'Book BER Assessors', path: '/' },
-                                    { label: 'Locations', path: '/locations' },
-                                    { label: 'Our News', path: '/news' },
+                                    { label: isSpanish ? 'Reservar Certificadores' : 'Book BER Assessors', path: '/' },
+                                    { label: isSpanish ? 'Ubicaciones' : 'Locations', path: '/locations' },
+                                    { label: isSpanish ? 'Nuestras Noticias' : 'Our News', path: '/news' },
                                     { label: 'Blog', path: '/blog' },
-                                    { label: 'Contact Us', path: '/contact-us' },
-                                    { label: 'Login to Portal', path: '/login' },
-                                    { label: 'Sign Up', path: '/signup' }
+                                    { label: isSpanish ? 'Contacto' : 'Contact Us', path: '/contact-us' },
+                                    { label: isSpanish ? 'Iniciar Sesión' : 'Login to Portal', path: '/login' },
+                                    { label: isSpanish ? 'Registrarse' : 'Sign Up', path: '/signup' }
                                 ].map(link => (
                                     <li key={link.label}>
                                         <Link to={link.path} className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{link.label}</Link>
@@ -399,42 +422,42 @@ const Layout = () => {
                                         }}
                                         className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2 cursor-pointer"
                                     >
-                                        Subscribe to News
+                                        {isSpanish ? 'Suscribirse a Noticias' : 'Subscribe to News'}
                                     </button>
                                 </li>
                             </ul>
                         </div>
 
                         <div>
-                            <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">Legal</h4>
+                            <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">{isSpanish ? 'Legal' : 'Legal'}</h4>
                             <ul className="space-y-3">
-                                <li><Link to="/privacy" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">Privacy Policy</Link></li>
-                                <li><Link to="/terms" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">Terms & Conditions</Link></li>
-                                <li><Link to="/cookie-policy" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">Cookie Policy</Link></li>
-                                <li><a href="https://www.seai.ie" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">SEAI.ie</a></li>
+                                <li><Link to="/privacy" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{isSpanish ? 'Política de Privacidad' : 'Privacy Policy'}</Link></li>
+                                <li><Link to="/terms" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{isSpanish ? 'Términos y Condiciones' : 'Terms & Conditions'}</Link></li>
+                                <li><Link to="/cookie-policy" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{isSpanish ? 'Política de Cookies' : 'Cookie Policy'}</Link></li>
+                                {!isSpanish && <li><a href="https://www.seai.ie" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">SEAI.ie</a></li>}
                             </ul>
                         </div>
 
                         <div>
-                            <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">Get in Touch</h4>
+                            <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">{isSpanish ? 'Contacto' : 'Get in Touch'}</h4>
                             <ul className="space-y-4">
                                 <li className="flex items-start gap-3 text-gray-400 text-sm">
                                     <Mail className="text-[#9ACD32] mt-0.5" size={16} />
-                                    <a href="mailto:hello@theberman.eu" className="hover:text-white transition">hello@theberman.eu</a>
+                                    <a href={`mailto:${tenantEmail}`} className="hover:text-white transition">{tenantEmail}</a>
                                 </li>
                                 <li className="flex items-start gap-3 text-gray-400 text-sm">
                                     <Globe className="text-[#9ACD32] mt-0.5" size={16} />
-                                    <a href="https://theberman.eu" target="_blank" className="hover:text-white transition">theberman.eu</a>
+                                    <a href={tenantWebsiteUrl} target="_blank" className="hover:text-white transition">{tenantDomain}</a>
                                 </li>
                             </ul>
                         </div>
                     </div>
 
                     <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
-                        <p>&copy; {new Date().getFullYear()} The Berman. All rights reserved.</p>
+                        <p>&copy; {new Date().getFullYear()} {tenantDisplayName}. {isSpanish ? 'Todos los derechos reservados.' : 'All rights reserved.'}</p>
                         <div className="flex gap-6 mt-4 md:mt-0">
-                            <Link to="/privacy" className="hover:text-white cursor-pointer transition">Privacy Policy</Link>
-                            <Link to="/terms" className="hover:text-white cursor-pointer transition">Terms of Service</Link>
+                            <Link to="/privacy" className="hover:text-white cursor-pointer transition">{isSpanish ? 'Política de Privacidad' : 'Privacy Policy'}</Link>
+                            <Link to="/terms" className="hover:text-white cursor-pointer transition">{isSpanish ? 'Términos de Servicio' : 'Terms of Service'}</Link>
                         </div>
                     </div>
                 </div>

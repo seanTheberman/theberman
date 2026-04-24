@@ -1,0 +1,144 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "The Berman Logo" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img "The Berman Logo" [ref=e7]
+      - generic [ref=e8]:
+        - link "Home Energy Upgrade Catalogue" [ref=e9] [cursor=pointer]:
+          - /url: /catalogue
+          - generic [ref=e11]: Home Energy Upgrade Catalogue
+        - button [ref=e12]:
+          - img [ref=e13]
+  - main [ref=e14]:
+    - generic [ref=e17]:
+      - link "Back to Login Options" [ref=e19] [cursor=pointer]:
+        - /url: /login
+        - img [ref=e20]
+        - text: Back to Login Options
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - img [ref=e25]
+          - heading "Admin Access" [level=1] [ref=e27]
+          - paragraph [ref=e28]: Enter your administrator credentials
+        - generic [ref=e29]:
+          - img [ref=e30]
+          - paragraph [ref=e32]: This area is restricted to authorized administrators only. All access attempts are logged.
+        - generic [ref=e33]:
+          - generic [ref=e34]:
+            - generic [ref=e35]: Admin Email
+            - generic [ref=e36]:
+              - img [ref=e37]
+              - textbox "email" [ref=e40]: admin@theberman.eu
+          - generic [ref=e41]:
+            - generic [ref=e42]: Password
+            - generic [ref=e43]:
+              - img [ref=e44]
+              - textbox [ref=e47]: admin@4321
+              - button [ref=e48]:
+                - img [ref=e49]
+          - button "Sign In to Admin Panel" [ref=e52]:
+            - img [ref=e53]
+            - text: Sign In to Admin Panel
+        - paragraph [ref=e58]: Need help? Contact system administrator
+  - contentinfo [ref=e59]:
+    - generic [ref=e60]:
+      - generic [ref=e61]:
+        - generic [ref=e62]:
+          - generic [ref=e63]:
+            - img "The Berman" [ref=e64]
+            - generic [ref=e65]: The Berman
+          - paragraph [ref=e66]: Ireland's trusted partner for BER assessments and energy consultancy.
+          - generic [ref=e67]:
+            - link [ref=e68] [cursor=pointer]:
+              - /url: https://www.facebook.com/profile.php?id=61578159843471
+              - img [ref=e69]
+            - link [ref=e71] [cursor=pointer]:
+              - /url: https://www.instagram.com/thebermanireland?igsh=amtidXdjNmZrMWJz&utm_source=qr
+              - img [ref=e72]
+            - link [ref=e75] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/the-berman/posts/?feedView=all
+              - img [ref=e76]
+            - link [ref=e80] [cursor=pointer]:
+              - /url: https://twitter.com
+              - img [ref=e81]
+        - generic [ref=e83]:
+          - heading "Quick Links" [level=4] [ref=e84]
+          - list [ref=e85]:
+            - listitem [ref=e86]:
+              - link "Home" [ref=e87] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e88]:
+              - link "About Us" [ref=e89] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e90]:
+              - link "Energy Upgrade Catalogue" [ref=e91] [cursor=pointer]:
+                - /url: /catalogue
+            - listitem [ref=e92]:
+              - link "Speak to an Energy Advisor" [ref=e93] [cursor=pointer]:
+                - /url: /hire-agent
+            - listitem [ref=e94]:
+              - link "Business Registration" [ref=e95] [cursor=pointer]:
+                - /url: /signup?role=business
+            - listitem [ref=e96]:
+              - link "FAQ" [ref=e97] [cursor=pointer]:
+                - /url: /faq
+        - generic [ref=e98]:
+          - heading "Account" [level=4] [ref=e99]
+          - list [ref=e100]:
+            - listitem [ref=e101]:
+              - link "Book BER Assessors" [ref=e102] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e103]:
+              - link "Locations" [ref=e104] [cursor=pointer]:
+                - /url: /locations
+            - listitem [ref=e105]:
+              - link "Our News" [ref=e106] [cursor=pointer]:
+                - /url: /news
+            - listitem [ref=e107]:
+              - link "Blog" [ref=e108] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e109]:
+              - link "Contact Us" [ref=e110] [cursor=pointer]:
+                - /url: /contact-us
+            - listitem [ref=e111]:
+              - link "Login to Portal" [ref=e112] [cursor=pointer]:
+                - /url: /login
+            - listitem [ref=e113]:
+              - link "Sign Up" [ref=e114] [cursor=pointer]:
+                - /url: /signup
+            - listitem [ref=e115]:
+              - button "Subscribe to News" [ref=e116] [cursor=pointer]
+        - generic [ref=e117]:
+          - heading "Legal" [level=4] [ref=e118]
+          - list [ref=e119]:
+            - listitem [ref=e120]:
+              - link "Privacy Policy" [ref=e121] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e122]:
+              - link "Terms & Conditions" [ref=e123] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e124]:
+              - link "Cookie Policy" [ref=e125] [cursor=pointer]:
+                - /url: /cookie-policy
+            - listitem [ref=e126]:
+              - link "SEAI.ie" [ref=e127] [cursor=pointer]:
+                - /url: https://www.seai.ie
+        - generic [ref=e128]:
+          - heading "Get in Touch" [level=4] [ref=e129]
+          - list [ref=e130]:
+            - listitem [ref=e131]:
+              - img [ref=e132]
+              - link "hello@theberman.eu" [ref=e135] [cursor=pointer]:
+                - /url: mailto:hello@theberman.eu
+            - listitem [ref=e136]:
+              - img [ref=e137]
+              - link "theberman.eu" [ref=e140] [cursor=pointer]:
+                - /url: https://theberman.eu
+      - generic [ref=e141]:
+        - paragraph [ref=e142]: © 2026 The Berman. All rights reserved.
+        - generic [ref=e143]:
+          - link "Privacy Policy" [ref=e144] [cursor=pointer]:
+            - /url: /privacy
+          - link "Terms of Service" [ref=e145] [cursor=pointer]:
+            - /url: /terms

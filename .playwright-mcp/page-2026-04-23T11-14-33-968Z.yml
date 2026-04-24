@@ -1,0 +1,413 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "The Berman Logo" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img "The Berman Logo" [ref=e7]
+      - generic [ref=e8]:
+        - link "Home Energy Upgrade Catalogue" [ref=e9] [cursor=pointer]:
+          - /url: /catalogue
+          - generic [ref=e11]: Home Energy Upgrade Catalogue
+        - button [ref=e12]:
+          - img [ref=e13]
+  - main [ref=e14]:
+    - generic [ref=e15]:
+      - generic [ref=e20]:
+        - generic [ref=e23]: Ireland's Largest BER Website
+        - heading "Need a BER Cert?" [level=1] [ref=e24]
+        - paragraph [ref=e25]: The fastest, most reliable way to get your Building Energy Rating. Guaranteed lowest prices from 100+ assessors nationwide.
+        - paragraph [ref=e26]: Get the Best Quotes from local BER Assessors today.
+        - link "Get a Free Quote" [ref=e28] [cursor=pointer]:
+          - /url: /get-quote
+          - button "Get a Free Quote" [ref=e29]:
+            - text: Get a Free Quote
+            - img [ref=e30]
+        - generic [ref=e32]:
+          - generic [ref=e33]:
+            - img [ref=e35]
+            - text: 100+ Assessors Nationwide
+          - generic [ref=e40]:
+            - img [ref=e42]
+            - text: SEAI REGISTERED ASSESSORS ONLY
+          - generic [ref=e45]:
+            - img [ref=e47]
+            - text: Choose Your Date & Time
+      - generic [ref=e51]:
+        - generic [ref=e52]:
+          - generic [ref=e53]: Simple Process
+          - heading "How It Works" [level=2] [ref=e54]
+        - generic [ref=e55]:
+          - generic [ref=e57] [cursor=pointer]:
+            - generic [ref=e58]: "01"
+            - img [ref=e60]
+            - heading "Select Date" [level=3] [ref=e63]
+            - paragraph [ref=e64]: Tell us your preferred date & time for assessment.
+          - generic [ref=e65] [cursor=pointer]:
+            - generic [ref=e66]: "02"
+            - img [ref=e68]
+            - heading "Post Details" [level=3] [ref=e71]
+            - paragraph [ref=e72]: Share your property info in less than 1 minute.
+          - generic [ref=e73] [cursor=pointer]:
+            - generic [ref=e74]: "03"
+            - img [ref=e76]
+            - heading "Get Quotes" [level=3] [ref=e79]
+            - paragraph [ref=e80]: Receive competitive prices from local assessors.
+          - generic [ref=e81] [cursor=pointer]:
+            - generic [ref=e82]: "04"
+            - img [ref=e84]
+            - heading "Book Online" [level=3] [ref=e87]
+            - paragraph [ref=e88]: Choose your favorite quote and confirm instantly.
+      - generic [ref=e91]:
+        - generic [ref=e92]:
+          - generic [ref=e93]: The Advantage
+          - heading "Why Homeowners Trust The BER Man" [level=2] [ref=e94]:
+            - text: Why Homeowners Trust
+            - text: The BER Man
+          - generic [ref=e95]:
+            - generic [ref=e96]:
+              - img [ref=e98]
+              - generic [ref=e101]:
+                - heading "Lowest Prices Guaranteed" [level=4] [ref=e102]
+                - paragraph [ref=e103]: Receive multiple quotes and choose the best option for you..
+            - generic [ref=e104]:
+              - img [ref=e106]
+              - generic [ref=e109]:
+                - heading "BER Registered Assessors Only" [level=4] [ref=e110]
+                - paragraph [ref=e111]: Every assessor is fully certified and vetted for quality.
+            - generic [ref=e112]:
+              - img [ref=e114]
+              - generic [ref=e117]:
+                - heading "Money-Back Guarantee" [level=4] [ref=e118]
+                - paragraph [ref=e119]: We ensure you get a professional service or your money back.
+            - generic [ref=e120]:
+              - img [ref=e122]
+              - generic [ref=e125]:
+                - heading "Instant Online Booking" [level=4] [ref=e126]
+                - paragraph [ref=e127]: No back-and-forth phone calls. Book everything in real-time.
+        - generic [ref=e129]:
+          - generic [ref=e130]:
+            - generic [ref=e131]:
+              - generic [ref=e132]: 1k+
+              - generic [ref=e133]: Users Served
+            - generic [ref=e134]:
+              - generic [ref=e135]: 100+
+              - generic [ref=e136]: Assessors
+          - generic [ref=e137]:
+            - generic [ref=e138]:
+              - generic [ref=e139]: 4.9/5
+              - generic [ref=e140]: Average Rating
+              - generic [ref=e141]:
+                - img [ref=e142]
+                - img [ref=e144]
+                - img [ref=e146]
+                - img [ref=e148]
+                - img [ref=e150]
+            - generic [ref=e152]:
+              - generic [ref=e153]: Fast
+              - generic [ref=e154]: Turnaround
+      - generic [ref=e156]:
+        - generic [ref=e157]:
+          - generic [ref=e158]:
+            - img [ref=e159]
+            - generic [ref=e161]: Excellent
+          - paragraph [ref=e162]: Based on 1,000 Verified Customer Ratings
+        - generic [ref=e163]:
+          - generic [ref=e164] [cursor=pointer]:
+            - generic [ref=e165]:
+              - img [ref=e166]
+              - img [ref=e168]
+              - img [ref=e170]
+              - img [ref=e172]
+              - img [ref=e174]
+            - paragraph [ref=e176]: "\"Used the platform twice now. Both times I got several quotes within an hour and the assessor was super professional. Saved about €30 vs other sites.\""
+            - generic [ref=e177]:
+              - generic [ref=e178]: M
+              - generic [ref=e179]:
+                - paragraph [ref=e180]: Michael Byrne
+                - paragraph [ref=e181]: Dublin
+          - generic [ref=e182] [cursor=pointer]:
+            - generic [ref=e183]:
+              - img [ref=e184]
+              - img [ref=e186]
+              - img [ref=e188]
+              - img [ref=e190]
+              - img [ref=e192]
+            - paragraph [ref=e194]: "\"Extremely easy to use. I loved that I could see the SEAI registration numbers and reviews for the assessors before booking. Highly recommended for landlords.\""
+            - generic [ref=e195]:
+              - generic [ref=e196]: S
+              - generic [ref=e197]:
+                - paragraph [ref=e198]: Sarah O'Toole
+                - paragraph [ref=e199]: Cork
+          - generic [ref=e200] [cursor=pointer]:
+            - generic [ref=e201]:
+              - img [ref=e202]
+              - img [ref=e204]
+              - img [ref=e206]
+              - img [ref=e208]
+              - img [ref=e210]
+            - paragraph [ref=e212]: "\"Fast turnaround and competitive pricing. The portal makes it very simple to manage everything and the certificate was issued within 24 hours of inspection.\""
+            - generic [ref=e213]:
+              - generic [ref=e214]: J
+              - generic [ref=e215]:
+                - paragraph [ref=e216]: James Murphy
+                - paragraph [ref=e217]: Galway
+      - generic [ref=e219]:
+        - heading "Are You a BER Assessor?" [level=2] [ref=e220]
+        - paragraph [ref=e221]: Register with theberman.eu and receive local job leads, straight to your phone.
+        - link "Join Now" [ref=e222] [cursor=pointer]:
+          - /url: /signup?role=contractor
+          - button "Join Now" [ref=e223]
+      - generic [ref=e226]:
+        - generic [ref=e227]:
+          - generic [ref=e228]: Explore Our Network
+          - heading "Find the Best Home Energy Partners." [level=2] [ref=e229]:
+            - text: Find the Best
+            - text: Home Energy Partners.
+          - paragraph [ref=e230]: Access our curated catalogue of certified home energy businesses. From solar panel installers to insulation specialists, find the right partner for your home's journey to efficiency.
+          - generic [ref=e231]:
+            - link "Browse Catalogue" [ref=e232] [cursor=pointer]:
+              - /url: /catalogue
+              - button "Browse Catalogue" [ref=e233]:
+                - text: Browse Catalogue
+                - img [ref=e234]
+            - link "Register your Business" [ref=e236] [cursor=pointer]:
+              - /url: /signup?role=business
+              - button "Register your Business" [ref=e237]
+            - link "Speak to Advisor" [ref=e238] [cursor=pointer]:
+              - /url: /hire-agent
+              - button "Speak to Advisor" [ref=e239]
+        - generic [ref=e241]:
+          - img "Home Energy Upgrades" [ref=e242]
+          - generic [ref=e246]:
+            - img [ref=e248]
+            - generic [ref=e251]:
+              - heading "Smart Search" [level=4] [ref=e252]
+              - paragraph [ref=e253]: By County & Service Type
+      - generic [ref=e257]:
+        - generic [ref=e258]:
+          - generic [ref=e259]: Knowledge Base
+          - heading "Frequently Asked Questions" [level=2] [ref=e260]:
+            - text: Frequently Asked
+            - text: Questions
+          - generic [ref=e261]:
+            - generic [ref=e262] [cursor=pointer]:
+              - heading "What is a BER Certificate?" [level=4] [ref=e263]
+              - paragraph [ref=e264]: A Building Energy Rating (BER) tells you how energy efficient your home is, rated from A (most efficient) to G (least efficient).
+            - generic [ref=e265] [cursor=pointer]:
+              - heading "Why do I need a BER?" [level=4] [ref=e266]
+              - paragraph [ref=e267]: It's legally required to sell or rent a property. It's also needed for SEAI energy upgrade grants.
+            - generic [ref=e268] [cursor=pointer]:
+              - heading "How much does it cost?" [level=4] [ref=e269]
+              - paragraph [ref=e270]: Prices vary based on property size. Our platform ensures you get the most competitive quotes from local assessors.
+            - generic [ref=e271] [cursor=pointer]:
+              - heading "How long is it valid for?" [level=4] [ref=e272]
+              - paragraph [ref=e273]: A BER certificate is valid for up to 10 years, unless there are major changes to the property's energy performance.
+          - link "View all FAQs" [ref=e274] [cursor=pointer]:
+            - /url: /faq
+            - button "View all FAQs" [ref=e275]:
+              - text: View all FAQs
+              - img [ref=e276]
+        - generic [ref=e278]:
+          - heading "Ready to get your BER Certificate?" [level=3] [ref=e280]:
+            - text: Ready to get your
+            - text: BER Certificate?
+          - paragraph [ref=e281]: Join over 1,000 satisfied homeowners. Get competitive quotes from trusted local assessors in seconds.
+          - link "Get a Quote Online" [ref=e282] [cursor=pointer]:
+            - /url: /get-quote
+            - button "Get a Quote Online" [ref=e283]
+      - generic [ref=e285]:
+        - heading "Why Choose The Berman?" [level=2] [ref=e286]
+        - generic [ref=e287]:
+          - generic [ref=e288]:
+            - generic [ref=e289]: €
+            - paragraph [ref=e290]: Best Value Rates
+          - generic [ref=e291]:
+            - img [ref=e293]
+            - paragraph [ref=e295]: Quick Results
+          - generic [ref=e296]:
+            - img [ref=e298]
+            - paragraph [ref=e301]: SEAI Certified Experts
+          - generic [ref=e302]:
+            - img [ref=e304]
+            - paragraph [ref=e307]: Smooth & Stress-Free
+          - generic [ref=e308]:
+            - img [ref=e310]
+            - paragraph [ref=e312]: Satisfaction Guaranteed
+          - generic [ref=e313]:
+            - img [ref=e315]
+            - paragraph [ref=e318]: Pick Your Schedule
+        - link "Get BER Quotes Now" [ref=e320] [cursor=pointer]:
+          - /url: /get-quote
+          - button "Get BER Quotes Now" [ref=e321]
+      - generic [ref=e323]:
+        - heading "We Cover All Counties" [level=2] [ref=e324]
+        - generic [ref=e325]:
+          - link "BER Cert Carlow" [ref=e326] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Cavan" [ref=e327] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Clare" [ref=e328] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Cork" [ref=e329] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Donegal" [ref=e330] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Dublin" [ref=e331] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Galway" [ref=e332] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Kerry" [ref=e333] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Kildare" [ref=e334] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Kilkenny" [ref=e335] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Laois" [ref=e336] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Leitrim" [ref=e337] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Limerick" [ref=e338] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Longford" [ref=e339] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Louth" [ref=e340] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Mayo" [ref=e341] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Meath" [ref=e342] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Monaghan" [ref=e343] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Offaly" [ref=e344] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Roscommon" [ref=e345] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Sligo" [ref=e346] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Tipperary" [ref=e347] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Waterford" [ref=e348] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Westmeath" [ref=e349] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Wexford" [ref=e350] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Wicklow" [ref=e351] [cursor=pointer]:
+            - /url: /get-quote
+      - generic [ref=e357]:
+        - generic [ref=e358]: Premium Resources
+        - heading "Get Our Complete Home Energy Upgrade Guide" [level=2] [ref=e359]:
+          - text: Get Our Complete Home
+          - text: Energy Upgrade Guide
+        - paragraph [ref=e360]: Join 5,000+ homeowners receiving our weekly energy updates, flash sales, and exclusive energy upgrade offers.
+        - generic [ref=e361]:
+          - textbox "Enter your email address" [ref=e362]
+          - button "Subscribe to news" [ref=e363] [cursor=pointer]
+        - generic [ref=e364]:
+          - generic [ref=e365]:
+            - img [ref=e366]
+            - text: No Spam Ever
+          - generic [ref=e368]:
+            - img [ref=e369]
+            - text: Instant Download
+  - contentinfo [ref=e371]:
+    - generic [ref=e372]:
+      - generic [ref=e373]:
+        - generic [ref=e374]:
+          - generic [ref=e375]:
+            - img "The Berman" [ref=e376]
+            - generic [ref=e377]: The Berman
+          - paragraph [ref=e378]: Ireland's trusted partner for BER assessments and energy consultancy.
+          - generic [ref=e379]:
+            - link [ref=e380] [cursor=pointer]:
+              - /url: https://www.facebook.com/profile.php?id=61578159843471
+              - img [ref=e381]
+            - link [ref=e383] [cursor=pointer]:
+              - /url: https://www.instagram.com/thebermanireland?igsh=amtidXdjNmZrMWJz&utm_source=qr
+              - img [ref=e384]
+            - link [ref=e387] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/the-berman/posts/?feedView=all
+              - img [ref=e388]
+            - link [ref=e392] [cursor=pointer]:
+              - /url: https://twitter.com
+              - img [ref=e393]
+        - generic [ref=e395]:
+          - heading "Quick Links" [level=4] [ref=e396]
+          - list [ref=e397]:
+            - listitem [ref=e398]:
+              - link "Home" [ref=e399] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e400]:
+              - link "About Us" [ref=e401] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e402]:
+              - link "Energy Upgrade Catalogue" [ref=e403] [cursor=pointer]:
+                - /url: /catalogue
+            - listitem [ref=e404]:
+              - link "Speak to an Energy Advisor" [ref=e405] [cursor=pointer]:
+                - /url: /hire-agent
+            - listitem [ref=e406]:
+              - link "Business Registration" [ref=e407] [cursor=pointer]:
+                - /url: /signup?role=business
+            - listitem [ref=e408]:
+              - link "FAQ" [ref=e409] [cursor=pointer]:
+                - /url: /faq
+        - generic [ref=e410]:
+          - heading "Account" [level=4] [ref=e411]
+          - list [ref=e412]:
+            - listitem [ref=e413]:
+              - link "Book BER Assessors" [ref=e414] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e415]:
+              - link "Locations" [ref=e416] [cursor=pointer]:
+                - /url: /locations
+            - listitem [ref=e417]:
+              - link "Our News" [ref=e418] [cursor=pointer]:
+                - /url: /news
+            - listitem [ref=e419]:
+              - link "Blog" [ref=e420] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e421]:
+              - link "Contact Us" [ref=e422] [cursor=pointer]:
+                - /url: /contact-us
+            - listitem [ref=e423]:
+              - link "Login to Portal" [ref=e424] [cursor=pointer]:
+                - /url: /login
+            - listitem [ref=e425]:
+              - link "Sign Up" [ref=e426] [cursor=pointer]:
+                - /url: /signup
+            - listitem [ref=e427]:
+              - button "Subscribe to News" [ref=e428] [cursor=pointer]
+        - generic [ref=e429]:
+          - heading "Legal" [level=4] [ref=e430]
+          - list [ref=e431]:
+            - listitem [ref=e432]:
+              - link "Privacy Policy" [ref=e433] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e434]:
+              - link "Terms & Conditions" [ref=e435] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e436]:
+              - link "Cookie Policy" [ref=e437] [cursor=pointer]:
+                - /url: /cookie-policy
+            - listitem [ref=e438]:
+              - link "SEAI.ie" [ref=e439] [cursor=pointer]:
+                - /url: https://www.seai.ie
+        - generic [ref=e440]:
+          - heading "Get in Touch" [level=4] [ref=e441]
+          - list [ref=e442]:
+            - listitem [ref=e443]:
+              - img [ref=e444]
+              - link "hello@theberman.eu" [ref=e447] [cursor=pointer]:
+                - /url: mailto:hello@theberman.eu
+            - listitem [ref=e448]:
+              - img [ref=e449]
+              - link "theberman.eu" [ref=e452] [cursor=pointer]:
+                - /url: https://theberman.eu
+      - generic [ref=e453]:
+        - paragraph [ref=e454]: © 2026 The Berman. All rights reserved.
+        - generic [ref=e455]:
+          - link "Privacy Policy" [ref=e456] [cursor=pointer]:
+            - /url: /privacy
+          - link "Terms of Service" [ref=e457] [cursor=pointer]:
+            - /url: /terms

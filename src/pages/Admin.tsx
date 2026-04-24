@@ -71,6 +71,12 @@ const Admin = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [locationFilter, setLocationFilter] = useState('');
     const [customMonths, setCustomMonths] = useState<number>(1);
+    const [selectedTenant, setSelectedTenant] = useState<string>('ireland');
+
+    const TENANTS = [
+        { id: 'ireland', label: 'Ireland', domain: 'theberman.eu' },
+        { id: 'spain', label: 'Spain', domain: 'certificadoenergético.eu' },
+    ];
 
     // Selected items
     const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -188,18 +194,18 @@ const Admin = () => {
         }), [users_list, searchTerm, locationFilter]);
 
     const stats = useMemo(() => ({
-        totalUsers: users_list.length,
-        homeowners: users_list.filter(u => u.role === 'homeowner' || u.role === 'user').length,
-        contractors: users_list.filter(u => u.role === 'contractor').length,
-        totalLeads: leads.length,
-        totalRevenue: payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0),
-        activeAssessments: assessments.filter(a => a.status !== 'completed').length,
-        completedAssessments: assessments.filter(a => a.status === 'completed').length,
-        pendingQuotes: assessments.filter(a => a.status === 'submitted' || a.status === 'pending_quote').length,
-        acceptedQuotes: assessments.filter(a => a.status === 'quote_accepted' || a.status === 'scheduled' || a.status === 'completed').length,
-        businessLeads: users_list.filter(u => u.role === 'business').length,
-        pendingOnboarding: users_list.filter(u => u.role === 'business' && !listings.some(l => l.user_id === u.id || l.owner_id === u.id)).length,
-    }), [users_list, leads, payments, assessments, listings]);
+        totalUsers: users_list.filter(u => u.tenant === selectedTenant).length,
+        homeowners: users_list.filter(u => (u.role === 'homeowner' || u.role === 'user') && u.tenant === selectedTenant).length,
+        contractors: users_list.filter(u => u.role === 'contractor' && u.tenant === selectedTenant).length,
+        totalLeads: leads.filter(l => l.tenant === selectedTenant).length,
+        totalRevenue: payments.filter(p => p.status === 'completed' && p.tenant === selectedTenant).reduce((sum, p) => sum + p.amount, 0),
+        activeAssessments: assessments.filter(a => a.status !== 'completed' && a.tenant === selectedTenant).length,
+        completedAssessments: assessments.filter(a => a.status === 'completed' && a.tenant === selectedTenant).length,
+        pendingQuotes: assessments.filter(a => (a.status === 'submitted' || a.status === 'pending_quote') && a.tenant === selectedTenant).length,
+        acceptedQuotes: assessments.filter(a => (a.status === 'quote_accepted' || a.status === 'scheduled' || a.status === 'completed') && a.tenant === selectedTenant).length,
+        businessLeads: users_list.filter(u => u.role === 'business' && u.tenant === selectedTenant).length,
+        pendingOnboarding: users_list.filter(u => u.role === 'business' && u.tenant === selectedTenant && !listings.some(l => l.user_id === u.id || l.owner_id === u.id)).length,
+    }), [users_list, leads, payments, assessments, listings, selectedTenant]);
 
     // ─── Helpers ─────────────────────────────────────────────────────────────────
     const getFallbackPhone = (profile: Profile) => {
@@ -222,15 +228,16 @@ const Admin = () => {
     const fetchLeads = useCallback(async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false });
+            const { data, error } = await supabase.from('leads').select('*').eq('tenant', selectedTenant).order('created_at', { ascending: false });
             if (error) throw error;
             setLeads((data || []).filter((r: any) => !r.deleted_at));
         } catch (error) {
             console.error('Error fetching leads:', error);
+            toast.error('Failed to load leads');
         } finally {
             setLoading(false);
         }
-    }, [setLeads, setLoading]);
+    }, [setLeads, setLoading, selectedTenant]);
 
     const checkAndDisableExpiredSubscriptions = useCallback(async (users: Profile[]) => {
         const now = new Date();
@@ -252,7 +259,7 @@ const Admin = () => {
     const fetchUsers = useCallback(async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
+            const { data, error } = await supabase.from('profiles').select('*').eq('tenant', selectedTenant).order('created_at', { ascending: false });
             if (error) {
                 if (error.message?.includes('column "registration_status" does not exist')) {
                     toast.error('Registration status column missing. Please run the SQL migration.');
@@ -267,7 +274,7 @@ const Admin = () => {
         } finally {
             setLoading(false);
         }
-    }, [setUsersList, setLoading, checkAndDisableExpiredSubscriptions]);
+    }, [setUsersList, setLoading, checkAndDisableExpiredSubscriptions, selectedTenant]);
 
     const enrichQuotesWithContractors = useCallback(async (assessments: Assessment[]) => {
         // Get all unique contractor IDs from quotes
@@ -311,55 +318,56 @@ const Admin = () => {
 
     const fetchListings = useCallback(async () => {
         try {
-            const { data, error } = await supabase.from('catalogue_listings').select('*');
+            const { data, error } = await supabase.from('catalogue_listings').select('*').eq('tenant', selectedTenant);
             if (error) throw error;
             setListings(data || []);
         } catch (error) {
             console.error('Error fetching listings:', error);
         }
-    }, [setListings]);
+    }, [setListings, selectedTenant]);
 
     const fetchCatalogueCategories = useCallback(async () => {
         try {
-            const { data, error } = await supabase.from('catalogue_categories').select('id, name').order('name');
+            const { data, error } = await supabase.from('catalogue_categories').select('id, name').eq('tenant', selectedTenant).order('name');
             if (error) throw error;
             setCatalogueCategories(data || []);
         } catch (error) {
             console.error('Error fetching catalogue categories:', error);
         }
-    }, [setCatalogueCategories]);
+    }, [setCatalogueCategories, selectedTenant]);
 
-const fetchAssessments = useCallback(async () => {
-    setLoading(true);
-    try {
-        const { data, error } = await supabase
-            .from('assessments')
-            .select(`
-                *,
-                user:profiles!assessments_user_id_fkey(id, full_name, email, phone, county, town, registration_status, is_active, created_at),
-                quotes (
-                    id,
-                    price,
-                    notes,
-                    status,
-                    created_at,
-                    created_by
-                )
-            `)
-            .order('created_at', { ascending: false });
+    const fetchAssessments = useCallback(async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('assessments')
+                .select(`
+                    *,
+                    user:profiles!assessments_user_id_fkey(id, full_name, email, phone, county, town, registration_status, is_active, created_at),
+                    quotes (
+                        id,
+                        price,
+                        notes,
+                        status,
+                        created_at,
+                        created_by
+                    )
+                `)
+                .eq('tenant', selectedTenant)
+                .order('created_at', { ascending: false });
 
-        if (error) throw error;
-        
-        // Enrich quotes with contractor details
-        const enrichedAssessments = await enrichQuotesWithContractors(data || []);
-        setAssessments(enrichedAssessments);
-    } catch (error: any) {
-        console.error('Failed to fetch assessments:', error);
-        toast.error('Failed to load assessments');
-    } finally {
-        setLoading(false);
-    }
-}, [enrichQuotesWithContractors]);
+            if (error) throw error;
+            
+            // Enrich quotes with contractor details
+            const enrichedAssessments = await enrichQuotesWithContractors(data || []);
+            setAssessments(enrichedAssessments);
+        } catch (error: any) {
+            console.error('Failed to fetch assessments:', error);
+            toast.error('Failed to load assessments');
+        } finally {
+            setLoading(false);
+        }
+    }, [enrichQuotesWithContractors, setLoading, selectedTenant]);
 
     const fetchPayments = useCallback(async () => {
         setLoading(true);
@@ -367,6 +375,7 @@ const fetchAssessments = useCallback(async () => {
             const { data, error } = await supabase
                 .from('payments')
                 .select('*, profiles (full_name, email)')
+                .eq('tenant', selectedTenant)
                 .order('created_at', { ascending: false });
             if (error) throw error;
             setPayments(data || []);
@@ -376,17 +385,17 @@ const fetchAssessments = useCallback(async () => {
         } finally {
             setLoading(false);
         }
-    }, [setPayments, setLoading]);
+    }, [setPayments, setLoading, selectedTenant]);
 
     const fetchAppSettings = useCallback(async () => {
         try {
-            const { data, error } = await supabase.from('app_settings').select('*').single();
+            const { data, error } = await supabase.from('app_settings').select('*').eq('tenant', selectedTenant).single();
             if (error) throw error;
             setAppSettings(data);
         } catch (error) {
-            console.error('Error fetching settings:', error);
+            console.error('Error fetching app settings:', error);
         }
-    }, [setAppSettings]);
+    }, [setAppSettings, selectedTenant]);
 
     const fetchNewsArticles = useCallback(async () => {
         setLoading(true);
@@ -394,6 +403,7 @@ const fetchAssessments = useCallback(async () => {
             const { data, error } = await supabase
                 .from('news_articles')
                 .select('*')
+                .eq('tenant', selectedTenant)
                 .order('published_at', { ascending: false })
                 .order('created_at', { ascending: false });
             if (error) throw error;
@@ -404,7 +414,7 @@ const fetchAssessments = useCallback(async () => {
         } finally {
             setLoading(false);
         }
-    }, [setNewsArticles, setLoading]);
+    }, [setNewsArticles, setLoading, selectedTenant]);
 
     const fetchBlogArticles = useCallback(async () => {
         setLoading(true);
@@ -412,7 +422,9 @@ const fetchAssessments = useCallback(async () => {
             const { data, error } = await supabase
                 .from('blog_articles')
                 .select('*')
-                .order('published_at', { ascending: false });
+                .eq('tenant', selectedTenant)
+                .order('published_at', { ascending: false })
+                .order('created_at', { ascending: false });
             if (error) throw error;
             setBlogArticles(data || []);
         } catch (error) {
@@ -421,7 +433,7 @@ const fetchAssessments = useCallback(async () => {
         } finally {
             setLoading(false);
         }
-    }, [setBlogArticles, setLoading]);
+    }, [setBlogArticles, setLoading, selectedTenant]);
 
     const fetchFaqItems = useCallback(async () => {
         setLoading(true);
@@ -429,7 +441,8 @@ const fetchAssessments = useCallback(async () => {
             const { data, error } = await supabase
                 .from('faq_items')
                 .select('*')
-                .order('sort_order');
+                .eq('tenant', selectedTenant)
+                .order('order_index', { ascending: true });
             if (error) throw error;
             setFaqItems(data || []);
         } catch (error) {
@@ -438,24 +451,24 @@ const fetchAssessments = useCallback(async () => {
         } finally {
             setLoading(false);
         }
-    }, [setFaqItems, setLoading]);
+    }, [setFaqItems, setLoading, selectedTenant]);
 
     const fetchSponsors = useCallback(async () => {
         try {
-            const { data, error } = await supabase.from('sponsors').select('*').order('created_at', { ascending: true });
+            const { data, error } = await supabase.from('sponsors').select('*').eq('tenant', selectedTenant).order('created_at', { ascending: true });
             if (error) throw error;
             setSponsors(data || []);
         } catch (error) {
             console.error('Error fetching sponsors:', error);
         }
-    }, [setSponsors]);
+    }, [setSponsors, selectedTenant]);
 
     const fetchDeletedItems = useCallback(async () => {
         try {
             const [leadsRes, assessmentsRes, profilesRes] = await Promise.all([
-                supabase.from('leads').select('id, name, email, deleted_at, message').not('deleted_at', 'is', null).order('deleted_at', { ascending: false }).then(r => r.error?.code === '42703' ? { data: [], error: null } : r),
-                supabase.from('assessments').select('id, property_address, deleted_at, status, profiles:user_id(email)').not('deleted_at', 'is', null).order('deleted_at', { ascending: false }).then(r => r.error?.code === '42703' ? { data: [], error: null } : r),
-                supabase.from('profiles').select('id, full_name, email, deleted_at, role').not('deleted_at', 'is', null).order('deleted_at', { ascending: false }).then(r => r.error?.code === '42703' ? { data: [], error: null } : r),
+                supabase.from('leads').select('id, name, email, deleted_at, message').eq('tenant', selectedTenant).not('deleted_at', 'is', null).order('deleted_at', { ascending: false }).then(r => r.error?.code === '42703' ? { data: [], error: null } : r),
+                supabase.from('assessments').select('id, property_address, deleted_at, status, profiles:user_id(email)').eq('tenant', selectedTenant).not('deleted_at', 'is', null).order('deleted_at', { ascending: false }).then(r => r.error?.code === '42703' ? { data: [], error: null } : r),
+                supabase.from('profiles').select('id, full_name, email, deleted_at, role').eq('tenant', selectedTenant).not('deleted_at', 'is', null).order('deleted_at', { ascending: false }).then(r => r.error?.code === '42703' ? { data: [], error: null } : r),
             ]);
 
             const items: DeletedItem[] = [
@@ -758,6 +771,7 @@ const fetchAssessments = useCallback(async () => {
                     vatNumber: newUserFormData.vatNumber || null,
                     registrationAmount: newUserFormData.registrationAmount || 0,
                     role: newUserRole,
+                    tenant: selectedTenant,
                 }
             });
 
@@ -1088,7 +1102,8 @@ const fetchAssessments = useCallback(async () => {
                     county: selectedAssessment.county,
                     town: selectedAssessment.town,
                     assessmentId: selectedAssessment.id,
-                    jobType: selectedAssessment.job_type || 'domestic'
+                    jobType: selectedAssessment.job_type || 'domestic',
+                    tenant: selectedTenant
                 }
             }).catch(err => console.error('Failed to send job live email:', err));
 
@@ -1120,7 +1135,7 @@ const fetchAssessments = useCallback(async () => {
             const { error: updateError } = await supabase.from('assessments').update({ status: 'pending_quote' }).eq('id', selectedAssessment.id);
             if (updateError) throw updateError;
 
-            supabase.functions.invoke('send-quote-notification', { body: { assessmentId: selectedAssessment.id } })
+            supabase.functions.invoke('send-quote-notification', { body: { assessmentId: selectedAssessment.id, tenant: selectedTenant } })
                 .catch(err => console.error('Failed to trigger homeowner notification:', err));
 
             await logAudit('generate_quote', 'assessment', selectedAssessment.id, { quote_id: quote.id, price: quoteData.price });
@@ -1145,7 +1160,7 @@ const fetchAssessments = useCallback(async () => {
             if (error) throw error;
 
             supabase.functions.invoke('send-job-status-notification', {
-                body: { assessmentId: selectedAssessment.id, status: isRescheduled ? 'rescheduled' : 'scheduled', details: { inspectionDate: selectedDate, contractorName: 'The Berman Team' } }
+                body: { assessmentId: selectedAssessment.id, status: isRescheduled ? 'rescheduled' : 'scheduled', details: { inspectionDate: selectedDate, contractorName: 'The Berman Team' }, tenant: selectedTenant }
             }).catch(err => console.error('Failed to trigger status notification:', err));
 
             await logAudit('schedule_assessment', 'assessment', selectedAssessment.id, { scheduled_date: selectedDate });
@@ -1168,7 +1183,7 @@ const fetchAssessments = useCallback(async () => {
             if (error) throw error;
 
             supabase.functions.invoke('send-job-status-notification', {
-                body: { assessmentId: selectedAssessment.id, status: 'completed', details: { certificateUrl: certUrl, contractorName: 'The Berman Team' } }
+                body: { assessmentId: selectedAssessment.id, status: 'completed', details: { certificateUrl: certUrl, contractorName: 'The Berman Team' }, tenant: selectedTenant }
             }).catch(err => console.error('Failed to trigger status notification:', err));
 
             await logAudit('complete_assessment', 'assessment', selectedAssessment.id, { certificate_url: certUrl });
@@ -1517,6 +1532,7 @@ const fetchAssessments = useCallback(async () => {
                 address: fullAddress || null, website: catalogueFormData.website || null,
                 logo_url: catalogueFormData.logoUrl || null,
                 owner_id: selectedBusinessForCatalogue?.id || selectedListingForEdit?.owner_id || null,
+                tenant: selectedTenant,
                 is_active: true, featured: catalogueFormData.featured, latitude, longitude,
                 company_number: catalogueFormData.companyNumber || null,
                 registration_no: catalogueFormData.registrationNo || null,
@@ -1799,6 +1815,16 @@ const fetchAssessments = useCallback(async () => {
                                 {view === 'businesses' && pendingBusinesses > 0 && (
                                     <span className="text-xs font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full flex-shrink-0">{pendingBusinesses} pending</span>
                                 )}
+                                {/* Tenant Selector */}
+                                <select
+                                    value={selectedTenant}
+                                    onChange={e => setSelectedTenant(e.target.value)}
+                                    className="ml-2 px-2 py-1 text-[11px] font-bold uppercase tracking-wide bg-gray-100 text-gray-600 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007F00]/20 cursor-pointer"
+                                >
+                                    {TENANTS.map(t => (
+                                        <option key={t.id} value={t.id}>{t.label}</option>
+                                    ))}
+                                </select>
                             </h1>
                             <p className="text-xs text-gray-400 truncate">{getViewSubtitle()}</p>
                         </div>

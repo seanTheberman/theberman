@@ -1,0 +1,142 @@
+- generic [ref=e154]:
+  - complementary [ref=e155]:
+    - link "The Berman" [ref=e157] [cursor=pointer]:
+      - /url: /
+      - img "The Berman" [ref=e158]
+    - navigation [ref=e159]:
+      - paragraph [ref=e160]: Navigation
+      - button "Overview" [ref=e161]:
+        - generic [ref=e162]:
+          - img [ref=e163]
+          - generic [ref=e164]: Overview
+      - button "Leads" [ref=e166]:
+        - generic [ref=e167]:
+          - img [ref=e168]
+          - generic [ref=e171]: Leads
+      - button "Assessments" [ref=e172]:
+        - generic [ref=e173]:
+          - img [ref=e174]
+          - generic [ref=e177]: Assessments
+      - button "Jobs" [active] [ref=e178]:
+        - generic [ref=e179]:
+          - img [ref=e180]
+          - generic [ref=e183]: Jobs
+      - button "Homeowners" [ref=e184]:
+        - generic [ref=e185]:
+          - img [ref=e186]
+          - generic [ref=e189]: Homeowners
+      - button "Businesses" [ref=e190]:
+        - generic [ref=e191]:
+          - img [ref=e192]
+          - generic [ref=e196]: Businesses
+      - button "BER Assessors" [ref=e197]:
+        - generic [ref=e198]:
+          - img [ref=e199]
+          - generic [ref=e204]: BER Assessors
+      - button "Catalogue" [ref=e205]:
+        - generic [ref=e206]:
+          - img [ref=e207]
+          - generic [ref=e209]: Catalogue
+      - button "Payments" [ref=e210]:
+        - generic [ref=e211]:
+          - img [ref=e212]
+          - generic [ref=e214]: Payments
+      - paragraph [ref=e217]: CMS
+      - button "News" [ref=e218]:
+        - generic [ref=e219]:
+          - img [ref=e220]
+          - generic [ref=e223]: News
+      - button "Blog" [ref=e224]:
+        - generic [ref=e225]:
+          - img [ref=e226]
+          - generic [ref=e230]: Blog
+      - button "FAQ" [ref=e231]:
+        - generic [ref=e232]:
+          - img [ref=e233]
+          - generic [ref=e236]: FAQ
+      - button "Recently Deleted" [ref=e239]:
+        - generic [ref=e240]:
+          - img [ref=e241]
+          - generic [ref=e244]: Recently Deleted
+      - button "Settings" [ref=e245]:
+        - generic [ref=e246]:
+          - img [ref=e247]
+          - generic [ref=e250]: Settings
+      - button "Partners" [ref=e252]:
+        - img [ref=e253]
+        - generic [ref=e257]: Partners
+    - generic [ref=e258]:
+      - generic [ref=e259]:
+        - img [ref=e261]
+        - generic [ref=e266]:
+          - paragraph [ref=e267]: Admin
+          - paragraph [ref=e268]: admin@theberman.eu
+      - button "Sign Out" [ref=e269]:
+        - img [ref=e270]
+        - generic [ref=e273]: Sign Out
+  - generic [ref=e274]:
+    - generic [ref=e275]:
+      - generic [ref=e277]:
+        - heading "Jobs Management Spain" [level=1] [ref=e4945]:
+          - generic [ref=e279]: Jobs Management
+          - combobox [ref=e280] [cursor=pointer]:
+            - option "Ireland"
+            - option "Spain" [selected]
+        - paragraph [ref=e281]: Manage and track all assessment jobs and quote submissions.
+      - button "Refresh" [ref=e282]:
+        - img [ref=e283]
+        - generic [ref=e288]: Refresh
+    - main [ref=e289]:
+      - generic [ref=e4946]:
+        - generic [ref=e4947]:
+          - heading "Jobs Management" [level=2] [ref=e4948]
+          - paragraph [ref=e4949]: Manage and track all assessment jobs, quotes, and contractor activity.
+          - generic [ref=e4950]:
+            - generic [ref=e4951]:
+              - generic [ref=e4952]: "0"
+              - generic [ref=e4953]: Total
+            - generic [ref=e4955]:
+              - generic [ref=e4956]: "0"
+              - generic [ref=e4957]: Live
+            - generic [ref=e4959]:
+              - generic [ref=e4960]: "0"
+              - generic [ref=e4961]: Awaiting Buyer
+            - generic [ref=e4963]:
+              - generic [ref=e4964]: "0"
+              - generic [ref=e4965]: No Quotes
+            - generic [ref=e4967]:
+              - generic [ref=e4968]: "0"
+              - generic [ref=e4969]: Total Quotes
+        - generic [ref=e4971]:
+          - button "Live Jobs 0" [ref=e4972]:
+            - img [ref=e4973]
+            - text: Live Jobs
+            - generic [ref=e4976]: "0"
+          - button "Expired (7d Idle) 0" [ref=e4977]:
+            - img [ref=e4978]
+            - text: Expired (7d Idle)
+            - generic [ref=e4981]: "0"
+          - button "No Response from Buyer 0" [ref=e4982]:
+            - img [ref=e4983]
+            - text: No Response from Buyer
+            - generic [ref=e4985]: "0"
+          - button "No Quotes from Assessors 0" [ref=e4986]:
+            - img [ref=e4987]
+            - text: No Quotes from Assessors
+            - generic [ref=e4991]: "0"
+          - button "All Jobs 0" [ref=e4992]:
+            - img [ref=e4993]
+            - text: All Jobs
+            - generic [ref=e4996]: "0"
+        - generic [ref=e4997]:
+          - generic [ref=e4998]:
+            - img [ref=e4999]
+            - textbox "Search by address, town, county, customer, eircode..." [ref=e5002]
+          - generic [ref=e5003]:
+            - img [ref=e5004]
+            - combobox [ref=e5007] [cursor=pointer]:
+              - option "All Counties" [selected]
+        - generic [ref=e5009]:
+          - img [ref=e5011]
+          - heading "No jobs found" [level=3] [ref=e5014]
+          - paragraph [ref=e5015]: No live jobs at the moment.

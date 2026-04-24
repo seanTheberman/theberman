@@ -1,0 +1,147 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "The Berman Logo" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img "The Berman Logo" [ref=e7]
+      - generic [ref=e8]:
+        - link "Catálogo de Eficiencia Energética" [ref=e9] [cursor=pointer]:
+          - /url: /catalogue
+          - generic [ref=e11]: Catálogo de Eficiencia Energética
+        - button [ref=e12]:
+          - img [ref=e13]
+  - main [ref=e14]:
+    - generic [ref=e15]:
+      - generic [ref=e17]:
+        - generic [ref=e18]: Legal
+        - heading "Términos del Servicio." [level=1] [ref=e19]
+        - paragraph [ref=e20]: "Última actualización: 2 de febrero de 2026. Por favor, lee estos términos detenidamente antes de utilizar nuestra plataforma o reservar una certificación energética."
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - generic [ref=e26]:
+            - img [ref=e27]
+            - heading "El Acuerdo" [level=2] [ref=e33]
+          - paragraph [ref=e35]: Al acceder o utilizar el sitio web certificadoenergético.eu, aceptas quedar vinculado por estos Términos del Servicio y por todas las leyes y normativas aplicables en España. Si no estás de acuerdo con alguno de estos términos, no debes utilizar ni acceder a este sitio.
+        - generic [ref=e36]:
+          - generic [ref=e38]:
+            - img [ref=e39]
+            - heading "Nuestros Servicios" [level=2] [ref=e41]
+          - generic [ref=e42]:
+            - paragraph [ref=e43]: Certificado Energético actúa como plataforma que conecta a propietarios y administradores de fincas con certificadores energéticos acreditados. Facilitamos la comparación de presupuestos y la gestión de reservas.
+            - paragraph [ref=e44]: "Nota: aunque verificamos la acreditación de todos los certificadores, el contrato real por la emisión del certificado se celebra directamente entre el usuario y el certificador elegido."
+        - generic [ref=e45]:
+          - generic [ref=e47]:
+            - img [ref=e48]
+            - heading "Reservas" [level=2] [ref=e52]
+          - list [ref=e54]:
+            - listitem [ref=e55]: Los presupuestos mostrados en la plataforma se basan en la información facilitada por el usuario.
+            - listitem [ref=e56]: Los certificadores se reservan el derecho de ajustar el precio si los datos de la propiedad resultan significativamente inexactos.
+            - listitem [ref=e57]: Las cancelaciones deben realizarse con al menos 24 horas de antelación respecto a la cita programada.
+        - generic [ref=e58]:
+          - generic [ref=e60]:
+            - img [ref=e61]
+            - heading "Responsabilidad" [level=2] [ref=e63]
+          - paragraph [ref=e65]: Certificado Energético no es responsable de la exactitud de los certificados energéticos individuales. Los certificados se emiten bajo la acreditación del propio certificador. No responderemos de pérdidas directas, indirectas o derivadas del uso de la plataforma o de nuestros servicios.
+        - generic [ref=e66]:
+          - generic [ref=e68]:
+            - img [ref=e69]
+            - heading "Legislación Aplicable" [level=2] [ref=e71]
+          - paragraph [ref=e73]: Estos términos y condiciones se rigen e interpretan conforme a las leyes de España. Te sometes de forma irrevocable a la jurisdicción exclusiva de los tribunales españoles para cualquier disputa derivada de estos términos.
+  - contentinfo [ref=e74]:
+    - generic [ref=e75]:
+      - generic [ref=e76]:
+        - generic [ref=e77]:
+          - generic [ref=e78]:
+            - img "Certificado Energético" [ref=e79]
+            - generic [ref=e80]: Certificado Energético
+          - paragraph [ref=e81]: Su socio de confianza para certificados energéticos y consultoría energética.
+          - generic [ref=e82]:
+            - link [ref=e83] [cursor=pointer]:
+              - /url: https://www.facebook.com/profile.php?id=61578159843471
+              - img [ref=e84]
+            - link [ref=e86] [cursor=pointer]:
+              - /url: https://www.instagram.com/thebermanireland?igsh=amtidXdjNmZrMWJz&utm_source=qr
+              - img [ref=e87]
+            - link [ref=e90] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/the-berman/posts/?feedView=all
+              - img [ref=e91]
+            - link [ref=e95] [cursor=pointer]:
+              - /url: https://twitter.com
+              - img [ref=e96]
+        - generic [ref=e98]:
+          - heading "Enlaces Rápidos" [level=4] [ref=e99]
+          - list [ref=e100]:
+            - listitem [ref=e101]:
+              - link "Inicio" [ref=e102] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e103]:
+              - link "Sobre Nosotros" [ref=e104] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e105]:
+              - link "Catálogo de Eficiencia Energética" [ref=e106] [cursor=pointer]:
+                - /url: /catalogue
+            - listitem [ref=e107]:
+              - link "Habla con un Asesor Energético" [ref=e108] [cursor=pointer]:
+                - /url: /hire-agent
+            - listitem [ref=e109]:
+              - link "Registro de Negocio" [ref=e110] [cursor=pointer]:
+                - /url: /signup?role=business
+            - listitem [ref=e111]:
+              - link "FAQ" [ref=e112] [cursor=pointer]:
+                - /url: /faq
+        - generic [ref=e113]:
+          - heading "Cuenta" [level=4] [ref=e114]
+          - list [ref=e115]:
+            - listitem [ref=e116]:
+              - link "Reservar Certificadores" [ref=e117] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e118]:
+              - link "Ubicaciones" [ref=e119] [cursor=pointer]:
+                - /url: /locations
+            - listitem [ref=e120]:
+              - link "Nuestras Noticias" [ref=e121] [cursor=pointer]:
+                - /url: /news
+            - listitem [ref=e122]:
+              - link "Blog" [ref=e123] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e124]:
+              - link "Contacto" [ref=e125] [cursor=pointer]:
+                - /url: /contact-us
+            - listitem [ref=e126]:
+              - link "Iniciar Sesión" [ref=e127] [cursor=pointer]:
+                - /url: /login
+            - listitem [ref=e128]:
+              - link "Registrarse" [ref=e129] [cursor=pointer]:
+                - /url: /signup
+            - listitem [ref=e130]:
+              - button "Suscribirse a Noticias" [ref=e131] [cursor=pointer]
+        - generic [ref=e132]:
+          - heading "Legal" [level=4] [ref=e133]
+          - list [ref=e134]:
+            - listitem [ref=e135]:
+              - link "Política de Privacidad" [ref=e136] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e137]:
+              - link "Términos y Condiciones" [ref=e138] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e139]:
+              - link "Política de Cookies" [ref=e140] [cursor=pointer]:
+                - /url: /cookie-policy
+        - generic [ref=e141]:
+          - heading "Contacto" [level=4] [ref=e142]
+          - list [ref=e143]:
+            - listitem [ref=e144]:
+              - img [ref=e145]
+              - link "hola@certificadoenergético.eu" [ref=e148] [cursor=pointer]:
+                - /url: mailto:hola@certificadoenergético.eu
+            - listitem [ref=e149]:
+              - img [ref=e150]
+              - link "certificadoenergético.eu" [ref=e153] [cursor=pointer]:
+                - /url: https://certificadoenergético.eu
+      - generic [ref=e154]:
+        - paragraph [ref=e155]: © 2026 Certificado Energético. Todos los derechos reservados.
+        - generic [ref=e156]:
+          - link "Política de Privacidad" [ref=e157] [cursor=pointer]:
+            - /url: /privacy
+          - link "Términos de Servicio" [ref=e158] [cursor=pointer]:
+            - /url: /terms

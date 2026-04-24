@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Search, MapPin, Star, Loader2, ChevronDown, Zap, Sparkles, ArrowRight, Building2, HardHat } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
+import { getTenantFromDomain } from '../lib/tenant';
 import SEOHead from '../components/SEOHead';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
 
@@ -112,6 +113,37 @@ const NewCatalogue = () => {
         if (catRes.data) setCategories(catRes.data);
     };
 
+    const tenant = getTenantFromDomain();
+    const isSpanish = tenant === 'spain';
+    const t = {
+        catalogueBadge: isSpanish ? 'El Catálogo' : 'The Catalogue',
+        heroLine1: isSpanish ? 'Catálogo de Negocios de' : 'The Berman Home Energy',
+        heroLine2: isSpanish ? 'Eficiencia Energética.' : 'Businesses Catalogue.',
+        upgradeType: isSpanish ? 'Tipo de Mejora' : 'Upgrade Type',
+        selectUpgrade: isSpanish ? 'Seleccionar Mejora...' : 'Select Upgrade...',
+        location: isSpanish ? 'Ubicación' : 'Location',
+        allLocations: isSpanish ? 'Todas las Ubicaciones' : 'All Locations',
+        search: isSpanish ? 'Buscar' : 'Search',
+        todaysSpotlight: isSpanish ? 'Destacado de Hoy' : "Today's Spotlight",
+        viewProfile: isSpanish ? 'Ver Perfil' : 'View Profile',
+        businesses: isSpanish ? 'Negocios' : 'Businesses',
+        berAssessors: isSpanish ? 'Certificadores Energéticos' : 'BER Assessors',
+        businessesHeading: isSpanish ? 'Negocios y Consultores Energéticos' : 'Businesses and Energy Consultants',
+        businessesSub: isSpanish ? 'Encuentra Negocios y Consultores Energéticos en tu Zona Hoy' : 'Find Businesses and Energy Consultants in Your Local Area Today',
+        assessorsSub: isSpanish ? 'Encuentra Certificadores Energéticos Acreditados en tu Zona Hoy' : 'Find Certified BER Assessors in Your Local Area Today',
+        sortBy: isSpanish ? 'Ordenar Por:' : 'Sort By:',
+        loadingPartners: isSpanish ? 'Cargando Socios...' : 'Loading Partners...',
+        featured: isSpanish ? 'Destacado' : 'Featured',
+        noPartnersFound: isSpanish ? 'No se encontraron socios' : 'No partners found',
+        tryAdjusting: isSpanish ? 'Intenta ajustar tus filtros o términos de búsqueda.' : 'Try adjusting your filters or search terms.',
+        resetSearch: isSpanish ? 'Restablecer Búsqueda' : 'Reset Search',
+        hireAgent: isSpanish ? 'Contrata un Asesor Energético Gratis' : 'Hire An Energy Agent For Free',
+        defaultLocation: isSpanish ? 'España' : 'Ireland',
+    };
+    const sortLabels: Record<string, string> = isSpanish
+        ? { 'Default Order': 'Orden Predeterminado', 'Highest Rated': 'Mejor Valorados', 'Newest Listings': 'Más Recientes', 'Oldest Listings': 'Más Antiguos', 'Alphabetically': 'Alfabéticamente', 'Featured': 'Destacados' }
+        : { 'Default Order': 'Default Order', 'Highest Rated': 'Highest Rated', 'Newest Listings': 'Newest Listings', 'Oldest Listings': 'Oldest Listings', 'Alphabetically': 'Alphabetically', 'Featured': 'Featured' };
+
     const fetchListings = async () => {
         setLoading(true);
         try {
@@ -122,6 +154,7 @@ const NewCatalogue = () => {
                     categories:catalogue_listing_categories(catalogue_categories(*)),
                     locations:catalogue_listing_locations(catalogue_locations(*))
                 `)
+                .eq('tenant', tenant)
                 .is('deleted_at', null);
 
             if (searchQuery) {
@@ -249,11 +282,11 @@ const NewCatalogue = () => {
 
                 <div className="relative z-10 container mx-auto px-6 text-center max-w-5xl py-16">
                     <span className="inline-block mb-4 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white text-xs font-black tracking-widest uppercase border border-white/20">
-                        The Catalogue
+                        {t.catalogueBadge}
                     </span>
                     <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight">
-                        The Berman Home Energy <br />
-                        <span className="text-[#9ACD32]">Businesses Catalogue.</span>
+                        {t.heroLine1} <br />
+                        <span className="text-[#9ACD32]">{t.heroLine2}</span>
                     </h1>
                    
 
@@ -262,13 +295,13 @@ const NewCatalogue = () => {
                             <div className="flex-1 w-full flex items-center gap-4 pl-6 md:pl-8 py-2 md:py-0 border-b md:border-b-0 md:border-r border-gray-200">
                                 <Search className="text-[#007F00] shrink-0" size={20} />
                                 <div className="flex-1 relative">
-                                    <p className="absolute -top-1.5 left-0 text-[8px] font-black uppercase tracking-widest text-[#007F00] opacity-60">Upgrade Type</p>
+                                    <p className="absolute -top-1.5 left-0 text-[8px] font-black uppercase tracking-widest text-[#007F00] opacity-60">{t.upgradeType}</p>
                                     <select
                                         value={selectedCategory}
                                         onChange={(e) => setSelectedCategory(e.target.value)}
                                         className="w-full bg-transparent border-none focus:ring-0 font-black text-sm md:text-base text-gray-800 appearance-none cursor-pointer pr-10 pt-2"
                                     >
-                                        <option value="">Select Upgrade...</option>
+                                        <option value="">{t.selectUpgrade}</option>
                                         {categories.map(cat => (
                                             <option key={cat.id} value={cat.id}>{cat.name}</option>
                                         ))}
@@ -280,7 +313,7 @@ const NewCatalogue = () => {
                             <div className="flex-1 w-full flex items-center gap-4 pl-6 md:pl-8 py-2 md:py-0">
                                 <MapPin className="text-[#007F00] shrink-0" size={20} />
                                 <div className="flex-1 relative">
-                                    <p className="absolute -top-1.5 left-0 text-[8px] font-black uppercase tracking-widest text-[#007F00] opacity-60">Location</p>
+                                    <p className="absolute -top-1.5 left-0 text-[8px] font-black uppercase tracking-widest text-[#007F00] opacity-60">{t.location}</p>
                                     <select
                                         value={selectedCounty}
                                         onChange={(e) => {
@@ -289,7 +322,7 @@ const NewCatalogue = () => {
                                         }}
                                         className="w-full bg-transparent border-none focus:ring-0 font-black text-sm md:text-base text-gray-800 appearance-none cursor-pointer pr-10 pt-2"
                                     >
-                                        <option value="">All Locations</option>
+                                        <option value="">{t.allLocations}</option>
                                         {IRELAND_COUNTIES.map(county => (
                                             <option key={county} value={county}>{county}</option>
                                         ))}
@@ -302,7 +335,7 @@ const NewCatalogue = () => {
                                 onClick={() => fetchListings()}
                                 className="w-full md:w-auto bg-[#007F00] hover:bg-[#006400] text-white px-10 py-4 md:py-5 rounded-2xl md:rounded-full font-black text-xs md:text-sm uppercase tracking-widest transition-all active:scale-95 shadow-lg shrink-0"
                             >
-                                Search
+                                {t.search}
                             </button>
                         </div>
                     </div>
@@ -343,7 +376,7 @@ const NewCatalogue = () => {
                                     </div>
                                     <div className="flex items-center gap-2 bg-yellow-400/15 backdrop-blur-sm border border-yellow-400/30 px-4 py-1.5 rounded-full shrink-0 md:hidden">
                                         <Sparkles size={12} className="text-yellow-400" />
-                                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-300">Today's Spotlight</span>
+                                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-300">{t.todaysSpotlight}</span>
                                     </div>
                                 </div>
 
@@ -363,7 +396,7 @@ const NewCatalogue = () => {
                                 </div>
 
                                 <div className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/15 px-6 py-3 rounded-xl transition-all duration-300 group-hover:bg-[#007F00] group-hover:border-[#007F00] group-hover:shadow-lg shrink-0 w-full md:w-auto justify-center">
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-white">View Profile</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-white">{t.viewProfile}</span>
                                     <ArrowRight size={14} className="text-white transition-transform duration-300 group-hover:translate-x-1" />
                                 </div>
                             </div>
@@ -385,7 +418,7 @@ const NewCatalogue = () => {
                             }`}
                         >
                             <Building2 size={18} />
-                            Businesses
+                            {t.businesses}
                         </button>
                         <button
                             onClick={() => setActiveView('assessors')}
@@ -396,7 +429,7 @@ const NewCatalogue = () => {
                             }`}
                         >
                             <HardHat size={18} />
-                            BER Assessors
+                            {t.berAssessors}
                         </button>
                     </div>
                 </div>
@@ -404,19 +437,17 @@ const NewCatalogue = () => {
                 <div className="flex flex-col md:flex-row justify-between items-center my-8 md:my-12 gap-6 md:gap-8">
                     <div className="text-center md:text-left">
                         <h2 className="text-2xl md:text-4xl font-black text-gray-900 uppercase tracking-tight mb-2">
-                            {activeView === 'businesses' ? 'Businesses and Energy Consultants' : 'BER Assessors'}
+                            {activeView === 'businesses' ? t.businessesHeading : t.berAssessors}
                         </h2>
                         <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] md:text-xs">
-                            {activeView === 'businesses' 
-                                ? 'Find Businesses and Energy Consultants in Your Local Area Today'
-                                : 'Find Certified BER Assessors in Your Local Area Today'}
+                            {activeView === 'businesses' ? t.businessesSub : t.assessorsSub}
                         </p>
                     </div>
 
                     <div className="relative group/sort min-w-[200px]">
                         <div className="flex items-center justify-between bg-white border border-gray-100 px-6 py-3 rounded-md shadow-sm cursor-pointer hover:border-[#007F00] transition-all">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mr-4">Sort By:</span>
-                            <span className="text-sm font-black text-gray-900">{sortBy}</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mr-4">{t.sortBy}</span>
+                            <span className="text-sm font-black text-gray-900">{sortLabels[sortBy] || sortBy}</span>
                             <ChevronDown size={14} className="ml-4 text-gray-400" />
                         </div>
 
@@ -427,7 +458,7 @@ const NewCatalogue = () => {
                                     onClick={() => setSortBy(option)}
                                     className={`w-full text-left px-6 py-4 text-[10px] md:text-xs font-black uppercase tracking-widest hover:bg-gray-50 transition-colors ${sortBy === option ? 'bg-blue-50/50 text-[#007EA7]' : 'text-gray-500'}`}
                                 >
-                                    {option}
+                                    {sortLabels[option] || option}
                                 </button>
                             ))}
                         </div>
@@ -438,7 +469,7 @@ const NewCatalogue = () => {
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-20">
                             <Loader2 className="animate-spin text-[#007F00] mb-4" size={48} />
-                            <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">Loading Partners...</p>
+                            <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">{t.loadingPartners}</p>
                         </div>
                     ) : getSortedListings().length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -459,7 +490,7 @@ const NewCatalogue = () => {
                                             {listing.featured && (
                                                 <div className="bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-full flex items-center gap-2 shadow-lg scale-90 md:scale-100 origin-left">
                                                     <Star size={12} fill="#FACC15" className="text-yellow-400" />
-                                                    <span className="text-[9px] font-black uppercase tracking-widest text-gray-900">Featured</span>
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-gray-900">{t.featured}</span>
                                                 </div>
                                             )}
                                         </div>
@@ -470,7 +501,7 @@ const NewCatalogue = () => {
                                                 </h3>
                                                 <div className="flex items-center gap-2 text-white/70">
                                                     <span className="text-xs font-medium drop-shadow-md truncate">
-                                                        {listing.locations?.[0]?.name || 'Ireland'}
+                                                        {listing.locations?.[0]?.name || t.defaultLocation}
                                                     </span>
                                                 </div>
                                             </div>
@@ -482,8 +513,8 @@ const NewCatalogue = () => {
                     ) : (
                         <div className="text-center py-20 bg-gray-50 rounded-[3rem] border-2 border-dashed border-gray-100">
                             <Search size={48} className="mx-auto text-gray-200 mb-6" />
-                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-2">No partners found</h3>
-                            <p className="text-gray-400 font-medium mb-8">Try adjusting your filters or search terms.</p>
+                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-2">{t.noPartnersFound}</h3>
+                            <p className="text-gray-400 font-medium mb-8">{t.tryAdjusting}</p>
                             <button
                                 onClick={() => {
                                     setSearchQuery('');
@@ -494,7 +525,7 @@ const NewCatalogue = () => {
                                 }}
                                 className="bg-gray-900 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all"
                             >
-                                Reset Search
+                                {t.resetSearch}
                             </button>
                         </div>
                     )}
@@ -508,7 +539,7 @@ const NewCatalogue = () => {
                 <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                     <Zap size={16} fill="currentColor" />
                 </div>
-                Hire An Energy Agent For Free
+                {t.hireAgent}
             </Link>
         </div>
     );

@@ -19,7 +19,7 @@ Deno.serve(async (req: Request) => {
         );
 
         const body = await req.json();
-        const { fullName, email, password, phone, role, county, town, seaiNumber, assessorType, companyName, businessAddress, website, companyNumber, vatNumber, description } = body;
+        const { fullName, email, password, phone, role, county, town, seaiNumber, assessorType, companyName, businessAddress, website, companyNumber, vatNumber, description, tenant = 'ireland' } = body;
 
         if (!email || !password || !fullName || !role) {
             throw new Error('Missing required fields');
@@ -34,6 +34,7 @@ Deno.serve(async (req: Request) => {
                 full_name: fullName,
                 role: role,
                 phone: phone,
+                tenant: tenant,
                 is_admin_created: true,
                 requires_password_change: true
             }
@@ -56,6 +57,7 @@ Deno.serve(async (req: Request) => {
             phone: phone,
             county: county,
             town: town,
+            tenant: tenant,
             registration_status: role === 'contractor' ? 'completed' : 'pending',
             is_active: true,
         };

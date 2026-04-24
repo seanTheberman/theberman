@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from '../hooks/useTranslation';
 import { supabase } from '../lib/supabase';
 import { LogOut, FileText, User, Home, AlertCircle, X, Menu, Trash2, Search, Clock } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -60,9 +61,34 @@ interface Assessment {
 }
 
 const UserDashboard = () => {
+    const { t, isSpanish } = useTranslation();
     const { user, signOut } = useAuth();
     const navigate = useNavigate();
     const [assessments, setAssessments] = useState<Assessment[]>([]);
+
+    const getStatusLabel = (status: string) => {
+        if (!isSpanish) return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        const map: Record<string, string> = {
+            draft: 'Borrador',
+            submitted: 'Enviado',
+            pending_quote: 'Pendiente de Presupuesto',
+            quote_accepted: 'Presupuesto Aceptado',
+            scheduled: 'Programado',
+            completed: 'Completado',
+            live: 'Activo',
+        };
+        return map[status] || status;
+    };
+
+    const getQuoteStatusLabel = (status: string) => {
+        if (!isSpanish) return status.charAt(0).toUpperCase() + status.slice(1);
+        const map: Record<string, string> = {
+            pending: 'Pendiente',
+            accepted: 'Aceptado',
+            rejected: 'Rechazado',
+        };
+        return map[status] || status;
+    };
     const [loading, setLoading] = useState(true);
 
     const [selectedDetailsQuote, setSelectedDetailsQuote] = useState<Quote | null>(null); // New state for quote details modal
@@ -146,7 +172,7 @@ const UserDashboard = () => {
             setAssessments(filteredData);
         } catch (error: any) {
             console.error('Error fetching assessments:', error);
-            toast.error('Failed to load assessments');
+            toast.error(isSpanish ? 'Error al cargar certificaciones' : 'Failed to load assessments');
         } finally {
             setLoading(false);
         }
@@ -200,11 +226,11 @@ const UserDashboard = () => {
             //     console.error('Failed to send job live email:', emailErr);
             // }
 
-            toast.success('Assessment is now live and assessors have been notified!');
+            toast.success(isSpanish ? '¡La certificación está activa y los certificadores han sido notificados!' : 'Assessment is now live and assessors have been notified!');
             fetchAssessments();
         } catch (error: any) {
             console.error('Submission error:', error);
-            toast.error(error.message || 'Failed to submit');
+            toast.error(error.message || (isSpanish ? 'Error al enviar' : 'Failed to submit'));
         } finally {
             setSubmittingAssessmentId(null);
         }
@@ -219,11 +245,11 @@ const UserDashboard = () => {
             if (error) throw error;
             if (data && !data.success) throw new Error(data.error || 'Failed to delete job');
 
-            toast.success('Job deleted successfully');
+            toast.success(isSpanish ? 'Trabajo eliminado correctamente' : 'Job deleted successfully');
             fetchAssessments();
         } catch (error: any) {
             console.error('Delete assessment error:', error);
-            toast.error(error.message || 'Failed to delete job');
+            toast.error(error.message || (isSpanish ? 'Error al eliminar el trabajo' : 'Failed to delete job'));
         } finally {
             setDeletingAssessmentId(null);
         }
@@ -254,11 +280,11 @@ const UserDashboard = () => {
                     .eq('id', quoteId);
 
                 if (quoteError) throw quoteError;
-                toast.success('Quote rejected');
+                toast.success(isSpanish ? 'Presupuesto rechazado' : 'Quote rejected');
             }
             fetchAssessments();
         } catch (error: any) {
-            toast.error(error.message || 'Action failed');
+            toast.error(error.message || (isSpanish ? 'La acción falló' : 'Action failed'));
         }
     };
 
@@ -278,7 +304,7 @@ const UserDashboard = () => {
 
             if (paymentError) {
                 console.error('Payment recorded failed but stripe succeeded:', paymentError);
-                toast.error('Payment recorded with errors. Please contact support.');
+                toast.error(isSpanish ? 'Pago registrado con errores. Por favor, contacta con soporte.' : 'Payment recorded with errors. Please contact support.');
             }
 
             // 2. Finalize Quote Acceptance
@@ -314,14 +340,14 @@ const UserDashboard = () => {
                 body: { assessmentId: paymentQuote.assessmentId, quoteId: paymentQuote.quoteId }
             }).catch(err => console.error('Failed to trigger acceptance notification:', err));
 
-            toast.success('Payment successful! Quote accepted.');
+            toast.success(isSpanish ? '¡Pago exitoso! Presupuesto aceptado.' : 'Payment successful! Quote accepted.');
             setPaymentModalOpen(false);
             setPaymentQuote(null);
             fetchAssessments();
 
         } catch (error: any) {
             console.error('Error finalizing acceptance:', error);
-            toast.error('Payment succeeded but update failed. Contact support.');
+            toast.error(isSpanish ? 'El pago tuvo éxito pero la actualización falló. Contacta con soporte.' : 'Payment succeeded but update failed. Contact support.');
         }
     };
 
@@ -351,10 +377,10 @@ const UserDashboard = () => {
                             <img src="/logo.svg" alt="The Berman Logo" className="h-10 w-auto relative z-10" />
                         </Link>
                         <div className="hidden xl:block">
-                            <h1 className="text-lg font-bold text-white leading-tight">My Dashboard</h1>
+                            <h1 className="text-lg font-bold text-white leading-tight">{isSpanish ? 'Mi Panel' : 'My Dashboard'}</h1>
                             <span className="text-[10px] text-gray-400 flex items-center gap-1.5 uppercase tracking-widest font-bold">
                                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
-                                Active Account Status
+                                {isSpanish ? 'Estado de Cuenta Activo' : 'Active Account Status'}
                             </span>
                         </div>
                     </div>
@@ -366,21 +392,21 @@ const UserDashboard = () => {
                                 className="bg-white/5 p-2.5 rounded-xl hover:bg-white/10 transition-colors border border-white/10 flex items-center gap-2 text-white/70"
                             >
                                 {isMenuOpen ? <X size={20} className="text-[#5CB85C]" /> : <Menu size={20} className="text-[#5CB85C]" />}
-                                <span className="text-[11px] font-black uppercase tracking-[0.15em] hidden sm:block">Menu</span>
+                                <span className="text-[11px] font-black uppercase tracking-[0.15em] hidden sm:block">{isSpanish ? 'Menú' : 'Menu'}</span>
                             </button>
 
                             {isMenuOpen && (
                                 <div className="absolute right-0 top-full mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
                                     <div className="p-2 space-y-1 border-b border-gray-50 bg-gray-50/30">
                                         <div className="px-4 py-3">
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Signed in as</p>
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Sesión iniciada como' : 'Signed in as'}</p>
                                             <p className="text-sm font-bold text-gray-900 truncate">{user?.email}</p>
                                         </div>
                                     </div>
                                     <div className="p-2 space-y-1">
                                         {[
-                                            { id: 'assessments', label: 'My Assessments', icon: Home },
-                                            { id: 'quotes', label: 'My Quotes', icon: FileText },
+                                            { id: 'assessments', label: isSpanish ? 'Mis Certificaciones' : 'My Assessments', icon: Home },
+                                            { id: 'quotes', label: isSpanish ? 'Mis Presupuestos' : 'My Quotes', icon: FileText },
                                         ].map((item) => (
                                             <button
                                                 key={item.id}
@@ -400,7 +426,7 @@ const UserDashboard = () => {
                                             onClick={handleSignOut}
                                             className="w-full text-left px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] text-red-500 hover:bg-red-50 flex items-center justify-between"
                                         >
-                                            Sign Out
+                                            {t('sign_out')}
                                             <LogOut size={14} />
                                         </button>
                                     </div>
@@ -424,9 +450,9 @@ const UserDashboard = () => {
                             <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-8 text-[#007F00]">
                                 <User size={48} strokeWidth={1.5} />
                             </div>
-                            <h2 className="text-3xl font-bold text-gray-900 mb-3">Welcome Back!</h2>
+                            <h2 className="text-3xl font-bold text-gray-900 mb-3">{isSpanish ? '¡Bienvenido de Nuevo!' : 'Welcome Back!'}</h2>
                             <p className="text-gray-500 text-lg mb-10 max-w-lg mx-auto leading-relaxed">
-                                This is your personal dashboard. Tracking of your BER assessments will appear here soon.
+                                {isSpanish ? 'Este es tu panel personal. El seguimiento de tus certificaciones energéticas aparecerá aquí pronto.' : 'This is your personal dashboard. Tracking of your BER assessments will appear here soon.'}
                             </p>
 
                             <div className="bg-[#F8FAFC] border border-gray-100 rounded-2xl p-8 text-left flex flex-col md:flex-row gap-6 items-center">
@@ -434,9 +460,9 @@ const UserDashboard = () => {
                                     <FileText size={32} strokeWidth={1.5} />
                                 </div>
                                 <div className="flex-1 text-center md:text-left">
-                                    <h4 className="text-xl font-bold text-gray-900 mb-2">No Active Assessments</h4>
+                                    <h4 className="text-xl font-bold text-gray-900 mb-2">{isSpanish ? 'No Hay Certificaciones Activas' : 'No Active Assessments'}</h4>
                                     <p className="text-gray-500 leading-relaxed">
-                                        You don't have any pending BER assessments. Contact us to schedule one and improve your home's energy efficiency.
+                                        {isSpanish ? 'No tienes certificaciones energéticas pendientes. Contáctanos para solicitar una y mejorar la eficiencia energética de tu hogar.' : "You don't have any pending BER assessments. Contact us to schedule one and improve your home's energy efficiency."}
                                     </p>
                                 </div>
                             </div>
@@ -445,7 +471,7 @@ const UserDashboard = () => {
                                 onClick={() => navigate('/get-quote')}
                                 className="mt-12 inline-flex items-center gap-2 bg-[#007F00] text-white px-8 py-4 rounded-full font-bold hover:bg-[#006600] transition-all shadow-lg shadow-green-100 hover:shadow-green-200 hover:-translate-y-0.5 active:translate-y-0"
                             >
-                                Schedule a BER Assessment
+                                {isSpanish ? 'Solicitar una Certificación Energética' : 'Schedule a BER Assessment'}
                             </button>
                         </div>
                     </div>
@@ -457,10 +483,10 @@ const UserDashboard = () => {
                                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                                     <div className="flex-1">
                                         <h2 className="text-3xl font-black text-gray-900 mb-2">
-                                            {view === 'assessments' ? 'My BER Assessments' : 'Received Quotes'}
+                                            {view === 'assessments' ? (isSpanish ? 'Mis Certificaciones Energéticas' : 'My BER Assessments') : (isSpanish ? 'Presupuestos Recibidos' : 'Received Quotes')}
                                         </h2>
                                         <p className="text-gray-500 font-medium max-w-2xl">
-                                            {view === 'assessments' ? 'Track the progress of your property certification and view scheduled assessments.' : 'Review and manage quotes from our verified professional BER Assessors.'}
+                                            {view === 'assessments' ? (isSpanish ? 'Sigue el progreso de tu certificación energética y consulta las evaluaciones programadas.' : 'Track the progress of your property certification and view scheduled assessments.') : (isSpanish ? 'Revisa y gestiona presupuestos de nuestros certificadores energéticos verificados.' : 'Review and manage quotes from our verified professional BER Assessors.')}
                                         </p>
                                     </div>
                                     <button
@@ -468,7 +494,7 @@ const UserDashboard = () => {
                                         className="bg-[#007F00] text-white px-8 py-4 rounded-full font-bold hover:bg-[#006600] transition-all shadow-lg shadow-green-100 hover:shadow-green-200 hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
                                     >
                                         <Home size={20} />
-                                        New Assessment
+                                        {isSpanish ? 'Nueva Certificación' : 'New Assessment'}
                                     </button>
                                 </div>
                             </div>
@@ -481,7 +507,7 @@ const UserDashboard = () => {
                                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                     <input
                                         type="text"
-                                        placeholder="Search by town, county, type, or address..."
+                                        placeholder={isSpanish ? 'Buscar por ciudad, provincia, tipo o dirección...' : 'Search by town, county, type, or address...'}
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         className="w-full pl-11 pr-4 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] transition-all shadow-sm"
@@ -608,7 +634,7 @@ const UserDashboard = () => {
                                                                                     disabled={submittingAssessmentId === assessment.id}
                                                                                     className={`px-3 py-1.5 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${isCommercial ? 'bg-purple-600 hover:bg-purple-700' : 'bg-[#007F00] hover:bg-[#006600]'}`}
                                                                                 >
-                                                                                    {submittingAssessmentId === assessment.id ? 'Submitting...' : 'Submit'}
+                                                                                    {submittingAssessmentId === assessment.id ? (isSpanish ? 'Enviando...' : 'Submitting...') : (isSpanish ? 'Enviar' : 'Submit')}
                                                                                 </button>
                                                                             ) : assessment.status === 'completed' && assessment.certificate_url ? (
                                                                                 <a
@@ -617,7 +643,7 @@ const UserDashboard = () => {
                                                                                     rel="noopener noreferrer"
                                                                                     className={`px-4 py-2 border rounded-xl text-xs font-black transition-all ${isCommercial ? 'border-purple-100 text-purple-600 bg-purple-50/50 hover:bg-purple-600 hover:text-white' : 'border-green-100 text-[#007F00] bg-green-50/50 hover:bg-[#007F00] hover:text-white'}`}
                                                                                 >
-                                                                                    View Certificate
+                                                                                    {isSpanish ? 'Ver Certificado' : 'View Certificate'}
                                                                                 </a>
                                                                             ) : null}
                                                                             {assessment.status !== 'completed' && (
@@ -627,7 +653,7 @@ const UserDashboard = () => {
                                                                                         setDeletingAssessmentId(assessment.id);
                                                                                     }}
                                                                                     className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                                                                    title="Delete Assessment"
+                                                                                    title={isSpanish ? 'Eliminar Certificación' : 'Delete Assessment'}
                                                                                 >
                                                                                     <Trash2 size={16} />
                                                                                 </button>
@@ -674,7 +700,7 @@ const UserDashboard = () => {
                                                                     <p className="text-xs text-gray-500">{assessment.town}, {assessment.county}</p>
                                                                 </div>
                                                                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusStyles(assessment.status)}`}>
-                                                                    {assessment.status.replace('_', ' ')}
+                                                                    {getStatusLabel(assessment.status)}
                                                                 </span>
                                                             </div>
 
@@ -695,7 +721,7 @@ const UserDashboard = () => {
                                                                     onClick={() => handleSubmitAssessment(assessment.id)}
                                                                     className={`w-full py-3 text-white rounded-xl font-black text-xs transition-all mb-3 ${isCommercial ? 'bg-purple-600 hover:bg-purple-700' : 'bg-[#007F00] hover:bg-[#006600]'}`}
                                                                 >
-                                                                    Submit
+                                                                    {isSpanish ? 'Enviar' : 'Submit'}
                                                                 </button>
                                                             ) : assessment.status === 'completed' && assessment.certificate_url ? (
                                                                 <a
@@ -704,7 +730,7 @@ const UserDashboard = () => {
                                                                     rel="noopener noreferrer"
                                                                     className={`w-full py-3 text-white rounded-xl font-black text-xs transition-all shadow-md mb-3 block text-center ${isCommercial ? 'bg-purple-600 hover:bg-purple-700 shadow-purple-100' : 'bg-[#007F00] hover:bg-[#006600] shadow-green-100'}`}
                                                                 >
-                                                                    View Certificate
+                                                                    {isSpanish ? 'Ver Certificado' : 'View Certificate'}
                                                                 </a>
                                                             ) : null}
 
@@ -714,7 +740,7 @@ const UserDashboard = () => {
                                                                     className="w-full py-3 border border-red-50 text-red-400 rounded-xl font-black text-xs hover:bg-red-50 hover:text-red-500 transition-all flex items-center justify-center gap-2"
                                                                 >
                                                                     <Trash2 size={14} />
-                                                                    Delete Assessment
+                                                                    {isSpanish ? 'Eliminar Certificación' : 'Delete Assessment'}
                                                                 </button>
                                                             )}
                                                         </div>
@@ -733,8 +759,8 @@ const UserDashboard = () => {
                                         <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
                                             <FileText size={32} />
                                         </div>
-                                        <h3 className="text-xl font-bold text-gray-900 mb-2">No quotes received yet</h3>
-                                        <p className="text-gray-500 max-w-sm mx-auto">Once BER Assessors review your submitted assessments, their quotes will appear here.</p>
+                                        <h3 className="text-xl font-bold text-gray-900 mb-2">{isSpanish ? 'Aún no hay presupuestos' : 'No quotes received yet'}</h3>
+                                        <p className="text-gray-500 max-w-sm mx-auto">{isSpanish ? 'Cuando los certificadores revisen tus solicitudes, sus presupuestos aparecerán aquí.' : 'Once BER Assessors review your submitted assessments, their quotes will appear here.'}</p>
                                     </div>
                                 ) : (
                                     <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
@@ -743,12 +769,12 @@ const UserDashboard = () => {
                                             <table className="w-full text-sm">
                                                 <thead>
                                                     <tr className="bg-gray-50 border-b border-gray-200">
-                                                        <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">Property</th>
-                                                        <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">Quote</th>
-                                                        <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">Earliest Availability</th>
-                                                        <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">Assessor ID</th>
-                                                        <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">Expires</th>
-                                                        <th className="text-right py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">Actions</th>
+                                                        <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">{isSpanish ? 'Propiedad' : 'Property'}</th>
+                                                        <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">{isSpanish ? 'Presupuesto' : 'Quote'}</th>
+                                                        <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">{isSpanish ? 'Disponibilidad' : 'Earliest Availability'}</th>
+                                                        <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">{isSpanish ? 'ID Certificador' : 'Assessor ID'}</th>
+                                                        <th className="text-left py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">{isSpanish ? 'Expira' : 'Expires'}</th>
+                                                        <th className="text-right py-4 px-6 text-xs font-black text-gray-500 uppercase tracking-widest">{isSpanish ? 'Acciones' : 'Actions'}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -769,12 +795,12 @@ const UserDashboard = () => {
                                                                         <div className="flex flex-col">
                                                                             <div className="text-lg font-black text-gray-900">€{quote.price + 10}</div>
                                                                             <div className="text-[10px] text-gray-500 font-medium">
-                                                                                Deposit: €{quote.is_loyalty_payout ? '10' : '40'} | Balance: €{quote.price + 10 - (quote.is_loyalty_payout ? 10 : 40)}
+                                                                                {isSpanish ? 'Depósito: €' : 'Deposit: €'}{quote.is_loyalty_payout ? '10' : '40'}{isSpanish ? ' | Saldo: €' : ' | Balance: €'}{quote.price + 10 - (quote.is_loyalty_payout ? 10 : 40)}
                                                                             </div>
                                                                         </div>
                                                                     </td>
                                                                     <td className="py-4 px-6 text-gray-600 font-medium whitespace-nowrap">
-                                                                        {quote.estimated_date ? new Date(quote.estimated_date).toLocaleDateString('en-IE', { weekday: 'short', day: 'numeric', month: 'short' }) : 'TBC'}
+                                                                        {quote.estimated_date ? new Date(quote.estimated_date).toLocaleDateString('en-IE', { weekday: 'short', day: 'numeric', month: 'short' }) : (isSpanish ? 'Por confirmar' : 'TBC')}
                                                                     </td>
                                                                     <td className="py-4 px-6">
                                                                         {quote.contractor ? (
@@ -784,7 +810,7 @@ const UserDashboard = () => {
                                                                                     to={`/profiles/${quote.created_by}`}
                                                                                     className="text-[10px] text-green-500 hover:text-green-600 font-bold hover:underline"
                                                                                 >
-                                                                                    View Profile
+                                                                                    {isSpanish ? 'Ver Perfil' : 'View Profile'}
                                                                                 </Link>
                                                                             </div>
                                                                         ) : <span className="text-gray-400">-</span>}
@@ -794,11 +820,11 @@ const UserDashboard = () => {
                                                                             <div className="flex items-center gap-1.5">
                                                                                 <Clock size={14} className={daysLeft <= 1 ? 'text-red-500' : daysLeft <= 2 ? 'text-amber-500' : 'text-green-500'} />
                                                                                 <span className={`text-xs font-bold ${daysLeft <= 1 ? 'text-red-600' : daysLeft <= 2 ? 'text-amber-600' : 'text-gray-600'}`}>
-                                                                                    {daysLeft} day{daysLeft !== 1 ? 's' : ''} left
+                                                                                    {daysLeft} {isSpanish ? (daysLeft !== 1 ? 'días' : 'día') : (daysLeft !== 1 ? 'days' : 'day')} {isSpanish ? 'restantes' : 'left'}
                                                                                 </span>
                                                                             </div>
                                                                         ) : quote.status === 'pending' && isExpired ? (
-                                                                            <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-red-50 text-red-600 border border-red-100">Expired</span>
+                                                                            <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-red-50 text-red-600 border border-red-100">{isSpanish ? 'Caducado' : 'Expired'}</span>
                                                                         ) : (
                                                                             <span className="text-xs text-gray-400">—</span>
                                                                         )}
@@ -808,19 +834,19 @@ const UserDashboard = () => {
                                                                             isExpired ? (
                                                                                 <div className="flex flex-col items-end">
                                                                                     <span className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-red-50 text-red-500 border border-red-100">
-                                                                                        Expired
+                                                                                        {isSpanish ? 'Caducado' : 'Expired'}
                                                                                     </span>
                                                                                     <span className="mt-1 text-[9px] font-bold text-gray-400 italic">
-                                                                                        5-day window elapsed
+                                                                                        {isSpanish ? 'Ventana de 5 días expirada' : '5-day window elapsed'}
                                                                                     </span>
                                                                                 </div>
                                                                             ) : (quote.assessment.quotes && quote.assessment.quotes.some(q => q.status === 'accepted')) ? (
                                                                                 <div className="flex flex-col items-end">
                                                                                     <span className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-gray-100 text-gray-500 border border-gray-200">
-                                                                                        Quote Closed
+                                                                                        {isSpanish ? 'Presupuesto Cerrado' : 'Quote Closed'}
                                                                                     </span>
                                                                                     <span className="mt-1 text-[9px] font-bold text-gray-500 italic">
-                                                                                        Job Awarded
+                                                                                        {isSpanish ? 'Trabajo Adjudicado' : 'Job Awarded'}
                                                                                     </span>
                                                                                 </div>
                                                                             ) : (
@@ -828,7 +854,7 @@ const UserDashboard = () => {
                                                                                     <button
                                                                                         onClick={() => setConfirmReject({ assessmentId: quote.assessment_id || quote.assessment.id, quoteId: quote.id })}
                                                                                         className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                                                                        title="Reject Quote"
+                                                                                        title={isSpanish ? 'Rechazar Presupuesto' : 'Reject Quote'}
                                                                                     >
                                                                                         <X size={18} />
                                                                                     </button>
@@ -839,14 +865,14 @@ const UserDashboard = () => {
                                                                                         }}
                                                                                         className="px-6 py-2.5 bg-[#007F00] text-white rounded-lg font-black text-xs hover:bg-[#006600] transition-all shadow-sm active:scale-95 leading-tight text-center"
                                                                                     >
-                                                                                        Accept<br />Quote
+                                                                                        {isSpanish ? <>Aceptar<br />Presupuesto</> : <>Accept<br />Quote</>}
                                                                                     </button>
                                                                                 </div>
                                                                             )
                                                                         ) : (
                                                                             <div className="flex flex-col items-end">
                                                                                 <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${quote.status === 'accepted' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
-                                                                                    {quote.status}
+                                                                                    {getQuoteStatusLabel(quote.status)}
                                                                                 </span>
                                                                                 <span className="mt-1 text-[9px] font-bold text-gray-400 italic">
                                                                                     {new Date(quote.created_at).toLocaleDateString()}
@@ -872,19 +898,19 @@ const UserDashboard = () => {
                                                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{new Date(quote.created_at).toLocaleDateString()}</p>
                                                                 <h4 className="font-bold text-gray-900">{quote.assessment.town}</h4>
                                                                 <p className="text-xs text-gray-500 font-medium italic">
-                                                                    Earliest: {quote.estimated_date ? new Date(quote.estimated_date).toLocaleDateString() : 'TBC'}
+                                                                    {isSpanish ? 'Lo antes posible:' : 'Earliest:'} {quote.estimated_date ? new Date(quote.estimated_date).toLocaleDateString() : (isSpanish ? 'Por confirmar' : 'TBC')}
                                                                 </p>
                                                             </div>
                                                             <div className="text-right">
                                                                 <p className="text-xl font-black text-gray-900">€{quote.price + 10}</p>
                                                                 <div className="text-[9px] text-gray-500 font-medium mt-0.5">
-                                                                    Deposit: €40 / Balance: €{quote.price + 10 - 40}
+                                                                    {isSpanish ? 'Depósito: €40 / Saldo: €' : 'Deposit: €40 / Balance: €'}{quote.price + 10 - 40}
                                                                 </div>
                                                                 <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter border ${quote.status === 'accepted' ? 'bg-green-50 text-green-700 border-green-100' :
                                                                     quote.status === 'rejected' ? 'bg-red-50 text-red-700 border-red-100' :
                                                                         'bg-amber-50 text-amber-700 border-amber-100'
                                                                     }`}>
-                                                                    {quote.status}
+                                                                    {getQuoteStatusLabel(quote.status)}
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -896,7 +922,7 @@ const UserDashboard = () => {
                                                                 </div>
                                                                 <div>
                                                                     <p className="text-[10px] font-bold text-gray-900">{quote.contractor.full_name}</p>
-                                                                    <p className="text-[9px] text-gray-400">SEAI: {quote.contractor.seai_number || 'Pending'}</p>
+                                                                    <p className="text-[9px] text-gray-400">{isSpanish ? 'Registro:' : 'SEAI:'} {quote.contractor.seai_number || (isSpanish ? 'Pendiente' : 'Pending')}</p>
                                                                 </div>
                                                             </div>
                                                         )}
@@ -907,15 +933,15 @@ const UserDashboard = () => {
                                                                 if (isExpired) {
                                                                     return (
                                                                         <div className="text-center py-3 bg-red-50 rounded-xl border border-red-100">
-                                                                            <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">Quote Expired</span>
-                                                                            <p className="text-[9px] text-red-400 mt-0.5">5-day acceptance window has elapsed</p>
+                                                                            <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">{isSpanish ? 'Presupuesto Caducado' : 'Quote Expired'}</span>
+                                                                            <p className="text-[9px] text-red-400 mt-0.5">{isSpanish ? 'La ventana de aceptación de 5 días ha expirado' : '5-day acceptance window has elapsed'}</p>
                                                                         </div>
                                                                     );
                                                                 }
                                                                 if (quote.assessment.status === 'quote_accepted') {
                                                                     return (
                                                                         <div className="text-center py-2 bg-gray-50 rounded-xl text-[10px] font-bold text-gray-500 border border-gray-100">
-                                                                            Quote Closed - Job Awarded
+                                                                            {isSpanish ? 'Presupuesto Cerrado - Trabajo Adjudicado' : 'Quote Closed - Job Awarded'}
                                                                         </div>
                                                                     );
                                                                 }
@@ -924,7 +950,7 @@ const UserDashboard = () => {
                                                                         <div className="flex items-center justify-center gap-1.5 mb-3">
                                                                             <Clock size={12} className={daysLeft <= 1 ? 'text-red-500' : daysLeft <= 2 ? 'text-amber-500' : 'text-green-500'} />
                                                                             <span className={`text-[10px] font-bold ${daysLeft <= 1 ? 'text-red-600' : daysLeft <= 2 ? 'text-amber-600' : 'text-gray-500'}`}>
-                                                                                {daysLeft} day{daysLeft !== 1 ? 's' : ''} left to respond
+                                                                                {daysLeft} {isSpanish ? (daysLeft !== 1 ? 'días' : 'día') : (daysLeft !== 1 ? 'days' : 'day')} {isSpanish ? 'restantes para responder' : 'left to respond'}
                                                                             </span>
                                                                         </div>
                                                                         <div className="grid grid-cols-2 gap-3">
@@ -932,7 +958,7 @@ const UserDashboard = () => {
                                                                                 onClick={() => setConfirmReject({ assessmentId: quote.assessment_id || quote.assessment.id, quoteId: quote.id })}
                                                                                 className="w-full py-3 border border-red-100 text-red-600 rounded-xl font-black text-xs hover:bg-red-50 transition-all"
                                                                             >
-                                                                                Reject
+                                                                                {isSpanish ? 'Rechazar' : 'Reject'}
                                                                             </button>
                                                                             <button
                                                                                 onClick={() => {
@@ -940,7 +966,7 @@ const UserDashboard = () => {
                                                                                 }}
                                                                                 className="w-full py-3 bg-[#80FF80] text-white rounded-xl font-black text-xs hover:bg-[#66E666] transition-all shadow-md shadow-green-100"
                                                                             >
-                                                                                Accept Quote
+                                                                                {isSpanish ? 'Aceptar Presupuesto' : 'Accept Quote'}
                                                                             </button>
                                                                         </div>
                                                                     </>
@@ -948,7 +974,7 @@ const UserDashboard = () => {
                                                             }
                                                             return (
                                                                 <div className="text-center py-2 bg-gray-50 rounded-xl text-[10px] font-bold text-gray-400">
-                                                                    Processed on {new Date(quote.created_at).toLocaleDateString()}
+                                                                    {isSpanish ? 'Procesado el' : 'Processed on'} {new Date(quote.created_at).toLocaleDateString()}
                                                                 </div>
                                                             );
                                                         })()}

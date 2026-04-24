@@ -1,0 +1,206 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "The Berman Logo" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img "The Berman Logo" [ref=e7]
+      - generic [ref=e8]:
+        - link "Catálogo de Eficiencia Energética" [ref=e9] [cursor=pointer]:
+          - /url: /catalogue
+          - generic [ref=e11]: Catálogo de Eficiencia Energética
+        - button [ref=e12]:
+          - img [ref=e13]
+  - main [ref=e14]:
+    - generic [ref=e15]:
+      - generic [ref=e17]:
+        - generic [ref=e18]: Ponte en Contacto
+        - heading "¿En qué podemos ayudarte?" [level=1] [ref=e19]
+        - paragraph [ref=e20]: ¿Tienes alguna pregunta sobre certificaciones energéticas? Nuestro equipo está aquí para ayudarte.
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - heading "Nuestros Datos" [level=3] [ref=e25]
+          - generic [ref=e26]:
+            - link "Escríbenos hola@certificadoenergético.eu" [ref=e27] [cursor=pointer]:
+              - /url: mailto:hola@certificadoenergético.eu
+              - generic [ref=e28]:
+                - img [ref=e30]
+                - generic [ref=e33]:
+                  - paragraph [ref=e34]: Escríbenos
+                  - paragraph [ref=e35]: hola@certificadoenergético.eu
+            - generic [ref=e37] [cursor=pointer]:
+              - img [ref=e39]
+              - generic [ref=e42]:
+                - paragraph [ref=e43]: Sitio Web
+                - paragraph [ref=e44]: certificadoenergético.eu
+        - generic [ref=e45]:
+          - heading "Envíanos un mensaje detallado" [level=3] [ref=e46]
+          - generic [ref=e47]:
+            - generic [ref=e48]:
+              - generic [ref=e49]:
+                - text: Nombre Completo
+                - textbox "Nombre completo" [ref=e50]
+              - generic [ref=e51]:
+                - text: Número de Teléfono
+                - textbox "número de teléfono" [ref=e52]
+            - generic [ref=e53]:
+              - generic [ref=e54]:
+                - text: Correo Electrónico
+                - textbox "correo electrónico" [ref=e55]
+              - generic [ref=e56]:
+                - text: Provincia
+                - combobox [ref=e57] [cursor=pointer]:
+                  - option "Seleccionar Provincia" [selected]
+                  - option "Carlow"
+                  - option "Cavan"
+                  - option "Clare"
+                  - option "Cork"
+                  - option "Donegal"
+                  - option "Dublin"
+                  - option "Galway"
+                  - option "Kerry"
+                  - option "Kildare"
+                  - option "Kilkenny"
+                  - option "Laois"
+                  - option "Leitrim"
+                  - option "Limerick"
+                  - option "Longford"
+                  - option "Louth"
+                  - option "Mayo"
+                  - option "Meath"
+                  - option "Monaghan"
+                  - option "Offaly"
+                  - option "Roscommon"
+                  - option "Sligo"
+                  - option "Tipperary"
+                  - option "Waterford"
+                  - option "Westmeath"
+                  - option "Wexford"
+                  - option "Wicklow"
+            - generic [ref=e58]:
+              - generic [ref=e59]:
+                - text: Ciudad / Localidad
+                - combobox [disabled] [ref=e60] [cursor=pointer]:
+                  - option "Selecciona Provincia Primero" [selected]
+              - generic [ref=e61]:
+                - text: Tipo de Propiedad
+                - combobox [ref=e62] [cursor=pointer]:
+                  - option "Seleccionar Tipo" [selected]
+                  - option "Apartamento"
+                  - option "Casa Adosada (Interior)"
+                  - option "Casa Adosada (Esquina)"
+                  - option "Casa Pareada"
+                  - option "Casa Independiente"
+                  - option "Chalet"
+            - generic [ref=e63]:
+              - text: Propósito del Certificado
+              - combobox [ref=e64] [cursor=pointer]:
+                - option "Seleccionar Propósito" [selected]
+                - option "Hipoteca/Banco"
+                - option "Venta"
+                - option "Alquiler"
+                - option "Subvención"
+                - option "Otro"
+            - generic [ref=e65]:
+              - text: Mensaje
+              - textbox "Cuéntanos más sobre tu solicitud..." [ref=e66]
+            - button "Enviar Mensaje" [ref=e67] [cursor=pointer]:
+              - img [ref=e68]
+              - text: Enviar Mensaje
+  - contentinfo [ref=e71]:
+    - generic [ref=e72]:
+      - generic [ref=e73]:
+        - generic [ref=e74]:
+          - generic [ref=e75]:
+            - img "Certificado Energético" [ref=e76]
+            - generic [ref=e77]: Certificado Energético
+          - paragraph [ref=e78]: Su socio de confianza para certificados energéticos y consultoría energética.
+          - generic [ref=e79]:
+            - link [ref=e80] [cursor=pointer]:
+              - /url: https://www.facebook.com/profile.php?id=61578159843471
+              - img [ref=e81]
+            - link [ref=e83] [cursor=pointer]:
+              - /url: https://www.instagram.com/thebermanireland?igsh=amtidXdjNmZrMWJz&utm_source=qr
+              - img [ref=e84]
+            - link [ref=e87] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/the-berman/posts/?feedView=all
+              - img [ref=e88]
+            - link [ref=e92] [cursor=pointer]:
+              - /url: https://twitter.com
+              - img [ref=e93]
+        - generic [ref=e95]:
+          - heading "Enlaces Rápidos" [level=4] [ref=e96]
+          - list [ref=e97]:
+            - listitem [ref=e98]:
+              - link "Inicio" [ref=e99] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e100]:
+              - link "Sobre Nosotros" [ref=e101] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e102]:
+              - link "Catálogo de Eficiencia Energética" [ref=e103] [cursor=pointer]:
+                - /url: /catalogue
+            - listitem [ref=e104]:
+              - link "Habla con un Asesor Energético" [ref=e105] [cursor=pointer]:
+                - /url: /hire-agent
+            - listitem [ref=e106]:
+              - link "Registro de Negocio" [ref=e107] [cursor=pointer]:
+                - /url: /signup?role=business
+            - listitem [ref=e108]:
+              - link "FAQ" [ref=e109] [cursor=pointer]:
+                - /url: /faq
+        - generic [ref=e110]:
+          - heading "Cuenta" [level=4] [ref=e111]
+          - list [ref=e112]:
+            - listitem [ref=e113]:
+              - link "Reservar Certificadores" [ref=e114] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e115]:
+              - link "Ubicaciones" [ref=e116] [cursor=pointer]:
+                - /url: /locations
+            - listitem [ref=e117]:
+              - link "Nuestras Noticias" [ref=e118] [cursor=pointer]:
+                - /url: /news
+            - listitem [ref=e119]:
+              - link "Blog" [ref=e120] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e121]:
+              - link "Contacto" [ref=e122] [cursor=pointer]:
+                - /url: /contact-us
+            - listitem [ref=e123]:
+              - link "Iniciar Sesión" [ref=e124] [cursor=pointer]:
+                - /url: /login
+            - listitem [ref=e125]:
+              - link "Registrarse" [ref=e126] [cursor=pointer]:
+                - /url: /signup
+            - listitem [ref=e127]:
+              - button "Suscribirse a Noticias" [ref=e128] [cursor=pointer]
+        - generic [ref=e129]:
+          - heading "Legal" [level=4] [ref=e130]
+          - list [ref=e131]:
+            - listitem [ref=e132]:
+              - link "Política de Privacidad" [ref=e133] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e134]:
+              - link "Términos y Condiciones" [ref=e135] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e136]:
+              - link "Política de Cookies" [ref=e137] [cursor=pointer]:
+                - /url: /cookie-policy
+        - generic [ref=e138]:
+          - heading "Contacto" [level=4] [ref=e139]
+          - list [ref=e140]:
+            - listitem [ref=e141]:
+              - img [ref=e142]
+              - link "hola@certificadoenergético.eu" [ref=e145] [cursor=pointer]:
+                - /url: mailto:hola@certificadoenergético.eu
+            - listitem [ref=e146]:
+              - img [ref=e147]
+              - link "certificadoenergético.eu" [ref=e150] [cursor=pointer]:
+                - /url: https://certificadoenergético.eu
+      - generic [ref=e151]:
+        - paragraph [ref=e152]: © 2026 Certificado Energético. Todos los derechos reservados.
+        - generic [ref=e153]:
+          - link "Política de Privacidad" [ref=e154] [cursor=pointer]:
+            - /url: /privacy
+          - link "Términos de Servicio" [ref=e155] [cursor=pointer]:
+            - /url: /terms

@@ -3,6 +3,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { CustomSmtpClient } from "../shared/smtp.ts";
 import { trySendSms } from "../shared/twilio.ts";
+import { getTenantConfig } from "../shared/tenant.ts";
 import { generateContractorEmail } from "./templates/contractor-notification.ts";
 import { generatePromoHtml } from "./templates/promo-section.ts";
 
@@ -19,55 +20,69 @@ Deno.serve(async (req: Request) => {
     const responseHeaders = { ...corsHeaders, 'Content-Type': 'application/json' };
 
     try {
-        const { email, customerName, county, town, assessmentId, jobType, customerPhone } = await req.json();
+        const { email, customerName, county, town, assessmentId, jobType, customerPhone, tenant = 'ireland' } = await req.json();
         const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
         const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
         const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+        // Load tenant config (SMTP/Twilio credentials)
+        const config = await getTenantConfig(supabase, tenant);
+        const websiteUrl = config.website_url;
+        const smtpFrom = config.smtp_from || `${config.display_name} <${config.smtp_username}>`;
 
         // Update assessment status
         if (assessmentId) {
             const { error: updateError } = await supabase
                 .from('assessments')
                 .update({ status: 'live' })
-                .eq('id', assessmentId);
+                .eq('id', assessmentId)
+                .eq('tenant', tenant);
 
             if (updateError) {
                 console.error(`[send-job-live-email] Error updating assessment ${assessmentId}:`, updateError);
             }
         }
 
-        const smtpHostname = Deno.env.get('SMTP_HOSTNAME');
-        const smtpPortStr = Deno.env.get('SMTP_PORT');
-        const smtpUsername = Deno.env.get('SMTP_USERNAME');
-        const smtpPassword = Deno.env.get('SMTP_PASSWORD');
-        const smtpFromEnv = Deno.env.get('SMTP_FROM') || 'hello@theberman.eu';
-        const smtpFrom = smtpFromEnv.includes('<') ? smtpFromEnv : `The Berman.eu <${smtpFromEnv}>`;
-        const websiteUrl = Deno.env.get('PUBLIC_WEBSITE_URL') || 'https://theberman.eu';
+        const smtpHostname = config.smtp_hostname;
+        const smtpPort = config.smtp_port;
+        const smtpUsername = config.smtp_username;
+        const smtpPassword = config.smtp_password;
 
         if (!smtpHostname || !smtpUsername || !smtpPassword) {
-            console.error("[send-job-live-email] SMTP Secrets missing");
+            console.error(`[send-job-live-email] SMTP Secrets missing for tenant ${tenant}`);
             return new Response(JSON.stringify({ success: false, error: 'SMTP Secrets missing' }), { status: 500, headers: responseHeaders });
         }
 
-        const smtpPort = parseInt(smtpPortStr || '587');
         const client = new CustomSmtpClient();
 
+        const { data: sponsors } = await supabase
+            .from('sponsors')
+            .select('*')
+            .eq('is_active', true)
+            .eq('tenant', tenant)
+            .limit(3);
+        const promoHtml = generatePromoHtml(sponsors || []);
+
+        let emailSent = false;
+        let smsSent = false;
+        let smtpReady = false;
+
+        // Try SMTP connection — if it fails, SMS still sends
         try {
             await client.connect(smtpHostname, smtpPort);
             await client.authenticate(smtpUsername, smtpPassword);
+            smtpReady = true;
+        } catch (smtpErr: any) {
+            console.error(`[send-job-live-email] SMTP connection failed for tenant ${tenant}, SMS will still send:`, smtpErr?.message);
+        }
 
-            const { data: sponsors } = await supabase.from('sponsors').select('*').eq('is_active', true).limit(3);
-            const promoHtml = generatePromoHtml(sponsors || []);
-
-            let emailSent = false;
-            let smsSent = false;
-
-            // 1. Notify Customer
+        // 1. Notify Customer via email (only if SMTP is ready)
+        if (smtpReady) {
             try {
                 const customerHtml = `
                     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 0; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
                         <div style="background-color: #007F00; color: white; padding: 35px 20px; text-align: center;">
-                            <img src="${websiteUrl}/logo.svg" alt="The Berman" style="height: 30px; margin-bottom: 12px; filter: brightness(0) invert(1);">
+                            <img src="${websiteUrl}/logo.svg" alt="${config.display_name}" style="height: 30px; margin-bottom: 12px; filter: brightness(0) invert(1);">
                             <h2 style="margin: 0; font-size: 24px; font-weight: 700;">Your BER Request is Live!</h2>
                         </div>
                         <div style="padding: 35px 30px; color: #333;">
@@ -93,62 +108,82 @@ Deno.serve(async (req: Request) => {
                             ${promoHtml}
                         </div>
                         <div style="text-align: center; padding-bottom: 25px; font-size: 11px; color: #aaa;">
-                            &copy; ${new Date().getFullYear()} The Berman. Supporting Ireland's energy efficiency.
+                            &copy; ${new Date().getFullYear()} ${config.display_name}. Supporting energy efficiency.
                         </div>
                     </div>
                 `;
-                await client.send(smtpFrom, email, 'Your job is live on TheBerman.eu', customerHtml);
+                await client.send(smtpFrom, email, `Your job is live on ${websiteUrl.replace('https://', '')}`, customerHtml);
                 emailSent = true;
-                console.log(`[send-job-live-email] Notified customer: ${email}`);
+                console.log(`[send-job-live-email] Notified customer: ${email} (tenant: ${tenant})`);
             } catch (custErr) {
-                console.error(`[send-job-live-email] [SMTP ERROR] Failed to notify customer ${email}:`, custErr);
+                console.error(`[send-job-live-email] [SMTP ERROR] Failed to notify customer ${email} (tenant: ${tenant}):`, custErr);
             }
+        }
 
-            // SMS to customer
-            const smsPhone = customerPhone || (assessmentId ? (await supabase.from('assessments').select('contact_phone').eq('id', assessmentId).single()).data?.contact_phone : null);
-            const smsResult = await trySendSms(smsPhone, `Hi ${customerName}, your BER assessment request in ${town || county} is now live on TheBerman.eu! Assessors in your area are being notified. We'll let you know when quotes arrive.`);
-            smsSent = smsResult === true;
+        // 2. SMS to customer (independent of SMTP)
+        const smsPhone = customerPhone || (assessmentId ? (await supabase
+            .from('assessments')
+            .select('contact_phone')
+            .eq('id', assessmentId)
+            .eq('tenant', tenant)
+            .single()).data?.contact_phone : null);
+        const smsResult = await trySendSms(smsPhone, `Hi ${customerName}, your BER assessment request in ${town || county} is now live on ${websiteUrl.replace('https://', '')}! Assessors in your area are being notified. We'll let you know when quotes arrive.`, config.phone_country_code);
+        smsSent = smsResult === true;
+        console.log(`[send-job-live-email] Customer SMS to ${smsPhone}: ${smsSent ? 'sent' : 'failed'} (tenant: ${tenant})`);
 
-            // 2. Notify Relevant Contractors - RE-ENABLED
-            console.log(`[send-job-live-email] Starting contractor notifications for ${county}...`);
-            
-            const { data: existingQuotes } = await supabase
-                .from('quotes')
-                .select('created_by')
-                .eq('assessment_id', assessmentId);
+        // 3. Notify Relevant Contractors
+        console.log(`[send-job-live-email] Starting contractor notifications for ${town} (tenant: ${tenant})...`);
+        
+        const { data: existingQuotes } = await supabase
+            .from('quotes')
+            .select('created_by')
+            .eq('assessment_id', assessmentId)
+            .eq('tenant', tenant);
 
-            const quotedContractorIds = new Set((existingQuotes || []).map(q => q.created_by));
+        const quotedContractorIds = new Set((existingQuotes || []).map(q => q.created_by));
 
-            const { data: contractors } = await supabase
-                .from('profiles')
-                .select('id, email, full_name, preferred_counties')
-                .eq('role', 'contractor')
-                .eq('is_active', true)
-                .is('deleted_at', null)
-                .in('registration_status', ['active', 'completed']);
+        const { data: contractors } = await supabase
+            .from('profiles')
+            .select('id, email, full_name, phone, preferred_towns')
+            .eq('role', 'contractor')
+            .eq('is_active', true)
+            .eq('tenant', tenant)
+            .is('deleted_at', null)
+            .in('registration_status', ['active', 'completed']);
 
-            if (contractors && contractors.length > 0) {
-                const relevantContractors = contractors.filter(c => {
-                    if (quotedContractorIds.has(c.id)) return false;
-                    if (!c.preferred_counties || c.preferred_counties.length === 0) return true;
-                    return c.preferred_counties.includes(county);
-                });
+        let contractorSmsSentCount = 0;
+        let contractorEmailSentCount = 0;
 
-                console.log(`[send-job-live-email] Notifying ${relevantContractors.length} contractors in ${county}`);
+        if (contractors && contractors.length > 0) {
+            const relevantContractors = contractors.filter(c => {
+                if (quotedContractorIds.has(c.id)) return false;
+                // Only notify if they explicitly selected this town
+                if (!c.preferred_towns || c.preferred_towns.length === 0) return false;
+                return c.preferred_towns.includes(town);
+            });
 
-                // Get assessment details for Eircode
-                const { data: assessmentDetails } = await supabase
-                    .from('assessments')
-                    .select('eircode, property_address')
-                    .eq('id', assessmentId)
-                    .single();
+            console.log(`[send-job-live-email] Notifying ${relevantContractors.length} contractors in ${town} (tenant: ${tenant})`);
 
-                for (const contractor of relevantContractors) {
+            // Get assessment details for Eircode
+            const { data: assessmentDetails } = await supabase
+                .from('assessments')
+                .select('eircode, property_address')
+                .eq('id', assessmentId)
+                .eq('tenant', tenant)
+                .single();
+
+            for (const contractor of relevantContractors) {
+                const jobLocation = town || county;
+                const assessorName = contractor.full_name || 'Assessor';
+                const quoteLink = `${websiteUrl}/quote/${assessmentId}?phone=${encodeURIComponent(contractor.phone || '')}`;
+
+                // Send email (only if SMTP is ready)
+                if (smtpReady) {
                     try {
                         const contractorHtml = generateContractorEmail(
                             county, 
                             town, 
-                            contractor.full_name, 
+                            assessorName, 
                             promoHtml, 
                             websiteUrl, 
                             jobType,
@@ -156,31 +191,40 @@ Deno.serve(async (req: Request) => {
                             assessmentDetails?.property_address,
                             assessmentId
                         );
-                        await client.send(smtpFrom, contractor.email, `New ${jobType === 'commercial' ? 'Commercial' : 'Domestic'} BER Job in ${town || county}`, contractorHtml);
-                        console.log(`[send-job-live-email] Notified contractor: ${contractor.email}`);
+                        await client.send(smtpFrom, contractor.email, `New ${jobType === 'commercial' ? 'Commercial' : 'Domestic'} BER Job in ${jobLocation}`, contractorHtml);
+                        contractorEmailSentCount++;
+                        console.log(`[send-job-live-email] Notified contractor via email: ${contractor.email} (tenant: ${tenant})`);
                     } catch (err) {
-                        console.error(`[send-job-live-email] [SMTP ERROR] Failed to notify contractor ${contractor.email}:`, err);
+                        console.error(`[send-job-live-email] [SMTP ERROR] Failed to notify contractor ${contractor.email} (tenant: ${tenant}):`, err);
                     }
                 }
+
+                // Send SMS with direct quote link (always, independent of SMTP)
+                if (contractor.phone) {
+                    const smsMessage = `Hi ${assessorName}, new job in ${jobLocation}! Quote here: ${quoteLink}`;
+                    const smsSentToContractor = await trySendSms(contractor.phone, smsMessage, config.phone_country_code);
+                    if (smsSentToContractor) contractorSmsSentCount++;
+                    console.log(`[send-job-live-email] SMS to contractor ${contractor.phone}: ${smsSentToContractor ? 'sent' : 'failed'} (tenant: ${tenant})`);
+                }
             }
-
-            await client.close();
-
-            // Write notification status back to assessment
-            if (assessmentId) {
-                await supabase.from('assessments').update({
-                    job_live_email_sent: emailSent,
-                    job_live_sms_sent: smsSent,
-                    job_live_notified_at: new Date().toISOString(),
-                }).eq('id', assessmentId);
-            }
-
-            return new Response(JSON.stringify({ success: true, emailSent, smsSent, message: 'Process completed' }), { headers: responseHeaders });
-
-        } catch (smtpErr: any) {
-            console.error("[send-job-live-email] SMTP GLOBAL ERROR", smtpErr);
-            return new Response(JSON.stringify({ success: false, error: 'SMTP Connection Failed', details: smtpErr?.message }), { status: 500, headers: responseHeaders });
         }
+
+        if (smtpReady) {
+            try { await client.close(); } catch (_) { /* ignore */ }
+        }
+
+        console.log(`[send-job-live-email] Summary (tenant: ${tenant}): customerEmail=${emailSent}, customerSms=${smsSent}, contractorEmails=${contractorEmailSentCount}, contractorSms=${contractorSmsSentCount}`);
+
+        // Write notification status back to assessment
+        if (assessmentId) {
+            await supabase.from('assessments').update({
+                job_live_email_sent: emailSent || contractorEmailSentCount > 0,
+                job_live_sms_sent: smsSent || contractorSmsSentCount > 0,
+                job_live_notified_at: new Date().toISOString(),
+            }).eq('id', assessmentId).eq('tenant', tenant);
+        }
+
+        return new Response(JSON.stringify({ success: true, emailSent, smsSent, contractorEmailSentCount, contractorSmsSentCount, message: 'Process completed', tenant }), { headers: responseHeaders });
 
     } catch (err: any) {
         console.error("[send-job-live-email] GLOBAL ERROR", err);

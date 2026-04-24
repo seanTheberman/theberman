@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Search, X } from 'lucide-react';
 import SEOHead from '../components/SEOHead';
 import ArticleNewsletter from '../components/ArticleNewsletter';
+import { getTenantFromDomain } from '../lib/tenant';
 
 interface BlogArticle {
     id: string;
@@ -33,20 +34,71 @@ const BLOG_CATEGORIES = [
     'FAQs',
 ];
 
+const CATEGORY_LABELS_ES: Record<string, string> = {
+    'All Posts': 'Todas las entradas',
+    'BER Explained': 'Certificación Explicada',
+    'Costs & Grants': 'Costes y Subvenciones',
+    'Home Upgrades': 'Mejoras del Hogar',
+    'Selling & Renting': 'Venta y Alquiler',
+    'Green Mortgages & Finance': 'Hipotecas Verdes y Financiación',
+    'Regulations': 'Normativa',
+    'Success Stories': 'Casos de Éxito',
+    'How-to & Guides': 'Guías y Tutoriales',
+    'FAQs': 'Preguntas Frecuentes',
+};
+
 const BlogPage = () => {
     const [articles, setArticles] = useState<BlogArticle[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState('All Posts');
     const [searchTerm, setSearchTerm] = useState('');
+    const tenant = getTenantFromDomain();
+    const isSpanish = tenant === 'spain';
+    const tr = isSpanish ? {
+        seoTitle: 'Blog',
+        seoDesc: 'Guías de expertos sobre certificados energéticos, subvenciones, mejoras del hogar y más de Certificado Energético.',
+        loading: 'Cargando blog...',
+        latest: 'Últimas Entradas',
+        showing: (n: number, t: number) => `Mostrando ${n} de ${t} entradas`,
+        searchPlaceholder: 'Buscar entradas...',
+        categories: 'Categorías',
+        quickQuote: 'Presupuesto Rápido',
+        quickQuoteP: 'Obtén presupuestos mientras lees.',
+        getQuotes: 'Pedir Presupuestos',
+        noArticlesSearch: (q: string) => `No hay entradas para "${q}"`,
+        noArticlesCategory: 'No hay entradas en esta categoría.',
+        viewAllPosts: 'Ver todas las entradas',
+        newBadge: 'Nuevo',
+        locale: 'es-ES' as const,
+    } : {
+        seoTitle: 'Blog',
+        seoDesc: 'Expert guides on BER certificates, energy grants, home upgrades, and more from The Berman.',
+        loading: 'Loading blog...',
+        latest: 'Latest Articles',
+        showing: (n: number, t: number) => `Showing ${n} of ${t} articles`,
+        searchPlaceholder: 'Search articles...',
+        categories: 'Categories',
+        quickQuote: 'Quick Quote',
+        quickQuoteP: 'Get BER quotes while you read.',
+        getQuotes: 'Get Quotes',
+        noArticlesSearch: (q: string) => `No articles found for "${q}"`,
+        noArticlesCategory: 'No articles found in this category.',
+        viewAllPosts: 'View All Posts',
+        newBadge: 'New',
+        locale: 'en-IE' as const,
+    };
+    const categoryLabel = (cat: string) => isSpanish ? (CATEGORY_LABELS_ES[cat] || cat) : cat;
 
     useEffect(() => {
         const fetchArticles = async () => {
             setLoading(true);
             try {
+                const tenant = getTenantFromDomain();
                 const { data, error } = await supabase
                     .from('blog_articles')
                     .select('*')
                     .eq('is_live', true)
+                    .eq('tenant', tenant)
                     .order('published_at', { ascending: false });
                 if (error) throw error;
                 setArticles(data || []);
@@ -64,7 +116,7 @@ const BlogPage = () => {
             <div className="min-h-screen flex items-center justify-center pt-32 bg-white">
                 <div className="flex flex-col items-center gap-4">
                     <div className="w-12 h-12 border-4 border-[#007F00]/20 border-t-[#007F00] rounded-full animate-spin"></div>
-                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Loading blog...</p>
+                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">{tr.loading}</p>
                 </div>
             </div>
         );
@@ -99,8 +151,8 @@ const BlogPage = () => {
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen pt-32">
             <SEOHead
-                title="Blog"
-                description="Expert guides on BER certificates, energy grants, home upgrades, and more from The Berman."
+                title={tr.seoTitle}
+                description={tr.seoDesc}
                 canonical="/blog"
             />
 
@@ -110,10 +162,10 @@ const BlogPage = () => {
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-gray-100">
                         <div>
                             <h1 className="text-4xl md:text-5xl font-black text-gray-900 uppercase tracking-tighter italic mb-2">
-                                Latest Articles
+                                {tr.latest}
                             </h1>
                             <p className="text-gray-500 font-medium tracking-wide text-sm">
-                                Showing {filteredArticles.length} of {articles.length} articles
+                                {tr.showing(filteredArticles.length, articles.length)}
                             </p>
                         </div>
 
@@ -122,7 +174,7 @@ const BlogPage = () => {
                             <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="Search articles..."
+                                placeholder={tr.searchPlaceholder}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full pl-11 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] outline-none transition-all"
@@ -159,7 +211,7 @@ const BlogPage = () => {
                                     <span>&bull;</span>
                                     <span>{featuredArticle.read_time}</span>
                                     <span>&bull;</span>
-                                    <span>{new Date(featuredArticle.published_at).toLocaleDateString('en-IE', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                    <span>{new Date(featuredArticle.published_at).toLocaleDateString(tr.locale, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                                 </div>
                             </div>
                             <div className="w-full lg:w-1/2 relative min-h-[300px] md:min-h-[400px] order-1 lg:order-2">
@@ -171,7 +223,7 @@ const BlogPage = () => {
                                 {featuredArticle.show_badge && (
                                     <div className="absolute top-4 left-4 flex items-center gap-2 bg-[#007F00] text-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest">
                                         <span className="h-2 w-2 rounded-full bg-white animate-pulse"></span>
-                                        New
+                                        {tr.newBadge}
                                     </div>
                                 )}
                             </div>
@@ -187,7 +239,7 @@ const BlogPage = () => {
                         {/* Category Sidebar */}
                         <aside className="lg:w-64 shrink-0">
                             <div className="sticky top-32">
-                                <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-4">Categories</h3>
+                                <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-4">{tr.categories}</h3>
                                 <ul className="space-y-1">
                                     {BLOG_CATEGORIES.map((cat) => (
                                         <li key={cat}>
@@ -198,7 +250,7 @@ const BlogPage = () => {
                                                     : 'text-gray-600 hover:bg-gray-50'
                                                     }`}
                                             >
-                                                <span>{cat}</span>
+                                                <span>{categoryLabel(cat)}</span>
                                                 <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${selectedCategory === cat ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
                                                     {categoryCounts[cat] || 0}
                                                 </span>
@@ -209,13 +261,13 @@ const BlogPage = () => {
 
                                 {/* Quick Quote CTA */}
                                 <div className="mt-8 p-6 bg-[#007F00]/5 border border-[#007F00]/10 rounded-2xl">
-                                    <h4 className="text-sm font-black text-[#007F00] uppercase tracking-widest mb-2">Quick Quote</h4>
-                                    <p className="text-xs text-gray-500 mb-4">Get BER quotes while you read.</p>
+                                    <h4 className="text-sm font-black text-[#007F00] uppercase tracking-widest mb-2">{tr.quickQuote}</h4>
+                                    <p className="text-xs text-gray-500 mb-4">{tr.quickQuoteP}</p>
                                     <Link
                                         to="/get-quote"
                                         className="block w-full bg-[#007F00] text-white text-center px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-green-800 transition-colors"
                                     >
-                                        Get Quotes
+                                        {tr.getQuotes}
                                     </Link>
                                 </div>
                             </div>
@@ -226,13 +278,13 @@ const BlogPage = () => {
                             {filteredArticles.length === 0 ? (
                                 <div className="py-20 text-center">
                                     <p className="text-gray-400 font-bold uppercase tracking-widest text-sm">
-                                        {searchTerm ? `No articles found for "${searchTerm}"` : 'No articles found in this category.'}
+                                        {searchTerm ? tr.noArticlesSearch(searchTerm) : tr.noArticlesCategory}
                                     </p>
                                     <button
                                         onClick={() => { setSelectedCategory('All Posts'); setSearchTerm(''); }}
                                         className="mt-4 text-[#007F00] font-bold text-xs uppercase tracking-widest hover:underline cursor-pointer"
                                     >
-                                        View All Posts
+                                        {tr.viewAllPosts}
                                     </button>
                                 </div>
                             ) : (
@@ -251,7 +303,7 @@ const BlogPage = () => {
                                                     </div>
                                                 )}
                                             </div>
-                                            <span className="text-[10px] font-bold text-[#007F00] uppercase tracking-widest mb-2">{article.category}</span>
+                                            <span className="text-[10px] font-bold text-[#007F00] uppercase tracking-widest mb-2">{categoryLabel(article.category)}</span>
                                             <h3 className="text-lg font-bold text-gray-900 mb-2 leading-snug group-hover:underline decoration-1 underline-offset-2 line-clamp-2">
                                                 {article.title}
                                             </h3>

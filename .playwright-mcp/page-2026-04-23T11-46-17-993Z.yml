@@ -1,0 +1,410 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "The Berman Logo" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img "The Berman Logo" [ref=e7]
+      - generic [ref=e8]:
+        - link "Catálogo de Eficiencia Energética" [ref=e9] [cursor=pointer]:
+          - /url: /catalogue
+          - generic [ref=e11]: Catálogo de Eficiencia Energética
+        - button [ref=e12]:
+          - img [ref=e13]
+  - main [ref=e14]:
+    - generic [ref=e15]:
+      - generic [ref=e20]:
+        - generic [ref=e23]: La Mayor Plataforma de Certificados Energéticos
+        - heading "¿Necesitas un Certificado Energético?" [level=1] [ref=e24]
+        - paragraph [ref=e25]: La forma más rápida y fiable de obtener tu Certificado Energético. Los mejores precios garantizados de más de 100 certificadores en toda España.
+        - paragraph [ref=e26]: Obtén los mejores presupuestos de certificadores locales hoy mismo.
+        - link "Solicitar Presupuesto Gratis" [ref=e28] [cursor=pointer]:
+          - /url: /get-quote
+          - button "Solicitar Presupuesto Gratis" [ref=e29]:
+            - text: Solicitar Presupuesto Gratis
+            - img [ref=e30]
+        - generic [ref=e32]:
+          - generic [ref=e33]:
+            - img [ref=e35]
+            - text: 100+ Certificadores en Toda España
+          - generic [ref=e40]:
+            - img [ref=e42]
+            - text: SOLO CERTIFICADORES ACREDITADOS
+          - generic [ref=e45]:
+            - img [ref=e47]
+            - text: Elige tu Fecha y Hora
+      - generic [ref=e51]:
+        - generic [ref=e52]:
+          - generic [ref=e53]: Proceso Sencillo
+          - heading "Cómo Funciona" [level=2] [ref=e54]
+        - generic [ref=e55]:
+          - generic [ref=e57] [cursor=pointer]:
+            - generic [ref=e58]: "01"
+            - img [ref=e60]
+            - heading "Elige Fecha" [level=3] [ref=e63]
+            - paragraph [ref=e64]: Indícanos tu fecha y hora preferida para la certificación.
+          - generic [ref=e65] [cursor=pointer]:
+            - generic [ref=e66]: "02"
+            - img [ref=e68]
+            - heading "Envía Detalles" [level=3] [ref=e71]
+            - paragraph [ref=e72]: Comparte la información de tu propiedad en menos de 1 minuto.
+          - generic [ref=e73] [cursor=pointer]:
+            - generic [ref=e74]: "03"
+            - img [ref=e76]
+            - heading "Recibe Presupuestos" [level=3] [ref=e79]
+            - paragraph [ref=e80]: Recibe precios competitivos de certificadores locales.
+          - generic [ref=e81] [cursor=pointer]:
+            - generic [ref=e82]: "04"
+            - img [ref=e84]
+            - heading "Reserva Online" [level=3] [ref=e87]
+            - paragraph [ref=e88]: Elige tu presupuesto favorito y confirma al instante.
+      - generic [ref=e91]:
+        - generic [ref=e92]:
+          - generic [ref=e93]: La Ventaja
+          - heading "¿Por qué Confían en Nosotros los Propietarios?" [level=2] [ref=e94]:
+            - text: ¿Por qué Confían
+            - text: en Nosotros los Propietarios?
+          - generic [ref=e95]:
+            - generic [ref=e96]:
+              - img [ref=e98]
+              - generic [ref=e101]:
+                - heading "Mejor Precio Garantizado" [level=4] [ref=e102]
+                - paragraph [ref=e103]: Recibe múltiples presupuestos y elige la mejor opción para ti.
+            - generic [ref=e104]:
+              - img [ref=e106]
+              - generic [ref=e109]:
+                - heading "Solo Certificadores Acreditados" [level=4] [ref=e110]
+                - paragraph [ref=e111]: Todos los certificadores están plenamente acreditados y verificados.
+            - generic [ref=e112]:
+              - img [ref=e114]
+              - generic [ref=e117]:
+                - heading "Garantía de Devolución" [level=4] [ref=e118]
+                - paragraph [ref=e119]: Te aseguramos un servicio profesional o te devolvemos tu dinero.
+            - generic [ref=e120]:
+              - img [ref=e122]
+              - generic [ref=e125]:
+                - heading "Reserva Online Instantánea" [level=4] [ref=e126]
+                - paragraph [ref=e127]: Sin llamadas de teléfono de ida y vuelta. Reserva todo en tiempo real.
+        - generic [ref=e129]:
+          - generic [ref=e130]:
+            - generic [ref=e131]:
+              - generic [ref=e132]: 1k+
+              - generic [ref=e133]: Usuarios Atendidos
+            - generic [ref=e134]:
+              - generic [ref=e135]: 100+
+              - generic [ref=e136]: Certificadores
+          - generic [ref=e137]:
+            - generic [ref=e138]:
+              - generic [ref=e139]: 4.9/5
+              - generic [ref=e140]: Valoración Media
+              - generic [ref=e141]:
+                - img [ref=e142]
+                - img [ref=e144]
+                - img [ref=e146]
+                - img [ref=e148]
+                - img [ref=e150]
+            - generic [ref=e152]:
+              - generic [ref=e153]: Rápido
+              - generic [ref=e154]: Servicio
+      - generic [ref=e156]:
+        - generic [ref=e157]:
+          - generic [ref=e158]:
+            - img [ref=e159]
+            - generic [ref=e161]: Excelente
+          - paragraph [ref=e162]: Basado en 1.000 valoraciones verificadas de clientes
+        - generic [ref=e163]:
+          - generic [ref=e164] [cursor=pointer]:
+            - generic [ref=e165]:
+              - img [ref=e166]
+              - img [ref=e168]
+              - img [ref=e170]
+              - img [ref=e172]
+              - img [ref=e174]
+            - paragraph [ref=e176]: "\"He usado la plataforma dos veces. En ambas recibí varios presupuestos en menos de una hora y el certificador fue muy profesional. Ahorré unos 30€ respecto a otras webs.\""
+            - generic [ref=e177]:
+              - generic [ref=e178]: C
+              - generic [ref=e179]:
+                - paragraph [ref=e180]: Carlos García
+                - paragraph [ref=e181]: Madrid
+          - generic [ref=e182] [cursor=pointer]:
+            - generic [ref=e183]:
+              - img [ref=e184]
+              - img [ref=e186]
+              - img [ref=e188]
+              - img [ref=e190]
+              - img [ref=e192]
+            - paragraph [ref=e194]: "\"Extremadamente fácil de usar. Me encantó poder ver la acreditación y las reseñas de los certificadores antes de reservar. Muy recomendable para propietarios.\""
+            - generic [ref=e195]:
+              - generic [ref=e196]: L
+              - generic [ref=e197]:
+                - paragraph [ref=e198]: Lucía Martínez
+                - paragraph [ref=e199]: Barcelona
+          - generic [ref=e200] [cursor=pointer]:
+            - generic [ref=e201]:
+              - img [ref=e202]
+              - img [ref=e204]
+              - img [ref=e206]
+              - img [ref=e208]
+              - img [ref=e210]
+            - paragraph [ref=e212]: "\"Rapidez y precios competitivos. El portal hace muy sencillo gestionarlo todo y el certificado se emitió en las 24 horas siguientes a la inspección.\""
+            - generic [ref=e213]:
+              - generic [ref=e214]: J
+              - generic [ref=e215]:
+                - paragraph [ref=e216]: Javier Fernández
+                - paragraph [ref=e217]: Valencia
+      - generic [ref=e219]:
+        - heading "¿Eres Certificador Energético?" [level=2] [ref=e220]
+        - paragraph [ref=e221]: Regístrate y recibe leads de trabajo locales, directamente en tu teléfono.
+        - link "Únete Ahora" [ref=e222] [cursor=pointer]:
+          - /url: /signup?role=contractor
+          - button "Únete Ahora" [ref=e223]
+      - generic [ref=e226]:
+        - generic [ref=e227]:
+          - generic [ref=e228]: Explora Nuestra Red
+          - heading "Encuentra los Mejores Socios de Eficiencia Energética." [level=2] [ref=e229]:
+            - text: Encuentra los Mejores
+            - text: Socios de Eficiencia Energética.
+          - paragraph [ref=e230]: Accede a nuestro catálogo seleccionado de empresas certificadas de eficiencia energética. Desde instaladores de paneles solares hasta especialistas en aislamiento, encuentra el socio adecuado para el camino de tu hogar hacia la eficiencia.
+          - generic [ref=e231]:
+            - link "Explorar Catálogo" [ref=e232] [cursor=pointer]:
+              - /url: /catalogue
+              - button "Explorar Catálogo" [ref=e233]:
+                - text: Explorar Catálogo
+                - img [ref=e234]
+            - link "Registra tu Negocio" [ref=e236] [cursor=pointer]:
+              - /url: /signup?role=business
+              - button "Registra tu Negocio" [ref=e237]
+            - link "Habla con un Asesor" [ref=e238] [cursor=pointer]:
+              - /url: /hire-agent
+              - button "Habla con un Asesor" [ref=e239]
+        - generic [ref=e241]:
+          - img "Home Energy Upgrades" [ref=e242]
+          - generic [ref=e246]:
+            - img [ref=e248]
+            - generic [ref=e251]:
+              - heading "Smart Search" [level=4] [ref=e252]
+              - paragraph [ref=e253]: By County & Service Type
+      - generic [ref=e257]:
+        - generic [ref=e258]:
+          - generic [ref=e259]: Knowledge Base
+          - heading "Frequently Asked Questions" [level=2] [ref=e260]:
+            - text: Frequently Asked
+            - text: Questions
+          - generic [ref=e261]:
+            - generic [ref=e262] [cursor=pointer]:
+              - heading "What is a BER Certificate?" [level=4] [ref=e263]
+              - paragraph [ref=e264]: A Building Energy Rating (BER) tells you how energy efficient your home is, rated from A (most efficient) to G (least efficient).
+            - generic [ref=e265] [cursor=pointer]:
+              - heading "Why do I need a BER?" [level=4] [ref=e266]
+              - paragraph [ref=e267]: It's legally required to sell or rent a property. It's also needed for SEAI energy upgrade grants.
+            - generic [ref=e268] [cursor=pointer]:
+              - heading "How much does it cost?" [level=4] [ref=e269]
+              - paragraph [ref=e270]: Prices vary based on property size. Our platform ensures you get the most competitive quotes from local assessors.
+            - generic [ref=e271] [cursor=pointer]:
+              - heading "How long is it valid for?" [level=4] [ref=e272]
+              - paragraph [ref=e273]: A BER certificate is valid for up to 10 years, unless there are major changes to the property's energy performance.
+          - link "View all FAQs" [ref=e274] [cursor=pointer]:
+            - /url: /faq
+            - button "View all FAQs" [ref=e275]:
+              - text: View all FAQs
+              - img [ref=e276]
+        - generic [ref=e278]:
+          - heading "Ready to get your BER Certificate?" [level=3] [ref=e280]:
+            - text: Ready to get your
+            - text: BER Certificate?
+          - paragraph [ref=e281]: Join over 1,000 satisfied homeowners. Get competitive quotes from trusted local assessors in seconds.
+          - link "Get a Quote Online" [ref=e282] [cursor=pointer]:
+            - /url: /get-quote
+            - button "Get a Quote Online" [ref=e283]
+      - generic [ref=e285]:
+        - heading "Why Choose The Berman?" [level=2] [ref=e286]
+        - generic [ref=e287]:
+          - generic [ref=e288]:
+            - generic [ref=e289]: €
+            - paragraph [ref=e290]: Best Value Rates
+          - generic [ref=e291]:
+            - img [ref=e293]
+            - paragraph [ref=e295]: Quick Results
+          - generic [ref=e296]:
+            - img [ref=e298]
+            - paragraph [ref=e301]: SEAI Certified Experts
+          - generic [ref=e302]:
+            - img [ref=e304]
+            - paragraph [ref=e307]: Smooth & Stress-Free
+          - generic [ref=e308]:
+            - img [ref=e310]
+            - paragraph [ref=e312]: Satisfaction Guaranteed
+          - generic [ref=e313]:
+            - img [ref=e315]
+            - paragraph [ref=e318]: Pick Your Schedule
+        - link "Get BER Quotes Now" [ref=e320] [cursor=pointer]:
+          - /url: /get-quote
+          - button "Get BER Quotes Now" [ref=e321]
+      - generic [ref=e323]:
+        - heading "We Cover All Counties" [level=2] [ref=e324]
+        - generic [ref=e325]:
+          - link "BER Cert Carlow" [ref=e326] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Cavan" [ref=e327] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Clare" [ref=e328] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Cork" [ref=e329] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Donegal" [ref=e330] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Dublin" [ref=e331] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Galway" [ref=e332] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Kerry" [ref=e333] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Kildare" [ref=e334] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Kilkenny" [ref=e335] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Laois" [ref=e336] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Leitrim" [ref=e337] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Limerick" [ref=e338] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Longford" [ref=e339] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Louth" [ref=e340] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Mayo" [ref=e341] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Meath" [ref=e342] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Monaghan" [ref=e343] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Offaly" [ref=e344] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Roscommon" [ref=e345] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Sligo" [ref=e346] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Tipperary" [ref=e347] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Waterford" [ref=e348] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Westmeath" [ref=e349] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Wexford" [ref=e350] [cursor=pointer]:
+            - /url: /get-quote
+          - link "BER Cert Wicklow" [ref=e351] [cursor=pointer]:
+            - /url: /get-quote
+      - generic [ref=e357]:
+        - generic [ref=e358]: Premium Resources
+        - heading "Get Our Complete Home Energy Upgrade Guide" [level=2] [ref=e359]:
+          - text: Get Our Complete Home
+          - text: Energy Upgrade Guide
+        - paragraph [ref=e360]: Join 5,000+ homeowners receiving our weekly energy updates, flash sales, and exclusive energy upgrade offers.
+        - generic [ref=e361]:
+          - textbox "Enter your email address" [ref=e362]
+          - button "Subscribe to news" [ref=e363] [cursor=pointer]
+        - generic [ref=e364]:
+          - generic [ref=e365]:
+            - img [ref=e366]
+            - text: No Spam Ever
+          - generic [ref=e368]:
+            - img [ref=e369]
+            - text: Instant Download
+  - contentinfo [ref=e371]:
+    - generic [ref=e372]:
+      - generic [ref=e373]:
+        - generic [ref=e374]:
+          - generic [ref=e375]:
+            - img "Certificado Energético" [ref=e376]
+            - generic [ref=e377]: Certificado Energético
+          - paragraph [ref=e378]: Su socio de confianza para certificados energéticos y consultoría energética.
+          - generic [ref=e379]:
+            - link [ref=e380] [cursor=pointer]:
+              - /url: https://www.facebook.com/profile.php?id=61578159843471
+              - img [ref=e381]
+            - link [ref=e383] [cursor=pointer]:
+              - /url: https://www.instagram.com/thebermanireland?igsh=amtidXdjNmZrMWJz&utm_source=qr
+              - img [ref=e384]
+            - link [ref=e387] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/the-berman/posts/?feedView=all
+              - img [ref=e388]
+            - link [ref=e392] [cursor=pointer]:
+              - /url: https://twitter.com
+              - img [ref=e393]
+        - generic [ref=e395]:
+          - heading "Enlaces Rápidos" [level=4] [ref=e396]
+          - list [ref=e397]:
+            - listitem [ref=e398]:
+              - link "Inicio" [ref=e399] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e400]:
+              - link "Sobre Nosotros" [ref=e401] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e402]:
+              - link "Catálogo de Eficiencia Energética" [ref=e403] [cursor=pointer]:
+                - /url: /catalogue
+            - listitem [ref=e404]:
+              - link "Habla con un Asesor Energético" [ref=e405] [cursor=pointer]:
+                - /url: /hire-agent
+            - listitem [ref=e406]:
+              - link "Registro de Negocio" [ref=e407] [cursor=pointer]:
+                - /url: /signup?role=business
+            - listitem [ref=e408]:
+              - link "FAQ" [ref=e409] [cursor=pointer]:
+                - /url: /faq
+        - generic [ref=e410]:
+          - heading "Cuenta" [level=4] [ref=e411]
+          - list [ref=e412]:
+            - listitem [ref=e413]:
+              - link "Reservar Certificadores" [ref=e414] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e415]:
+              - link "Ubicaciones" [ref=e416] [cursor=pointer]:
+                - /url: /locations
+            - listitem [ref=e417]:
+              - link "Nuestras Noticias" [ref=e418] [cursor=pointer]:
+                - /url: /news
+            - listitem [ref=e419]:
+              - link "Blog" [ref=e420] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e421]:
+              - link "Contacto" [ref=e422] [cursor=pointer]:
+                - /url: /contact-us
+            - listitem [ref=e423]:
+              - link "Iniciar Sesión" [ref=e424] [cursor=pointer]:
+                - /url: /login
+            - listitem [ref=e425]:
+              - link "Registrarse" [ref=e426] [cursor=pointer]:
+                - /url: /signup
+            - listitem [ref=e427]:
+              - button "Suscribirse a Noticias" [ref=e428] [cursor=pointer]
+        - generic [ref=e429]:
+          - heading "Legal" [level=4] [ref=e430]
+          - list [ref=e431]:
+            - listitem [ref=e432]:
+              - link "Política de Privacidad" [ref=e433] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e434]:
+              - link "Términos y Condiciones" [ref=e435] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e436]:
+              - link "Política de Cookies" [ref=e437] [cursor=pointer]:
+                - /url: /cookie-policy
+        - generic [ref=e438]:
+          - heading "Contacto" [level=4] [ref=e439]
+          - list [ref=e440]:
+            - listitem [ref=e441]:
+              - img [ref=e442]
+              - link "hola@certificadoenergético.eu" [ref=e445] [cursor=pointer]:
+                - /url: mailto:hola@certificadoenergético.eu
+            - listitem [ref=e446]:
+              - img [ref=e447]
+              - link "certificadoenergético.eu" [ref=e450] [cursor=pointer]:
+                - /url: https://certificadoenergético.eu
+      - generic [ref=e451]:
+        - paragraph [ref=e452]: © 2026 Certificado Energético. Todos los derechos reservados.
+        - generic [ref=e453]:
+          - link "Política de Privacidad" [ref=e454] [cursor=pointer]:
+            - /url: /privacy
+          - link "Términos de Servicio" [ref=e455] [cursor=pointer]:
+            - /url: /terms

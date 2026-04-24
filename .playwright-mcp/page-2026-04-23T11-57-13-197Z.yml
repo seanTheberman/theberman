@@ -1,0 +1,218 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "The Berman Logo" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img "The Berman Logo" [ref=e7]
+      - generic [ref=e8]:
+        - link "Catálogo de Eficiencia Energética" [ref=e9] [cursor=pointer]:
+          - /url: /catalogue
+          - generic [ref=e11]: Catálogo de Eficiencia Energética
+        - button [ref=e12]:
+          - img [ref=e13]
+  - main [ref=e14]:
+    - generic [ref=e15]:
+      - generic [ref=e17]:
+        - generic [ref=e18]: Nuestra Misión
+        - heading "Precisión en cada Certificación." [level=1] [ref=e19]:
+          - text: Precisión en cada
+          - text: Certificación.
+        - paragraph [ref=e20]: Ayudamos a los propietarios de toda España a entender, mejorar y certificar la eficiencia energética de sus propiedades desde 2015.
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - heading "Nuestra Historia" [level=2] [ref=e26]
+          - paragraph [ref=e27]: "Certificado Energético se fundó con un objetivo claro: aportar claridad profesional y rigor técnico al sector de la certificación energética en España. Detectamos que los propietarios y las empresas no solo buscaban un certificado; buscaban una hoja de ruta hacia un futuro más sostenible y rentable."
+          - paragraph [ref=e28]: "Lo que comenzó como un equipo especializado en Madrid se ha convertido en una red nacional de certificadores acreditados. Nuestro crecimiento se apoya en la precisión, la integridad y un profundo conocimiento del parque edificado español. No solo medimos el rendimiento energético: lo interpretamos y ofrecemos recomendaciones prácticas que generan ahorros reales."
+          - paragraph [ref=e29]: "Hoy, Certificado Energético es una referencia en consultoría energética en España. Hemos realizado con éxito más de 10.000 certificaciones, ayudando a familias y empresas a gestionar la complejidad de los certificados energéticos y las subvenciones de rehabilitación. Nuestra misión sigue siendo la misma: dar a nuestros clientes el conocimiento necesario para tomar decisiones informadas sobre la eficiencia energética de su propiedad."
+          - paragraph [ref=e30]: Mirando al futuro, nos centramos en la innovación y la excelencia. Mejoramos continuamente nuestros procesos y nos mantenemos a la vanguardia de la tecnología energética para ofrecer el máximo nivel de servicio. En Certificado Energético creemos que una vivienda eficiente es la base de una España moderna y sostenible.
+        - generic [ref=e32]:
+          - generic [ref=e33]:
+            - paragraph [ref=e34]: 10k+
+            - paragraph [ref=e35]:
+              - text: Certificaciones
+              - text: Energéticas Emitidas
+          - generic [ref=e36]:
+            - paragraph [ref=e37]: 100+
+            - paragraph [ref=e38]:
+              - text: Red Nacional de
+              - text: Certificadores
+          - generic [ref=e39]:
+            - paragraph [ref=e40]: CEE
+            - paragraph [ref=e41]:
+              - text: Certificadores
+              - text: Acreditados
+      - generic [ref=e43]:
+        - generic [ref=e44]:
+          - heading "Cómo Trabajamos" [level=2] [ref=e45]
+          - paragraph [ref=e46]: Principios de Certificado Energético
+        - generic [ref=e47]:
+          - generic [ref=e48] [cursor=pointer]:
+            - img [ref=e50]
+            - heading "Rapidez y Precisión" [level=3] [ref=e52]
+            - paragraph [ref=e53]: Sabemos que tu tiempo es valioso. Nuestros certificadores ofrecen calificaciones precisas con un enfoque en tiempos de respuesta rápidos.
+          - generic [ref=e54] [cursor=pointer]:
+            - img [ref=e56]
+            - heading "Integridad Profesional" [level=3] [ref=e58]
+            - paragraph [ref=e59]: Todas las certificaciones las realizan profesionales acreditados y asegurados, comprometidos con un trabajo honesto y transparente.
+          - generic [ref=e60] [cursor=pointer]:
+            - img [ref=e62]
+            - heading "Futuro Verde" [level=3] [ref=e65]
+            - paragraph [ref=e66]: Ofrecemos recomendaciones orientadas al ahorro energético a largo plazo y a la reducción del impacto ambiental.
+      - generic [ref=e68]:
+        - generic [ref=e69]:
+          - heading "Preguntas Frecuentes" [level=2] [ref=e70]
+          - paragraph [ref=e71]: Todo lo que necesitas saber
+        - generic [ref=e72]:
+          - generic [ref=e73] [cursor=pointer]:
+            - generic [ref=e74]:
+              - heading "¿Qué es un Certificado Energético?" [level=3] [ref=e75]
+              - img [ref=e77]
+            - paragraph [ref=e81]: El Certificado de Eficiencia Energética (CEE) indica el nivel de eficiencia energética de una propiedad. Califica los edificios de la A (más eficiente) a la G (menos eficiente), de forma similar al etiquetado energético de los electrodomésticos.
+          - generic [ref=e82] [cursor=pointer]:
+            - generic [ref=e83]:
+              - heading "¿Es obligatorio el Certificado Energético en España?" [level=3] [ref=e84]
+              - img [ref=e86]
+            - paragraph [ref=e90]: Sí. El certificado energético es obligatorio por ley para vender, alquilar o anunciar una propiedad en venta o en alquiler, con excepciones muy limitadas.
+          - generic [ref=e91] [cursor=pointer]:
+            - generic [ref=e92]:
+              - heading "¿Cuánto cuesta un Certificado Energético?" [level=3] [ref=e93]
+              - img [ref=e95]
+            - paragraph [ref=e99]: El precio depende del tamaño y el tipo de propiedad. Los precios varían, por lo que comparar presupuestos de varios certificadores te ayuda a conseguir el mejor precio.
+          - generic [ref=e100] [cursor=pointer]:
+            - generic [ref=e101]:
+              - heading "¿Cuánto dura la inspección?" [level=3] [ref=e102]
+              - img [ref=e104]
+            - paragraph [ref=e108]: La inspección en la propiedad suele durar entre 1 y 3 horas, según su tamaño.
+          - generic [ref=e109] [cursor=pointer]:
+            - generic [ref=e110]:
+              - heading "¿Cuánto tiempo es válido el Certificado Energético?" [level=3] [ref=e111]
+              - img [ref=e113]
+            - paragraph [ref=e117]: Tiene una validez de 10 años, salvo que se realicen cambios importantes en la propiedad que afecten a su rendimiento energético.
+          - generic [ref=e118] [cursor=pointer]:
+            - generic [ref=e119]:
+              - heading "¿Cómo obtengo un Certificado Energético?" [level=3] [ref=e120]
+              - img [ref=e122]
+            - paragraph [ref=e126]: Reservas con un certificador acreditado, visita y evalúa tu propiedad, y el certificado se emite y se registra en el organismo competente de tu comunidad autónoma.
+          - generic [ref=e127] [cursor=pointer]:
+            - generic [ref=e128]:
+              - heading "¿Puedo elegir la fecha y la hora de la inspección?" [level=3] [ref=e129]
+              - img [ref=e131]
+            - paragraph [ref=e135]: Sí. Puedes seleccionar la fecha y hora que prefieras al reservar a través de la plataforma.
+          - generic [ref=e136] [cursor=pointer]:
+            - generic [ref=e137]:
+              - heading "¿Los certificadores están acreditados y son de confianza?" [level=3] [ref=e138]
+              - img [ref=e140]
+            - paragraph [ref=e144]: Sí. Todas las certificaciones las realizan técnicos acreditados que siguen un código oficial de buenas prácticas.
+          - generic [ref=e145] [cursor=pointer]:
+            - generic [ref=e146]:
+              - heading "¿Qué pasa si obtengo una calificación baja?" [level=3] [ref=e147]
+              - img [ref=e149]
+            - paragraph [ref=e153]: Una calificación baja no impide vender tu propiedad; simplemente informa al comprador. Nuestro informe de recomendaciones te indicará cómo mejorarla.
+      - generic [ref=e157]:
+        - heading "Únete a la familia Certificado Energético" [level=2] [ref=e158]:
+          - text: Únete a la familia
+          - text: Certificado Energético
+        - paragraph [ref=e159]: ¿Preparado para tu certificación energética profesional? Nuestro equipo nacional está listo para ayudarte hoy mismo.
+        - link "Pedir mi Presupuesto" [ref=e160] [cursor=pointer]:
+          - /url: /contact-us
+          - button "Pedir mi Presupuesto" [ref=e161]:
+            - text: Pedir mi Presupuesto
+            - img [ref=e162]
+  - contentinfo [ref=e164]:
+    - generic [ref=e165]:
+      - generic [ref=e166]:
+        - generic [ref=e167]:
+          - generic [ref=e168]:
+            - img "Certificado Energético" [ref=e169]
+            - generic [ref=e170]: Certificado Energético
+          - paragraph [ref=e171]: Su socio de confianza para certificados energéticos y consultoría energética.
+          - generic [ref=e172]:
+            - link [ref=e173] [cursor=pointer]:
+              - /url: https://www.facebook.com/profile.php?id=61578159843471
+              - img [ref=e174]
+            - link [ref=e176] [cursor=pointer]:
+              - /url: https://www.instagram.com/thebermanireland?igsh=amtidXdjNmZrMWJz&utm_source=qr
+              - img [ref=e177]
+            - link [ref=e180] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/the-berman/posts/?feedView=all
+              - img [ref=e181]
+            - link [ref=e185] [cursor=pointer]:
+              - /url: https://twitter.com
+              - img [ref=e186]
+        - generic [ref=e188]:
+          - heading "Enlaces Rápidos" [level=4] [ref=e189]
+          - list [ref=e190]:
+            - listitem [ref=e191]:
+              - link "Inicio" [ref=e192] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e193]:
+              - link "Sobre Nosotros" [ref=e194] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e195]:
+              - link "Catálogo de Eficiencia Energética" [ref=e196] [cursor=pointer]:
+                - /url: /catalogue
+            - listitem [ref=e197]:
+              - link "Habla con un Asesor Energético" [ref=e198] [cursor=pointer]:
+                - /url: /hire-agent
+            - listitem [ref=e199]:
+              - link "Registro de Negocio" [ref=e200] [cursor=pointer]:
+                - /url: /signup?role=business
+            - listitem [ref=e201]:
+              - link "FAQ" [ref=e202] [cursor=pointer]:
+                - /url: /faq
+        - generic [ref=e203]:
+          - heading "Cuenta" [level=4] [ref=e204]
+          - list [ref=e205]:
+            - listitem [ref=e206]:
+              - link "Reservar Certificadores" [ref=e207] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e208]:
+              - link "Ubicaciones" [ref=e209] [cursor=pointer]:
+                - /url: /locations
+            - listitem [ref=e210]:
+              - link "Nuestras Noticias" [ref=e211] [cursor=pointer]:
+                - /url: /news
+            - listitem [ref=e212]:
+              - link "Blog" [ref=e213] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e214]:
+              - link "Contacto" [ref=e215] [cursor=pointer]:
+                - /url: /contact-us
+            - listitem [ref=e216]:
+              - link "Iniciar Sesión" [ref=e217] [cursor=pointer]:
+                - /url: /login
+            - listitem [ref=e218]:
+              - link "Registrarse" [ref=e219] [cursor=pointer]:
+                - /url: /signup
+            - listitem [ref=e220]:
+              - button "Suscribirse a Noticias" [ref=e221] [cursor=pointer]
+        - generic [ref=e222]:
+          - heading "Legal" [level=4] [ref=e223]
+          - list [ref=e224]:
+            - listitem [ref=e225]:
+              - link "Política de Privacidad" [ref=e226] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e227]:
+              - link "Términos y Condiciones" [ref=e228] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e229]:
+              - link "Política de Cookies" [ref=e230] [cursor=pointer]:
+                - /url: /cookie-policy
+        - generic [ref=e231]:
+          - heading "Contacto" [level=4] [ref=e232]
+          - list [ref=e233]:
+            - listitem [ref=e234]:
+              - img [ref=e235]
+              - link "hola@certificadoenergético.eu" [ref=e238] [cursor=pointer]:
+                - /url: mailto:hola@certificadoenergético.eu
+            - listitem [ref=e239]:
+              - img [ref=e240]
+              - link "certificadoenergético.eu" [ref=e243] [cursor=pointer]:
+                - /url: https://certificadoenergético.eu
+      - generic [ref=e244]:
+        - paragraph [ref=e245]: © 2026 Certificado Energético. Todos los derechos reservados.
+        - generic [ref=e246]:
+          - link "Política de Privacidad" [ref=e247] [cursor=pointer]:
+            - /url: /privacy
+          - link "Términos de Servicio" [ref=e248] [cursor=pointer]:
+            - /url: /terms

@@ -1,0 +1,212 @@
+- generic [ref=e154]:
+  - complementary [ref=e155]:
+    - link "The Berman" [ref=e157] [cursor=pointer]:
+      - /url: /
+      - img "The Berman" [ref=e158]
+    - navigation [ref=e159]:
+      - paragraph [ref=e160]: Navigation
+      - button "Overview" [ref=e161]:
+        - generic [ref=e162]:
+          - img [ref=e163]
+          - generic [ref=e164]: Overview
+      - button "Leads" [ref=e166]:
+        - generic [ref=e167]:
+          - img [ref=e168]
+          - generic [ref=e171]: Leads
+      - button "Assessments" [ref=e172]:
+        - generic [ref=e173]:
+          - img [ref=e174]
+          - generic [ref=e177]: Assessments
+      - button "Jobs" [active] [ref=e178]:
+        - generic [ref=e179]:
+          - img [ref=e180]
+          - generic [ref=e183]: Jobs
+      - button "Homeowners" [ref=e184]:
+        - generic [ref=e185]:
+          - img [ref=e186]
+          - generic [ref=e189]: Homeowners
+      - button "Businesses" [ref=e190]:
+        - generic [ref=e191]:
+          - img [ref=e192]
+          - generic [ref=e196]: Businesses
+      - button "BER Assessors" [ref=e197]:
+        - generic [ref=e198]:
+          - img [ref=e199]
+          - generic [ref=e204]: BER Assessors
+      - button "Catalogue" [ref=e205]:
+        - generic [ref=e206]:
+          - img [ref=e207]
+          - generic [ref=e209]: Catalogue
+      - button "Payments" [ref=e210]:
+        - generic [ref=e211]:
+          - img [ref=e212]
+          - generic [ref=e214]: Payments
+      - paragraph [ref=e217]: CMS
+      - button "News" [ref=e218]:
+        - generic [ref=e219]:
+          - img [ref=e220]
+          - generic [ref=e223]: News
+      - button "Blog" [ref=e224]:
+        - generic [ref=e225]:
+          - img [ref=e226]
+          - generic [ref=e230]: Blog
+      - button "FAQ" [ref=e231]:
+        - generic [ref=e232]:
+          - img [ref=e233]
+          - generic [ref=e236]: FAQ
+      - button "Recently Deleted" [ref=e239]:
+        - generic [ref=e240]:
+          - img [ref=e241]
+          - generic [ref=e244]: Recently Deleted
+      - button "Settings" [ref=e245]:
+        - generic [ref=e246]:
+          - img [ref=e247]
+          - generic [ref=e250]: Settings
+      - button "Partners" [ref=e252]:
+        - img [ref=e253]
+        - generic [ref=e257]: Partners
+    - generic [ref=e258]:
+      - generic [ref=e259]:
+        - img [ref=e261]
+        - generic [ref=e266]:
+          - paragraph [ref=e267]: Admin
+          - paragraph [ref=e268]: admin@theberman.eu
+      - button "Sign Out" [ref=e269]:
+        - img [ref=e270]
+        - generic [ref=e273]: Sign Out
+  - generic [ref=e274]:
+    - generic [ref=e275]:
+      - generic [ref=e277]:
+        - heading "Jobs Management Ireland" [level=1] [ref=e5016]:
+          - generic [ref=e279]: Jobs Management
+          - combobox [ref=e280] [cursor=pointer]:
+            - option "Ireland" [selected]
+            - option "Spain"
+        - paragraph [ref=e281]: Manage and track all assessment jobs and quote submissions.
+      - button "Refresh" [ref=e282]:
+        - img [ref=e283]
+        - generic [ref=e288]: Refresh
+    - main [ref=e289]:
+      - generic [ref=e5024]:
+        - generic [ref=e5025]:
+          - heading "Jobs Management" [level=2] [ref=e5026]
+          - paragraph [ref=e5027]: Manage and track all assessment jobs, quotes, and contractor activity.
+          - generic [ref=e5028]:
+            - generic [ref=e5029]:
+              - generic [ref=e5030]: "3"
+              - generic [ref=e5031]: Total
+            - generic [ref=e5033]:
+              - generic [ref=e5034]: "2"
+              - generic [ref=e5035]: Live
+            - generic [ref=e5037]:
+              - generic [ref=e5038]: "2"
+              - generic [ref=e5039]: Awaiting Buyer
+            - generic [ref=e5041]:
+              - generic [ref=e5042]: "1"
+              - generic [ref=e5043]: No Quotes
+            - generic [ref=e5045]:
+              - generic [ref=e5046]: "6"
+              - generic [ref=e5047]: Total Quotes
+        - generic [ref=e5049]:
+          - button "Live Jobs 2" [ref=e5050]:
+            - img [ref=e5051]
+            - text: Live Jobs
+            - generic [ref=e5054]: "2"
+          - button "Expired (7d Idle) 1" [ref=e5055]:
+            - img [ref=e5056]
+            - text: Expired (7d Idle)
+            - generic [ref=e5059]: "1"
+          - button "No Response from Buyer 2" [ref=e5060]:
+            - img [ref=e5061]
+            - text: No Response from Buyer
+            - generic [ref=e5063]: "2"
+          - button "No Quotes from Assessors 1" [ref=e5064]:
+            - img [ref=e5065]
+            - text: No Quotes from Assessors
+            - generic [ref=e5069]: "1"
+          - button "All Jobs 3" [ref=e5070]:
+            - img [ref=e5071]
+            - text: All Jobs
+            - generic [ref=e5074]: "3"
+        - generic [ref=e5075]:
+          - generic [ref=e5076]:
+            - img [ref=e5077]
+            - textbox "Search by address, town, county, customer, eircode..." [ref=e5080]
+          - generic [ref=e5081]:
+            - img [ref=e5082]
+            - combobox [ref=e5085] [cursor=pointer]:
+              - option "All Counties" [selected]
+              - option "Kilkenny"
+              - option "Mayo"
+              - option "Wexford"
+        - table [ref=e5088]:
+          - rowgroup [ref=e5089]:
+            - row "Date Posted Status Customer Town County Type Sq. Mt. Beds Purpose Quotes Last Activity Idle Days Details" [ref=e5090]:
+              - columnheader "Date Posted" [ref=e5091]:
+                - text: Date
+                - text: Posted
+              - columnheader "Status" [ref=e5092]
+              - columnheader "Customer" [ref=e5093]
+              - columnheader "Town" [ref=e5094]
+              - columnheader "County" [ref=e5095]
+              - columnheader "Type" [ref=e5096]
+              - columnheader "Sq. Mt." [ref=e5097]
+              - columnheader "Beds" [ref=e5098]
+              - columnheader "Purpose" [ref=e5099]
+              - columnheader "Quotes" [ref=e5100]
+              - columnheader "Last Activity" [ref=e5101]:
+                - text: Last
+                - text: Activity
+              - columnheader "Idle Days" [ref=e5102]:
+                - text: Idle
+                - text: Days
+              - columnheader "Details" [ref=e5103]
+          - rowgroup [ref=e5104]:
+            - row "19 Apr 3d idle Live Teresa murtdelahunty@gmail.com Graiguenamanagh Kilkenny Semi-Detached 110 - 140 m² 4 Govt Grant 3 3 pending 19 Apr 3d View" [ref=e5105] [cursor=pointer]:
+              - cell "19 Apr 3d idle" [ref=e5106]:
+                - generic [ref=e5107]: 19 Apr
+                - generic [ref=e5108]: 3d idle
+              - cell "Live" [ref=e5109]:
+                - generic [ref=e5110]: Live
+              - cell "Teresa murtdelahunty@gmail.com" [ref=e5111]:
+                - generic [ref=e5112]: Teresa
+                - generic [ref=e5113]: murtdelahunty@gmail.com
+              - cell "Graiguenamanagh" [ref=e5114]
+              - cell "Kilkenny" [ref=e5115]
+              - cell "Semi-Detached" [ref=e5116]
+              - cell "110 - 140 m²" [ref=e5117]
+              - cell "4" [ref=e5118]
+              - cell "Govt Grant" [ref=e5119]
+              - cell "3 3 pending" [ref=e5120]:
+                - generic [ref=e5121]:
+                  - generic [ref=e5122]: "3"
+                  - generic "3 pending" [ref=e5123]
+              - cell "19 Apr" [ref=e5124]
+              - cell "3d" [ref=e5125]:
+                - generic [ref=e5126]: 3d
+              - cell "View" [ref=e5127]:
+                - button "View" [ref=e5128]
+            - row "18 Apr 3d idle Live Jason Quirke jason.quirke1973@gmail.com Wexford Town Wexford Detached 3000 - 4000 sq.ft 6 Govt Grant 3 3 pending 19 Apr 3d View" [ref=e5129] [cursor=pointer]:
+              - cell "18 Apr 3d idle" [ref=e5130]:
+                - generic [ref=e5131]: 18 Apr
+                - generic [ref=e5132]: 3d idle
+              - cell "Live" [ref=e5133]:
+                - generic [ref=e5134]: Live
+              - cell "Jason Quirke jason.quirke1973@gmail.com" [ref=e5135]:
+                - generic [ref=e5136]: Jason Quirke
+                - generic [ref=e5137]: jason.quirke1973@gmail.com
+              - cell "Wexford Town" [ref=e5138]
+              - cell "Wexford" [ref=e5139]
+              - cell "Detached" [ref=e5140]
+              - cell "3000 - 4000 sq.ft" [ref=e5141]
+              - cell "6" [ref=e5142]
+              - cell "Govt Grant" [ref=e5143]
+              - cell "3 3 pending" [ref=e5144]:
+                - generic [ref=e5145]:
+                  - generic [ref=e5146]: "3"
+                  - generic "3 pending" [ref=e5147]
+              - cell "19 Apr" [ref=e5148]
+              - cell "3d" [ref=e5149]:
+                - generic [ref=e5150]: 3d
+              - cell "View" [ref=e5151]:
+                - button "View" [ref=e5152]

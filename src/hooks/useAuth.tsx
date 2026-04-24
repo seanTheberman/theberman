@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 import { type User, type Session, type AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { clearRateLimit } from '../lib/rateLimiter';
+import { getTenantFromDomain } from '../lib/tenant';
 
 interface AuthContextType {
     user: User | null;
@@ -10,6 +11,7 @@ interface AuthContextType {
     profile: Record<string, unknown> | null;
     loading: boolean;
     role: 'admin' | 'contractor' | 'user' | 'homeowner' | 'business' | null;
+    tenant: string;
     signIn: (email: string, password: string) => Promise<{ data: { user: User | null, session: Session | null }, error: AuthError | null }>;
     signUp: (email: string, password: string, fullName: string, role: 'user' | 'contractor' | 'homeowner' | 'business', phone?: string) => Promise<{ data: { user: User | null, session: Session | null }, error: AuthError | null }>;
     resetPassword: (email: string) => Promise<{ data: Record<string, unknown> | null, error: AuthError | null }>;
@@ -26,6 +28,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [role, setRole] = useState<'admin' | 'contractor' | 'user' | 'homeowner' | 'business' | null>(null);
     const [loading, setLoading] = useState(true);
     const [isInitialCheckDone, setIsInitialCheckDone] = useState(false);
+    const [tenant, setTenant] = useState<string>(getTenantFromDomain());
 
     const [profile, setProfile] = useState<Record<string, unknown> | null>(null);
     const isFetchingProfile = useRef(false);
@@ -48,6 +51,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
             if (data) {
                 setRole(data.role);
+                // Set tenant from profile if available, otherwise from domain
+                if (data.tenant) {
+                    setTenant(data.tenant as string);
+                }
                 // Fallback for registration_status from user metadata if missing in profile table
                 const profileWithMetadata = {
                     ...data,
@@ -129,6 +136,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const signUp = async (email: string, password: string, fullName: string, role: 'user' | 'contractor' | 'homeowner' | 'business', phone?: string) => {
+        const currentTenant = getTenantFromDomain();
         return await supabase.auth.signUp({
             email,
             password,
@@ -137,6 +145,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     full_name: fullName,
                     role: role,
                     phone: phone,
+                    tenant: currentTenant,
                     registration_status: (role === 'business' || role === 'contractor') ? 'pending' : 'active',
                 },
             },
@@ -184,7 +193,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, session, profile, loading, role, signIn, signUp, resetPassword, updateUserPassword, signOut, refreshProfile }}>
+        <AuthContext.Provider value={{ user, session, profile, loading, role, tenant, signIn, signUp, resetPassword, updateUserPassword, signOut, refreshProfile }}>
             {isInitialCheckDone ? children : (
                 <div className="min-h-screen flex items-center justify-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007F00]"></div>

@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from '../hooks/useTranslation';
 import { supabase } from '../lib/supabase';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
@@ -18,6 +19,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 const Login = () => {
+    const { t, isSpanish } = useTranslation();
     const { signIn, signOut, user, role, profile, loading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -210,8 +212,8 @@ const Login = () => {
             <div className="w-full max-w-md px-6">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-                    <p className="text-gray-500">Sign in to continue.</p>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{isSpanish ? 'Bienvenido de Nuevo' : 'Welcome Back'}</h1>
+                    <p className="text-gray-500">{isSpanish ? 'Inicia sesión para continuar.' : 'Sign in to continue.'}</p>
                 </div>
 
                 {/* Simple Tab Switcher */}
@@ -224,7 +226,7 @@ const Login = () => {
                             : 'border-transparent text-gray-400 hover:text-gray-600'
                             }`}
                     >
-                        Homeowner
+                        {isSpanish ? 'Propietario' : 'Homeowner'}
                     </button>
                     <button
                         type="button"
@@ -234,7 +236,7 @@ const Login = () => {
                             : 'border-transparent text-gray-400 hover:text-gray-600'
                             }`}
                     >
-                        BER Assessor
+                        {isSpanish ? 'Certificador Energético' : 'BER Assessor'}
                     </button>
                     <button
                         type="button"
@@ -244,25 +246,25 @@ const Login = () => {
                             : 'border-transparent text-gray-400 hover:text-gray-600'
                             }`}
                     >
-                        Business
+                        {isSpanish ? 'Negocio' : 'Business'}
                     </button>
                 </div>
 
                 {/* Form */}
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                     <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">Email</label>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">{t('email_address')}</label>
                         <input
                             {...register('email')}
                             type="email"
-                            placeholder="name@company.com"
+                            placeholder={isSpanish ? 'nombre@empresa.com' : 'name@company.com'}
                             className="w-full px-4 py-3 bg-[#e8f0fe] border-none rounded-lg focus:ring-2 focus:ring-[#007F00]/30 outline-none"
                         />
                         {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">Password</label>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">{t('password')}</label>
                         <input
                             {...register('password')}
                             type="password"
@@ -274,7 +276,7 @@ const Login = () => {
 
                     <div className="text-right">
                         <Link to="/forgot-password" className="text-sm font-bold text-[#007F00] hover:underline">
-                            Forgot Password?
+                            {isSpanish ? '¿Olvidaste tu Contraseña?' : 'Forgot Password?'}
                         </Link>
                     </div>
 
@@ -283,13 +285,13 @@ const Login = () => {
                         disabled={isSubmitting}
                         className="w-full py-4 bg-[#007F00] text-white rounded-full font-bold text-lg hover:bg-green-800 transition-all flex items-center justify-center gap-2 shadow-lg"
                     >
-                        {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : 'Log In'}
+                        {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : t('sign_in')}
                     </button>
 
                     <p className="text-center text-gray-500 mt-6">
-                        Don't have an account?{' '}
+                        {isSpanish ? '¿No tienes una cuenta?' : "Don't have an account?"}{' '}
                         <Link to="/signup" className="text-[#007F00] font-bold hover:underline">
-                            Sign up
+                            {t('sign_up')}
                         </Link>
                     </p>
                 </form>

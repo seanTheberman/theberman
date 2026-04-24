@@ -2,6 +2,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { CustomSmtpClient } from "../shared/smtp.ts";
+import { getTenantConfig } from "../shared/tenant.ts";
 import { generateBusinessEmail } from "./templates/business-notification.ts"
 import { generateCustomerConfirmationEmail } from "./templates/customer-confirmation.ts"
 
@@ -17,7 +18,7 @@ Deno.serve(async (req: Request) => {
 
     try {
         const jsonBody = await req.json();
-        const { record, businessEmail, businessName } = jsonBody;
+        const { record, businessEmail, businessName, tenant = 'ireland' } = jsonBody;
 
         if (!record || !businessEmail) {
             throw new Error("Missing required fields: record or businessEmail");
@@ -27,16 +28,16 @@ Deno.serve(async (req: Request) => {
         const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
         const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-        const smtpHostname = Deno.env.get('SMTP_HOSTNAME')
-        const smtpPort = parseInt(Deno.env.get('SMTP_PORT') || '587')
-        const smtpUsername = Deno.env.get('SMTP_USERNAME')
-        const smtpPassword = Deno.env.get('SMTP_PASSWORD')
-        const smtpFromEnv = Deno.env.get('SMTP_FROM') || 'hello@theberman.eu';
-        const smtpFrom = smtpFromEnv.includes('<') ? smtpFromEnv : `The Berman.eu <${smtpFromEnv}>`;
+        const config = await getTenantConfig(supabase, tenant);
+        const smtpHostname = config.smtp_hostname;
+        const smtpPort = config.smtp_port;
+        const smtpUsername = config.smtp_username;
+        const smtpPassword = config.smtp_password;
+        const smtpFrom = config.smtp_from;
 
         if (!smtpHostname || !smtpUsername || !smtpPassword) {
-            console.error("[send-catalogue-enquiry] SMTP Secrets missing");
-            return new Response(JSON.stringify({ success: false, error: 'SMTP Secrets missing' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+            console.error(`[send-catalogue-enquiry] SMTP not configured for tenant ${tenant}`);
+            return new Response(JSON.stringify({ success: false, error: `SMTP not configured for tenant ${tenant}` }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 
         const client = new CustomSmtpClient()

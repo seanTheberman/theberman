@@ -11,6 +11,7 @@ import {
 import toast from 'react-hot-toast';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
 import SEOHead from '../components/SEOHead';
+import { getTenantFromDomain, getTenantEmail, getTenantDomain } from '../lib/tenant';
 
 const hireAgentSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -39,6 +40,129 @@ const HireAgent = () => {
     });
 
     const selectedCounty = watch('county');
+    const tenant = getTenantFromDomain();
+    const isSpanish = tenant === 'spain';
+    const tenantEmail = getTenantEmail(tenant);
+    const tenantDomain = getTenantDomain(tenant);
+    const tr = isSpanish ? {
+        seoTitle: 'Contratar un Asesor Energético',
+        seoDesc: 'Obtén orientación gratuita e imparcial de un Asesor Energético acreditado. Análisis técnico verificado y precios competitivos para mejorar la eficiencia de tu hogar.',
+        badge: 'Asesoramiento Experto',
+        title1: 'Contrata un',
+        titleHighlight: 'Asesor Energético',
+        title2: ' Gratis',
+        subtitle: 'Obtén orientación imparcial, análisis técnico verificado y acceso a precios competitivos para mejorar la eficiencia energética de tu hogar.',
+        speakH1: 'Habla con un',
+        speakH2: 'Asesor Energético',
+        speakP: 'Tu asesor energético coordinará y trabajará directamente con un certificador para que las recomendaciones sean técnicamente precisas y se basen en tu certificado energético actual y su informe de recomendaciones.',
+        agentWillLabel: 'El asesor se encargará de:',
+        benefits: [
+            'Identificar opciones de mejora coste-eficaces',
+            'Aconsejar las mejoras de eficiencia idóneas',
+            'Buscar y comparar presupuestos de profesionales',
+            'Negociar las mejores opciones calidad/precio',
+            'Ayudarte con la documentación de subvenciones',
+            'Evitar obras innecesarias o sobrevaloradas',
+        ],
+        speakClose: 'El objetivo es ofrecer una guía clara e imparcial, un criterio técnico verificado y acceso a precios competitivos, para que las mejoras se realicen de la forma más inteligente y económica posible.',
+        badge1: 'Independiente de las empresas',
+        badge2: 'Aporte técnico y certificación',
+        ourDetails: 'Nuestros Datos',
+        emailUs: 'Escríbenos',
+        website: 'Sitio Web',
+        requestH: 'Solicita tu Asesor Energético',
+        fullName: 'Nombre Completo',
+        fullNamePh: 'Nombre completo',
+        phoneNumber: 'Número de Teléfono',
+        phonePh: 'número de teléfono',
+        email: 'Correo Electrónico',
+        emailPh: 'correo electrónico',
+        county: 'Provincia',
+        selectCounty: 'Seleccionar Provincia',
+        town: 'Ciudad / Localidad',
+        selectTown: 'Seleccionar Ciudad',
+        selectCountyFirst: 'Selecciona Provincia Primero',
+        propertyType: 'Tipo de Propiedad',
+        selectType: 'Seleccionar Tipo',
+        apartment: 'Apartamento',
+        midTerrace: 'Casa Adosada (Interior)',
+        endTerrace: 'Casa Adosada (Esquina)',
+        semiDetached: 'Casa Pareada',
+        detached: 'Casa Independiente',
+        bungalow: 'Chalet',
+        purposeLabel: 'Propósito del Certificado',
+        selectPurpose: 'Seleccionar Propósito',
+        mortgage: 'Hipoteca/Banco',
+        selling: 'Venta',
+        renting: 'Alquiler',
+        grant: 'Subvención',
+        other: 'Otro',
+        message: 'Mensaje',
+        messagePh: 'Cuéntanos tus objetivos de eficiencia energética...',
+        sending: 'Enviando...',
+        hireBtn: 'Contratar Asesor Energético',
+        toastSuccess: '¡Tu consulta ha sido enviada! Un Asesor Energético se pondrá en contacto contigo en breve.',
+        toastError: 'Error al enviar el mensaje. Por favor, inténtalo de nuevo.',
+    } : {
+        seoTitle: 'Hire an Energy Agent',
+        seoDesc: 'Get free impartial guidance from a certified Energy Agent. Verified technical input and competitive pricing for your home energy upgrades.',
+        badge: 'Expert Guidance',
+        title1: 'Hire An',
+        titleHighlight: 'Energy Agent',
+        title2: ' For Free',
+        subtitle: 'Get impartial guidance, verified technical input, and access to competitive pricing for your home energy upgrades.',
+        speakH1: 'Speak to an',
+        speakH2: 'Energy Advisor',
+        speakP: 'Your energy agent will organise and work directly with a BER assessor to ensure all advice and upgrade recommendations are technically accurate and based on your existing BER certificate and advisory report.',
+        agentWillLabel: 'The agent will then:',
+        benefits: [
+            'Identify cost-effective upgrade options',
+            'Advise on best BER improvements',
+            'Source and compare contractor quotes',
+            'Negotiate best-value options',
+            'Assist with SEAI grant paperwork',
+            'Avoid unnecessary or overpriced works',
+        ],
+        speakClose: 'The goal is to provide clear, impartial guidance, verified technical input, and access to competitive pricing, ensuring upgrades are completed in the smartest and most economical way possible.',
+        badge1: 'Independent from contractors',
+        badge2: 'Technical input & certification',
+        ourDetails: 'Our details',
+        emailUs: 'Email Us',
+        website: 'Website',
+        requestH: 'Request Your Energy Agent',
+        fullName: 'Full Name',
+        fullNamePh: 'Full name',
+        phoneNumber: 'Phone Number',
+        phonePh: 'phone number',
+        email: 'Email Address',
+        emailPh: 'email',
+        county: 'County',
+        selectCounty: 'Select County',
+        town: 'Town / City',
+        selectTown: 'Select Town',
+        selectCountyFirst: 'Select County First',
+        propertyType: 'Property Type',
+        selectType: 'Select Type',
+        apartment: 'Apartment',
+        midTerrace: 'Mid-Terrace',
+        endTerrace: 'End-Terrace',
+        semiDetached: 'Semi-Detached',
+        detached: 'Detached',
+        bungalow: 'Bungalow',
+        purposeLabel: 'Purpose of BER',
+        selectPurpose: 'Select Purpose',
+        mortgage: 'Mortgage/Bank',
+        selling: 'Selling',
+        renting: 'Renting',
+        grant: 'Govt Grant',
+        other: 'Other',
+        message: 'Message',
+        messagePh: 'Tell us about your home energy goals...',
+        sending: 'Sending...',
+        hireBtn: 'Hire Energy Agent',
+        toastSuccess: 'Your inquiry has been sent! An Energy Advisor will contact you shortly.',
+        toastError: 'Failed to send message. Please try again.',
+    };
 
     const onSubmit = async (data: HireAgentFormData) => {
         if (data.bot_check) {
@@ -68,19 +192,19 @@ const HireAgent = () => {
                 body: { record: { ...data, message: `[HIRE AGENT INQUIRY]: ${data.message}` } }
             });
 
-            toast.success('Your inquiry has been sent! An Energy Advisor will contact you shortly.');
+            toast.success(tr.toastSuccess);
             reset();
         } catch (error) {
             console.error('Error:', error);
-            toast.error('Failed to send message. Please try again.');
+            toast.error(tr.toastError);
         }
     };
 
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen">
             <SEOHead
-                title="Hire an Energy Agent"
-                description="Get free impartial guidance from a certified Energy Agent. Verified technical input and competitive pricing for your home energy upgrades."
+                title={tr.seoTitle}
+                description={tr.seoDesc}
                 canonical="/hire-agent"
             />
 
@@ -88,13 +212,13 @@ const HireAgent = () => {
             <section className="pt-32 pb-8 bg-white">
                 <div className="container mx-auto px-6 text-center max-w-4xl">
                     <span className="inline-block mb-4 px-4 py-1.5 rounded-full bg-green-50 text-[#007F00] text-xs font-black tracking-widest uppercase border border-green-100">
-                        Expert Guidance
+                        {tr.badge}
                     </span>
                     <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 leading-tight">
-                        Hire An <span className="text-[#007F00]">Energy Agent</span> For Free
+                        {tr.title1} <span className="text-[#007F00]">{tr.titleHighlight}</span>{tr.title2}
                     </h1>
                     <p className="text-base md:text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
-                        Get impartial guidance, verified technical input, and access to competitive pricing for your home energy upgrades.
+                        {tr.subtitle}
                     </p>
                 </div>
             </section>
@@ -103,23 +227,16 @@ const HireAgent = () => {
             <section className="pb-12">
                 <div className="container mx-auto px-6 max-w-4xl">
                     <div className="bg-green-50/50 border-2 border-green-100 rounded-[2rem] p-8 md:p-12 text-left shadow-sm">
-                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-6 uppercase tracking-tight">Speak to an <span className="text-[#007F00]">Energy Advisor</span></h2>
+                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-6 uppercase tracking-tight">{tr.speakH1} <span className="text-[#007F00]">{tr.speakH2}</span></h2>
                         <div className="space-y-6 text-gray-700 leading-relaxed font-medium">
                             <p>
-                                Your energy agent will organise and work directly with a BER assessor to ensure all advice and upgrade recommendations are technically accurate and based on your existing BER certificate and advisory report.
+                                {tr.speakP}
                             </p>
 
                             <div className="space-y-4">
-                                <p className="font-black text-gray-900 uppercase tracking-widest text-xs">The agent will then:</p>
+                                <p className="font-black text-gray-900 uppercase tracking-widest text-xs">{tr.agentWillLabel}</p>
                                 <ul className="grid md:grid-cols-2 gap-4">
-                                    {[
-                                        "Identify cost-effective upgrade options",
-                                        "Advise on best BER improvements",
-                                        "Source and compare contractor quotes",
-                                        "Negotiate best-value options",
-                                        "Assist with SEAI grant paperwork",
-                                        "Avoid unnecessary or overpriced works"
-                                    ].map((item, i) => (
+                                    {tr.benefits.map((item, i) => (
                                         <li key={i} className="flex items-start gap-3">
                                             <CheckCircle2 className="text-[#007F00] mt-1 shrink-0" size={18} />
                                             <span className="text-sm font-bold">{item}</span>
@@ -129,17 +246,17 @@ const HireAgent = () => {
                             </div>
 
                             <p className="text-gray-600 italic text-sm">
-                                The goal is to provide clear, impartial guidance, verified technical input, and access to competitive pricing, ensuring upgrades are completed in the smartest and most economical way possible.
+                                {tr.speakClose}
                             </p>
 
                             <div className="pt-6 border-t border-green-100 flex flex-col md:flex-row gap-6 items-center text-xs font-black uppercase tracking-widest text-gray-500">
                                 <div className="flex items-center gap-2">
                                     <Shield className="text-[#007F00]" size={16} />
-                                    <span>Independent from contractors</span>
+                                    <span>{tr.badge1}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <ZapIcon className="text-[#007F00]" size={16} />
-                                    <span>Technical input & certification</span>
+                                    <span>{tr.badge2}</span>
                                 </div>
                             </div>
                         </div>
@@ -154,14 +271,14 @@ const HireAgent = () => {
 
                         {/* LEFT COLUMN: CONTACT INFO */}
                         <div className="lg:w-1/3 w-full bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 border border-gray-100 shadow-sm group hover:border-green-100 transition-all h-full">
-                            <h3 className="text-xl font-black text-gray-900 mb-8 uppercase tracking-tight">Our details</h3>
+                            <h3 className="text-xl font-black text-gray-900 mb-8 uppercase tracking-tight">{tr.ourDetails}</h3>
 
                             <div className="space-y-6">
                                 <InfoItem
                                     icon={<Mail size={20} />}
-                                    title="Email Us"
-                                    value="hello@theberman.eu"
-                                    href="mailto:hello@theberman.eu"
+                                    title={tr.emailUs}
+                                    value={tenantEmail}
+                                    href={`mailto:${tenantEmail}`}
                                 />
                                 {/* <div className="pt-6 border-t border-gray-50">
                                     <InfoItem
@@ -175,8 +292,8 @@ const HireAgent = () => {
                                 <div className="pt-6 border-t border-gray-50">
                                     <InfoItem
                                         icon={<Globe size={20} />}
-                                        title="Website"
-                                        value="theberman.eu"
+                                        title={tr.website}
+                                        value={tenantDomain}
                                     />
                                 </div>
                             </div>
@@ -184,41 +301,41 @@ const HireAgent = () => {
 
                         {/* RIGHT COLUMN: FORM */}
                         <div className="lg:w-2/3 w-full bg-gray-50 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 border border-gray-100 shadow-sm transition-all hover:shadow-md">
-                            <h3 className="text-lg md:text-xl font-black text-gray-900 mb-6 text-center uppercase tracking-tight px-4">Request Your Energy Agent</h3>
+                            <h3 className="text-lg md:text-xl font-black text-gray-900 mb-6 text-center uppercase tracking-tight px-4">{tr.requestH}</h3>
 
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                                 <div className="grid md:grid-cols-2 gap-4">
                                     <FormInput
-                                        label="Full Name"
+                                        label={tr.fullName}
                                         register={register('name')}
                                         error={errors.name}
-                                        placeholder="Full name"
+                                        placeholder={tr.fullNamePh}
                                     />
                                     <FormInput
-                                        label="Phone Number"
+                                        label={tr.phoneNumber}
                                         register={register('phone')}
                                         error={errors.phone}
-                                        placeholder="phone number"
+                                        placeholder={tr.phonePh}
                                     />
                                 </div>
 
                                 <div className="grid md:grid-cols-2 gap-4">
                                     <FormInput
-                                        label="Email Address"
+                                        label={tr.email}
                                         type="email"
                                         register={register('email')}
                                         error={errors.email}
-                                        placeholder="email"
+                                        placeholder={tr.emailPh}
                                     />
                                     <div className="space-y-1">
-                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">County</label>
+                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">{tr.county}</label>
                                         <select
                                             {...register('county', {
                                                 onChange: () => setValue('town', '') // Reset town when county changes
                                             })}
                                             className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer ${errors.county ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'}`}
                                         >
-                                            <option value="">Select County</option>
+                                            <option value="">{tr.selectCounty}</option>
                                             {Object.keys(TOWNS_BY_COUNTY).sort().map((county) => (
                                                 <option key={county} value={county}>{county}</option>
                                             ))}
@@ -229,13 +346,13 @@ const HireAgent = () => {
 
                                 <div className="grid md:grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Town / City</label>
+                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">{tr.town}</label>
                                         <select
                                             {...register('town')}
                                             disabled={!selectedCounty}
                                             className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer ${errors.town ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'} ${!selectedCounty ? 'bg-gray-50 opacity-50 cursor-not-allowed' : ''}`}
                                         >
-                                            <option value="">{selectedCounty ? 'Select Town' : 'Select County First'}</option>
+                                            <option value="">{selectedCounty ? tr.selectTown : tr.selectCountyFirst}</option>
                                             {selectedCounty && TOWNS_BY_COUNTY[selectedCounty]?.map((town) => (
                                                 <option key={town} value={town}>{town}</option>
                                             ))}
@@ -243,46 +360,46 @@ const HireAgent = () => {
                                         {errors.town && <p className="text-red-500 text-xs font-bold mt-1 ml-1">{errors.town.message}</p>}
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Property Type</label>
+                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">{tr.propertyType}</label>
                                         <select
                                             {...register('property_type')}
                                             className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer ${errors.property_type ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'}`}
                                         >
-                                            <option value="">Select Type</option>
-                                            <option value="Apartment">Apartment</option>
-                                            <option value="Mid-Terrace">Mid-Terrace</option>
-                                            <option value="End-Terrace">End-Terrace</option>
-                                            <option value="Semi-Detached">Semi-Detached</option>
-                                            <option value="Detached">Detached</option>
-                                            <option value="Bungalow">Bungalow</option>
+                                            <option value="">{tr.selectType}</option>
+                                            <option value="Apartment">{tr.apartment}</option>
+                                            <option value="Mid-Terrace">{tr.midTerrace}</option>
+                                            <option value="End-Terrace">{tr.endTerrace}</option>
+                                            <option value="Semi-Detached">{tr.semiDetached}</option>
+                                            <option value="Detached">{tr.detached}</option>
+                                            <option value="Bungalow">{tr.bungalow}</option>
                                         </select>
                                         {errors.property_type && <p className="text-red-500 text-xs font-bold mt-1 ml-1">{errors.property_type.message}</p>}
                                     </div>
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Purpose of BER</label>
+                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">{tr.purposeLabel}</label>
                                     <select
                                         {...register('purpose')}
                                         className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer ${errors.purpose ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'}`}
                                     >
-                                        <option value="">Select Purpose</option>
-                                        <option value="Mortgage/Bank">Mortgage/Bank</option>
-                                        <option value="Selling">Selling</option>
-                                        <option value="Renting">Renting</option>
-                                        <option value="Govt Grant">Govt Grant</option>
-                                        <option value="Other">Other</option>
+                                        <option value="">{tr.selectPurpose}</option>
+                                        <option value="Mortgage/Bank">{tr.mortgage}</option>
+                                        <option value="Selling">{tr.selling}</option>
+                                        <option value="Renting">{tr.renting}</option>
+                                        <option value="Govt Grant">{tr.grant}</option>
+                                        <option value="Other">{tr.other}</option>
                                     </select>
                                     {errors.purpose && <p className="text-red-500 text-xs font-bold mt-1 ml-1">{errors.purpose.message}</p>}
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Message</label>
+                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">{tr.message}</label>
                                     <textarea
                                         {...register('message')}
                                         rows={3}
                                         className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all resize-none ${errors.message ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'}`}
-                                        placeholder="Tell us about your home energy goals..."
+                                        placeholder={tr.messagePh}
                                     ></textarea>
                                     {errors.message && <p className="text-red-500 text-xs font-bold mt-1 ml-1">{errors.message.message}</p>}
                                 </div>
@@ -300,12 +417,12 @@ const HireAgent = () => {
                                     {isSubmitting ? (
                                         <>
                                             <Loader2 className="animate-spin" size={20} />
-                                            Sending...
+                                            {tr.sending}
                                         </>
                                     ) : (
                                         <>
                                             <Send size={20} />
-                                            Hire Energy Agent
+                                            {tr.hireBtn}
                                         </>
                                     )}
                                 </button>

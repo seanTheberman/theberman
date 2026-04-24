@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import SEOHead from '../components/SEOHead';
+import { getTenantFromDomain } from '../lib/tenant';
 
 interface NewsArticle {
     id: string;
@@ -22,6 +23,56 @@ const NewsPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [articles, setArticles] = useState<NewsArticle[]>([]);
     const [loading, setLoading] = useState(true);
+    const tenant = getTenantFromDomain();
+    const isSpanish = tenant === 'spain';
+    const tr = isSpanish ? {
+        seoTitle: 'Noticias',
+        seoDesc: 'Mantente al día con las novedades energéticas, subvenciones y actualizaciones del sector de Certificado Energético.',
+        loading: 'Cargando últimas noticias...',
+        comingSoonH: 'Próximamente',
+        comingSoonP: 'Estamos preparando las últimas novedades sobre subvenciones energéticas y sostenibilidad. Vuelve pronto para nuevo contenido.',
+        returnHome: 'Volver al Inicio',
+        heading: 'Noticias y Actualizaciones',
+        subheading: 'Lo último de Certificado Energético sobre energía, subvenciones y comunidad',
+        noArticles: 'No hay artículos en esta categoría.',
+        newsletterH: 'Mantente Informado',
+        newsletterP: 'Suscríbete para recibir todas las novedades, subvenciones energéticas, ofertas flash y guías técnicas.',
+        emailPlaceholder: 'CORREO ELECTRÓNICO',
+        sending: 'ENVIANDO...',
+        subscribe: 'Suscribirse',
+        toastSuccess: 'Suscripción confirmada.',
+        toastError: 'Comprueba tu conexión o correo.',
+        locale: 'es-ES' as const,
+    } : {
+        seoTitle: 'News',
+        seoDesc: 'Stay informed with the latest energy updates, grants, and industry news from The Berman.',
+        loading: 'Loading latest news...',
+        comingSoonH: 'Coming Soon',
+        comingSoonP: "We're currently preparing the latest updates on energy grants and sustainability. Check back shortly for fresh content.",
+        returnHome: 'Return Home',
+        heading: 'News & Updates',
+        subheading: 'Latest from The Berman on Energy, Grants and community',
+        noArticles: 'No articles found in this category.',
+        newsletterH: 'Stay Informed',
+        newsletterP: 'Subscribe to all the new updates including energy grants, flash sales, and technical guides.',
+        emailPlaceholder: 'EMAIL ADDRESS',
+        sending: 'SENDING...',
+        subscribe: 'Subscribe to news',
+        toastSuccess: 'Subscription confirmed.',
+        toastError: 'Check your internet or email.',
+        locale: 'en-IE' as const,
+    };
+    const NEWS_CATEGORY_LABELS_ES: Record<string, string> = {
+        'All': 'Todas',
+        'Company News': 'Noticias de Empresa',
+        'Solar Energy': 'Energía Solar',
+        'Industry Insights': 'Análisis del Sector',
+        'Policy & Regulation': 'Política y Normativa',
+        'Technology & Innovation': 'Tecnología e Innovación',
+        'Sustainability': 'Sostenibilidad',
+        'Community': 'Comunidad',
+    };
+    const catLabel = (c: string) => isSpanish ? (NEWS_CATEGORY_LABELS_ES[c] || c) : c;
     const [selectedCategory, setSelectedCategory] = useState('All');
 
     const categories = ['All', 'Company News', 'Solar Energy', 'Industry Insights', 'Policy & Regulation', 'Technology & Innovation', 'Sustainability', 'Community'];
@@ -29,10 +80,12 @@ const NewsPage = () => {
     const fetchArticles = async () => {
         setLoading(true);
         try {
+            const tenant = getTenantFromDomain();
             const { data, error } = await supabase
                 .from('news_articles')
                 .select('*')
                 .eq('is_live', true)
+                .eq('tenant', tenant)
                 .order('published_at', { ascending: false })
                 .order('created_at', { ascending: false });
 
@@ -55,7 +108,7 @@ const NewsPage = () => {
             <div className="min-h-screen flex items-center justify-center pt-32 bg-white">
                 <div className="flex flex-col items-center gap-4">
                     <div className="w-12 h-12 border-4 border-[#007F00]/20 border-t-[#007F00] rounded-full animate-spin"></div>
-                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Loading latest news...</p>
+                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">{tr.loading}</p>
                 </div>
             </div>
         );
@@ -64,12 +117,12 @@ const NewsPage = () => {
     if (articles.length === 0) {
         return (
             <div className="min-h-screen pt-32 bg-white flex flex-col items-center justify-center p-6 text-center">
-                <h1 className="text-4xl font-black text-gray-900 mb-4 uppercase tracking-tight italic">Coming Soon</h1>
+                <h1 className="text-4xl font-black text-gray-900 mb-4 uppercase tracking-tight italic">{tr.comingSoonH}</h1>
                 <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
-                    We're currently preparing the latest updates on energy grants and sustainability. Check back shortly for fresh content.
+                    {tr.comingSoonP}
                 </p>
                 <Link to="/" className="mt-8 bg-gray-900 text-white px-8 py-3 font-bold text-xs uppercase tracking-widest hover:bg-gray-800 transition-all">
-                    Return Home
+                    {tr.returnHome}
                 </Link>
             </div>
         );
@@ -98,10 +151,10 @@ const NewsPage = () => {
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-gray-100">
                         <div>
                             <h1 className="text-4xl md:text-5xl font-black text-gray-900 uppercase tracking-tighter italic mb-2">
-                                News & Updates
+                                {tr.heading}
                             </h1>
                             <p className="text-gray-500 font-medium tracking-wide text-sm">
-                                Latest from The Berman on Energy, Grants and community
+                                {tr.subheading}
                             </p>
                         </div>
 
@@ -115,7 +168,7 @@ const NewsPage = () => {
                                         : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                                         }`}
                                 >
-                                    {cat}
+                                    {catLabel(cat)}
                                 </button>
                             ))}
                         </div>
@@ -160,7 +213,7 @@ const NewsPage = () => {
             ) : (
                 <section className="py-20 text-center">
                     <div className="container mx-auto px-6">
-                        <p className="text-gray-400 font-bold uppercase tracking-widest text-sm">No articles found in this category.</p>
+                        <p className="text-gray-400 font-bold uppercase tracking-widest text-sm">{tr.noArticles}</p>
                         <button
                             onClick={() => setSelectedCategory('All')}
                             className="mt-4 text-[#007F00] font-bold text-xs uppercase tracking-widest hover:underline cursor-pointer"
@@ -216,9 +269,9 @@ const NewsPage = () => {
             {/* Newsletter - Minimalist Brand Version */}
             <section className="py-20 bg-[#1a1a1a] text-white">
                 <div className="container mx-auto px-6 max-w-4xl text-center">
-                    <h2 className="text-3xl md:text-4xl font-black mb-6 uppercase tracking-tight">Stay Informed</h2>
+                    <h2 className="text-3xl md:text-4xl font-black mb-6 uppercase tracking-tight">{tr.newsletterH}</h2>
                     <p className="text-gray-400 mb-12 text-lg">
-                        Subscribe to all the new updates including energy grants, flash sales, and technical guides.
+                        {tr.newsletterP}
                     </p>
                     <form
                         className="flex flex-col sm:flex-row gap-0 border border-white/20"
@@ -243,12 +296,12 @@ const NewsPage = () => {
 
                                 if (error) throw error;
 
-                                toast.success('Subscription confirmed.', {
+                                toast.success(tr.toastSuccess, {
                                     icon: '✅',
                                 });
                                 (e.target as HTMLFormElement).reset();
                             } catch (err: any) {
-                                toast.error('Check your internet or email.');
+                                toast.error(tr.toastError);
                             } finally {
                                 setIsSubmitting(false);
                             }
@@ -256,7 +309,7 @@ const NewsPage = () => {
                     >
                         <input
                             type="email"
-                            placeholder="EMAIL ADDRESS"
+                            placeholder={tr.emailPlaceholder}
                             className="flex-grow bg-transparent px-6 py-4 text-white placeholder:text-gray-500 outline-none font-bold text-xs tracking-widest"
                             required
                             disabled={isSubmitting}
@@ -265,7 +318,7 @@ const NewsPage = () => {
                             disabled={isSubmitting}
                             className="bg-[#007F00] text-white font-black px-12 py-4 hover:bg-[#006400] transition-colors uppercase tracking-widest text-[10px] cursor-pointer disabled:opacity-70 whitespace-nowrap"
                         >
-                            {isSubmitting ? 'SENDING...' : 'Subscribe to news'}
+                            {isSubmitting ? tr.sending : tr.subscribe}
                         </button>
                     </form>
                 </div>

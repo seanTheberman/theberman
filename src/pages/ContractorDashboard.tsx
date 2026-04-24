@@ -1,5 +1,6 @@
 import { useEffect, useState, Fragment } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from '../hooks/useTranslation';
 import { supabase } from '../lib/supabase';
 import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, AlertCircle, Settings, MessageCircle, User, Menu, Plus, Search } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -86,8 +87,33 @@ const COUNTIES = [
 ];
 
 const ContractorDashboard = () => {
+    const { t, isSpanish } = useTranslation();
     const { user, signOut } = useAuth();
     const navigate = useNavigate();
+
+    const getStatusLabel = (status: string) => {
+        if (!isSpanish) return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        const map: Record<string, string> = {
+            live: 'Activo',
+            submitted: 'Enviado',
+            pending_quote: 'Pendiente de Presupuesto',
+            quote_accepted: 'Presupuesto Aceptado',
+            scheduled: 'Programado',
+            completed: 'Completado',
+            draft: 'Borrador',
+        };
+        return map[status] || status;
+    };
+
+    const getQuoteStatusLabel = (status: string) => {
+        if (!isSpanish) return status.charAt(0).toUpperCase() + status.slice(1);
+        const map: Record<string, string> = {
+            pending: 'Pendiente',
+            accepted: 'Aceptado',
+            rejected: 'Rechazado',
+        };
+        return map[status] || status;
+    };
 
     const [view, setView] = useState<'available' | 'my_quotes' | 'active' | 'settings'>('available');
     const [profile, setProfile] = useState<any>(null);
@@ -97,7 +123,7 @@ const ContractorDashboard = () => {
     const [activeJobs, setActiveJobs] = useState<Assessment[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Date constants for restrictions (tomorrow)
+    // Date constants for restrictions
     const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
 
     const [selectedJob, setSelectedJob] = useState<Assessment | null>(null);
@@ -123,7 +149,7 @@ const ContractorDashboard = () => {
     const [certUrl, setCertUrl] = useState('');
 
     // Multi-step Quoting & Rejection States
-    const [quoteStep, setQuoteStep] = useState<1 | 2 | 3 | 4>(1); // 1: Date picker, 2: Quote form, 3: Review, 4: OTP
+    const [quoteStep, setQuoteStep] = useState<1 | 2 | 3 | 4>(1);
     const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
     const [rejectionReason, setRejectionReason] = useState('');
     const [expandedContactId, setExpandedContactId] = useState<string | null>(null);
@@ -179,6 +205,7 @@ const ContractorDashboard = () => {
             }
 
             // 2. Fetch Available Jobs (submitted status, no quote from this contractor yet)
+            const contractorTenant = profileData?.tenant || 'ireland';
             const { data: jobs, error: jobsError } = await supabase
                 .from('assessments')
                 .select(`
@@ -186,6 +213,7 @@ const ContractorDashboard = () => {
                     profiles:user_id (full_name),
                     quotes (*)
                 `)
+                .eq('tenant', contractorTenant)
                 .in('status', ['live', 'submitted', 'pending_quote'])
                 .order('created_at', { ascending: false });
 
@@ -225,6 +253,7 @@ const ContractorDashboard = () => {
                     )
                 `)
                 .eq('created_by', user?.id)
+                .eq('tenant', contractorTenant)
                 .order('created_at', { ascending: false });
 
             if (quotesError) throw quotesError;
@@ -355,7 +384,7 @@ const ContractorDashboard = () => {
 
         } catch (error: any) {
             console.error('Error fetching contractor data:', error);
-            toast.error('Failed to load dashboard data');
+            toast.error(isSpanish ? 'Error al cargar datos del panel' : 'Failed to load dashboard data');
         } finally {
             setLoading(false);
         }
@@ -456,14 +485,14 @@ const ContractorDashboard = () => {
                 body: { assessmentId: selectedJob.id }
             }).catch(err => console.error('Failed to trigger homeowner notification:', err));
 
-            toast.success('Quote submitted successfully!');
+            toast.success(isSpanish ? '¡Presupuesto enviado correctamente!' : 'Quote submitted successfully!');
             setQuoteModalOpen(false);
             setQuotePrice('');
             setQuoteNotes('');
             setSelectedJob(null);
             fetchData();
         } catch (error: any) {
-            toast.error(error.message || 'Failed to submit quote');
+            toast.error(error.message || (isSpanish ? 'Error al enviar presupuesto' : 'Failed to submit quote'));
         } finally {
             setIsSubmitting(false);
         }
@@ -487,13 +516,13 @@ const ContractorDashboard = () => {
 
             if (error) throw error;
 
-            toast.success('Lead rejected. It will no longer appear in your list.');
+            toast.success(isSpanish ? 'Solicitud rechazada. Ya no aparecerá en tu lista.' : 'Lead rejected. It will no longer appear in your list.');
             setRejectionModalOpen(false);
             setJobDetailsModalOpen(false);
             setRejectionReason('');
             fetchData();
         } catch (error: any) {
-            toast.error(error.message || 'Failed to reject lead');
+            toast.error(error.message || (isSpanish ? 'Error al rechazar solicitud' : 'Failed to reject lead'));
         } finally {
             setIsSubmitting(false);
         }
@@ -538,13 +567,13 @@ const ContractorDashboard = () => {
                 }).catch(err => console.error('Failed to trigger status notification:', err));
             }
 
-            toast.success(`Job marked as ${newStatus.replace('_', ' ')}`);
+            toast.success(isSpanish ? `Trabajo marcado como ${getStatusLabel(newStatus)}` : `Job marked as ${newStatus.replace('_', ' ')}`);
             setSchedulingJob(null);
             setCompletingJob(null);
             fetchData();
         } catch (error: any) {
             console.error('Error updating status:', error);
-            toast.error(error.message || 'Failed to update status');
+            toast.error(error.message || (isSpanish ? 'Error al actualizar estado' : 'Failed to update status'));
         } finally {
             setIsSubmitting(false);
         }
@@ -590,21 +619,21 @@ const ContractorDashboard = () => {
                                 <AlertCircle size={40} className={`${suspended ? 'text-red-500' : 'text-[#007F00]'} animate-pulse`} />
                             </div>
                             <h1 className="text-2xl font-black text-gray-900 mb-3">
-                                {suspended ? 'Account Suspended' : 'Account Pending Approval'}
+                                {suspended ? (isSpanish ? 'Cuenta Suspendida' : 'Account Suspended') : (isSpanish ? 'Cuenta Pendiente de Aprobación' : 'Account Pending Approval')}
                             </h1>
                             <p className="text-gray-500 mb-2 font-medium leading-relaxed">
                                 {suspended
-                                    ? 'Your account has been suspended by an administrator.'
-                                    : 'Your profile has been submitted and is waiting to be reviewed by our team.'}
+                                    ? (isSpanish ? 'Tu cuenta ha sido suspendida por un administrador.' : 'Your account has been suspended by an administrator.')
+                                    : (isSpanish ? 'Tu perfil ha sido enviado y está esperando ser revisado por nuestro equipo.' : 'Your profile has been submitted and is waiting to be reviewed by our team.')}
                             </p>
                             <p className="text-gray-400 text-sm mb-8">
                                 {suspended
-                                    ? 'If you believe this is a mistake, please contact our support team.'
-                                    : 'Once approved, you will receive a free subscription and full access to the Assessor Portal.'}
+                                    ? (isSpanish ? 'Si crees que esto es un error, por favor contacta con nuestro equipo de soporte.' : 'If you believe this is a mistake, please contact our support team.')
+                                    : (isSpanish ? 'Una vez aprobado, recibirás una suscripción gratuita y acceso completo al Portal del Certificador.' : 'Once approved, you will receive a free subscription and full access to the Assessor Portal.')}
                             </p>
                             <div className={`border rounded-xl p-4 mb-8 text-left ${suspended ? 'bg-red-50 border-red-100' : 'bg-green-50 border-green-100'}`}>
                                 <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${suspended ? 'text-red-600' : 'text-[#007F00]'}`}>
-                                    {suspended ? 'Suspended account' : 'Registered as'}
+                                    {suspended ? (isSpanish ? 'Cuenta suspendida' : 'Suspended account') : (isSpanish ? 'Registrado como' : 'Registered as')}
                                 </p>
                                 <p className="text-sm font-semibold text-gray-800">{user?.user_metadata?.full_name || user?.email}</p>
                                 <p className="text-xs text-gray-500">{user?.email}</p>
@@ -620,13 +649,13 @@ const ContractorDashboard = () => {
                                     to="/"
                                     className={`flex-1 py-3 px-6 text-white rounded-xl font-bold text-sm transition-colors text-center ${suspended ? 'bg-red-500 hover:bg-red-600' : 'bg-[#007F00] hover:bg-[#006600]'}`}
                                 >
-                                    Explore Website
+                                    {isSpanish ? 'Explorar Web' : 'Explore Website'}
                                 </Link>
                                 <button
                                     onClick={handleSignOut}
                                     className="flex-1 py-3 px-6 border border-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors"
                                 >
-                                    Sign Out
+                                    {t('sign_out')}
                                 </button>
                             </div>
                         </div>
@@ -646,10 +675,10 @@ const ContractorDashboard = () => {
                             <img src="/logo.svg" alt="The Berman Logo" className="h-10 w-auto relative z-10" />
                         </Link>
                         <div className="hidden xl:block">
-                            <h1 className="text-lg font-bold text-white leading-tight">Assessor Portal</h1>
+                            <h1 className="text-lg font-bold text-white leading-tight">{isSpanish ? 'Portal del Certificador' : 'Assessor Portal'}</h1>
                             <span className="text-[10px] text-gray-400 flex items-center gap-1.5 uppercase tracking-widest font-bold">
                                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
-                                Live Assessment Network
+                                {isSpanish ? 'Red de Certificación Activa' : 'Live Assessment Network'}
                             </span>
                         </div>
                     </div>
@@ -661,23 +690,23 @@ const ContractorDashboard = () => {
                                 className="bg-white/5 p-2.5 rounded-xl hover:bg-white/10 transition-colors border border-white/10 flex items-center gap-2 text-white/70"
                             >
                                 {isMenuOpen ? <X size={20} className="text-[#5CB85C]" /> : <Menu size={20} className="text-[#5CB85C]" />}
-                                <span className="text-[11px] font-black uppercase tracking-[0.15em] hidden sm:block">Menu</span>
+                                <span className="text-[11px] font-black uppercase tracking-[0.15em] hidden sm:block">{isSpanish ? 'Menú' : 'Menu'}</span>
                             </button>
 
                             {isMenuOpen && (
                                 <div className="absolute right-0 top-full mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
                                     <div className="p-2 space-y-1 border-b border-gray-50 bg-gray-50/30">
                                         <div className="px-4 py-3">
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Signed in as</p>
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Sesión iniciada como' : 'Signed in as'}</p>
                                             <p className="text-sm font-bold text-gray-900 truncate">{user?.email}</p>
                                         </div>
                                     </div>
                                     <div className="p-2 space-y-1">
                                         {[
-                                            { id: 'available', label: 'Available Jobs', icon: Briefcase },
-                                            { id: 'my_quotes', label: 'My Quotes', icon: ClipboardList },
-                                            { id: 'active', label: 'My Clients', icon: User },
-                                            { id: 'settings', label: 'Settings', icon: Settings },
+                                            { id: 'available', label: isSpanish ? 'Trabajos Disponibles' : 'Available Jobs', icon: Briefcase },
+                                            { id: 'my_quotes', label: isSpanish ? 'Mis Presupuestos' : 'My Quotes', icon: ClipboardList },
+                                            { id: 'active', label: isSpanish ? 'Mis Clientes' : 'My Clients', icon: User },
+                                            { id: 'settings', label: isSpanish ? 'Ajustes' : 'Settings', icon: Settings },
                                         ].map((item) => (
                                             <button
                                                 key={item.id}
@@ -697,7 +726,7 @@ const ContractorDashboard = () => {
                                             onClick={handleSignOut}
                                             className="w-full text-left px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.1em] text-red-500 hover:bg-red-50 flex items-center justify-between"
                                         >
-                                            Sign Out
+                                            {t('sign_out')}
                                             <LogOut size={14} />
                                         </button>
                                     </div>
@@ -717,15 +746,15 @@ const ContractorDashboard = () => {
                         <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
                             <AlertCircle size={40} className="text-red-500 animate-pulse" />
                         </div>
-                        <h2 className="text-2xl font-black text-gray-900 mb-2">Subscription Expired</h2>
+                        <h2 className="text-2xl font-black text-gray-900 mb-2">{isSpanish ? 'Suscripción Caducada' : 'Subscription Expired'}</h2>
                         <p className="text-gray-500 mb-8 font-medium">
-                            Your subscription has ended and your account is currently disabled. Please renew your subscription to reactivate your listing and access the portal.
+                            {isSpanish ? 'Tu suscripción ha finalizado y tu cuenta está actualmente desactivada. Por favor, renueva tu suscripción para reactivar tu ficha y acceder al portal.' : 'Your subscription has ended and your account is currently disabled. Please renew your subscription to reactivate your listing and access the portal.'}
                         </p>
                         <Link
                             to="/pricing"
                             className="block w-full bg-red-600 text-white py-4 rounded-2xl font-black uppercase tracking-wider text-sm hover:bg-red-700 transition-all mb-4 shadow-lg shadow-red-500/20"
                         >
-                            Renew Subscription
+                            {isSpanish ? 'Renovar Suscripción' : 'Renew Subscription'}
                         </Link>
                         <button
                             onClick={handleSignOut}
@@ -1049,7 +1078,7 @@ const ContractorDashboard = () => {
                                                                         quote.status === 'rejected' ? 'bg-red-100 text-red-700' :
                                                                             'bg-amber-100 text-amber-700'
                                                                         }`}>
-                                                                        {quote.status || '-'}
+                                                                        {getQuoteStatusLabel(quote.status) || '-'}
                                                                     </span>
                                                                 </td>
                                                                 <td className="py-3 px-3 text-gray-600">{a?.preferred_date || 'Flexible'}</td>
@@ -1063,7 +1092,7 @@ const ContractorDashboard = () => {
                                                                         disabled={quote.status === 'accepted'}
                                                                         className="px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded text-xs font-bold transition-all"
                                                                     >
-                                                                        Re-Quote
+                                                                        {isSpanish ? 'Re-Presupuestar' : 'Re-Quote'}
                                                                     </button>
                                                                 </td>
                                                             </tr>
@@ -1100,7 +1129,7 @@ const ContractorDashboard = () => {
                                                                 </span>
                                                             </div>
                                                             <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md ${quote.status === 'accepted' ? 'bg-green-100 text-green-700' : quote.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
-                                                                {quote.status}
+                                                                {getQuoteStatusLabel(quote.status)}
                                                             </span>
                                                         </div>
                                                         <div className="grid grid-cols-2 gap-2 text-xs mb-3">
@@ -1175,22 +1204,22 @@ const ContractorDashboard = () => {
                                         <table className="w-full text-sm hidden md:table">
                                             <thead>
                                                 <tr className="bg-gray-50 border-b border-gray-200">
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Date Accepted</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Job</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Town</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">County</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-blue-600 uppercase tracking-wider">Eircode</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Type</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Sq. Mt.</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Beds</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Heat Pump</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Purpose</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Paid</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Addition</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Survey Date</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Contact</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Payout</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Fecha Aceptado' : 'Date Accepted'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Trabajo' : 'Job'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Ciudad' : 'Town'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Provincia' : 'County'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-blue-600 uppercase tracking-wider">{isSpanish ? 'Código Postal' : 'Eircode'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Tipo' : 'Type'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'm²' : 'Sq. Mt.'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Hab.' : 'Beds'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Bomba Calor' : 'Heat Pump'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Finalidad' : 'Purpose'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Estado' : 'Status'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Pagado' : 'Paid'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Añadidos' : 'Addition'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Fecha Inspección' : 'Survey Date'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Contacto' : 'Contact'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Pago' : 'Payout'}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -1232,7 +1261,7 @@ const ContractorDashboard = () => {
                                                                     job.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
                                                                         'bg-green-100 text-green-700'
                                                                     }`}>
-                                                                    {job.status?.replace('_', ' ') || '-'}
+                                                                    {getStatusLabel(job.status) || '-'}
                                                                 </span>
                                                             </td>
                                                             <td className="py-3 px-3">
@@ -1256,14 +1285,14 @@ const ContractorDashboard = () => {
                                                                     onClick={() => setExpandedContactId(expandedContactId === job.id ? null : job.id)}
                                                                     className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-[10px] font-black uppercase transition-all whitespace-nowrap"
                                                                 >
-                                                                    Contact Info
+                                                                    {isSpanish ? 'Info Contacto' : 'Contact Info'}
                                                                 </button>
                                                                 {job.status === 'quote_accepted' && (
                                                                     <button
                                                                         onClick={() => setSchedulingJob(job)}
                                                                         className="px-3 py-1.5 bg-[#007EA7] hover:bg-[#005F7E] text-white rounded text-[10px] font-black uppercase transition-all whitespace-nowrap"
                                                                     >
-                                                                        Schedule
+                                                                        {isSpanish ? 'Programar' : 'Schedule'}
                                                                     </button>
                                                                 )}
                                                                 {job.status === 'scheduled' && (
@@ -1272,13 +1301,13 @@ const ContractorDashboard = () => {
                                                                             onClick={() => setCompletingJob(job)}
                                                                             className="px-3 py-1.5 bg-[#007F00] hover:bg-green-800 text-white rounded text-[10px] font-black uppercase transition-all whitespace-nowrap"
                                                                         >
-                                                                            Complete
+                                                                            {isSpanish ? 'Completar' : 'Complete'}
                                                                         </button>
                                                                         <button
                                                                             onClick={() => setSchedulingJob(job)}
                                                                             className="px-3 py-1.5 bg-gray-500 hover:bg-gray-600 text-white rounded text-[10px] font-black uppercase transition-all whitespace-nowrap"
                                                                         >
-                                                                            Reschedule
+                                                                            {isSpanish ? 'Reprogramar' : 'Reschedule'}
                                                                         </button>
                                                                     </div>
                                                                 )}
@@ -1294,9 +1323,9 @@ const ContractorDashboard = () => {
                                                                 <td colSpan={15} className="py-3 px-6">
                                                                     <div className="flex items-center gap-6 text-sm">
                                                                         <span className="text-gray-400">↳</span>
-                                                                        <span><strong>Name:</strong> {job.contact_name || job.profiles?.full_name || 'N/A'}</span>
-                                                                        <span><strong>Email:</strong> <a href={`mailto:${job.contact_email}`} className="text-blue-600 hover:underline">{job.contact_email || 'N/A'}</a></span>
-                                                                        <span><strong>Phone:</strong> <a href={`tel:${job.contact_phone}`} className="text-blue-600 hover:underline">{job.contact_phone || 'N/A'}</a></span>
+                                                                        <span><strong>{isSpanish ? 'Nombre:' : 'Name:'}</strong> {job.contact_name || job.profiles?.full_name || 'N/A'}</span>
+                                                                        <span><strong>{isSpanish ? 'Email:' : 'Email:'}</strong> <a href={`mailto:${job.contact_email}`} className="text-blue-600 hover:underline">{job.contact_email || 'N/A'}</a></span>
+                                                                        <span><strong>{isSpanish ? 'Teléfono:' : 'Phone:'}</strong> <a href={`tel:${job.contact_phone}`} className="text-blue-600 hover:underline">{job.contact_phone || 'N/A'}</a></span>
                                                                     </div>
                                                                 </td>
                                                             </tr>
@@ -1313,13 +1342,13 @@ const ContractorDashboard = () => {
                                                         <div>
                                                             <div className="flex items-center gap-2 mb-1">
                                                                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                                                    Accepted {new Date(job.created_at).toLocaleDateString()}
+                                                                    {isSpanish ? 'Aceptado el' : 'Accepted'} {new Date(job.created_at).toLocaleDateString()}
                                                                 </span>
                                                                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter border ${job.status === 'completed' ? 'bg-gray-100 text-gray-600 border-gray-200' :
                                                                     job.status === 'scheduled' ? 'bg-blue-50 text-blue-700 border-blue-100' :
                                                                         'bg-green-50 text-green-700 border-green-100'
                                                                     }`}>
-                                                                    {job.status?.replace('_', ' ') || '-'}
+                                                                    {getStatusLabel(job.status) || '-'}
                                                                 </span>
                                                                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter border ${job.job_type === 'commercial' ? 'bg-purple-50 text-purple-700 border-purple-100' : 'bg-blue-50 text-blue-700 border-blue-100'}`}>
                                                                     {job.job_type === 'commercial' ? 'Comm' : 'Dom'}
@@ -1337,13 +1366,12 @@ const ContractorDashboard = () => {
                                                             </p>
                                                         </div>
                                                     </div>
-
-                                                    <div className="grid grid-cols-1 gap-2">
+                                                    <div className="flex flex-col gap-2 mt-4">
                                                         <button
                                                             onClick={() => setExpandedContactId(expandedContactId === job.id ? null : job.id)}
                                                             className="w-full py-3 bg-gray-50 border border-gray-100 text-gray-600 rounded-xl font-bold text-xs hover:bg-gray-100 transition-all uppercase tracking-tight"
                                                         >
-                                                            {expandedContactId === job.id ? 'Close Contact Details' : 'View Contact Details'}
+                                                            {expandedContactId === job.id ? (isSpanish ? 'Cerrar Detalles Contacto' : 'Close Contact Details') : (isSpanish ? 'Ver Detalles Contacto' : 'View Contact Details')}
                                                         </button>
 
                                                         {job.status === 'quote_accepted' && (
@@ -1351,7 +1379,7 @@ const ContractorDashboard = () => {
                                                                 onClick={() => setSchedulingJob(job)}
                                                                 className="w-full py-3 bg-[#007EA7] text-white rounded-xl font-black text-xs hover:bg-[#005F7E] transition-all uppercase tracking-tight shadow-md shadow-blue-50"
                                                             >
-                                                                Schedule Inspection
+                                                                {isSpanish ? 'Programar Inspección' : 'Schedule Inspection'}
                                                             </button>
                                                         )}
 
@@ -1361,13 +1389,13 @@ const ContractorDashboard = () => {
                                                                     onClick={() => setCompletingJob(job)}
                                                                     className="w-full py-3 bg-[#007F00] text-white rounded-xl font-black text-xs hover:bg-green-800 transition-all uppercase tracking-tight shadow-md shadow-green-50"
                                                                 >
-                                                                    Mark Complete
+                                                                    {isSpanish ? 'Marcar Completado' : 'Mark Complete'}
                                                                 </button>
                                                                 <button
                                                                     onClick={() => setSchedulingJob(job)}
                                                                     className="w-full py-2 bg-gray-500 text-white rounded-xl font-bold text-[10px] hover:bg-gray-600 transition-all uppercase tracking-widest"
                                                                 >
-                                                                    Reschedule
+                                                                    {isSpanish ? 'Reprogramar' : 'Reschedule'}
                                                                 </button>
                                                             </>
                                                         )}
@@ -1445,10 +1473,10 @@ const ContractorDashboard = () => {
                                                     .from('profiles')
                                                     .update({ sms_notifications_enabled: !profile?.sms_notifications_enabled })
                                                     .eq('id', user?.id);
-                                                if (error) toast.error('Failed to update notifications');
+                                                if (error) toast.error(isSpanish ? 'Error al actualizar notificaciones' : 'Failed to update notifications');
                                                 else {
                                                     setProfile({ ...profile, sms_notifications_enabled: !profile?.sms_notifications_enabled });
-                                                    toast.success('Notification settings updated');
+                                                    toast.success(isSpanish ? 'Ajustes de notificación actualizados' : 'Notification settings updated');
                                                 }
                                             }}
                                             className="ml-1 underline hover:text-green-900"
@@ -1475,7 +1503,7 @@ const ContractorDashboard = () => {
                                                         let newCounties;
                                                         if (current.includes(county)) {
                                                             if (current.length === 1) {
-                                                                toast.error('You must select at least one Service Area / County');
+                                                                toast.error(isSpanish ? 'Debes seleccionar al menos una Área de Servicio / Provincia' : 'You must select at least one Service Area / County');
                                                                 return;
                                                             }
                                                             newCounties = current.filter((c: string) => c !== county);
@@ -1507,7 +1535,7 @@ const ContractorDashboard = () => {
                                                             });
                                                         } catch (err) {
                                                             console.error('Auto-save error:', err);
-                                                            toast.error('Failed to auto-save preference');
+                                                            toast.error(isSpanish ? 'Error al guardar preferencia automáticamente' : 'Failed to auto-save preference');
                                                         }
                                                     }}
                                                     className={`py-3 px-6 rounded-md border transition-all text-sm font-medium ${isSelected
@@ -1690,7 +1718,7 @@ const ContractorDashboard = () => {
                                             <button
                                                 onClick={async () => {
                                                     if (!profile?.preferred_counties || profile.preferred_counties.length === 0) {
-                                                        toast.error('Please select at least one Service Area / County');
+                                                        toast.error(isSpanish ? 'Por favor, selecciona al menos una Área de Servicio / Provincia' : 'Please select at least one Service Area / County');
                                                         return;
                                                     }
                                                     setIsSubmitting(true);
@@ -1773,10 +1801,10 @@ const ContractorDashboard = () => {
                                                             }
                                                         }
 
-                                                        toast.success('Profile and Business details updated');
+                                                        toast.success(isSpanish ? 'Perfil y datos de negocio actualizados' : 'Profile and Business details updated');
                                                     } catch (error: any) {
                                                         console.error('Update error:', error);
-                                                        toast.error(error.message || 'Failed to save changes');
+                                                        toast.error(error.message || (isSpanish ? 'Error al guardar cambios' : 'Failed to save changes'));
                                                     } finally {
                                                         setIsSubmitting(false);
                                                     }

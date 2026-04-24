@@ -3,6 +3,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { CustomSmtpClient } from "../shared/smtp.ts";
 import { trySendSms } from "../shared/twilio.ts";
+import { getTenantConfig } from "../shared/tenant.ts";
 import { generateHomeownerAcceptanceEmail } from "./templates/homeowner-acceptance.ts";
 import { generateContractorBookingEmail } from "./templates/contractor-booking.ts";
 import { generatePromoHtml } from "./templates/promo-section.ts";
@@ -20,7 +21,7 @@ Deno.serve(async (req: Request) => {
     const responseHeaders = { ...corsHeaders, 'Content-Type': 'application/json' };
 
     try {
-        const { assessmentId, quoteId } = await req.json();
+        const { assessmentId, quoteId, tenant = 'ireland' } = await req.json();
 
         if (!assessmentId || !quoteId) {
             throw new Error("assessmentId and quoteId are required");
@@ -30,11 +31,17 @@ Deno.serve(async (req: Request) => {
         const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
         const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
+        // Load tenant config
+        const config = await getTenantConfig(supabase, tenant);
+        const websiteUrl = config.website_url;
+        const smtpFrom = config.smtp_from || `${config.display_name} <${config.smtp_username}>`;
+
         // 1. Fetch Data
         const { data: assessment, error: assessmentError } = await supabase
             .from('assessments')
             .select('contact_name, contact_email, contact_phone, property_address')
             .eq('id', assessmentId)
+            .eq('tenant', tenant)
             .single();
 
         if (assessmentError || !assessment) {
@@ -45,6 +52,7 @@ Deno.serve(async (req: Request) => {
             .from('quotes')
             .select('price, created_by, profiles!quotes_created_by_profile_fkey(full_name, email, phone)')
             .eq('id', quoteId)
+            .eq('tenant', tenant)
             .single();
 
         if (quoteError || !quote) {
@@ -53,27 +61,23 @@ Deno.serve(async (req: Request) => {
 
         const contractor = quote.profiles;
 
-        const smtpHostname = Deno.env.get('SMTP_HOSTNAME');
-        const smtpPortStr = Deno.env.get('SMTP_PORT');
-        const smtpUsername = Deno.env.get('SMTP_USERNAME');
-        const smtpPassword = Deno.env.get('SMTP_PASSWORD');
-        const smtpFromEnv = Deno.env.get('SMTP_FROM') || 'hello@theberman.eu';
-        const smtpFrom = smtpFromEnv.includes('<') ? smtpFromEnv : `The Berman.eu <${smtpFromEnv}>`;
-        const websiteUrl = Deno.env.get('PUBLIC_WEBSITE_URL') || 'https://theberman.eu';
+        const smtpHostname = config.smtp_hostname;
+        const smtpPort = config.smtp_port;
+        const smtpUsername = config.smtp_username;
+        const smtpPassword = config.smtp_password;
 
         if (!smtpHostname || !smtpUsername || !smtpPassword) {
-            console.error("[send-acceptance-notification] SMTP Secrets missing");
+            console.error(`[send-acceptance-notification] SMTP Secrets missing for tenant ${tenant}`);
             return new Response(JSON.stringify({ success: false, error: 'SMTP Secrets missing' }), { status: 500, headers: responseHeaders });
         }
 
-        const smtpPort = parseInt(smtpPortStr || '587');
         const client = new CustomSmtpClient();
 
         try {
             await client.connect(smtpHostname, smtpPort);
             await client.authenticate(smtpUsername, smtpPassword);
 
-            const { data: sponsors } = await supabase.from('sponsors').select('*').eq('is_active', true).limit(3);
+            const { data: sponsors } = await supabase.from('sponsors').select('*').eq('is_active', true).eq('tenant', tenant).limit(3);
             const promoHtml = generatePromoHtml(sponsors || []);
 
             // 2. Notify Homeowner
@@ -84,8 +88,8 @@ Deno.serve(async (req: Request) => {
                 websiteUrl,
                 promoHtml
             );
-            await client.send(smtpFrom, assessment.contact_email, 'Booking Confirmed - TheBerman.eu', homeownerHtml);
-            console.log(`[send-acceptance-notification] Notified homeowner: ${assessment.contact_email}`);
+            await client.send(smtpFrom, assessment.contact_email, `Booking Confirmed - ${websiteUrl.replace('https://', '')}`, homeownerHtml);
+            console.log(`[send-acceptance-notification] Notified homeowner: ${assessment.contact_email} (tenant: ${tenant})`);
 
             // 3. Notify Contractor
             const contractorHtml = generateContractorBookingEmail(
@@ -97,19 +101,19 @@ Deno.serve(async (req: Request) => {
                 promoHtml
             );
             await client.send(smtpFrom, contractor.email, 'New Booking Confirmed!', contractorHtml);
-            console.log(`[send-acceptance-notification] Notified contractor: ${contractor.email}`);
+            console.log(`[send-acceptance-notification] Notified contractor: ${contractor.email} (tenant: ${tenant})`);
 
             // SMS to homeowner
-            await trySendSms(assessment.contact_phone, `Hi ${assessment.contact_name}, your BER booking with ${contractor.full_name} is confirmed! Amount: EUR ${quote.price}. View details at https://theberman.eu`);
+            await trySendSms(assessment.contact_phone, `Hi ${assessment.contact_name}, your BER booking with ${contractor.full_name} is confirmed! Amount: EUR ${quote.price}. View details at ${websiteUrl}`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
 
             // SMS to contractor
-            await trySendSms(contractor.phone, `Hi ${contractor.full_name}, new booking confirmed! Customer: ${assessment.contact_name}, Address: ${assessment.property_address}. Log in to TheBerman.eu for details.`);
+            await trySendSms(contractor.phone, `Hi ${contractor.full_name}, new booking confirmed! Customer: ${assessment.contact_name}, Address: ${assessment.property_address}. Log in to ${websiteUrl.replace('https://', '')} for details.`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
 
             await client.close();
-            return new Response(JSON.stringify({ success: true, message: 'Acceptance notifications sent (email + SMS)' }), { headers: responseHeaders });
+            return new Response(JSON.stringify({ success: true, message: 'Acceptance notifications sent (email + SMS)', tenant }), { headers: responseHeaders });
 
         } catch (smtpErr: any) {
-            console.error("[send-acceptance-notification] SMTP ERROR", smtpErr);
+            console.error(`[send-acceptance-notification] SMTP ERROR (tenant: ${tenant})`, smtpErr);
             return new Response(JSON.stringify({ success: false, error: 'SMTP Failed', details: smtpErr?.message }), { status: 500, headers: responseHeaders });
         }
 

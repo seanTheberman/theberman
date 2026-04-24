@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { CustomSmtpClient } from "../shared/smtp.ts"
+import { getTenantConfig } from "../shared/tenant.ts"
 import { generatePromoHtml } from "./templates/promo-section.ts"
 import { generateAdminEmail } from "./templates/admin-notification.ts"
 import { generateCustomerEmail } from "./templates/customer-confirmation.ts"
@@ -16,18 +17,22 @@ serve(async (req: Request) => {
     }
 
     try {
-        const { record } = await req.json()
+        const { record, tenant = 'ireland' } = await req.json()
 
         const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
         const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
         const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-        const smtpHostname = Deno.env.get('SMTP_HOSTNAME')!;
-        const smtpPort = parseInt(Deno.env.get('SMTP_PORT') || '587');
-        const smtpUsername = Deno.env.get('SMTP_USERNAME')!;
-        const smtpPassword = Deno.env.get('SMTP_PASSWORD')!;
-        const smtpFromEnv = Deno.env.get('SMTP_FROM') || 'hello@theberman.eu';
-        const smtpFrom = smtpFromEnv.includes('<') ? smtpFromEnv : `The Berman.eu <${smtpFromEnv}>`;
+        const config = await getTenantConfig(supabase, tenant);
+        const adminEmail = config.smtp_username;
+
+        if (!config.smtp_hostname || !config.smtp_username || !config.smtp_password) {
+            console.error(`[send-email] SMTP not configured for tenant ${tenant}`);
+            return new Response(
+                JSON.stringify({ success: false, error: `SMTP not configured for tenant ${tenant}` }),
+                { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+        }
 
         // Fetch sponsors
         const { data: sponsors } = await supabase
@@ -39,23 +44,23 @@ serve(async (req: Request) => {
         const promoHtml = generatePromoHtml(sponsors || []);
 
         const client = new CustomSmtpClient();
-        console.log(`[send-email] Attempting to send notifications for ${record.email}`);
+        console.log(`[send-email] Tenant=${tenant}, sending to ${record.email} and admin ${adminEmail}`);
 
         try {
-            await client.connect(smtpHostname, smtpPort);
-            await client.authenticate(smtpUsername, smtpPassword);
+            await client.connect(config.smtp_hostname, config.smtp_port);
+            await client.authenticate(config.smtp_username, config.smtp_password);
 
             // 1. Admin Notification
             await client.send(
-                smtpFrom,
-                'hello@theberman.eu',
+                config.smtp_from,
+                adminEmail,
                 `New Lead: ${record.name}`,
                 generateAdminEmail(record, sponsors || [], promoHtml)
             );
 
             // 2. Customer Confirmation
             await client.send(
-                smtpFrom,
+                config.smtp_from,
                 record.email,
                 `Confirmation: We've received your inquiry`,
                 generateCustomerEmail(record, promoHtml)

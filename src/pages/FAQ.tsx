@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import SEOHead from '../components/SEOHead';
+import { getTenantFromDomain, getTenantEmail } from '../lib/tenant';
 
 interface FaqItem {
     id: string;
@@ -17,16 +18,48 @@ const FAQ = () => {
     const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeId, setActiveId] = useState('');
+    const tenant = getTenantFromDomain();
+    const isSpanish = tenant === 'spain';
+    const tenantEmail = getTenantEmail(tenant);
+    const tr = isSpanish ? {
+        loading: 'Cargando FAQ...',
+        comingSoonH: 'FAQ Próximamente',
+        comingSoonP: 'Estamos preparando nuestras preguntas frecuentes. Vuelve pronto.',
+        seoTitle: 'Preguntas Frecuentes',
+        seoDesc: 'Encuentra respuestas a las preguntas más comunes sobre certificados energéticos, calificaciones, costes y mejoras energéticas en España.',
+        needHelp: '¿Necesitas ayuda inmediata?',
+        emailUs: `Escríbenos a ${tenantEmail}`,
+        getQuote: 'Pedir Presupuesto',
+        sidebarLabel: 'FAQ Energético',
+        consultantsH: 'Consultoría Energética Líder en España',
+        consultantsP: 'Confían en nosotros más de 10.000 propietarios en todo el país.',
+        emailLine: `Correo: ${tenantEmail}`,
+    } : {
+        loading: 'Loading FAQ...',
+        comingSoonH: 'FAQ Coming Soon',
+        comingSoonP: "We're currently preparing our frequently asked questions. Check back shortly.",
+        seoTitle: 'Frequently Asked Questions',
+        seoDesc: 'Find answers to common questions about BER assessments, energy ratings, costs, and home energy upgrades in Ireland.',
+        needHelp: 'Need immediate help?',
+        emailUs: `Email ${tenantEmail}`,
+        getQuote: 'Get a Quote Now',
+        sidebarLabel: 'BER FAQ',
+        consultantsH: "Ireland's Leading BER Consultants",
+        consultantsP: 'Trusted by 10,000+ homeowners across the country.',
+        emailLine: `Email: ${tenantEmail}`,
+    };
     const location = useLocation();
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchFaq = async () => {
             try {
+                const tenant = getTenantFromDomain();
                 const { data, error } = await supabase
                     .from('faq_items')
                     .select('*')
                     .eq('is_active', true)
+                    .eq('tenant', tenant)
                     .order('sort_order');
                 if (error) throw error;
                 setFaqItems(data || []);
@@ -56,7 +89,7 @@ const FAQ = () => {
             <div className="min-h-screen flex items-center justify-center pt-32 bg-white">
                 <div className="flex flex-col items-center gap-4">
                     <div className="w-12 h-12 border-4 border-[#007F00]/20 border-t-[#007F00] rounded-full animate-spin"></div>
-                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Loading FAQ...</p>
+                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">{tr.loading}</p>
                 </div>
             </div>
         );
@@ -65,9 +98,9 @@ const FAQ = () => {
     if (faqItems.length === 0) {
         return (
             <div className="min-h-screen pt-40 bg-white flex flex-col items-center justify-center p-6 text-center">
-                <h1 className="text-4xl font-black text-gray-900 mb-4 uppercase tracking-tight">FAQ Coming Soon</h1>
+                <h1 className="text-4xl font-black text-gray-900 mb-4 uppercase tracking-tight">{tr.comingSoonH}</h1>
                 <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
-                    We're currently preparing our frequently asked questions. Check back shortly.
+                    {tr.comingSoonP}
                 </p>
             </div>
         );
@@ -78,8 +111,8 @@ const FAQ = () => {
     return (
         <div className="bg-white min-h-screen pt-32 pb-24 font-sans">
             <SEOHead
-                title="Frequently Asked Questions"
-                description="Find answers to common questions about BER assessments, energy ratings, costs, and home energy upgrades in Ireland."
+                title={tr.seoTitle}
+                description={tr.seoDesc}
                 canonical="/faq"
                 jsonLd={{
                     '@context': 'https://schema.org',
@@ -116,11 +149,11 @@ const FAQ = () => {
 
                             <div className="mt-16 pt-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
                                 <div>
-                                    <p className="text-sm text-gray-400 mb-1 font-bold uppercase tracking-widest">Need immediate help?</p>
-                                    <p className="text-xl font-black text-gray-900 tracking-tight">Email hello@theberman.eu</p>
+                                    <p className="text-sm text-gray-400 mb-1 font-bold uppercase tracking-widest">{tr.needHelp}</p>
+                                    <p className="text-xl font-black text-gray-900 tracking-tight">{tr.emailUs}</p>
                                 </div>
                                 <button onClick={() => navigate('/get-quote')} className="bg-[#007F00] text-white px-10 py-4 rounded-full font-black text-sm uppercase tracking-wider hover:bg-[#006400] transition-all shadow-lg hover:-translate-y-1">
-                                    Get a Quote Now
+                                    {tr.getQuote}
                                 </button>
                             </div>
                         </div>
@@ -129,7 +162,7 @@ const FAQ = () => {
                     {/* Sidebar (Right) */}
                     <div className="lg:col-span-4 order-1 lg:order-2 sticky top-32">
                         <div className="border-l border-gray-100 pl-8">
-                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-8">BER FAQ</h3>
+                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-8">{tr.sidebarLabel}</h3>
                             <nav className="flex flex-col gap-5 max-h-[70vh] overflow-y-auto pr-4 custom-scrollbar">
                                 {faqItems.map((item) => (
                                     <button
@@ -149,9 +182,9 @@ const FAQ = () => {
                             </nav>
 
                             <div className="mt-12 p-8 bg-green-50 rounded-[2rem] border border-green-100">
-                                <p className="text-lg font-black text-[#007F00] mb-2 uppercase tracking-tight">Ireland's Leading BER Consultants</p>
-                                <p className="text-sm text-green-700/80 mb-6 font-medium leading-relaxed">Trusted by 10,000+ homeowners across the country.</p>
-                                <p className="text-sm text-green-700/80 mb-6 font-medium leading-relaxed">Email: hello@theberman.eu</p>
+                                <p className="text-lg font-black text-[#007F00] mb-2 uppercase tracking-tight">{tr.consultantsH}</p>
+                                <p className="text-sm text-green-700/80 mb-6 font-medium leading-relaxed">{tr.consultantsP}</p>
+                                <p className="text-sm text-green-700/80 mb-6 font-medium leading-relaxed">{tr.emailLine}</p>
                             </div>
                         </div>
                     </div>

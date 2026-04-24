@@ -20,6 +20,7 @@ import {
     AlertCircle,
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from '../hooks/useTranslation';
 import toast from 'react-hot-toast';
 import { geocodeAddress } from '../lib/geocoding';
 import ReferralProgram from '../components/business/ReferralProgram';
@@ -84,6 +85,7 @@ const useDebounce = (callback: Function, delay: number) => {
 
 const BusinessDashboard = () => {
     const { user, profile, signOut } = useAuth();
+    const { isSpanish } = useTranslation();
     const navigate = useNavigate();
     const [listing, setListing] = useState<CatalogueListing | null>(null);
     const [loading, setLoading] = useState(true);
@@ -160,7 +162,7 @@ const BusinessDashboard = () => {
             }
         } catch (error) {
             console.error('Error fetching business data:', error);
-            toast.error('Failed to load dashboard data');
+            toast.error(isSpanish ? 'Error al cargar los datos del panel' : 'Failed to load dashboard data');
         } finally {
             setLoading(false);
         }
@@ -198,7 +200,7 @@ const BusinessDashboard = () => {
                         .eq('id', listing.id);
                 }
             }
-            toast.success('Saved changes', { id: 'profile-save' });
+            toast.success(isSpanish ? 'Cambios guardados' : 'Saved changes', { id: 'profile-save' });
         } catch (error) {
             console.error('Error autosaving profile:', error);
         } finally {
@@ -247,10 +249,10 @@ const BusinessDashboard = () => {
                 if (error) throw error;
             }
 
-            toast.success('Categories updated', { id: 'cat-save' });
+            toast.success(isSpanish ? 'Categorías actualizadas' : 'Categories updated', { id: 'cat-save' });
         } catch (error) {
             console.error('Error saving categories:', error);
-            toast.error('Failed to update categories');
+            toast.error(isSpanish ? 'Error al actualizar las categorías' : 'Failed to update categories');
         } finally {
             setIsSavingCategories(false);
         }
@@ -287,7 +289,7 @@ const BusinessDashboard = () => {
                 if (error) throw error;
             }
 
-            toast.success('Gallery updated', { id: 'gallery-save' });
+            toast.success(isSpanish ? 'Galería actualizada' : 'Gallery updated', { id: 'gallery-save' });
         } catch (error) {
             console.error('Error autosaving gallery:', error);
         } finally {
@@ -309,12 +311,12 @@ const BusinessDashboard = () => {
         if (!file) return;
 
         if (!file.type.startsWith('image/')) {
-            toast.error('Please upload an image file');
+            toast.error(isSpanish ? 'Por favor sube un archivo de imagen' : 'Please upload an image file');
             return;
         }
 
         if (file.size > 10 * 1024 * 1024) {
-            toast.error('Image must be less than 10MB');
+            toast.error(isSpanish ? 'La imagen debe ser menor de 10MB' : 'Image must be less than 10MB');
             return;
         }
 
@@ -328,10 +330,10 @@ const BusinessDashboard = () => {
             newImages[index].url = publicUrl;
             setListingImages(newImages);
             saveGalleryData(newImages);
-            toast.success('Image uploaded successfully');
+            toast.success(isSpanish ? 'Imagen subida con éxito' : 'Image uploaded successfully');
         } catch (error: any) {
             console.error('Error uploading gallery image:', error);
-            toast.error(error.message || 'Failed to upload image');
+            toast.error(error.message || (isSpanish ? 'Error al subir la imagen' : 'Failed to upload image'));
         } finally {
             setIsSavingGallery(false);
             setIsUploadingGallery(prev => ({ ...prev, [index]: false }));
@@ -344,12 +346,12 @@ const BusinessDashboard = () => {
         if (!file) return;
 
         if (!file.type.startsWith('image/')) {
-            toast.error('Please upload an image file');
+            toast.error(isSpanish ? 'Por favor sube un archivo de imagen' : 'Please upload an image file');
             return;
         }
 
         if (file.size > 15 * 1024 * 1024) {
-            toast.error('Banner image must be less than 15MB');
+            toast.error(isSpanish ? 'La imagen del banner debe ser menor de 15MB' : 'Banner image must be less than 15MB');
             return;
         }
 
@@ -363,10 +365,10 @@ const BusinessDashboard = () => {
                 saveProfileData({ banner_url: publicUrl });
                 return updated;
             });
-            toast.success('Banner uploaded successfully');
+            toast.success(isSpanish ? 'Banner subido con éxito' : 'Banner uploaded successfully');
         } catch (error: any) {
             console.error('Error uploading banner:', error);
-            toast.error(error.message || 'Failed to upload banner');
+            toast.error(error.message || (isSpanish ? 'Error al subir el banner' : 'Failed to upload banner'));
         } finally {
             setIsUploadingBanner(false);
             e.target.value = '';
@@ -386,7 +388,7 @@ const BusinessDashboard = () => {
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="flex flex-col items-center gap-4">
                     <Loader2 size={40} className="text-[#007F00] animate-spin" />
-                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Loading Portal...</p>
+                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">{isSpanish ? 'Cargando Portal...' : 'Loading Portal...'}</p>
                 </div>
             </div>
         );
@@ -412,13 +414,13 @@ const BusinessDashboard = () => {
                             <img src="/logo.svg" alt="The Berman Logo" className="h-9 w-auto" />
                         </Link>
                         <nav className="hidden md:flex items-center gap-6">
-                            <Link to="/" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">Home</Link>
-                            <Link to="/catalogue" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">Catalogue</Link>
-                            <Link to="/news" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">News</Link>
-                            <Link to="/contact-us" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">Contact</Link>
+                            <Link to="/" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">{isSpanish ? 'Inicio' : 'Home'}</Link>
+                            <Link to="/catalogue" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">{isSpanish ? 'Catálogo' : 'Catalogue'}</Link>
+                            <Link to="/news" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">{isSpanish ? 'Noticias' : 'News'}</Link>
+                            <Link to="/contact-us" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">{isSpanish ? 'Contacto' : 'Contact'}</Link>
                         </nav>
                         <button onClick={handleSignOut} className="text-sm font-bold text-gray-500 hover:text-red-500 transition-colors flex items-center gap-2">
-                            <LogOut size={16} /> Sign Out
+                            <LogOut size={16} /> {isSpanish ? 'Cerrar Sesión' : 'Sign Out'}
                         </button>
                     </div>
                 </header>
@@ -430,37 +432,41 @@ const BusinessDashboard = () => {
                                 <AlertCircle size={40} className={`${suspended ? 'text-red-500' : 'text-[#007F00]'} animate-pulse`} />
                             </div>
                             <h1 className="text-2xl font-black text-gray-900 mb-3">
-                                {suspended ? 'Account Suspended' : 'Account Pending Approval'}
+                                {suspended
+                                    ? (isSpanish ? 'Cuenta Suspendida' : 'Account Suspended')
+                                    : (isSpanish ? 'Cuenta Pendiente de Aprobación' : 'Account Pending Approval')}
                             </h1>
                             <p className="text-gray-500 mb-2 font-medium leading-relaxed">
                                 {suspended
-                                    ? 'Your account has been suspended by an administrator.'
-                                    : 'Your profile has been submitted and is waiting to be reviewed by our team.'}
+                                    ? (isSpanish ? 'Tu cuenta ha sido suspendida por un administrador.' : 'Your account has been suspended by an administrator.')
+                                    : (isSpanish ? 'Tu perfil ha sido enviado y está esperando revisión por nuestro equipo.' : 'Your profile has been submitted and is waiting to be reviewed by our team.')}
                             </p>
                             <p className="text-gray-400 text-sm mb-8">
                                 {suspended
-                                    ? 'If you believe this is a mistake, please contact our support team.'
-                                    : 'Once approved, you will have full access to the Business Portal.'}
+                                    ? (isSpanish ? 'Si crees que esto es un error, contacta con nuestro equipo de soporte.' : 'If you believe this is a mistake, please contact our support team.')
+                                    : (isSpanish ? 'Una vez aprobado, tendrás acceso completo al Portal de Empresa.' : 'Once approved, you will have full access to the Business Portal.')}
                             </p>
                             <div className={`border rounded-xl p-4 mb-8 text-left ${suspended ? 'bg-red-50 border-red-100' : 'bg-green-50 border-green-100'}`}>
                                 <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${suspended ? 'text-red-600' : 'text-[#007F00]'}`}>
-                                    {suspended ? 'Suspended account' : 'Registered as'}
+                                    {suspended
+                                        ? (isSpanish ? 'Cuenta suspendida' : 'Suspended account')
+                                        : (isSpanish ? 'Registrado como' : 'Registered as')}
                                 </p>
                                 <p className="text-sm font-semibold text-gray-800">{user?.user_metadata?.full_name || user?.email}</p>
                                 <p className="text-xs text-gray-500">{user?.email}</p>
                             </div>
                             <p className="text-xs text-gray-400 mb-6">
-                                Questions? Contact us at{' '}
+                                {isSpanish ? '¿Preguntas? Contáctanos en' : 'Questions? Contact us at'}{' '}
                                 <a href="mailto:hello@theberman.eu" className={`font-semibold hover:underline ${suspended ? 'text-red-500' : 'text-[#007F00]'}`}>
                                     hello@theberman.eu
                                 </a>
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3">
                                 <Link to="/" className={`flex-1 py-3 px-6 text-white rounded-xl font-bold text-sm transition-colors text-center ${suspended ? 'bg-red-500 hover:bg-red-600' : 'bg-[#007F00] hover:bg-[#006600]'}`}>
-                                    Explore Website
+                                    {isSpanish ? 'Explorar Web' : 'Explore Website'}
                                 </Link>
                                 <button onClick={handleSignOut} className="flex-1 py-3 px-6 border border-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors">
-                                    Sign Out
+                                    {isSpanish ? 'Cerrar Sesión' : 'Sign Out'}
                                 </button>
                             </div>
                         </div>
@@ -477,13 +483,13 @@ const BusinessDashboard = () => {
                     <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6">
                         <Building2 size={40} className="text-amber-500" />
                     </div>
-                    <h2 className="text-2xl font-black text-gray-900 mb-2">No Listing Found</h2>
-                    <p className="text-gray-500 mb-8 font-medium">Your account hasn't been linked to a business listing yet. Please complete your onboarding.</p>
+                    <h2 className="text-2xl font-black text-gray-900 mb-2">{isSpanish ? 'No se encontró ningún listado' : 'No Listing Found'}</h2>
+                    <p className="text-gray-500 mb-8 font-medium">{isSpanish ? 'Tu cuenta no está vinculada a un listado de empresa. Por favor, completa el registro.' : "Your account hasn't been linked to a business listing yet. Please complete your onboarding."}</p>
                     <Link to="/business-onboarding" className="block w-full bg-[#007F00] text-white py-4 rounded-2xl font-black uppercase tracking-wider text-sm hover:bg-green-800 transition-all mb-3">
-                        Complete Onboarding
+                        {isSpanish ? 'Completar Registro' : 'Complete Onboarding'}
                     </Link>
                     <button onClick={handleSignOut} className="w-full bg-gray-100 text-gray-700 py-4 rounded-2xl font-black uppercase tracking-wider text-sm hover:bg-gray-200 transition-all">
-                        Sign Out
+                        {isSpanish ? 'Cerrar Sesión' : 'Sign Out'}
                     </button>
                 </div>
             </div>
@@ -506,10 +512,10 @@ const BusinessDashboard = () => {
                         <div className="hidden sm:block">
                             <div className="flex items-center gap-3">
                                 <h1 className="text-xl font-black text-white uppercase tracking-tight leading-none">
-                                    Manage Profile
+                                    {isSpanish ? 'Gestionar Perfil' : 'Manage Profile'}
                                 </h1>
                                 <span className="px-2 py-0.5 bg-[#007F00]/20 text-[#007F00] text-[9px] font-black rounded uppercase tracking-widest border border-[#007F00]/30">
-                                    Business Portal
+                                    {isSpanish ? 'Portal de Empresa' : 'Business Portal'}
                                 </span>
                             </div>
                             <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mt-1">{listing.company_name}</p>
@@ -524,7 +530,7 @@ const BusinessDashboard = () => {
                         >
                             <div className="w-2 h-2 rounded-full bg-[#9ACD32] group-hover:animate-pulse"></div>
                             <span className="text-sm font-black text-white uppercase tracking-wider">
-                                View <span className="text-[#9ACD32]">Public Page</span>
+                                {isSpanish ? 'Ver ' : 'View '}<span className="text-[#9ACD32]">{isSpanish ? 'Página Pública' : 'Public Page'}</span>
                             </span>
                         </Link>
 
@@ -544,7 +550,7 @@ const BusinessDashboard = () => {
                     <div className={`absolute right-6 top-full mt-4 w-64 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl border border-gray-100 overflow-hidden transform origin-top transition-all duration-300 ease-out ${isMenuOpen ? 'scale-y-100 opacity-100' : 'scale-y-95 opacity-0 pointer-events-none'}`}>
                         <div className="py-2">
                             <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/50">
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Logged in as</p>
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Conectado como' : 'Logged in as'}</p>
                                 <p className="text-xs font-bold text-gray-900 truncate">{user?.email}</p>
                             </div>
                             <button
@@ -552,7 +558,7 @@ const BusinessDashboard = () => {
                                 className="w-full px-6 py-4 text-left text-sm font-black uppercase tracking-widest text-red-500 hover:bg-red-50 flex items-center gap-3 transition-colors"
                             >
                                 <LogOut size={16} />
-                                Sign Out
+                                {isSpanish ? 'Cerrar Sesión' : 'Sign Out'}
                             </button>
                         </div>
                     </div>
@@ -568,18 +574,20 @@ const BusinessDashboard = () => {
                         <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
                             <AlertCircle size={40} className="text-red-500 animate-pulse" />
                         </div>
-                        <h2 className="text-2xl font-black text-gray-900 mb-2">Subscription Expired</h2>
+                        <h2 className="text-2xl font-black text-gray-900 mb-2">{isSpanish ? 'Suscripción Expirada' : 'Subscription Expired'}</h2>
                         <p className="text-gray-500 mb-8 font-medium">
-                            Your subscription has ended and your account is currently disabled. Please renew your subscription to reactivate your listing and access the portal.
+                            {isSpanish
+                                ? 'Tu suscripción ha terminado y tu cuenta está actualmente desactivada. Renueva tu suscripción para reactivar tu listado y acceder al portal.'
+                                : 'Your subscription has ended and your account is currently disabled. Please renew your subscription to reactivate your listing and access the portal.'}
                         </p>
                         <Link
                             to="/pricing"
                             className="block w-full bg-red-600 text-white py-4 rounded-2xl font-black uppercase tracking-wider text-sm hover:bg-red-700 transition-all mb-4 shadow-lg shadow-red-500/20"
                         >
-                            Renew Subscription
+                            {isSpanish ? 'Renovar Suscripción' : 'Renew Subscription'}
                         </Link>
                         <button onClick={handleSignOut} className="w-full text-gray-400 hover:text-gray-600 font-bold uppercase tracking-widest text-[10px] transition-colors">
-                            Sign Out
+                            {isSpanish ? 'Cerrar Sesión' : 'Sign Out'}
                         </button>
                     </div>
                 </div>
@@ -594,31 +602,31 @@ const BusinessDashboard = () => {
                             onClick={() => document.getElementById('basic-info')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                             className="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-gray-600 hover:bg-white hover:text-[#007F00] hover:shadow-sm transition-all whitespace-nowrap"
                         >
-                            <Building2 size={14} /> Basic Details
+                            <Building2 size={14} /> {isSpanish ? 'Datos Básicos' : 'Basic Details'}
                         </button>
                         <button
                             onClick={() => document.getElementById('visuals')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                             className="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-[#007EA7] bg-[#007EA7]/5 border border-[#007EA7]/10 hover:bg-[#007EA7] hover:text-white transition-all whitespace-nowrap shadow-sm"
                         >
-                            <ImageIcon size={14} /> Catalogue Media
+                            <ImageIcon size={14} /> {isSpanish ? 'Medios del Catálogo' : 'Catalogue Media'}
                         </button>
                         <button
                             onClick={() => document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                             className="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-gray-600 hover:bg-white hover:text-orange-600 transition-all whitespace-nowrap"
                         >
-                            <Tags size={14} /> Categories
+                            <Tags size={14} /> {isSpanish ? 'Categorías' : 'Categories'}
                         </button>
                         <button
                             onClick={() => document.getElementById('locations')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                             className="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-gray-600 hover:bg-white hover:text-red-600 transition-all whitespace-nowrap"
                         >
-                            <MapPin size={14} /> Locations
+                            <MapPin size={14} /> {isSpanish ? 'Ubicaciones' : 'Locations'}
                         </button>
                         <button
                             onClick={() => document.getElementById('referral-program')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                             className="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-purple-600 hover:bg-purple-50 hover:text-purple-700 transition-all whitespace-nowrap bg-purple-50 border border-purple-100"
                         >
-                            <Gift size={14} /> Referrals
+                            <Gift size={14} /> {isSpanish ? 'Referencias' : 'Referrals'}
                         </button>
                     </div>
 
@@ -631,20 +639,20 @@ const BusinessDashboard = () => {
                                         <Building2 size={24} />
                                     </div>
                                     <div>
-                                        <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">Profile Details</h3>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Main Business Information</p>
+                                        <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">{isSpanish ? 'Detalles del Perfil' : 'Profile Details'}</h3>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{isSpanish ? 'Información Principal de la Empresa' : 'Main Business Information'}</p>
                                     </div>
                                 </div>
                                 {isSavingProfile && (
                                     <div className="flex items-center gap-2 text-[#007F00] text-xs font-black uppercase tracking-widest bg-white px-4 py-2 rounded-full border border-green-100 shadow-sm">
-                                        <Loader2 size={12} className="animate-spin" /> Saving...
+                                        <Loader2 size={12} className="animate-spin" /> {isSpanish ? 'Guardando...' : 'Saving...'}
                                     </div>
                                 )}
                             </div>
                             <div className="p-10 space-y-10">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="md:col-span-2">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">Display Business Name</label>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">{isSpanish ? 'Nombre de la Empresa' : 'Display Business Name'}</label>
                                         <input
                                             name="company_name"
                                             value={listing.company_name || ''}
@@ -655,7 +663,7 @@ const BusinessDashboard = () => {
                                     </div>
 
                                     <div className="md:col-span-2">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">Business Bio / About Us</label>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">{isSpanish ? 'Descripción / Sobre Nosotros' : 'Business Bio / About Us'}</label>
                                         <textarea
                                             name="description"
                                             value={listing.description || ''}
@@ -667,8 +675,8 @@ const BusinessDashboard = () => {
 
                                         <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
                                             <div className="flex items-center justify-between mb-4">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Key Features / Highlights</label>
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Appears in "Features" tab</span>
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">{isSpanish ? 'Características / Destacados' : 'Key Features / Highlights'}</label>
+                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tight">{isSpanish ? 'Aparece en la pestaña Características' : 'Appears in "Features" tab'}</span>
                                             </div>
                                             <div className="space-y-3">
                                                 {(listing.features || []).map((feature, idx) => (
@@ -703,14 +711,14 @@ const BusinessDashboard = () => {
                                                     }}
                                                     className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:border-[#007F00] hover:text-[#007F00] transition-all bg-white/50"
                                                 >
-                                                    + Add New Highlight
+                                                    {isSpanish ? '+ Añadir Destacado' : '+ Add New Highlight'}
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">Public Contact Phone</label>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">{isSpanish ? 'Teléfono de Contacto Público' : 'Public Contact Phone'}</label>
                                         <input
                                             name="phone"
                                             value={listing.phone || ''}
@@ -721,7 +729,7 @@ const BusinessDashboard = () => {
                                     </div>
 
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">Public Contact Email</label>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">{isSpanish ? 'Email de Contacto Público' : 'Public Contact Email'}</label>
                                         <input
                                             name="email"
                                             value={listing.email || ''}
@@ -732,7 +740,7 @@ const BusinessDashboard = () => {
                                     </div>
 
                                     <div className="md:col-span-2">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">Business Headquarters Address</label>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">{isSpanish ? 'Dirección de la Sede' : 'Business Headquarters Address'}</label>
                                         <input
                                             name="address"
                                             value={listing.address || ''}
@@ -743,7 +751,7 @@ const BusinessDashboard = () => {
                                     </div>
 
                                     <div className="md:col-span-2">
-                                        <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-100 pb-2">Social Connect Links</h4>
+                                        <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-100 pb-2">{isSpanish ? 'Redes Sociales' : 'Social Connect Links'}</h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-4">
                                                 <div>
@@ -783,8 +791,8 @@ const BusinessDashboard = () => {
                                         <ImageIcon size={24} />
                                     </div>
                                     <div>
-                                        <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">Catalogue Media</h3>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Banner and Image Slider</p>
+                                        <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">{isSpanish ? 'Medios del Catálogo' : 'Catalogue Media'}</h3>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{isSpanish ? 'Banner e Imágenes Deslizantes' : 'Banner and Image Slider'}</p>
                                     </div>
                                 </div>
                                 {(isSavingGallery || isUploadingBanner) && (
@@ -798,14 +806,14 @@ const BusinessDashboard = () => {
                                 <div>
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                                         <div>
-                                            <h4 className="text-sm font-black text-gray-900 uppercase tracking-tight mb-1">Main Heritage Banner</h4>
-                                            <p className="text-xs text-gray-500 font-medium">This is the premium wide-screen image at the top of your profile.</p>
+                                            <h4 className="text-sm font-black text-gray-900 uppercase tracking-tight mb-1">{isSpanish ? 'Banner Principal' : 'Main Heritage Banner'}</h4>
+                                            <p className="text-xs text-gray-500 font-medium">{isSpanish ? 'Esta es la imagen principal en la parte superior de tu perfil.' : 'This is the premium wide-screen image at the top of your profile.'}</p>
                                         </div>
                                         <div className="flex-shrink-0">
                                             <input type="file" id="hero-up" className="hidden" accept="image/*" onChange={handleBannerUpload} disabled={isUploadingBanner} />
                                             <label htmlFor="hero-up" className="inline-flex items-center gap-2 px-8 py-3.5 bg-gray-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black cursor-pointer transition-all shadow-xl shadow-gray-200">
                                                 {isUploadingBanner ? <Loader2 size={14} className="animate-spin" /> : <ImageIcon size={14} />}
-                                                {isUploadingBanner ? 'Uploading...' : 'Replace Master Banner'}
+                                                {isUploadingBanner ? (isSpanish ? 'Subiendo...' : 'Uploading...') : (isSpanish ? 'Cambiar Banner Principal' : 'Replace Master Banner')}
                                             </label>
                                         </div>
                                     </div>
@@ -821,7 +829,7 @@ const BusinessDashboard = () => {
                                         ) : (
                                             <div className="w-full h-full flex flex-col items-center justify-center text-gray-300">
                                                 <ImageIcon size={64} className="mb-4 opacity-10" />
-                                                <span className="font-black text-[10px] uppercase tracking-[0.3em]">Design Empty Section</span>
+                                                <span className="font-black text-[10px] uppercase tracking-[0.3em]">{isSpanish ? 'Sección Vacía' : 'Design Empty Section'}</span>
                                             </div>
                                         )}
                                     </div>
@@ -830,8 +838,8 @@ const BusinessDashboard = () => {
                                 {/* Slider Gallery */}
                                 <div>
                                     <div className="mb-10">
-                                        <h4 className="text-sm font-black text-gray-900 uppercase tracking-tight mb-1">Hero Slider Portfolio</h4>
-                                        <p className="text-xs text-gray-500 font-medium">Add up to 10 photos that showcase your best work in the profile slider.</p>
+                                        <h4 className="text-sm font-black text-gray-900 uppercase tracking-tight mb-1">{isSpanish ? 'Galería de Imágenes' : 'Hero Slider Portfolio'}</h4>
+                                        <p className="text-xs text-gray-500 font-medium">{isSpanish ? 'Añade hasta 10 fotos que muestren tu mejor trabajo en el deslizador del perfil.' : 'Add up to 10 photos that showcase your best work in the profile slider.'}</p>
                                     </div>
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                                         {listingImages.map((img, idx) => (
@@ -851,17 +859,17 @@ const BusinessDashboard = () => {
                                                             </div>
                                                             <input type="file" id={`gallery-${idx}`} className="hidden" accept="image/*" onChange={(e) => handleGalleryUpload(idx, e)} disabled={isUploadingGallery[idx]} />
                                                             <label htmlFor={`gallery-${idx}`} className="px-5 py-2.5 bg-white border border-[#007EA7]/20 text-[#007EA7] rounded-xl font-black text-[9px] uppercase tracking-widest hover:bg-[#007EA7] hover:text-white cursor-pointer transition-all shadow-sm">
-                                                                Upload Image {idx + 1}
+                                                                {isSpanish ? `Subir Imagen ${idx + 1}` : `Upload Image ${idx + 1}`}
                                                             </label>
                                                         </div>
                                                     )}
                                                 </div>
                                                 <div className="p-6 flex-grow ">
-                                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-3 block">Photo Context / Caption</label>
+                                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-3 block">{isSpanish ? 'Título de la Foto' : 'Photo Context / Caption'}</label>
                                                     <textarea
                                                         value={img.description}
                                                         onChange={(e) => handleGalleryDescriptionChange(idx, e.target.value)}
-                                                        placeholder="Add a caption..."
+                                                        placeholder={isSpanish ? 'Añadir un título...' : 'Add a caption...'}
                                                         rows={2}
                                                         className="w-full bg-transparent border-none p-0 text-sm font-bold text-gray-900 focus:ring-0 placeholder:text-gray-300 resize-none leading-relaxed"
                                                     />
@@ -881,18 +889,18 @@ const BusinessDashboard = () => {
                                         <Tags size={24} />
                                     </div>
                                     <div>
-                                        <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">Service Categories</h3>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Catalogue Visibility</p>
+                                        <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">{isSpanish ? 'Categorías de Servicio' : 'Service Categories'}</h3>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{isSpanish ? 'Visibilidad en el Catálogo' : 'Catalogue Visibility'}</p>
                                     </div>
                                 </div>
                                 {isSavingCategories && (
                                     <div className="flex items-center gap-2 text-orange-600 text-xs font-black uppercase tracking-widest bg-white px-4 py-2 rounded-full border border-orange-100 shadow-sm">
-                                        <Loader2 size={12} className="animate-spin" /> SYNCING...
+                                        <Loader2 size={12} className="animate-spin" /> {isSpanish ? 'SINCRONIZANDO...' : 'SYNCING...'}
                                     </div>
                                 )}
                             </div>
                             <div className="p-10">
-                                <p className="text-gray-500 text-sm font-medium mb-10 max-w-2xl leading-relaxed">Select the categories that define your business. This determines where you appear when users filter by service in our directory.</p>
+                                <p className="text-gray-500 text-sm font-medium mb-10 max-w-2xl leading-relaxed">{isSpanish ? 'Selecciona las categorías que definen tu empresa. Esto determina dónde apareces cuando los usuarios filtran por servicio en nuestro directorio.' : 'Select the categories that define your business. This determines where you appear when users filter by service in our directory.'}</p>
                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                                     {allCategories.map(cat => (
                                         <button
@@ -923,13 +931,13 @@ const BusinessDashboard = () => {
                                         <MapPin size={24} />
                                     </div>
                                     <div>
-                                        <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">Service Coverage</h3>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Regional Targeting</p>
+                                        <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">{isSpanish ? 'Cobertura del Servicio' : 'Service Coverage'}</h3>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{isSpanish ? 'Segmentación Regional' : 'Regional Targeting'}</p>
                                     </div>
                                 </div>
                             </div>
                             <div className="p-10">
-                                <p className="text-gray-500 text-sm font-medium mb-10 max-w-2xl leading-relaxed">Choose every county where you are active. You will be matched with inquiries and appear in searches for these specific areas.</p>
+                                <p className="text-gray-500 text-sm font-medium mb-10 max-w-2xl leading-relaxed">{isSpanish ? 'Elige cada provincia donde estés activo. Serás asociado con consultas y aparecerás en búsquedas de estas áreas específicas.' : 'Choose every county where you are active. You will be matched with inquiries and appear in searches for these specific areas.'}</p>
                                 <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
                                     {IRISH_COUNTIES.map(county => {
                                         const isSelected = (listing.additional_addresses || []).includes(county);

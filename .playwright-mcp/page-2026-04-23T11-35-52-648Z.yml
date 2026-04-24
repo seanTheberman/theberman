@@ -1,0 +1,164 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "The Berman Logo" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img "The Berman Logo" [ref=e7]
+      - generic [ref=e8]:
+        - link "Catálogo de Eficiencia Energética" [ref=e9] [cursor=pointer]:
+          - /url: /catalogue
+          - generic [ref=e11]: Catálogo de Eficiencia Energética
+        - button [ref=e12]:
+          - img [ref=e13]
+  - main [ref=e14]:
+    - generic [ref=e15]:
+      - generic [ref=e17]:
+        - generic [ref=e18]: Legal
+        - heading "Política de Privacidad." [level=1] [ref=e19]
+        - paragraph [ref=e20]: "Última actualización: 2 de febrero de 2026. Tu privacidad es fundamental para nosotros. Hemos diseñado esta política para ser transparente y cumplir con el RGPD."
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - generic [ref=e26]:
+            - img [ref=e27]
+            - heading "Introducción" [level=2] [ref=e29]
+          - paragraph [ref=e31]: Bienvenido a Certificado Energético ("nosotros", "nuestro" o "nos"). Nos comprometemos a proteger tus datos personales y tu derecho a la privacidad. Esta Política de Privacidad explica cómo recopilamos, usamos y compartimos información cuando utilizas nuestro sitio web (certificadoenergético.eu) y nuestros servicios en España.
+        - generic [ref=e32]:
+          - generic [ref=e34]:
+            - img [ref=e35]
+            - heading "Información que Recopilamos" [level=2] [ref=e38]
+          - generic [ref=e39]:
+            - paragraph [ref=e40]: "Cuando solicitas un presupuesto de Certificado Energético o utilizas nuestra plataforma, recopilamos información que te identifica, como:"
+            - list [ref=e41]:
+              - listitem [ref=e42]: Datos de contacto (nombre, correo electrónico, número de teléfono).
+              - listitem [ref=e43]: Datos de la propiedad (código postal, dirección, tipo de inmueble).
+              - listitem [ref=e44]: Información de la cuenta (si te registras como usuario o certificador).
+              - listitem [ref=e45]: Datos técnicos (dirección IP, tipo de navegador, patrones de uso).
+        - generic [ref=e46]:
+          - generic [ref=e48]:
+            - img [ref=e49]
+            - heading "Cómo Usamos los Datos" [level=2] [ref=e52]
+          - generic [ref=e53]:
+            - paragraph [ref=e54]: Tratamos tu información en base a intereses legítimos, al cumplimiento del contrato contigo y al cumplimiento de nuestras obligaciones legales.
+            - list [ref=e55]:
+              - listitem [ref=e56]: Para facilitar la generación de presupuestos y la reserva con certificadores.
+              - listitem [ref=e57]: Para comunicarnos contigo en relación con tu certificación energética.
+              - listitem [ref=e58]: Para mejorar la funcionalidad del sitio y la experiencia de usuario.
+              - listitem [ref=e59]: Para cumplir con la normativa española de eficiencia energética de edificios.
+        - generic [ref=e60]:
+          - generic [ref=e62]:
+            - img [ref=e63]
+            - heading "Tus Derechos" [level=2] [ref=e67]
+          - generic [ref=e68]:
+            - paragraph [ref=e69]: "En virtud del RGPD y de la LOPDGDD española, dispones de los siguientes derechos:"
+            - list [ref=e70]:
+              - listitem [ref=e71]: Acceder a los datos personales que tratamos sobre ti.
+              - listitem [ref=e72]: Solicitar la rectificación de datos inexactos.
+              - listitem [ref=e73]: Solicitar la supresión de tus datos (derecho al olvido).
+              - listitem [ref=e74]: Oponerte al tratamiento o solicitar su limitación.
+        - generic [ref=e75]:
+          - generic [ref=e77]:
+            - img [ref=e78]
+            - heading "Contáctanos" [level=2] [ref=e81]
+          - generic [ref=e82]:
+            - paragraph [ref=e83]: "Si tienes alguna pregunta sobre esta Política de Privacidad o sobre nuestras prácticas de tratamiento de datos, contacta con nuestro Responsable de Protección de Datos:"
+            - paragraph [ref=e84]:
+              - text: "Correo: hola@certificadoenergético.eu"
+              - text: "Dirección: Madrid, España"
+  - contentinfo [ref=e85]:
+    - generic [ref=e86]:
+      - generic [ref=e87]:
+        - generic [ref=e88]:
+          - generic [ref=e89]:
+            - img "Certificado Energético" [ref=e90]
+            - generic [ref=e91]: Certificado Energético
+          - paragraph [ref=e92]: Su socio de confianza para certificados energéticos y consultoría energética.
+          - generic [ref=e93]:
+            - link [ref=e94] [cursor=pointer]:
+              - /url: https://www.facebook.com/profile.php?id=61578159843471
+              - img [ref=e95]
+            - link [ref=e97] [cursor=pointer]:
+              - /url: https://www.instagram.com/thebermanireland?igsh=amtidXdjNmZrMWJz&utm_source=qr
+              - img [ref=e98]
+            - link [ref=e101] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/the-berman/posts/?feedView=all
+              - img [ref=e102]
+            - link [ref=e106] [cursor=pointer]:
+              - /url: https://twitter.com
+              - img [ref=e107]
+        - generic [ref=e109]:
+          - heading "Enlaces Rápidos" [level=4] [ref=e110]
+          - list [ref=e111]:
+            - listitem [ref=e112]:
+              - link "Inicio" [ref=e113] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e114]:
+              - link "Sobre Nosotros" [ref=e115] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e116]:
+              - link "Catálogo de Eficiencia Energética" [ref=e117] [cursor=pointer]:
+                - /url: /catalogue
+            - listitem [ref=e118]:
+              - link "Habla con un Asesor Energético" [ref=e119] [cursor=pointer]:
+                - /url: /hire-agent
+            - listitem [ref=e120]:
+              - link "Registro de Negocio" [ref=e121] [cursor=pointer]:
+                - /url: /signup?role=business
+            - listitem [ref=e122]:
+              - link "FAQ" [ref=e123] [cursor=pointer]:
+                - /url: /faq
+        - generic [ref=e124]:
+          - heading "Cuenta" [level=4] [ref=e125]
+          - list [ref=e126]:
+            - listitem [ref=e127]:
+              - link "Reservar Certificadores" [ref=e128] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e129]:
+              - link "Ubicaciones" [ref=e130] [cursor=pointer]:
+                - /url: /locations
+            - listitem [ref=e131]:
+              - link "Nuestras Noticias" [ref=e132] [cursor=pointer]:
+                - /url: /news
+            - listitem [ref=e133]:
+              - link "Blog" [ref=e134] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e135]:
+              - link "Contacto" [ref=e136] [cursor=pointer]:
+                - /url: /contact-us
+            - listitem [ref=e137]:
+              - link "Iniciar Sesión" [ref=e138] [cursor=pointer]:
+                - /url: /login
+            - listitem [ref=e139]:
+              - link "Registrarse" [ref=e140] [cursor=pointer]:
+                - /url: /signup
+            - listitem [ref=e141]:
+              - button "Suscribirse a Noticias" [ref=e142] [cursor=pointer]
+        - generic [ref=e143]:
+          - heading "Legal" [level=4] [ref=e144]
+          - list [ref=e145]:
+            - listitem [ref=e146]:
+              - link "Política de Privacidad" [ref=e147] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e148]:
+              - link "Términos y Condiciones" [ref=e149] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e150]:
+              - link "Política de Cookies" [ref=e151] [cursor=pointer]:
+                - /url: /cookie-policy
+        - generic [ref=e152]:
+          - heading "Contacto" [level=4] [ref=e153]
+          - list [ref=e154]:
+            - listitem [ref=e155]:
+              - img [ref=e156]
+              - link "hola@certificadoenergético.eu" [ref=e159] [cursor=pointer]:
+                - /url: mailto:hola@certificadoenergético.eu
+            - listitem [ref=e160]:
+              - img [ref=e161]
+              - link "certificadoenergético.eu" [ref=e164] [cursor=pointer]:
+                - /url: https://certificadoenergético.eu
+      - generic [ref=e165]:
+        - paragraph [ref=e166]: © 2026 Certificado Energético. Todos los derechos reservados.
+        - generic [ref=e167]:
+          - link "Política de Privacidad" [ref=e168] [cursor=pointer]:
+            - /url: /privacy
+          - link "Términos de Servicio" [ref=e169] [cursor=pointer]:
+            - /url: /terms

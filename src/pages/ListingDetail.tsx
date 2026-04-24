@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import ListingLayout, { type CatalogueListing } from '../components/ListingLayout';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
+import { getTenantFromDomain } from '../lib/tenant';
 
 const ListingDetail = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -48,6 +49,7 @@ const ListingDetail = () => {
                     images:catalogue_listing_images(id, url, description, display_order)
                 `)
                 .eq('slug', slug)
+                .eq('tenant', getTenantFromDomain())
                 .single();
 
             if (error) throw error;

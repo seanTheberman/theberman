@@ -1,0 +1,3543 @@
+- generic [ref=e2]:
+  - status [ref=e151]: Admin login successful!
+  - generic [ref=e152]:
+    - complementary [ref=e153]:
+      - link "The Berman" [ref=e155] [cursor=pointer]:
+        - /url: /
+        - img "The Berman" [ref=e156]
+      - navigation [ref=e157]:
+        - paragraph [ref=e158]: Navigation
+        - button "Overview" [ref=e159]:
+          - generic [ref=e160]:
+            - img [ref=e161]
+            - generic [ref=e162]: Overview
+        - button "Leads" [ref=e164]:
+          - generic [ref=e165]:
+            - img [ref=e166]
+            - generic [ref=e169]: Leads
+        - button "Assessments" [ref=e170]:
+          - generic [ref=e171]:
+            - img [ref=e172]
+            - generic [ref=e175]: Assessments
+        - button "Jobs" [ref=e176]:
+          - generic [ref=e177]:
+            - img [ref=e178]
+            - generic [ref=e181]: Jobs
+        - button "Homeowners" [ref=e182]:
+          - generic [ref=e183]:
+            - img [ref=e184]
+            - generic [ref=e187]: Homeowners
+        - button "Businesses" [ref=e188]:
+          - generic [ref=e189]:
+            - img [ref=e190]
+            - generic [ref=e194]: Businesses
+        - button "BER Assessors" [ref=e195]:
+          - generic [ref=e196]:
+            - img [ref=e197]
+            - generic [ref=e202]: BER Assessors
+        - button "Catalogue" [ref=e203]:
+          - generic [ref=e204]:
+            - img [ref=e205]
+            - generic [ref=e207]: Catalogue
+        - button "Payments" [ref=e208]:
+          - generic [ref=e209]:
+            - img [ref=e210]
+            - generic [ref=e212]: Payments
+        - paragraph [ref=e215]: CMS
+        - button "News" [ref=e216]:
+          - generic [ref=e217]:
+            - img [ref=e218]
+            - generic [ref=e221]: News
+        - button "Blog" [ref=e222]:
+          - generic [ref=e223]:
+            - img [ref=e224]
+            - generic [ref=e228]: Blog
+        - button "FAQ" [ref=e229]:
+          - generic [ref=e230]:
+            - img [ref=e231]
+            - generic [ref=e234]: FAQ
+        - button "Recently Deleted" [ref=e237]:
+          - generic [ref=e238]:
+            - img [ref=e239]
+            - generic [ref=e242]: Recently Deleted
+        - button "Settings" [ref=e243]:
+          - generic [ref=e244]:
+            - img [ref=e245]
+            - generic [ref=e248]: Settings
+        - button "Partners" [ref=e250]:
+          - img [ref=e251]
+          - generic [ref=e255]: Partners
+      - generic [ref=e256]:
+        - generic [ref=e257]:
+          - img [ref=e259]
+          - generic [ref=e264]:
+            - paragraph [ref=e265]: Admin
+            - paragraph [ref=e266]: admin@theberman.eu
+        - button "Sign Out" [ref=e267]:
+          - img [ref=e268]
+          - generic [ref=e271]: Sign Out
+    - generic [ref=e272]:
+      - generic [ref=e273]:
+        - generic [ref=e275]:
+          - heading "System Overview Ireland" [level=1] [ref=e276]:
+            - generic [ref=e277]: System Overview
+            - combobox [ref=e278] [cursor=pointer]:
+              - option "Ireland" [selected]
+              - option "Spain"
+          - paragraph [ref=e279]: Key metrics and business performance.
+        - button "Refresh" [ref=e280]:
+          - img [ref=e281]
+          - generic [ref=e286]: Refresh
+      - main [ref=e287]:
+        - generic [ref=e288]:
+          - generic [ref=e289]:
+            - button "Revenue €0 0 payments" [ref=e290]:
+              - generic [ref=e291]:
+                - paragraph [ref=e292]: Revenue
+                - img [ref=e294]
+              - paragraph [ref=e296]: €0
+              - paragraph [ref=e297]: 0 payments
+            - button "Active Jobs 3 1 pending · 0 done" [ref=e298]:
+              - generic [ref=e299]:
+                - paragraph [ref=e300]: Active Jobs
+                - img [ref=e302]
+              - paragraph [ref=e305]: "3"
+              - generic [ref=e306]:
+                - generic [ref=e307]: 1 pending
+                - generic [ref=e308]: ·
+                - generic [ref=e309]: 0 done
+            - button "Conversion 0% 0 of 3 leads" [ref=e310]:
+              - generic [ref=e311]:
+                - paragraph [ref=e312]: Conversion
+                - img [ref=e314]
+              - paragraph [ref=e317]: 0%
+              - paragraph [ref=e318]:
+                - img [ref=e319]
+                - text: 0 of 3 leads
+            - button "Onboarding 50 pending review" [ref=e321]:
+              - generic [ref=e322]:
+                - paragraph [ref=e323]: Onboarding
+                - img [ref=e325]
+              - paragraph [ref=e328]: "50"
+              - paragraph [ref=e329]:
+                - img [ref=e330]
+                - text: pending review
+          - generic [ref=e333]:
+            - generic [ref=e334]:
+              - generic [ref=e335]:
+                - button "All Users 111" [ref=e336]:
+                  - img [ref=e337]
+                  - text: All Users
+                  - generic [ref=e342]: "111"
+                - button "Homeowners 3" [ref=e343]:
+                  - img [ref=e344]
+                  - text: Homeowners
+                  - generic [ref=e347]: "3"
+                - button "Assessors 58" [ref=e348]:
+                  - img [ref=e349]
+                  - text: Assessors
+                  - generic [ref=e352]: "58"
+                - button "Businesses 50" [ref=e353]:
+                  - img [ref=e354]
+                  - text: Businesses
+                  - generic [ref=e358]: "50"
+                - generic [ref=e359]: 111 results
+              - generic [ref=e360]:
+                - generic [ref=e361]:
+                  - img [ref=e362]
+                  - textbox "Search by name or email..." [ref=e365]
+                - generic [ref=e366]:
+                  - img [ref=e367]
+                  - combobox [ref=e370]:
+                    - option "All Preference locations (111)" [selected]
+                    - option "Carlow (12)"
+                    - option "Cavan (11)"
+                    - option "Clare (8)"
+                    - option "Cork (9)"
+                    - option "Donegal (3)"
+                    - option "Dublin (23)"
+                    - option "Galway (12)"
+                    - option "Kerry (8)"
+                    - option "Kildare (14)"
+                    - option "Kilkenny (15)"
+                    - option "Laois (10)"
+                    - option "Leitrim (10)"
+                    - option "Limerick (14)"
+                    - option "Longford (10)"
+                    - option "Louth (8)"
+                    - option "Mayo (10)"
+                    - option "Meath (10)"
+                    - option "Monaghan (6)"
+                    - option "Offaly (14)"
+                    - option "Roscommon (11)"
+                    - option "Sligo (6)"
+                    - option "Tipperary (10)"
+                    - option "Waterford (9)"
+                    - option "Westmeath (7)"
+                    - option "Wexford (9)"
+                    - option "Wicklow (8)"
+            - table [ref=e372]:
+              - rowgroup [ref=e373]:
+                - row "Status Details Role Joined Activity Actions" [ref=e374]:
+                  - columnheader "Status" [ref=e375]
+                  - columnheader "Details" [ref=e376]
+                  - columnheader "Role" [ref=e377]
+                  - columnheader "Joined" [ref=e378]
+                  - columnheader "Activity" [ref=e379]
+                  - columnheader "Actions" [ref=e380]
+              - rowgroup [ref=e381]:
+                - row "Active Never ● No Sub C&S Construction Services candsconstruction@eircom.net Co. Cork business 22/04/2026 0 requests" [ref=e382] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e383]:
+                    - generic [ref=e384]:
+                      - generic [ref=e385]: Active
+                      - generic [ref=e387]:
+                        - generic [ref=e388]:
+                          - img [ref=e389]
+                          - generic [ref=e392]: Never
+                        - generic "Payment status" [ref=e393]: ●
+                        - generic [ref=e394]: No Sub
+                  - cell "C&S Construction Services candsconstruction@eircom.net Co. Cork" [ref=e395]:
+                    - generic [ref=e396]: C&S Construction Services
+                    - generic [ref=e397]: candsconstruction@eircom.net
+                    - generic [ref=e398]:
+                      - img [ref=e399]
+                      - text: Co. Cork
+                  - cell "business" [ref=e402]
+                  - cell "22/04/2026" [ref=e403]
+                  - cell "0 requests" [ref=e404]:
+                    - generic [ref=e405]:
+                      - img [ref=e406]
+                      - text: 0 requests
+                  - cell [ref=e409]:
+                    - generic [ref=e410]:
+                      - button "View details / Change role" [ref=e411]:
+                        - img [ref=e412]
+                      - button "Suspend" [ref=e415]:
+                        - img [ref=e416]
+                      - button "Delete user" [ref=e418]:
+                        - img [ref=e419]
+                - row "Active Never ● No Sub Brennan Heating Plumbing brennanplumbingheating247@gmail.com Co. Dublin business 22/04/2026 0 requests" [ref=e422] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e423]:
+                    - generic [ref=e424]:
+                      - generic [ref=e425]: Active
+                      - generic [ref=e427]:
+                        - generic [ref=e428]:
+                          - img [ref=e429]
+                          - generic [ref=e432]: Never
+                        - generic "Payment status" [ref=e433]: ●
+                        - generic [ref=e434]: No Sub
+                  - cell "Brennan Heating Plumbing brennanplumbingheating247@gmail.com Co. Dublin" [ref=e435]:
+                    - generic [ref=e436]: Brennan Heating Plumbing
+                    - generic [ref=e437]: brennanplumbingheating247@gmail.com
+                    - generic [ref=e438]:
+                      - img [ref=e439]
+                      - text: Co. Dublin
+                  - cell "business" [ref=e442]
+                  - cell "22/04/2026" [ref=e443]
+                  - cell "0 requests" [ref=e444]:
+                    - generic [ref=e445]:
+                      - img [ref=e446]
+                      - text: 0 requests
+                  - cell [ref=e449]:
+                    - generic [ref=e450]:
+                      - button "View details / Change role" [ref=e451]:
+                        - img [ref=e452]
+                      - button "Suspend" [ref=e455]:
+                        - img [ref=e456]
+                      - button "Delete user" [ref=e458]:
+                        - img [ref=e459]
+                - row "Active Never ● No Sub Leitrim Warmer Homes info@lwf.ie Co. Leitrim business 22/04/2026 0 requests" [ref=e462] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e463]:
+                    - generic [ref=e464]:
+                      - generic [ref=e465]: Active
+                      - generic [ref=e467]:
+                        - generic [ref=e468]:
+                          - img [ref=e469]
+                          - generic [ref=e472]: Never
+                        - generic "Payment status" [ref=e473]: ●
+                        - generic [ref=e474]: No Sub
+                  - cell "Leitrim Warmer Homes info@lwf.ie Co. Leitrim" [ref=e475]:
+                    - generic [ref=e476]: Leitrim Warmer Homes
+                    - generic [ref=e477]: info@lwf.ie
+                    - generic [ref=e478]:
+                      - img [ref=e479]
+                      - text: Co. Leitrim
+                  - cell "business" [ref=e482]
+                  - cell "22/04/2026" [ref=e483]
+                  - cell "0 requests" [ref=e484]:
+                    - generic [ref=e485]:
+                      - img [ref=e486]
+                      - text: 0 requests
+                  - cell [ref=e489]:
+                    - generic [ref=e490]:
+                      - button "View details / Change role" [ref=e491]:
+                        - img [ref=e492]
+                      - button "Suspend" [ref=e495]:
+                        - img [ref=e496]
+                      - button "Delete user" [ref=e498]:
+                        - img [ref=e499]
+                - row "Active 2d ago ● David Carroll david.carroll7@hotmail.com Assessor 21/04/2026 0 jobs" [ref=e502] [cursor=pointer]:
+                  - cell "Active 2d ago ●" [ref=e503]:
+                    - generic [ref=e504]:
+                      - generic [ref=e505]: Active
+                      - generic [ref=e507]:
+                        - generic [ref=e508]:
+                          - img [ref=e509]
+                          - generic [ref=e512]: 2d ago
+                        - generic "Payment status" [ref=e513]: ●
+                  - cell "David Carroll david.carroll7@hotmail.com" [ref=e514]:
+                    - generic [ref=e515]: David Carroll
+                    - generic [ref=e516]: david.carroll7@hotmail.com
+                  - cell "Assessor" [ref=e517]
+                  - cell "21/04/2026" [ref=e518]
+                  - cell "0 jobs" [ref=e519]:
+                    - generic [ref=e520]:
+                      - img [ref=e521]
+                      - text: 0 jobs
+                  - cell [ref=e524]:
+                    - generic [ref=e525]:
+                      - button "Add to Catalogue" [ref=e526]:
+                        - img [ref=e527]
+                      - button "View details / Change role" [ref=e528]:
+                        - img [ref=e529]
+                      - button "Suspend" [ref=e532]:
+                        - img [ref=e533]
+                      - button "Delete user" [ref=e535]:
+                        - img [ref=e536]
+                - row "Active Never ● No Sub Imperium Carpentry LTD imperiumcarpentry24@gmail.com Co. Dublin business 20/04/2026 0 requests" [ref=e539] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e540]:
+                    - generic [ref=e541]:
+                      - generic [ref=e542]: Active
+                      - generic [ref=e544]:
+                        - generic [ref=e545]:
+                          - img [ref=e546]
+                          - generic [ref=e549]: Never
+                        - generic "Payment status" [ref=e550]: ●
+                        - generic [ref=e551]: No Sub
+                  - cell "Imperium Carpentry LTD imperiumcarpentry24@gmail.com Co. Dublin" [ref=e552]:
+                    - generic [ref=e553]: Imperium Carpentry LTD
+                    - generic [ref=e554]: imperiumcarpentry24@gmail.com
+                    - generic [ref=e555]:
+                      - img [ref=e556]
+                      - text: Co. Dublin
+                  - cell "business" [ref=e559]
+                  - cell "20/04/2026" [ref=e560]
+                  - cell "0 requests" [ref=e561]:
+                    - generic [ref=e562]:
+                      - img [ref=e563]
+                      - text: 0 requests
+                  - cell [ref=e566]:
+                    - generic [ref=e567]:
+                      - button "View details / Change role" [ref=e568]:
+                        - img [ref=e569]
+                      - button "Suspend" [ref=e572]:
+                        - img [ref=e573]
+                      - button "Delete user" [ref=e575]:
+                        - img [ref=e576]
+                - row "Active 3d ago ● Teresa murtdelahunty@gmail.com user 19/04/2026 1 request" [ref=e579] [cursor=pointer]:
+                  - cell "Active 3d ago ●" [ref=e580]:
+                    - generic [ref=e581]:
+                      - generic [ref=e582]: Active
+                      - generic [ref=e584]:
+                        - generic [ref=e585]:
+                          - img [ref=e586]
+                          - generic [ref=e589]: 3d ago
+                        - generic "Payment status" [ref=e590]: ●
+                  - cell "Teresa murtdelahunty@gmail.com" [ref=e591]:
+                    - generic [ref=e592]: Teresa
+                    - generic [ref=e593]: murtdelahunty@gmail.com
+                  - cell "user" [ref=e594]
+                  - cell "19/04/2026" [ref=e595]
+                  - cell "1 request" [ref=e596]:
+                    - generic [ref=e597]:
+                      - img [ref=e598]
+                      - text: 1 request
+                  - cell [ref=e601]:
+                    - generic [ref=e602]:
+                      - button "View details / Change role" [ref=e603]:
+                        - img [ref=e604]
+                      - button "Suspend" [ref=e607]:
+                        - img [ref=e608]
+                      - button "Delete user" [ref=e610]:
+                        - img [ref=e611]
+                - row "Active 2d ago ● Jason Quirke jason.quirke1973@gmail.com user 18/04/2026 1 request" [ref=e614] [cursor=pointer]:
+                  - cell "Active 2d ago ●" [ref=e615]:
+                    - generic [ref=e616]:
+                      - generic [ref=e617]: Active
+                      - generic [ref=e619]:
+                        - generic [ref=e620]:
+                          - img [ref=e621]
+                          - generic [ref=e624]: 2d ago
+                        - generic "Payment status" [ref=e625]: ●
+                  - cell "Jason Quirke jason.quirke1973@gmail.com" [ref=e626]:
+                    - generic [ref=e627]: Jason Quirke
+                    - generic [ref=e628]: jason.quirke1973@gmail.com
+                  - cell "user" [ref=e629]
+                  - cell "18/04/2026" [ref=e630]
+                  - cell "1 request" [ref=e631]:
+                    - generic [ref=e632]:
+                      - img [ref=e633]
+                      - text: 1 request
+                  - cell [ref=e636]:
+                    - generic [ref=e637]:
+                      - button "View details / Change role" [ref=e638]:
+                        - img [ref=e639]
+                      - button "Suspend" [ref=e642]:
+                        - img [ref=e643]
+                      - button "Delete user" [ref=e645]:
+                        - img [ref=e646]
+                - row "Active Never ● No Sub EMC Home Renovations Ltd emchomerenovations@gmail.com Co. Tipperary business 15/04/2026 0 requests" [ref=e649] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e650]:
+                    - generic [ref=e651]:
+                      - generic [ref=e652]: Active
+                      - generic [ref=e654]:
+                        - generic [ref=e655]:
+                          - img [ref=e656]
+                          - generic [ref=e659]: Never
+                        - generic "Payment status" [ref=e660]: ●
+                        - generic [ref=e661]: No Sub
+                  - cell "EMC Home Renovations Ltd emchomerenovations@gmail.com Co. Tipperary" [ref=e662]:
+                    - generic [ref=e663]: EMC Home Renovations Ltd
+                    - generic [ref=e664]: emchomerenovations@gmail.com
+                    - generic [ref=e665]:
+                      - img [ref=e666]
+                      - text: Co. Tipperary
+                  - cell "business" [ref=e669]
+                  - cell "15/04/2026" [ref=e670]
+                  - cell "0 requests" [ref=e671]:
+                    - generic [ref=e672]:
+                      - img [ref=e673]
+                      - text: 0 requests
+                  - cell [ref=e676]:
+                    - generic [ref=e677]:
+                      - button "View details / Change role" [ref=e678]:
+                        - img [ref=e679]
+                      - button "Suspend" [ref=e682]:
+                        - img [ref=e683]
+                      - button "Delete user" [ref=e685]:
+                        - img [ref=e686]
+                - row "Active Never ● No Sub Chris Egan Carpentry chrisegan754@gmail.com Co. Kerry business 15/04/2026 0 requests" [ref=e689] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e690]:
+                    - generic [ref=e691]:
+                      - generic [ref=e692]: Active
+                      - generic [ref=e694]:
+                        - generic [ref=e695]:
+                          - img [ref=e696]
+                          - generic [ref=e699]: Never
+                        - generic "Payment status" [ref=e700]: ●
+                        - generic [ref=e701]: No Sub
+                  - cell "Chris Egan Carpentry chrisegan754@gmail.com Co. Kerry" [ref=e702]:
+                    - generic [ref=e703]: Chris Egan Carpentry
+                    - generic [ref=e704]: chrisegan754@gmail.com
+                    - generic [ref=e705]:
+                      - img [ref=e706]
+                      - text: Co. Kerry
+                  - cell "business" [ref=e709]
+                  - cell "15/04/2026" [ref=e710]
+                  - cell "0 requests" [ref=e711]:
+                    - generic [ref=e712]:
+                      - img [ref=e713]
+                      - text: 0 requests
+                  - cell [ref=e716]:
+                    - generic [ref=e717]:
+                      - button "View details / Change role" [ref=e718]:
+                        - img [ref=e719]
+                      - button "Suspend" [ref=e722]:
+                        - img [ref=e723]
+                      - button "Delete user" [ref=e725]:
+                        - img [ref=e726]
+                - row "Active 7d ago ● No Sub RSM Plumbing & Heating Ltd info@rsmltd.ie Co. Offaly business 15/04/2026 0 requests" [ref=e729] [cursor=pointer]:
+                  - cell "Active 7d ago ● No Sub" [ref=e730]:
+                    - generic [ref=e731]:
+                      - generic [ref=e732]: Active
+                      - generic [ref=e734]:
+                        - generic [ref=e735]:
+                          - img [ref=e736]
+                          - generic [ref=e739]: 7d ago
+                        - generic "Payment status" [ref=e740]: ●
+                        - generic [ref=e741]: No Sub
+                  - cell "RSM Plumbing & Heating Ltd info@rsmltd.ie Co. Offaly" [ref=e742]:
+                    - generic [ref=e743]: RSM Plumbing & Heating Ltd
+                    - generic [ref=e744]: info@rsmltd.ie
+                    - generic [ref=e745]:
+                      - img [ref=e746]
+                      - text: Co. Offaly
+                  - cell "business" [ref=e749]
+                  - cell "15/04/2026" [ref=e750]
+                  - cell "0 requests" [ref=e751]:
+                    - generic [ref=e752]:
+                      - img [ref=e753]
+                      - text: 0 requests
+                  - cell [ref=e756]:
+                    - generic [ref=e757]:
+                      - button "View details / Change role" [ref=e758]:
+                        - img [ref=e759]
+                      - button "Suspend" [ref=e762]:
+                        - img [ref=e763]
+                      - button "Delete user" [ref=e765]:
+                        - img [ref=e766]
+                - row "Active Never ● No Sub Pro Gas info@progas.ie Co. Kilkenny business 13/04/2026 0 requests" [ref=e769] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e770]:
+                    - generic [ref=e771]:
+                      - generic [ref=e772]: Active
+                      - generic [ref=e774]:
+                        - generic [ref=e775]:
+                          - img [ref=e776]
+                          - generic [ref=e779]: Never
+                        - generic "Payment status" [ref=e780]: ●
+                        - generic [ref=e781]: No Sub
+                  - cell "Pro Gas info@progas.ie Co. Kilkenny" [ref=e782]:
+                    - generic [ref=e783]: Pro Gas
+                    - generic [ref=e784]: info@progas.ie
+                    - generic [ref=e785]:
+                      - img [ref=e786]
+                      - text: Co. Kilkenny
+                  - cell "business" [ref=e789]
+                  - cell "13/04/2026" [ref=e790]
+                  - cell "0 requests" [ref=e791]:
+                    - generic [ref=e792]:
+                      - img [ref=e793]
+                      - text: 0 requests
+                  - cell [ref=e796]:
+                    - generic [ref=e797]:
+                      - button "View details / Change role" [ref=e798]:
+                        - img [ref=e799]
+                      - button "Suspend" [ref=e802]:
+                        - img [ref=e803]
+                      - button "Delete user" [ref=e805]:
+                        - img [ref=e806]
+                - row "Active Never ● No Sub PC Heating & Plumbing pat@pcheating.ie Co. Meath business 13/04/2026 0 requests" [ref=e809] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e810]:
+                    - generic [ref=e811]:
+                      - generic [ref=e812]: Active
+                      - generic [ref=e814]:
+                        - generic [ref=e815]:
+                          - img [ref=e816]
+                          - generic [ref=e819]: Never
+                        - generic "Payment status" [ref=e820]: ●
+                        - generic [ref=e821]: No Sub
+                  - cell "PC Heating & Plumbing pat@pcheating.ie Co. Meath" [ref=e822]:
+                    - generic [ref=e823]: PC Heating & Plumbing
+                    - generic [ref=e824]: pat@pcheating.ie
+                    - generic [ref=e825]:
+                      - img [ref=e826]
+                      - text: Co. Meath
+                  - cell "business" [ref=e829]
+                  - cell "13/04/2026" [ref=e830]
+                  - cell "0 requests" [ref=e831]:
+                    - generic [ref=e832]:
+                      - img [ref=e833]
+                      - text: 0 requests
+                  - cell [ref=e836]:
+                    - generic [ref=e837]:
+                      - button "View details / Change role" [ref=e838]:
+                        - img [ref=e839]
+                      - button "Suspend" [ref=e842]:
+                        - img [ref=e843]
+                      - button "Delete user" [ref=e845]:
+                        - img [ref=e846]
+                - row "Active Never ● No Sub Kilkenny Plumbing & Heating Ltd jake@kphltd.ie Co. Kilkenny business 13/04/2026 0 requests" [ref=e849] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e850]:
+                    - generic [ref=e851]:
+                      - generic [ref=e852]: Active
+                      - generic [ref=e854]:
+                        - generic [ref=e855]:
+                          - img [ref=e856]
+                          - generic [ref=e859]: Never
+                        - generic "Payment status" [ref=e860]: ●
+                        - generic [ref=e861]: No Sub
+                  - cell "Kilkenny Plumbing & Heating Ltd jake@kphltd.ie Co. Kilkenny" [ref=e862]:
+                    - generic [ref=e863]: Kilkenny Plumbing & Heating Ltd
+                    - generic [ref=e864]: jake@kphltd.ie
+                    - generic [ref=e865]:
+                      - img [ref=e866]
+                      - text: Co. Kilkenny
+                  - cell "business" [ref=e869]
+                  - cell "13/04/2026" [ref=e870]
+                  - cell "0 requests" [ref=e871]:
+                    - generic [ref=e872]:
+                      - img [ref=e873]
+                      - text: 0 requests
+                  - cell [ref=e876]:
+                    - generic [ref=e877]:
+                      - button "View details / Change role" [ref=e878]:
+                        - img [ref=e879]
+                      - button "Suspend" [ref=e882]:
+                        - img [ref=e883]
+                      - button "Delete user" [ref=e885]:
+                        - img [ref=e886]
+                - row "Active 7d ago ● No Sub EMG Energy Consultants marketing@emgenergy.ie business 09/04/2026 0 requests" [ref=e889] [cursor=pointer]:
+                  - cell "Active 7d ago ● No Sub" [ref=e890]:
+                    - generic [ref=e891]:
+                      - generic [ref=e892]: Active
+                      - generic [ref=e894]:
+                        - generic [ref=e895]:
+                          - img [ref=e896]
+                          - generic [ref=e899]: 7d ago
+                        - generic "Payment status" [ref=e900]: ●
+                        - generic [ref=e901]: No Sub
+                  - cell "EMG Energy Consultants marketing@emgenergy.ie" [ref=e902]:
+                    - generic [ref=e903]: EMG Energy Consultants
+                    - generic [ref=e904]: marketing@emgenergy.ie
+                  - cell "business" [ref=e905]
+                  - cell "09/04/2026" [ref=e906]
+                  - cell "0 requests" [ref=e907]:
+                    - generic [ref=e908]:
+                      - img [ref=e909]
+                      - text: 0 requests
+                  - cell [ref=e912]:
+                    - generic [ref=e913]:
+                      - button "View details / Change role" [ref=e914]:
+                        - img [ref=e915]
+                      - button "Suspend" [ref=e918]:
+                        - img [ref=e919]
+                      - button "Delete user" [ref=e921]:
+                        - img [ref=e922]
+                - row "Active Never ● No Sub Solar Path ken@solarpath.ie Co. Cork business 08/04/2026 0 requests" [ref=e925] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e926]:
+                    - generic [ref=e927]:
+                      - generic [ref=e928]: Active
+                      - generic [ref=e930]:
+                        - generic [ref=e931]:
+                          - img [ref=e932]
+                          - generic [ref=e935]: Never
+                        - generic "Payment status" [ref=e936]: ●
+                        - generic [ref=e937]: No Sub
+                  - cell "Solar Path ken@solarpath.ie Co. Cork" [ref=e938]:
+                    - generic [ref=e939]: Solar Path
+                    - generic [ref=e940]: ken@solarpath.ie
+                    - generic [ref=e941]:
+                      - img [ref=e942]
+                      - text: Co. Cork
+                  - cell "business" [ref=e945]
+                  - cell "08/04/2026" [ref=e946]
+                  - cell "0 requests" [ref=e947]:
+                    - generic [ref=e948]:
+                      - img [ref=e949]
+                      - text: 0 requests
+                  - cell [ref=e952]:
+                    - generic [ref=e953]:
+                      - button "View details / Change role" [ref=e954]:
+                        - img [ref=e955]
+                      - button "Suspend" [ref=e958]:
+                        - img [ref=e959]
+                      - button "Delete user" [ref=e961]:
+                        - img [ref=e962]
+                - row "Active 14d ago ● Dariusz Miksa ndmenergysolutions@proton.me Co. Monaghan Assessor 08/04/2026 0 jobs" [ref=e965] [cursor=pointer]:
+                  - cell "Active 14d ago ●" [ref=e966]:
+                    - generic [ref=e967]:
+                      - generic [ref=e968]: Active
+                      - generic [ref=e970]:
+                        - generic [ref=e971]:
+                          - img [ref=e972]
+                          - generic [ref=e975]: 14d ago
+                        - generic "Payment status" [ref=e976]: ●
+                  - cell "Dariusz Miksa ndmenergysolutions@proton.me Co. Monaghan" [ref=e977]:
+                    - generic [ref=e978]: Dariusz Miksa
+                    - generic [ref=e979]: ndmenergysolutions@proton.me
+                    - generic [ref=e980]:
+                      - img [ref=e981]
+                      - text: Co. Monaghan
+                  - cell "Assessor" [ref=e984]
+                  - cell "08/04/2026" [ref=e985]
+                  - cell "0 jobs" [ref=e986]:
+                    - generic [ref=e987]:
+                      - img [ref=e988]
+                      - text: 0 jobs
+                  - cell [ref=e991]:
+                    - generic [ref=e992]:
+                      - button "Add to Catalogue" [ref=e993]:
+                        - img [ref=e994]
+                      - button "View details / Change role" [ref=e995]:
+                        - img [ref=e996]
+                      - button "Suspend" [ref=e999]:
+                        - img [ref=e1000]
+                      - button "Delete user" [ref=e1002]:
+                        - img [ref=e1003]
+                - row "Active 14d ago ● Padraig McLoughlin info@padraigmcloughlinber.com Co. Mayo Assessor 08/04/2026 0 jobs" [ref=e1006] [cursor=pointer]:
+                  - cell "Active 14d ago ●" [ref=e1007]:
+                    - generic [ref=e1008]:
+                      - generic [ref=e1009]: Active
+                      - generic [ref=e1011]:
+                        - generic [ref=e1012]:
+                          - img [ref=e1013]
+                          - generic [ref=e1016]: 14d ago
+                        - generic "Payment status" [ref=e1017]: ●
+                  - cell "Padraig McLoughlin info@padraigmcloughlinber.com Co. Mayo" [ref=e1018]:
+                    - generic [ref=e1019]: Padraig McLoughlin
+                    - generic [ref=e1020]: info@padraigmcloughlinber.com
+                    - generic [ref=e1021]:
+                      - img [ref=e1022]
+                      - text: Co. Mayo
+                  - cell "Assessor" [ref=e1025]
+                  - cell "08/04/2026" [ref=e1026]
+                  - cell "0 jobs" [ref=e1027]:
+                    - generic [ref=e1028]:
+                      - img [ref=e1029]
+                      - text: 0 jobs
+                  - cell [ref=e1032]:
+                    - generic [ref=e1033]:
+                      - button "Add to Catalogue" [ref=e1034]:
+                        - img [ref=e1035]
+                      - button "View details / Change role" [ref=e1036]:
+                        - img [ref=e1037]
+                      - button "Suspend" [ref=e1040]:
+                        - img [ref=e1041]
+                      - button "Delete user" [ref=e1043]:
+                        - img [ref=e1044]
+                - row "Active 13d ago ● John O'Callaghan irelandber@gmail.com Co. Leitrim Assessor 08/04/2026 0 jobs" [ref=e1047] [cursor=pointer]:
+                  - cell "Active 13d ago ●" [ref=e1048]:
+                    - generic [ref=e1049]:
+                      - generic [ref=e1050]: Active
+                      - generic [ref=e1052]:
+                        - generic [ref=e1053]:
+                          - img [ref=e1054]
+                          - generic [ref=e1057]: 13d ago
+                        - generic "Payment status" [ref=e1058]: ●
+                  - cell "John O'Callaghan irelandber@gmail.com Co. Leitrim" [ref=e1059]:
+                    - generic [ref=e1060]: John O'Callaghan
+                    - generic [ref=e1061]: irelandber@gmail.com
+                    - generic [ref=e1062]:
+                      - img [ref=e1063]
+                      - text: Co. Leitrim
+                  - cell "Assessor" [ref=e1066]
+                  - cell "08/04/2026" [ref=e1067]
+                  - cell "0 jobs" [ref=e1068]:
+                    - generic [ref=e1069]:
+                      - img [ref=e1070]
+                      - text: 0 jobs
+                  - cell [ref=e1073]:
+                    - generic [ref=e1074]:
+                      - button "Add to Catalogue" [ref=e1075]:
+                        - img [ref=e1076]
+                      - button "View details / Change role" [ref=e1077]:
+                        - img [ref=e1078]
+                      - button "Suspend" [ref=e1081]:
+                        - img [ref=e1082]
+                      - button "Delete user" [ref=e1084]:
+                        - img [ref=e1085]
+                - row "Active 7d ago ● Charles Coyle charleslcoyle@gmail.com Co. Cork Assessor 08/04/2026 0 jobs" [ref=e1088] [cursor=pointer]:
+                  - cell "Active 7d ago ●" [ref=e1089]:
+                    - generic [ref=e1090]:
+                      - generic [ref=e1091]: Active
+                      - generic [ref=e1093]:
+                        - generic [ref=e1094]:
+                          - img [ref=e1095]
+                          - generic [ref=e1098]: 7d ago
+                        - generic "Payment status" [ref=e1099]: ●
+                  - cell "Charles Coyle charleslcoyle@gmail.com Co. Cork" [ref=e1100]:
+                    - generic [ref=e1101]: Charles Coyle
+                    - generic [ref=e1102]: charleslcoyle@gmail.com
+                    - generic [ref=e1103]:
+                      - img [ref=e1104]
+                      - text: Co. Cork
+                  - cell "Assessor" [ref=e1107]
+                  - cell "08/04/2026" [ref=e1108]
+                  - cell "0 jobs" [ref=e1109]:
+                    - generic [ref=e1110]:
+                      - img [ref=e1111]
+                      - text: 0 jobs
+                  - cell [ref=e1114]:
+                    - generic [ref=e1115]:
+                      - button "Add to Catalogue" [ref=e1116]:
+                        - img [ref=e1117]
+                      - button "View details / Change role" [ref=e1118]:
+                        - img [ref=e1119]
+                      - button "Suspend" [ref=e1122]:
+                        - img [ref=e1123]
+                      - button "Delete user" [ref=e1125]:
+                        - img [ref=e1126]
+                - row "Active 6d ago ● Seamus O'Keeffe seamusokeeffemallow@gmail.com Co. Cork Assessor 08/04/2026 0 jobs" [ref=e1129] [cursor=pointer]:
+                  - cell "Active 6d ago ●" [ref=e1130]:
+                    - generic [ref=e1131]:
+                      - generic [ref=e1132]: Active
+                      - generic [ref=e1134]:
+                        - generic [ref=e1135]:
+                          - img [ref=e1136]
+                          - generic [ref=e1139]: 6d ago
+                        - generic "Payment status" [ref=e1140]: ●
+                  - cell "Seamus O'Keeffe seamusokeeffemallow@gmail.com Co. Cork" [ref=e1141]:
+                    - generic [ref=e1142]: Seamus O'Keeffe
+                    - generic [ref=e1143]: seamusokeeffemallow@gmail.com
+                    - generic [ref=e1144]:
+                      - img [ref=e1145]
+                      - text: Co. Cork
+                  - cell "Assessor" [ref=e1148]
+                  - cell "08/04/2026" [ref=e1149]
+                  - cell "0 jobs" [ref=e1150]:
+                    - generic [ref=e1151]:
+                      - img [ref=e1152]
+                      - text: 0 jobs
+                  - cell [ref=e1155]:
+                    - generic [ref=e1156]:
+                      - button "Add to Catalogue" [ref=e1157]:
+                        - img [ref=e1158]
+                      - button "View details / Change role" [ref=e1159]:
+                        - img [ref=e1160]
+                      - button "Suspend" [ref=e1163]:
+                        - img [ref=e1164]
+                      - button "Delete user" [ref=e1166]:
+                        - img [ref=e1167]
+                - row "Active 14d ago ● Gearoid McGill gearoidmcgill@hotmail.com Co. Kerry Assessor 08/04/2026 0 jobs" [ref=e1170] [cursor=pointer]:
+                  - cell "Active 14d ago ●" [ref=e1171]:
+                    - generic [ref=e1172]:
+                      - generic [ref=e1173]: Active
+                      - generic [ref=e1175]:
+                        - generic [ref=e1176]:
+                          - img [ref=e1177]
+                          - generic [ref=e1180]: 14d ago
+                        - generic "Payment status" [ref=e1181]: ●
+                  - cell "Gearoid McGill gearoidmcgill@hotmail.com Co. Kerry" [ref=e1182]:
+                    - generic [ref=e1183]: Gearoid McGill
+                    - generic [ref=e1184]: gearoidmcgill@hotmail.com
+                    - generic [ref=e1185]:
+                      - img [ref=e1186]
+                      - text: Co. Kerry
+                  - cell "Assessor" [ref=e1189]
+                  - cell "08/04/2026" [ref=e1190]
+                  - cell "0 jobs" [ref=e1191]:
+                    - generic [ref=e1192]:
+                      - img [ref=e1193]
+                      - text: 0 jobs
+                  - cell [ref=e1196]:
+                    - generic [ref=e1197]:
+                      - button "Add to Catalogue" [ref=e1198]:
+                        - img [ref=e1199]
+                      - button "View details / Change role" [ref=e1200]:
+                        - img [ref=e1201]
+                      - button "Suspend" [ref=e1204]:
+                        - img [ref=e1205]
+                      - button "Delete user" [ref=e1207]:
+                        - img [ref=e1208]
+                - row "Active 14d ago ● Shane Beirne shanebeirne1990@gmail.com Co. Roscommon Assessor 08/04/2026 0 jobs" [ref=e1211] [cursor=pointer]:
+                  - cell "Active 14d ago ●" [ref=e1212]:
+                    - generic [ref=e1213]:
+                      - generic [ref=e1214]: Active
+                      - generic [ref=e1216]:
+                        - generic [ref=e1217]:
+                          - img [ref=e1218]
+                          - generic [ref=e1221]: 14d ago
+                        - generic "Payment status" [ref=e1222]: ●
+                  - cell "Shane Beirne shanebeirne1990@gmail.com Co. Roscommon" [ref=e1223]:
+                    - generic [ref=e1224]: Shane Beirne
+                    - generic [ref=e1225]: shanebeirne1990@gmail.com
+                    - generic [ref=e1226]:
+                      - img [ref=e1227]
+                      - text: Co. Roscommon
+                  - cell "Assessor" [ref=e1230]
+                  - cell "08/04/2026" [ref=e1231]
+                  - cell "0 jobs" [ref=e1232]:
+                    - generic [ref=e1233]:
+                      - img [ref=e1234]
+                      - text: 0 jobs
+                  - cell [ref=e1237]:
+                    - generic [ref=e1238]:
+                      - button "Add to Catalogue" [ref=e1239]:
+                        - img [ref=e1240]
+                      - button "View details / Change role" [ref=e1241]:
+                        - img [ref=e1242]
+                      - button "Suspend" [ref=e1245]:
+                        - img [ref=e1246]
+                      - button "Delete user" [ref=e1248]:
+                        - img [ref=e1249]
+                - row "Active 13d ago ● Martin Guilfoyle martin.guilfoyle.irl@gmail.com Co. Tipperary Assessor 08/04/2026 0 jobs" [ref=e1252] [cursor=pointer]:
+                  - cell "Active 13d ago ●" [ref=e1253]:
+                    - generic [ref=e1254]:
+                      - generic [ref=e1255]: Active
+                      - generic [ref=e1257]:
+                        - generic [ref=e1258]:
+                          - img [ref=e1259]
+                          - generic [ref=e1262]: 13d ago
+                        - generic "Payment status" [ref=e1263]: ●
+                  - cell "Martin Guilfoyle martin.guilfoyle.irl@gmail.com Co. Tipperary" [ref=e1264]:
+                    - generic [ref=e1265]: Martin Guilfoyle
+                    - generic [ref=e1266]: martin.guilfoyle.irl@gmail.com
+                    - generic [ref=e1267]:
+                      - img [ref=e1268]
+                      - text: Co. Tipperary
+                  - cell "Assessor" [ref=e1271]
+                  - cell "08/04/2026" [ref=e1272]
+                  - cell "0 jobs" [ref=e1273]:
+                    - generic [ref=e1274]:
+                      - img [ref=e1275]
+                      - text: 0 jobs
+                  - cell [ref=e1278]:
+                    - generic [ref=e1279]:
+                      - button "Add to Catalogue" [ref=e1280]:
+                        - img [ref=e1281]
+                      - button "View details / Change role" [ref=e1282]:
+                        - img [ref=e1283]
+                      - button "Suspend" [ref=e1286]:
+                        - img [ref=e1287]
+                      - button "Delete user" [ref=e1289]:
+                        - img [ref=e1290]
+                - row "Active 14d ago ● Cian Brady BRADYCIAN@HOTMAIL.COM Co. Longford Assessor 08/04/2026 0 jobs" [ref=e1293] [cursor=pointer]:
+                  - cell "Active 14d ago ●" [ref=e1294]:
+                    - generic [ref=e1295]:
+                      - generic [ref=e1296]: Active
+                      - generic [ref=e1298]:
+                        - generic [ref=e1299]:
+                          - img [ref=e1300]
+                          - generic [ref=e1303]: 14d ago
+                        - generic "Payment status" [ref=e1304]: ●
+                  - cell "Cian Brady BRADYCIAN@HOTMAIL.COM Co. Longford" [ref=e1305]:
+                    - generic [ref=e1306]: Cian Brady
+                    - generic [ref=e1307]: BRADYCIAN@HOTMAIL.COM
+                    - generic [ref=e1308]:
+                      - img [ref=e1309]
+                      - text: Co. Longford
+                  - cell "Assessor" [ref=e1312]
+                  - cell "08/04/2026" [ref=e1313]
+                  - cell "0 jobs" [ref=e1314]:
+                    - generic [ref=e1315]:
+                      - img [ref=e1316]
+                      - text: 0 jobs
+                  - cell [ref=e1319]:
+                    - generic [ref=e1320]:
+                      - button "Add to Catalogue" [ref=e1321]:
+                        - img [ref=e1322]
+                      - button "View details / Change role" [ref=e1323]:
+                        - img [ref=e1324]
+                      - button "Suspend" [ref=e1327]:
+                        - img [ref=e1328]
+                      - button "Delete user" [ref=e1330]:
+                        - img [ref=e1331]
+                - row "Active 23h ago ● Noel Galligan NOEL_GALLIGAN@HOTMAIL.COM Co. Cavan Assessor 08/04/2026 0 jobs" [ref=e1334] [cursor=pointer]:
+                  - cell "Active 23h ago ●" [ref=e1335]:
+                    - generic [ref=e1336]:
+                      - generic [ref=e1337]: Active
+                      - generic [ref=e1339]:
+                        - generic [ref=e1340]:
+                          - img [ref=e1341]
+                          - generic [ref=e1344]: 23h ago
+                        - generic "Payment status" [ref=e1345]: ●
+                  - cell "Noel Galligan NOEL_GALLIGAN@HOTMAIL.COM Co. Cavan" [ref=e1346]:
+                    - generic [ref=e1347]: Noel Galligan
+                    - generic [ref=e1348]: NOEL_GALLIGAN@HOTMAIL.COM
+                    - generic [ref=e1349]:
+                      - img [ref=e1350]
+                      - text: Co. Cavan
+                  - cell "Assessor" [ref=e1353]
+                  - cell "08/04/2026" [ref=e1354]
+                  - cell "0 jobs" [ref=e1355]:
+                    - generic [ref=e1356]:
+                      - img [ref=e1357]
+                      - text: 0 jobs
+                  - cell [ref=e1360]:
+                    - generic [ref=e1361]:
+                      - button "Add to Catalogue" [ref=e1362]:
+                        - img [ref=e1363]
+                      - button "View details / Change role" [ref=e1364]:
+                        - img [ref=e1365]
+                      - button "Suspend" [ref=e1368]:
+                        - img [ref=e1369]
+                      - button "Delete user" [ref=e1371]:
+                        - img [ref=e1372]
+                - row "Active Never ● No Sub David Hardiman Electrical davidhardimanelec@yahoo.com Co. Galway business 02/04/2026 0 requests" [ref=e1375] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e1376]:
+                    - generic [ref=e1377]:
+                      - generic [ref=e1378]: Active
+                      - generic [ref=e1380]:
+                        - generic [ref=e1381]:
+                          - img [ref=e1382]
+                          - generic [ref=e1385]: Never
+                        - generic "Payment status" [ref=e1386]: ●
+                        - generic [ref=e1387]: No Sub
+                  - cell "David Hardiman Electrical davidhardimanelec@yahoo.com Co. Galway" [ref=e1388]:
+                    - generic [ref=e1389]: David Hardiman Electrical
+                    - generic [ref=e1390]: davidhardimanelec@yahoo.com
+                    - generic [ref=e1391]:
+                      - img [ref=e1392]
+                      - text: Co. Galway
+                  - cell "business" [ref=e1395]
+                  - cell "02/04/2026" [ref=e1396]
+                  - cell "0 requests" [ref=e1397]:
+                    - generic [ref=e1398]:
+                      - img [ref=e1399]
+                      - text: 0 requests
+                  - cell [ref=e1402]:
+                    - generic [ref=e1403]:
+                      - button "View details / Change role" [ref=e1404]:
+                        - img [ref=e1405]
+                      - button "Suspend" [ref=e1408]:
+                        - img [ref=e1409]
+                      - button "Delete user" [ref=e1411]:
+                        - img [ref=e1412]
+                - row "Active Never ● No Sub CR Solar info@crsolar.ie Co. Westmeath business 02/04/2026 0 requests" [ref=e1415] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e1416]:
+                    - generic [ref=e1417]:
+                      - generic [ref=e1418]: Active
+                      - generic [ref=e1420]:
+                        - generic [ref=e1421]:
+                          - img [ref=e1422]
+                          - generic [ref=e1425]: Never
+                        - generic "Payment status" [ref=e1426]: ●
+                        - generic [ref=e1427]: No Sub
+                  - cell "CR Solar info@crsolar.ie Co. Westmeath" [ref=e1428]:
+                    - generic [ref=e1429]: CR Solar
+                    - generic [ref=e1430]: info@crsolar.ie
+                    - generic [ref=e1431]:
+                      - img [ref=e1432]
+                      - text: Co. Westmeath
+                  - cell "business" [ref=e1435]
+                  - cell "02/04/2026" [ref=e1436]
+                  - cell "0 requests" [ref=e1437]:
+                    - generic [ref=e1438]:
+                      - img [ref=e1439]
+                      - text: 0 requests
+                  - cell [ref=e1442]:
+                    - generic [ref=e1443]:
+                      - button "View details / Change role" [ref=e1444]:
+                        - img [ref=e1445]
+                      - button "Suspend" [ref=e1448]:
+                        - img [ref=e1449]
+                      - button "Delete user" [ref=e1451]:
+                        - img [ref=e1452]
+                - row "Active Never ● No Sub Comet Renewable Energy Ltd info@cometrenewables.ie Co. Galway business 02/04/2026 0 requests" [ref=e1455] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e1456]:
+                    - generic [ref=e1457]:
+                      - generic [ref=e1458]: Active
+                      - generic [ref=e1460]:
+                        - generic [ref=e1461]:
+                          - img [ref=e1462]
+                          - generic [ref=e1465]: Never
+                        - generic "Payment status" [ref=e1466]: ●
+                        - generic [ref=e1467]: No Sub
+                  - cell "Comet Renewable Energy Ltd info@cometrenewables.ie Co. Galway" [ref=e1468]:
+                    - generic [ref=e1469]: Comet Renewable Energy Ltd
+                    - generic [ref=e1470]: info@cometrenewables.ie
+                    - generic [ref=e1471]:
+                      - img [ref=e1472]
+                      - text: Co. Galway
+                  - cell "business" [ref=e1475]
+                  - cell "02/04/2026" [ref=e1476]
+                  - cell "0 requests" [ref=e1477]:
+                    - generic [ref=e1478]:
+                      - img [ref=e1479]
+                      - text: 0 requests
+                  - cell [ref=e1482]:
+                    - generic [ref=e1483]:
+                      - button "View details / Change role" [ref=e1484]:
+                        - img [ref=e1485]
+                      - button "Suspend" [ref=e1488]:
+                        - img [ref=e1489]
+                      - button "Delete user" [ref=e1491]:
+                        - img [ref=e1492]
+                - row "Active Never ● No Sub Thomas Carolan uPVC thomascarolan583@gmail.com Co. Meath business 02/04/2026 0 requests" [ref=e1495] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e1496]:
+                    - generic [ref=e1497]:
+                      - generic [ref=e1498]: Active
+                      - generic [ref=e1500]:
+                        - generic [ref=e1501]:
+                          - img [ref=e1502]
+                          - generic [ref=e1505]: Never
+                        - generic "Payment status" [ref=e1506]: ●
+                        - generic [ref=e1507]: No Sub
+                  - cell "Thomas Carolan uPVC thomascarolan583@gmail.com Co. Meath" [ref=e1508]:
+                    - generic [ref=e1509]: Thomas Carolan uPVC
+                    - generic [ref=e1510]: thomascarolan583@gmail.com
+                    - generic [ref=e1511]:
+                      - img [ref=e1512]
+                      - text: Co. Meath
+                  - cell "business" [ref=e1515]
+                  - cell "02/04/2026" [ref=e1516]
+                  - cell "0 requests" [ref=e1517]:
+                    - generic [ref=e1518]:
+                      - img [ref=e1519]
+                      - text: 0 requests
+                  - cell [ref=e1522]:
+                    - generic [ref=e1523]:
+                      - button "View details / Change role" [ref=e1524]:
+                        - img [ref=e1525]
+                      - button "Suspend" [ref=e1528]:
+                        - img [ref=e1529]
+                      - button "Delete user" [ref=e1531]:
+                        - img [ref=e1532]
+                - row "Active 15d ago ● No Sub Wexford Home Glazing wexfordhomeglazing@gmail.com Co. Wexford business 02/04/2026 0 requests" [ref=e1535] [cursor=pointer]:
+                  - cell "Active 15d ago ● No Sub" [ref=e1536]:
+                    - generic [ref=e1537]:
+                      - generic [ref=e1538]: Active
+                      - generic [ref=e1540]:
+                        - generic [ref=e1541]:
+                          - img [ref=e1542]
+                          - generic [ref=e1545]: 15d ago
+                        - generic "Payment status" [ref=e1546]: ●
+                        - generic [ref=e1547]: No Sub
+                  - cell "Wexford Home Glazing wexfordhomeglazing@gmail.com Co. Wexford" [ref=e1548]:
+                    - generic [ref=e1549]: Wexford Home Glazing
+                    - generic [ref=e1550]: wexfordhomeglazing@gmail.com
+                    - generic [ref=e1551]:
+                      - img [ref=e1552]
+                      - text: Co. Wexford
+                  - cell "business" [ref=e1555]
+                  - cell "02/04/2026" [ref=e1556]
+                  - cell "0 requests" [ref=e1557]:
+                    - generic [ref=e1558]:
+                      - img [ref=e1559]
+                      - text: 0 requests
+                  - cell [ref=e1562]:
+                    - generic [ref=e1563]:
+                      - button "View details / Change role" [ref=e1564]:
+                        - img [ref=e1565]
+                      - button "Suspend" [ref=e1568]:
+                        - img [ref=e1569]
+                      - button "Delete user" [ref=e1571]:
+                        - img [ref=e1572]
+                - row "Active Never ● No Sub GlazePro Ltd T/A O Sullivan Glazing Systems michaelstevensmj@gmail.com Co. Wicklow business 02/04/2026 0 requests" [ref=e1575] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e1576]:
+                    - generic [ref=e1577]:
+                      - generic [ref=e1578]: Active
+                      - generic [ref=e1580]:
+                        - generic [ref=e1581]:
+                          - img [ref=e1582]
+                          - generic [ref=e1585]: Never
+                        - generic "Payment status" [ref=e1586]: ●
+                        - generic [ref=e1587]: No Sub
+                  - cell "GlazePro Ltd T/A O Sullivan Glazing Systems michaelstevensmj@gmail.com Co. Wicklow" [ref=e1588]:
+                    - generic [ref=e1589]: GlazePro Ltd T/A O Sullivan Glazing Systems
+                    - generic [ref=e1590]: michaelstevensmj@gmail.com
+                    - generic [ref=e1591]:
+                      - img [ref=e1592]
+                      - text: Co. Wicklow
+                  - cell "business" [ref=e1595]
+                  - cell "02/04/2026" [ref=e1596]
+                  - cell "0 requests" [ref=e1597]:
+                    - generic [ref=e1598]:
+                      - img [ref=e1599]
+                      - text: 0 requests
+                  - cell [ref=e1602]:
+                    - generic [ref=e1603]:
+                      - button "View details / Change role" [ref=e1604]:
+                        - img [ref=e1605]
+                      - button "Suspend" [ref=e1608]:
+                        - img [ref=e1609]
+                      - button "Delete user" [ref=e1611]:
+                        - img [ref=e1612]
+                - row "Active 15d ago ● No Sub P&F Windows and Conservatories LTD T/A Carda Windows Cardawindows@gmail.com Co. Dublin business 02/04/2026 0 requests" [ref=e1615] [cursor=pointer]:
+                  - cell "Active 15d ago ● No Sub" [ref=e1616]:
+                    - generic [ref=e1617]:
+                      - generic [ref=e1618]: Active
+                      - generic [ref=e1620]:
+                        - generic [ref=e1621]:
+                          - img [ref=e1622]
+                          - generic [ref=e1625]: 15d ago
+                        - generic "Payment status" [ref=e1626]: ●
+                        - generic [ref=e1627]: No Sub
+                  - cell "P&F Windows and Conservatories LTD T/A Carda Windows Cardawindows@gmail.com Co. Dublin" [ref=e1628]:
+                    - generic [ref=e1629]: P&F Windows and Conservatories LTD T/A Carda Windows
+                    - generic [ref=e1630]: Cardawindows@gmail.com
+                    - generic [ref=e1631]:
+                      - img [ref=e1632]
+                      - text: Co. Dublin
+                  - cell "business" [ref=e1635]
+                  - cell "02/04/2026" [ref=e1636]
+                  - cell "0 requests" [ref=e1637]:
+                    - generic [ref=e1638]:
+                      - img [ref=e1639]
+                      - text: 0 requests
+                  - cell [ref=e1642]:
+                    - generic [ref=e1643]:
+                      - button "View details / Change role" [ref=e1644]:
+                        - img [ref=e1645]
+                      - button "Suspend" [ref=e1648]:
+                        - img [ref=e1649]
+                      - button "Delete user" [ref=e1651]:
+                        - img [ref=e1652]
+                - row "Active Never ● No Sub O'Sheas Windows and Doors Limited jasonoshea92@gmail.com Co. Kerry business 02/04/2026 0 requests" [ref=e1655] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e1656]:
+                    - generic [ref=e1657]:
+                      - generic [ref=e1658]: Active
+                      - generic [ref=e1660]:
+                        - generic [ref=e1661]:
+                          - img [ref=e1662]
+                          - generic [ref=e1665]: Never
+                        - generic "Payment status" [ref=e1666]: ●
+                        - generic [ref=e1667]: No Sub
+                  - cell "O'Sheas Windows and Doors Limited jasonoshea92@gmail.com Co. Kerry" [ref=e1668]:
+                    - generic [ref=e1669]: O'Sheas Windows and Doors Limited
+                    - generic [ref=e1670]: jasonoshea92@gmail.com
+                    - generic [ref=e1671]:
+                      - img [ref=e1672]
+                      - text: Co. Kerry
+                  - cell "business" [ref=e1675]
+                  - cell "02/04/2026" [ref=e1676]
+                  - cell "0 requests" [ref=e1677]:
+                    - generic [ref=e1678]:
+                      - img [ref=e1679]
+                      - text: 0 requests
+                  - cell [ref=e1682]:
+                    - generic [ref=e1683]:
+                      - button "View details / Change role" [ref=e1684]:
+                        - img [ref=e1685]
+                      - button "Suspend" [ref=e1688]:
+                        - img [ref=e1689]
+                      - button "Delete user" [ref=e1691]:
+                        - img [ref=e1692]
+                - row "Active Never ● No Sub Pro Fit Pro Fix gwalshpro@gmail.com Co. Kildare business 02/04/2026 0 requests" [ref=e1695] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e1696]:
+                    - generic [ref=e1697]:
+                      - generic [ref=e1698]: Active
+                      - generic [ref=e1700]:
+                        - generic [ref=e1701]:
+                          - img [ref=e1702]
+                          - generic [ref=e1705]: Never
+                        - generic "Payment status" [ref=e1706]: ●
+                        - generic [ref=e1707]: No Sub
+                  - cell "Pro Fit Pro Fix gwalshpro@gmail.com Co. Kildare" [ref=e1708]:
+                    - generic [ref=e1709]: Pro Fit Pro Fix
+                    - generic [ref=e1710]: gwalshpro@gmail.com
+                    - generic [ref=e1711]:
+                      - img [ref=e1712]
+                      - text: Co. Kildare
+                  - cell "business" [ref=e1715]
+                  - cell "02/04/2026" [ref=e1716]
+                  - cell "0 requests" [ref=e1717]:
+                    - generic [ref=e1718]:
+                      - img [ref=e1719]
+                      - text: 0 requests
+                  - cell [ref=e1722]:
+                    - generic [ref=e1723]:
+                      - button "View details / Change role" [ref=e1724]:
+                        - img [ref=e1725]
+                      - button "Suspend" [ref=e1728]:
+                        - img [ref=e1729]
+                      - button "Delete user" [ref=e1731]:
+                        - img [ref=e1732]
+                - row "Active Never ● No Sub Jason Bracken Windows Ltd jbrackenabc@gmail.com Co. Offaly business 02/04/2026 0 requests" [ref=e1735] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e1736]:
+                    - generic [ref=e1737]:
+                      - generic [ref=e1738]: Active
+                      - generic [ref=e1740]:
+                        - generic [ref=e1741]:
+                          - img [ref=e1742]
+                          - generic [ref=e1745]: Never
+                        - generic "Payment status" [ref=e1746]: ●
+                        - generic [ref=e1747]: No Sub
+                  - cell "Jason Bracken Windows Ltd jbrackenabc@gmail.com Co. Offaly" [ref=e1748]:
+                    - generic [ref=e1749]: Jason Bracken Windows Ltd
+                    - generic [ref=e1750]: jbrackenabc@gmail.com
+                    - generic [ref=e1751]:
+                      - img [ref=e1752]
+                      - text: Co. Offaly
+                  - cell "business" [ref=e1755]
+                  - cell "02/04/2026" [ref=e1756]
+                  - cell "0 requests" [ref=e1757]:
+                    - generic [ref=e1758]:
+                      - img [ref=e1759]
+                      - text: 0 requests
+                  - cell [ref=e1762]:
+                    - generic [ref=e1763]:
+                      - button "View details / Change role" [ref=e1764]:
+                        - img [ref=e1765]
+                      - button "Suspend" [ref=e1768]:
+                        - img [ref=e1769]
+                      - button "Delete user" [ref=e1771]:
+                        - img [ref=e1772]
+                - row "Active Never ● No Sub Anthony Birmingham Ltd abirminghamltd@gmail.com Co. Meath business 02/04/2026 0 requests" [ref=e1775] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e1776]:
+                    - generic [ref=e1777]:
+                      - generic [ref=e1778]: Active
+                      - generic [ref=e1780]:
+                        - generic [ref=e1781]:
+                          - img [ref=e1782]
+                          - generic [ref=e1785]: Never
+                        - generic "Payment status" [ref=e1786]: ●
+                        - generic [ref=e1787]: No Sub
+                  - cell "Anthony Birmingham Ltd abirminghamltd@gmail.com Co. Meath" [ref=e1788]:
+                    - generic [ref=e1789]: Anthony Birmingham Ltd
+                    - generic [ref=e1790]: abirminghamltd@gmail.com
+                    - generic [ref=e1791]:
+                      - img [ref=e1792]
+                      - text: Co. Meath
+                  - cell "business" [ref=e1795]
+                  - cell "02/04/2026" [ref=e1796]
+                  - cell "0 requests" [ref=e1797]:
+                    - generic [ref=e1798]:
+                      - img [ref=e1799]
+                      - text: 0 requests
+                  - cell [ref=e1802]:
+                    - generic [ref=e1803]:
+                      - button "View details / Change role" [ref=e1804]:
+                        - img [ref=e1805]
+                      - button "Suspend" [ref=e1808]:
+                        - img [ref=e1809]
+                      - button "Delete user" [ref=e1811]:
+                        - img [ref=e1812]
+                - row "Active Never ● No Sub MHS uPVC Ltd info@mhspvc.ie Co. Tipperary business 02/04/2026 0 requests" [ref=e1815] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e1816]:
+                    - generic [ref=e1817]:
+                      - generic [ref=e1818]: Active
+                      - generic [ref=e1820]:
+                        - generic [ref=e1821]:
+                          - img [ref=e1822]
+                          - generic [ref=e1825]: Never
+                        - generic "Payment status" [ref=e1826]: ●
+                        - generic [ref=e1827]: No Sub
+                  - cell "MHS uPVC Ltd info@mhspvc.ie Co. Tipperary" [ref=e1828]:
+                    - generic [ref=e1829]: MHS uPVC Ltd
+                    - generic [ref=e1830]: info@mhspvc.ie
+                    - generic [ref=e1831]:
+                      - img [ref=e1832]
+                      - text: Co. Tipperary
+                  - cell "business" [ref=e1835]
+                  - cell "02/04/2026" [ref=e1836]
+                  - cell "0 requests" [ref=e1837]:
+                    - generic [ref=e1838]:
+                      - img [ref=e1839]
+                      - text: 0 requests
+                  - cell [ref=e1842]:
+                    - generic [ref=e1843]:
+                      - button "View details / Change role" [ref=e1844]:
+                        - img [ref=e1845]
+                      - button "Suspend" [ref=e1848]:
+                        - img [ref=e1849]
+                      - button "Delete user" [ref=e1851]:
+                        - img [ref=e1852]
+                - row "Active Never ● No Sub Swiftwell Ltd T/A The Window Company nedster.kelly@gmail.com Co. Waterford business 02/04/2026 0 requests" [ref=e1855] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e1856]:
+                    - generic [ref=e1857]:
+                      - generic [ref=e1858]: Active
+                      - generic [ref=e1860]:
+                        - generic [ref=e1861]:
+                          - img [ref=e1862]
+                          - generic [ref=e1865]: Never
+                        - generic "Payment status" [ref=e1866]: ●
+                        - generic [ref=e1867]: No Sub
+                  - cell "Swiftwell Ltd T/A The Window Company nedster.kelly@gmail.com Co. Waterford" [ref=e1868]:
+                    - generic [ref=e1869]: Swiftwell Ltd T/A The Window Company
+                    - generic [ref=e1870]: nedster.kelly@gmail.com
+                    - generic [ref=e1871]:
+                      - img [ref=e1872]
+                      - text: Co. Waterford
+                  - cell "business" [ref=e1875]
+                  - cell "02/04/2026" [ref=e1876]
+                  - cell "0 requests" [ref=e1877]:
+                    - generic [ref=e1878]:
+                      - img [ref=e1879]
+                      - text: 0 requests
+                  - cell [ref=e1882]:
+                    - generic [ref=e1883]:
+                      - button "View details / Change role" [ref=e1884]:
+                        - img [ref=e1885]
+                      - button "Suspend" [ref=e1888]:
+                        - img [ref=e1889]
+                      - button "Delete user" [ref=e1891]:
+                        - img [ref=e1892]
+                - row "Active 2d ago ● Kildare Energy Focus Ltd info@kildareenergyfocus.ie Co. Kildare business 02/04/2026 0 requests" [ref=e1895] [cursor=pointer]:
+                  - cell "Active 2d ago ●" [ref=e1896]:
+                    - generic [ref=e1897]:
+                      - generic [ref=e1898]: Active
+                      - generic [ref=e1900]:
+                        - generic [ref=e1901]:
+                          - img [ref=e1902]
+                          - generic [ref=e1905]: 2d ago
+                        - generic "Payment status" [ref=e1906]: ●
+                  - cell "Kildare Energy Focus Ltd info@kildareenergyfocus.ie Co. Kildare" [ref=e1907]:
+                    - generic [ref=e1908]: Kildare Energy Focus Ltd
+                    - generic [ref=e1909]: info@kildareenergyfocus.ie
+                    - generic [ref=e1910]:
+                      - img [ref=e1911]
+                      - text: Co. Kildare
+                  - cell "business" [ref=e1914]
+                  - cell "02/04/2026" [ref=e1915]
+                  - cell "0 requests" [ref=e1916]:
+                    - generic [ref=e1917]:
+                      - img [ref=e1918]
+                      - text: 0 requests
+                  - cell [ref=e1921]:
+                    - generic [ref=e1922]:
+                      - button "View details / Change role" [ref=e1923]:
+                        - img [ref=e1924]
+                      - button "Suspend" [ref=e1927]:
+                        - img [ref=e1928]
+                      - button "Delete user" [ref=e1930]:
+                        - img [ref=e1931]
+                - row "Active 21d ago ● Ruaidhri Kiersey ruaidhri97@gmail.com Assessor 01/04/2026 0 jobs" [ref=e1934] [cursor=pointer]:
+                  - cell "Active 21d ago ●" [ref=e1935]:
+                    - generic [ref=e1936]:
+                      - generic [ref=e1937]: Active
+                      - generic [ref=e1939]:
+                        - generic [ref=e1940]:
+                          - img [ref=e1941]
+                          - generic [ref=e1944]: 21d ago
+                        - generic "Payment status" [ref=e1945]: ●
+                  - cell "Ruaidhri Kiersey ruaidhri97@gmail.com" [ref=e1946]:
+                    - generic [ref=e1947]: Ruaidhri Kiersey
+                    - generic [ref=e1948]: ruaidhri97@gmail.com
+                  - cell "Assessor" [ref=e1949]
+                  - cell "01/04/2026" [ref=e1950]
+                  - cell "0 jobs" [ref=e1951]:
+                    - generic [ref=e1952]:
+                      - img [ref=e1953]
+                      - text: 0 jobs
+                  - cell [ref=e1956]:
+                    - generic [ref=e1957]:
+                      - button "Add to Catalogue" [ref=e1958]:
+                        - img [ref=e1959]
+                      - button "View details / Change role" [ref=e1960]:
+                        - img [ref=e1961]
+                      - button "Suspend" [ref=e1964]:
+                        - img [ref=e1965]
+                      - button "Delete user" [ref=e1967]:
+                        - img [ref=e1968]
+                - row "Active Never ● No Sub Murdock Builders Merchants balbriggan@mbm.ie Co. Dublin business 01/04/2026 0 requests" [ref=e1971] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e1972]:
+                    - generic [ref=e1973]:
+                      - generic [ref=e1974]: Active
+                      - generic [ref=e1976]:
+                        - generic [ref=e1977]:
+                          - img [ref=e1978]
+                          - generic [ref=e1981]: Never
+                        - generic "Payment status" [ref=e1982]: ●
+                        - generic [ref=e1983]: No Sub
+                  - cell "Murdock Builders Merchants balbriggan@mbm.ie Co. Dublin" [ref=e1984]:
+                    - generic [ref=e1985]: Murdock Builders Merchants
+                    - generic [ref=e1986]: balbriggan@mbm.ie
+                    - generic [ref=e1987]:
+                      - img [ref=e1988]
+                      - text: Co. Dublin
+                  - cell "business" [ref=e1991]
+                  - cell "01/04/2026" [ref=e1992]
+                  - cell "0 requests" [ref=e1993]:
+                    - generic [ref=e1994]:
+                      - img [ref=e1995]
+                      - text: 0 requests
+                  - cell [ref=e1998]:
+                    - generic [ref=e1999]:
+                      - button "View details / Change role" [ref=e2000]:
+                        - img [ref=e2001]
+                      - button "Suspend" [ref=e2004]:
+                        - img [ref=e2005]
+                      - button "Delete user" [ref=e2007]:
+                        - img [ref=e2008]
+                - row "Active 23d ago ● No Sub CORE Builders Providers clondalkin@corebuild.ie Co. Dublin business 31/03/2026 0 requests" [ref=e2011] [cursor=pointer]:
+                  - cell "Active 23d ago ● No Sub" [ref=e2012]:
+                    - generic [ref=e2013]:
+                      - generic [ref=e2014]: Active
+                      - generic [ref=e2016]:
+                        - generic [ref=e2017]:
+                          - img [ref=e2018]
+                          - generic [ref=e2021]: 23d ago
+                        - generic "Payment status" [ref=e2022]: ●
+                        - generic [ref=e2023]: No Sub
+                  - cell "CORE Builders Providers clondalkin@corebuild.ie Co. Dublin" [ref=e2024]:
+                    - generic [ref=e2025]: CORE Builders Providers
+                    - generic [ref=e2026]: clondalkin@corebuild.ie
+                    - generic [ref=e2027]:
+                      - img [ref=e2028]
+                      - text: Co. Dublin
+                  - cell "business" [ref=e2031]
+                  - cell "31/03/2026" [ref=e2032]
+                  - cell "0 requests" [ref=e2033]:
+                    - generic [ref=e2034]:
+                      - img [ref=e2035]
+                      - text: 0 requests
+                  - cell [ref=e2038]:
+                    - generic [ref=e2039]:
+                      - button "View details / Change role" [ref=e2040]:
+                        - img [ref=e2041]
+                      - button "Suspend" [ref=e2044]:
+                        - img [ref=e2045]
+                      - button "Delete user" [ref=e2047]:
+                        - img [ref=e2048]
+                - row "Active 21d ago ● No Sub RT Ventilation rtventilation@gmail.com Co. Kildare business 31/03/2026 0 requests" [ref=e2051] [cursor=pointer]:
+                  - cell "Active 21d ago ● No Sub" [ref=e2052]:
+                    - generic [ref=e2053]:
+                      - generic [ref=e2054]: Active
+                      - generic [ref=e2056]:
+                        - generic [ref=e2057]:
+                          - img [ref=e2058]
+                          - generic [ref=e2061]: 21d ago
+                        - generic "Payment status" [ref=e2062]: ●
+                        - generic [ref=e2063]: No Sub
+                  - cell "RT Ventilation rtventilation@gmail.com Co. Kildare" [ref=e2064]:
+                    - generic [ref=e2065]: RT Ventilation
+                    - generic [ref=e2066]: rtventilation@gmail.com
+                    - generic [ref=e2067]:
+                      - img [ref=e2068]
+                      - text: Co. Kildare
+                  - cell "business" [ref=e2071]
+                  - cell "31/03/2026" [ref=e2072]
+                  - cell "0 requests" [ref=e2073]:
+                    - generic [ref=e2074]:
+                      - img [ref=e2075]
+                      - text: 0 requests
+                  - cell [ref=e2078]:
+                    - generic [ref=e2079]:
+                      - button "View details / Change role" [ref=e2080]:
+                        - img [ref=e2081]
+                      - button "Suspend" [ref=e2084]:
+                        - img [ref=e2085]
+                      - button "Delete user" [ref=e2087]:
+                        - img [ref=e2088]
+                - row "Active 23d ago ● No Sub MidWest Renewable Energy Ltd midwestrenewables6@gmail.com Co. Clare business 30/03/2026 0 requests" [ref=e2091] [cursor=pointer]:
+                  - cell "Active 23d ago ● No Sub" [ref=e2092]:
+                    - generic [ref=e2093]:
+                      - generic [ref=e2094]: Active
+                      - generic [ref=e2096]:
+                        - generic [ref=e2097]:
+                          - img [ref=e2098]
+                          - generic [ref=e2101]: 23d ago
+                        - generic "Payment status" [ref=e2102]: ●
+                        - generic [ref=e2103]: No Sub
+                  - cell "MidWest Renewable Energy Ltd midwestrenewables6@gmail.com Co. Clare" [ref=e2104]:
+                    - generic [ref=e2105]: MidWest Renewable Energy Ltd
+                    - generic [ref=e2106]: midwestrenewables6@gmail.com
+                    - generic [ref=e2107]:
+                      - img [ref=e2108]
+                      - text: Co. Clare
+                  - cell "business" [ref=e2111]
+                  - cell "30/03/2026" [ref=e2112]
+                  - cell "0 requests" [ref=e2113]:
+                    - generic [ref=e2114]:
+                      - img [ref=e2115]
+                      - text: 0 requests
+                  - cell [ref=e2118]:
+                    - generic [ref=e2119]:
+                      - button "View details / Change role" [ref=e2120]:
+                        - img [ref=e2121]
+                      - button "Suspend" [ref=e2124]:
+                        - img [ref=e2125]
+                      - button "Delete user" [ref=e2127]:
+                        - img [ref=e2128]
+                - row "Active Never ● No Sub Greentricity Ltd hello@gtenergy.ie Co. Carlow business 30/03/2026 0 requests" [ref=e2131] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e2132]:
+                    - generic [ref=e2133]:
+                      - generic [ref=e2134]: Active
+                      - generic [ref=e2136]:
+                        - generic [ref=e2137]:
+                          - img [ref=e2138]
+                          - generic [ref=e2141]: Never
+                        - generic "Payment status" [ref=e2142]: ●
+                        - generic [ref=e2143]: No Sub
+                  - cell "Greentricity Ltd hello@gtenergy.ie Co. Carlow" [ref=e2144]:
+                    - generic [ref=e2145]: Greentricity Ltd
+                    - generic [ref=e2146]: hello@gtenergy.ie
+                    - generic [ref=e2147]:
+                      - img [ref=e2148]
+                      - text: Co. Carlow
+                  - cell "business" [ref=e2151]
+                  - cell "30/03/2026" [ref=e2152]
+                  - cell "0 requests" [ref=e2153]:
+                    - generic [ref=e2154]:
+                      - img [ref=e2155]
+                      - text: 0 requests
+                  - cell [ref=e2158]:
+                    - generic [ref=e2159]:
+                      - button "View details / Change role" [ref=e2160]:
+                        - img [ref=e2161]
+                      - button "Suspend" [ref=e2164]:
+                        - img [ref=e2165]
+                      - button "Delete user" [ref=e2167]:
+                        - img [ref=e2168]
+                - row "Active Never ● No Sub Mak Building Services Ltd maklimited@eircom.net Co. Clare business 30/03/2026 0 requests" [ref=e2171] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e2172]:
+                    - generic [ref=e2173]:
+                      - generic [ref=e2174]: Active
+                      - generic [ref=e2176]:
+                        - generic [ref=e2177]:
+                          - img [ref=e2178]
+                          - generic [ref=e2181]: Never
+                        - generic "Payment status" [ref=e2182]: ●
+                        - generic [ref=e2183]: No Sub
+                  - cell "Mak Building Services Ltd maklimited@eircom.net Co. Clare" [ref=e2184]:
+                    - generic [ref=e2185]: Mak Building Services Ltd
+                    - generic [ref=e2186]: maklimited@eircom.net
+                    - generic [ref=e2187]:
+                      - img [ref=e2188]
+                      - text: Co. Clare
+                  - cell "business" [ref=e2191]
+                  - cell "30/03/2026" [ref=e2192]
+                  - cell "0 requests" [ref=e2193]:
+                    - generic [ref=e2194]:
+                      - img [ref=e2195]
+                      - text: 0 requests
+                  - cell [ref=e2198]:
+                    - generic [ref=e2199]:
+                      - button "View details / Change role" [ref=e2200]:
+                        - img [ref=e2201]
+                      - button "Suspend" [ref=e2204]:
+                        - img [ref=e2205]
+                      - button "Delete user" [ref=e2207]:
+                        - img [ref=e2208]
+                - row "Active Never ● No Sub Donoghue & O'Neill Electrical Ltd donoghueandoneill@gmail.com Co. Mayo business 30/03/2026 0 requests" [ref=e2211] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e2212]:
+                    - generic [ref=e2213]:
+                      - generic [ref=e2214]: Active
+                      - generic [ref=e2216]:
+                        - generic [ref=e2217]:
+                          - img [ref=e2218]
+                          - generic [ref=e2221]: Never
+                        - generic "Payment status" [ref=e2222]: ●
+                        - generic [ref=e2223]: No Sub
+                  - cell "Donoghue & O'Neill Electrical Ltd donoghueandoneill@gmail.com Co. Mayo" [ref=e2224]:
+                    - generic [ref=e2225]: Donoghue & O'Neill Electrical Ltd
+                    - generic [ref=e2226]: donoghueandoneill@gmail.com
+                    - generic [ref=e2227]:
+                      - img [ref=e2228]
+                      - text: Co. Mayo
+                  - cell "business" [ref=e2231]
+                  - cell "30/03/2026" [ref=e2232]
+                  - cell "0 requests" [ref=e2233]:
+                    - generic [ref=e2234]:
+                      - img [ref=e2235]
+                      - text: 0 requests
+                  - cell [ref=e2238]:
+                    - generic [ref=e2239]:
+                      - button "View details / Change role" [ref=e2240]:
+                        - img [ref=e2241]
+                      - button "Suspend" [ref=e2244]:
+                        - img [ref=e2245]
+                      - button "Delete user" [ref=e2247]:
+                        - img [ref=e2248]
+                - row "Active Never ● No Sub KEW Solar info@kewsolar.ie Co. Louth business 30/03/2026 0 requests" [ref=e2251] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e2252]:
+                    - generic [ref=e2253]:
+                      - generic [ref=e2254]: Active
+                      - generic [ref=e2256]:
+                        - generic [ref=e2257]:
+                          - img [ref=e2258]
+                          - generic [ref=e2261]: Never
+                        - generic "Payment status" [ref=e2262]: ●
+                        - generic [ref=e2263]: No Sub
+                  - cell "KEW Solar info@kewsolar.ie Co. Louth" [ref=e2264]:
+                    - generic [ref=e2265]: KEW Solar
+                    - generic [ref=e2266]: info@kewsolar.ie
+                    - generic [ref=e2267]:
+                      - img [ref=e2268]
+                      - text: Co. Louth
+                  - cell "business" [ref=e2271]
+                  - cell "30/03/2026" [ref=e2272]
+                  - cell "0 requests" [ref=e2273]:
+                    - generic [ref=e2274]:
+                      - img [ref=e2275]
+                      - text: 0 requests
+                  - cell [ref=e2278]:
+                    - generic [ref=e2279]:
+                      - button "View details / Change role" [ref=e2280]:
+                        - img [ref=e2281]
+                      - button "Suspend" [ref=e2284]:
+                        - img [ref=e2285]
+                      - button "Delete user" [ref=e2287]:
+                        - img [ref=e2288]
+                - row "Active 23d ago ● No Sub Alan Commins Ltd info@alancomminselectrical.com Co. Kilkenny business 30/03/2026 0 requests" [ref=e2291] [cursor=pointer]:
+                  - cell "Active 23d ago ● No Sub" [ref=e2292]:
+                    - generic [ref=e2293]:
+                      - generic [ref=e2294]: Active
+                      - generic [ref=e2296]:
+                        - generic [ref=e2297]:
+                          - img [ref=e2298]
+                          - generic [ref=e2301]: 23d ago
+                        - generic "Payment status" [ref=e2302]: ●
+                        - generic [ref=e2303]: No Sub
+                  - cell "Alan Commins Ltd info@alancomminselectrical.com Co. Kilkenny" [ref=e2304]:
+                    - generic [ref=e2305]: Alan Commins Ltd
+                    - generic [ref=e2306]: info@alancomminselectrical.com
+                    - generic [ref=e2307]:
+                      - img [ref=e2308]
+                      - text: Co. Kilkenny
+                  - cell "business" [ref=e2311]
+                  - cell "30/03/2026" [ref=e2312]
+                  - cell "0 requests" [ref=e2313]:
+                    - generic [ref=e2314]:
+                      - img [ref=e2315]
+                      - text: 0 requests
+                  - cell [ref=e2318]:
+                    - generic [ref=e2319]:
+                      - button "View details / Change role" [ref=e2320]:
+                        - img [ref=e2321]
+                      - button "Suspend" [ref=e2324]:
+                        - img [ref=e2325]
+                      - button "Delete user" [ref=e2327]:
+                        - img [ref=e2328]
+                - row "Active 23d ago ● Agricam CCTV & Electrical Ltd info@agricam.ie Co. Carlow business 30/03/2026 0 requests" [ref=e2331] [cursor=pointer]:
+                  - cell "Active 23d ago ●" [ref=e2332]:
+                    - generic [ref=e2333]:
+                      - generic [ref=e2334]: Active
+                      - generic [ref=e2336]:
+                        - generic [ref=e2337]:
+                          - img [ref=e2338]
+                          - generic [ref=e2341]: 23d ago
+                        - generic "Payment status" [ref=e2342]: ●
+                  - cell "Agricam CCTV & Electrical Ltd info@agricam.ie Co. Carlow" [ref=e2343]:
+                    - generic [ref=e2344]: Agricam CCTV & Electrical Ltd
+                    - generic [ref=e2345]: info@agricam.ie
+                    - generic [ref=e2346]:
+                      - img [ref=e2347]
+                      - text: Co. Carlow
+                  - cell "business" [ref=e2350]
+                  - cell "30/03/2026" [ref=e2351]
+                  - cell "0 requests" [ref=e2352]:
+                    - generic [ref=e2353]:
+                      - img [ref=e2354]
+                      - text: 0 requests
+                  - cell [ref=e2357]:
+                    - generic [ref=e2358]:
+                      - button "View details / Change role" [ref=e2359]:
+                        - img [ref=e2360]
+                      - button "Suspend" [ref=e2363]:
+                        - img [ref=e2364]
+                      - button "Delete user" [ref=e2366]:
+                        - img [ref=e2367]
+                - row "Active Never ● No Sub Blue Sky Solar info@blueskysolar.ie Co. Wexford business 30/03/2026 0 requests" [ref=e2370] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e2371]:
+                    - generic [ref=e2372]:
+                      - generic [ref=e2373]: Active
+                      - generic [ref=e2375]:
+                        - generic [ref=e2376]:
+                          - img [ref=e2377]
+                          - generic [ref=e2380]: Never
+                        - generic "Payment status" [ref=e2381]: ●
+                        - generic [ref=e2382]: No Sub
+                  - cell "Blue Sky Solar info@blueskysolar.ie Co. Wexford" [ref=e2383]:
+                    - generic [ref=e2384]: Blue Sky Solar
+                    - generic [ref=e2385]: info@blueskysolar.ie
+                    - generic [ref=e2386]:
+                      - img [ref=e2387]
+                      - text: Co. Wexford
+                  - cell "business" [ref=e2390]
+                  - cell "30/03/2026" [ref=e2391]
+                  - cell "0 requests" [ref=e2392]:
+                    - generic [ref=e2393]:
+                      - img [ref=e2394]
+                      - text: 0 requests
+                  - cell [ref=e2397]:
+                    - generic [ref=e2398]:
+                      - button "View details / Change role" [ref=e2399]:
+                        - img [ref=e2400]
+                      - button "Suspend" [ref=e2403]:
+                        - img [ref=e2404]
+                      - button "Delete user" [ref=e2406]:
+                        - img [ref=e2407]
+                - row "Active 25d ago ● No Sub Newgasboilers mattmurphyhp@gmail.com Co. Dublin business 28/03/2026 0 requests" [ref=e2410] [cursor=pointer]:
+                  - cell "Active 25d ago ● No Sub" [ref=e2411]:
+                    - generic [ref=e2412]:
+                      - generic [ref=e2413]: Active
+                      - generic [ref=e2415]:
+                        - generic [ref=e2416]:
+                          - img [ref=e2417]
+                          - generic [ref=e2420]: 25d ago
+                        - generic "Payment status" [ref=e2421]: ●
+                        - generic [ref=e2422]: No Sub
+                  - cell "Newgasboilers mattmurphyhp@gmail.com Co. Dublin" [ref=e2423]:
+                    - generic [ref=e2424]: Newgasboilers
+                    - generic [ref=e2425]: mattmurphyhp@gmail.com
+                    - generic [ref=e2426]:
+                      - img [ref=e2427]
+                      - text: Co. Dublin
+                  - cell "business" [ref=e2430]
+                  - cell "28/03/2026" [ref=e2431]
+                  - cell "0 requests" [ref=e2432]:
+                    - generic [ref=e2433]:
+                      - img [ref=e2434]
+                      - text: 0 requests
+                  - cell [ref=e2437]:
+                    - generic [ref=e2438]:
+                      - button "View details / Change role" [ref=e2439]:
+                        - img [ref=e2440]
+                      - button "Suspend" [ref=e2443]:
+                        - img [ref=e2444]
+                      - button "Delete user" [ref=e2446]:
+                        - img [ref=e2447]
+                - row "Active 2d ago ● Gordon Prendergast gordon.prendergast@gmail.com Co. Kildare Assessor 26/03/2026 0 jobs" [ref=e2450] [cursor=pointer]:
+                  - cell "Active 2d ago ●" [ref=e2451]:
+                    - generic [ref=e2452]:
+                      - generic [ref=e2453]: Active
+                      - generic [ref=e2455]:
+                        - generic [ref=e2456]:
+                          - img [ref=e2457]
+                          - generic [ref=e2460]: 2d ago
+                        - generic "Payment status" [ref=e2461]: ●
+                  - cell "Gordon Prendergast gordon.prendergast@gmail.com Co. Kildare" [ref=e2462]:
+                    - generic [ref=e2463]: Gordon Prendergast
+                    - generic [ref=e2464]: gordon.prendergast@gmail.com
+                    - generic [ref=e2465]:
+                      - img [ref=e2466]
+                      - text: Co. Kildare
+                  - cell "Assessor" [ref=e2469]
+                  - cell "26/03/2026" [ref=e2470]
+                  - cell "0 jobs" [ref=e2471]:
+                    - generic [ref=e2472]:
+                      - img [ref=e2473]
+                      - text: 0 jobs
+                  - cell [ref=e2476]:
+                    - generic [ref=e2477]:
+                      - button "Add to Catalogue" [ref=e2478]:
+                        - img [ref=e2479]
+                      - button "View details / Change role" [ref=e2480]:
+                        - img [ref=e2481]
+                      - button "Suspend" [ref=e2484]:
+                        - img [ref=e2485]
+                      - button "Delete user" [ref=e2487]:
+                        - img [ref=e2488]
+                - row "Active 5d ago ● Gerard Madden ger.madden@gerber.ie Co. Limerick Assessor 25/03/2026 0 jobs" [ref=e2491] [cursor=pointer]:
+                  - cell "Active 5d ago ●" [ref=e2492]:
+                    - generic [ref=e2493]:
+                      - generic [ref=e2494]: Active
+                      - generic [ref=e2496]:
+                        - generic [ref=e2497]:
+                          - img [ref=e2498]
+                          - generic [ref=e2501]: 5d ago
+                        - generic "Payment status" [ref=e2502]: ●
+                  - cell "Gerard Madden ger.madden@gerber.ie Co. Limerick" [ref=e2503]:
+                    - generic [ref=e2504]: Gerard Madden
+                    - generic [ref=e2505]: ger.madden@gerber.ie
+                    - generic [ref=e2506]:
+                      - img [ref=e2507]
+                      - text: Co. Limerick
+                  - cell "Assessor" [ref=e2510]
+                  - cell "25/03/2026" [ref=e2511]
+                  - cell "0 jobs" [ref=e2512]:
+                    - generic [ref=e2513]:
+                      - img [ref=e2514]
+                      - text: 0 jobs
+                  - cell [ref=e2517]:
+                    - generic [ref=e2518]:
+                      - button "Add to Catalogue" [ref=e2519]:
+                        - img [ref=e2520]
+                      - button "View details / Change role" [ref=e2521]:
+                        - img [ref=e2522]
+                      - button "Suspend" [ref=e2525]:
+                        - img [ref=e2526]
+                      - button "Delete user" [ref=e2528]:
+                        - img [ref=e2529]
+                - row "Active Never ● No Sub ICosy Insulation & Property Maintenance icosyinsulation@gmail.com Co. Mayo business 25/03/2026 0 requests" [ref=e2532] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e2533]:
+                    - generic [ref=e2534]:
+                      - generic [ref=e2535]: Active
+                      - generic [ref=e2537]:
+                        - generic [ref=e2538]:
+                          - img [ref=e2539]
+                          - generic [ref=e2542]: Never
+                        - generic "Payment status" [ref=e2543]: ●
+                        - generic [ref=e2544]: No Sub
+                  - cell "ICosy Insulation & Property Maintenance icosyinsulation@gmail.com Co. Mayo" [ref=e2545]:
+                    - generic [ref=e2546]: ICosy Insulation & Property Maintenance
+                    - generic [ref=e2547]: icosyinsulation@gmail.com
+                    - generic [ref=e2548]:
+                      - img [ref=e2549]
+                      - text: Co. Mayo
+                  - cell "business" [ref=e2552]
+                  - cell "25/03/2026" [ref=e2553]
+                  - cell "0 requests" [ref=e2554]:
+                    - generic [ref=e2555]:
+                      - img [ref=e2556]
+                      - text: 0 requests
+                  - cell [ref=e2559]:
+                    - generic [ref=e2560]:
+                      - button "View details / Change role" [ref=e2561]:
+                        - img [ref=e2562]
+                      - button "Suspend" [ref=e2565]:
+                        - img [ref=e2566]
+                      - button "Delete user" [ref=e2568]:
+                        - img [ref=e2569]
+                - row "Active Never ● No Sub Premier Insulations imtiaz@premierinsulations.com Co. Offaly business 25/03/2026 0 requests" [ref=e2572] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e2573]:
+                    - generic [ref=e2574]:
+                      - generic [ref=e2575]: Active
+                      - generic [ref=e2577]:
+                        - generic [ref=e2578]:
+                          - img [ref=e2579]
+                          - generic [ref=e2582]: Never
+                        - generic "Payment status" [ref=e2583]: ●
+                        - generic [ref=e2584]: No Sub
+                  - cell "Premier Insulations imtiaz@premierinsulations.com Co. Offaly" [ref=e2585]:
+                    - generic [ref=e2586]: Premier Insulations
+                    - generic [ref=e2587]: imtiaz@premierinsulations.com
+                    - generic [ref=e2588]:
+                      - img [ref=e2589]
+                      - text: Co. Offaly
+                  - cell "business" [ref=e2592]
+                  - cell "25/03/2026" [ref=e2593]
+                  - cell "0 requests" [ref=e2594]:
+                    - generic [ref=e2595]:
+                      - img [ref=e2596]
+                      - text: 0 requests
+                  - cell [ref=e2599]:
+                    - generic [ref=e2600]:
+                      - button "View details / Change role" [ref=e2601]:
+                        - img [ref=e2602]
+                      - button "Suspend" [ref=e2605]:
+                        - img [ref=e2606]
+                      - button "Delete user" [ref=e2608]:
+                        - img [ref=e2609]
+                - row "Active 19d ago ● hayam ali basyouni gostaestate@icloud.com Co. Dublin Assessor 24/03/2026 0 jobs" [ref=e2612] [cursor=pointer]:
+                  - cell "Active 19d ago ●" [ref=e2613]:
+                    - generic [ref=e2614]:
+                      - generic [ref=e2615]: Active
+                      - generic [ref=e2617]:
+                        - generic [ref=e2618]:
+                          - img [ref=e2619]
+                          - generic [ref=e2622]: 19d ago
+                        - generic "Payment status" [ref=e2623]: ●
+                  - cell "hayam ali basyouni gostaestate@icloud.com Co. Dublin" [ref=e2624]:
+                    - generic [ref=e2625]: hayam ali basyouni
+                    - generic [ref=e2626]: gostaestate@icloud.com
+                    - generic [ref=e2627]:
+                      - img [ref=e2628]
+                      - text: Co. Dublin
+                  - cell "Assessor" [ref=e2631]
+                  - cell "24/03/2026" [ref=e2632]
+                  - cell "0 jobs" [ref=e2633]:
+                    - generic [ref=e2634]:
+                      - img [ref=e2635]
+                      - text: 0 jobs
+                  - cell [ref=e2638]:
+                    - generic [ref=e2639]:
+                      - button "Add to Catalogue" [ref=e2640]:
+                        - img [ref=e2641]
+                      - button "View details / Change role" [ref=e2642]:
+                        - img [ref=e2643]
+                      - button "Suspend" [ref=e2646]:
+                        - img [ref=e2647]
+                      - button "Delete user" [ref=e2649]:
+                        - img [ref=e2650]
+                - row "Active Never ● No Sub Fitzpatrick Insulation jfitz@fitzpatrickinsulation.ie Co. Kilkenny business 24/03/2026 0 requests" [ref=e2653] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e2654]:
+                    - generic [ref=e2655]:
+                      - generic [ref=e2656]: Active
+                      - generic [ref=e2658]:
+                        - generic [ref=e2659]:
+                          - img [ref=e2660]
+                          - generic [ref=e2663]: Never
+                        - generic "Payment status" [ref=e2664]: ●
+                        - generic [ref=e2665]: No Sub
+                  - cell "Fitzpatrick Insulation jfitz@fitzpatrickinsulation.ie Co. Kilkenny" [ref=e2666]:
+                    - generic [ref=e2667]: Fitzpatrick Insulation
+                    - generic [ref=e2668]: jfitz@fitzpatrickinsulation.ie
+                    - generic [ref=e2669]:
+                      - img [ref=e2670]
+                      - text: Co. Kilkenny
+                  - cell "business" [ref=e2673]
+                  - cell "24/03/2026" [ref=e2674]
+                  - cell "0 requests" [ref=e2675]:
+                    - generic [ref=e2676]:
+                      - img [ref=e2677]
+                      - text: 0 requests
+                  - cell [ref=e2680]:
+                    - generic [ref=e2681]:
+                      - button "View details / Change role" [ref=e2682]:
+                        - img [ref=e2683]
+                      - button "Suspend" [ref=e2686]:
+                        - img [ref=e2687]
+                      - button "Delete user" [ref=e2689]:
+                        - img [ref=e2690]
+                - row "Active Never ● No Sub Absolute Insulation Ltd colmabsolute@gmail.com Co. Dublin business 24/03/2026 0 requests" [ref=e2693] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e2694]:
+                    - generic [ref=e2695]:
+                      - generic [ref=e2696]: Active
+                      - generic [ref=e2698]:
+                        - generic [ref=e2699]:
+                          - img [ref=e2700]
+                          - generic [ref=e2703]: Never
+                        - generic "Payment status" [ref=e2704]: ●
+                        - generic [ref=e2705]: No Sub
+                  - cell "Absolute Insulation Ltd colmabsolute@gmail.com Co. Dublin" [ref=e2706]:
+                    - generic [ref=e2707]: Absolute Insulation Ltd
+                    - generic [ref=e2708]: colmabsolute@gmail.com
+                    - generic [ref=e2709]:
+                      - img [ref=e2710]
+                      - text: Co. Dublin
+                  - cell "business" [ref=e2713]
+                  - cell "24/03/2026" [ref=e2714]
+                  - cell "0 requests" [ref=e2715]:
+                    - generic [ref=e2716]:
+                      - img [ref=e2717]
+                      - text: 0 requests
+                  - cell [ref=e2720]:
+                    - generic [ref=e2721]:
+                      - button "View details / Change role" [ref=e2722]:
+                        - img [ref=e2723]
+                      - button "Suspend" [ref=e2726]:
+                        - img [ref=e2727]
+                      - button "Delete user" [ref=e2729]:
+                        - img [ref=e2730]
+                - row "Active 1mo ago ● No Sub Home Energy Comforts LTD info@homecomfortretrofits.ie Co. Carlow business 24/03/2026 0 requests" [ref=e2733] [cursor=pointer]:
+                  - cell "Active 1mo ago ● No Sub" [ref=e2734]:
+                    - generic [ref=e2735]:
+                      - generic [ref=e2736]: Active
+                      - generic [ref=e2738]:
+                        - generic [ref=e2739]:
+                          - img [ref=e2740]
+                          - generic [ref=e2743]: 1mo ago
+                        - generic "Payment status" [ref=e2744]: ●
+                        - generic [ref=e2745]: No Sub
+                  - cell "Home Energy Comforts LTD info@homecomfortretrofits.ie Co. Carlow" [ref=e2746]:
+                    - generic [ref=e2747]: Home Energy Comforts LTD
+                    - generic [ref=e2748]: info@homecomfortretrofits.ie
+                    - generic [ref=e2749]:
+                      - img [ref=e2750]
+                      - text: Co. Carlow
+                  - cell "business" [ref=e2753]
+                  - cell "24/03/2026" [ref=e2754]
+                  - cell "0 requests" [ref=e2755]:
+                    - generic [ref=e2756]:
+                      - img [ref=e2757]
+                      - text: 0 requests
+                  - cell [ref=e2760]:
+                    - generic [ref=e2761]:
+                      - button "View details / Change role" [ref=e2762]:
+                        - img [ref=e2763]
+                      - button "Suspend" [ref=e2766]:
+                        - img [ref=e2767]
+                      - button "Delete user" [ref=e2769]:
+                        - img [ref=e2770]
+                - row "Active 1mo ago ● Petar Stanchev pmfuturetechnicalsolutions@gmail.com Co. Galway Assessor 24/03/2026 0 jobs" [ref=e2773] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e2774]:
+                    - generic [ref=e2775]:
+                      - generic [ref=e2776]: Active
+                      - generic [ref=e2778]:
+                        - generic [ref=e2779]:
+                          - img [ref=e2780]
+                          - generic [ref=e2783]: 1mo ago
+                        - generic "Payment status" [ref=e2784]: ●
+                  - cell "Petar Stanchev pmfuturetechnicalsolutions@gmail.com Co. Galway" [ref=e2785]:
+                    - generic [ref=e2786]: Petar Stanchev
+                    - generic [ref=e2787]: pmfuturetechnicalsolutions@gmail.com
+                    - generic [ref=e2788]:
+                      - img [ref=e2789]
+                      - text: Co. Galway
+                  - cell "Assessor" [ref=e2792]
+                  - cell "24/03/2026" [ref=e2793]
+                  - cell "0 jobs" [ref=e2794]:
+                    - generic [ref=e2795]:
+                      - img [ref=e2796]
+                      - text: 0 jobs
+                  - cell [ref=e2799]:
+                    - generic [ref=e2800]:
+                      - button "Add to Catalogue" [ref=e2801]:
+                        - img [ref=e2802]
+                      - button "View details / Change role" [ref=e2803]:
+                        - img [ref=e2804]
+                      - button "Suspend" [ref=e2807]:
+                        - img [ref=e2808]
+                      - button "Delete user" [ref=e2810]:
+                        - img [ref=e2811]
+                - row "Active Never ● No Sub Retrofit Design Ltd dvmckeown@gmail.com Co. Kerry business 23/03/2026 0 requests" [ref=e2814] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e2815]:
+                    - generic [ref=e2816]:
+                      - generic [ref=e2817]: Active
+                      - generic [ref=e2819]:
+                        - generic [ref=e2820]:
+                          - img [ref=e2821]
+                          - generic [ref=e2824]: Never
+                        - generic "Payment status" [ref=e2825]: ●
+                        - generic [ref=e2826]: No Sub
+                  - cell "Retrofit Design Ltd dvmckeown@gmail.com Co. Kerry" [ref=e2827]:
+                    - generic [ref=e2828]: Retrofit Design Ltd
+                    - generic [ref=e2829]: dvmckeown@gmail.com
+                    - generic [ref=e2830]:
+                      - img [ref=e2831]
+                      - text: Co. Kerry
+                  - cell "business" [ref=e2834]
+                  - cell "23/03/2026" [ref=e2835]
+                  - cell "0 requests" [ref=e2836]:
+                    - generic [ref=e2837]:
+                      - img [ref=e2838]
+                      - text: 0 requests
+                  - cell [ref=e2841]:
+                    - generic [ref=e2842]:
+                      - button "View details / Change role" [ref=e2843]:
+                        - img [ref=e2844]
+                      - button "Suspend" [ref=e2847]:
+                        - img [ref=e2848]
+                      - button "Delete user" [ref=e2850]:
+                        - img [ref=e2851]
+                - row "Active Never ● No Sub Greenwatt info@greenwatt.ie Co. Cavan business 23/03/2026 0 requests" [ref=e2854] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e2855]:
+                    - generic [ref=e2856]:
+                      - generic [ref=e2857]: Active
+                      - generic [ref=e2859]:
+                        - generic [ref=e2860]:
+                          - img [ref=e2861]
+                          - generic [ref=e2864]: Never
+                        - generic "Payment status" [ref=e2865]: ●
+                        - generic [ref=e2866]: No Sub
+                  - cell "Greenwatt info@greenwatt.ie Co. Cavan" [ref=e2867]:
+                    - generic [ref=e2868]: Greenwatt
+                    - generic [ref=e2869]: info@greenwatt.ie
+                    - generic [ref=e2870]:
+                      - img [ref=e2871]
+                      - text: Co. Cavan
+                  - cell "business" [ref=e2874]
+                  - cell "23/03/2026" [ref=e2875]
+                  - cell "0 requests" [ref=e2876]:
+                    - generic [ref=e2877]:
+                      - img [ref=e2878]
+                      - text: 0 requests
+                  - cell [ref=e2881]:
+                    - generic [ref=e2882]:
+                      - button "View details / Change role" [ref=e2883]:
+                        - img [ref=e2884]
+                      - button "Suspend" [ref=e2887]:
+                        - img [ref=e2888]
+                      - button "Delete user" [ref=e2890]:
+                        - img [ref=e2891]
+                - row "Active Never ● No Sub O'Loghlen Insulation pat_oli@eircom.net Co. Galway business 22/03/2026 0 requests" [ref=e2894] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e2895]:
+                    - generic [ref=e2896]:
+                      - generic [ref=e2897]: Active
+                      - generic [ref=e2899]:
+                        - generic [ref=e2900]:
+                          - img [ref=e2901]
+                          - generic [ref=e2904]: Never
+                        - generic "Payment status" [ref=e2905]: ●
+                        - generic [ref=e2906]: No Sub
+                  - cell "O'Loghlen Insulation pat_oli@eircom.net Co. Galway" [ref=e2907]:
+                    - generic [ref=e2908]: O'Loghlen Insulation
+                    - generic [ref=e2909]: pat_oli@eircom.net
+                    - generic [ref=e2910]:
+                      - img [ref=e2911]
+                      - text: Co. Galway
+                  - cell "business" [ref=e2914]
+                  - cell "22/03/2026" [ref=e2915]
+                  - cell "0 requests" [ref=e2916]:
+                    - generic [ref=e2917]:
+                      - img [ref=e2918]
+                      - text: 0 requests
+                  - cell [ref=e2921]:
+                    - generic [ref=e2922]:
+                      - button "View details / Change role" [ref=e2923]:
+                        - img [ref=e2924]
+                      - button "Suspend" [ref=e2927]:
+                        - img [ref=e2928]
+                      - button "Delete user" [ref=e2930]:
+                        - img [ref=e2931]
+                - row "Active Never ● No Sub OG Insulations ogradydec@gmail.com Co. Limerick business 22/03/2026 0 requests" [ref=e2934] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e2935]:
+                    - generic [ref=e2936]:
+                      - generic [ref=e2937]: Active
+                      - generic [ref=e2939]:
+                        - generic [ref=e2940]:
+                          - img [ref=e2941]
+                          - generic [ref=e2944]: Never
+                        - generic "Payment status" [ref=e2945]: ●
+                        - generic [ref=e2946]: No Sub
+                  - cell "OG Insulations ogradydec@gmail.com Co. Limerick" [ref=e2947]:
+                    - generic [ref=e2948]: OG Insulations
+                    - generic [ref=e2949]: ogradydec@gmail.com
+                    - generic [ref=e2950]:
+                      - img [ref=e2951]
+                      - text: Co. Limerick
+                  - cell "business" [ref=e2954]
+                  - cell "22/03/2026" [ref=e2955]
+                  - cell "0 requests" [ref=e2956]:
+                    - generic [ref=e2957]:
+                      - img [ref=e2958]
+                      - text: 0 requests
+                  - cell [ref=e2961]:
+                    - generic [ref=e2962]:
+                      - button "View details / Change role" [ref=e2963]:
+                        - img [ref=e2964]
+                      - button "Suspend" [ref=e2967]:
+                        - img [ref=e2968]
+                      - button "Delete user" [ref=e2970]:
+                        - img [ref=e2971]
+                - row "Active 1mo ago ● No Sub Eirgreen Consultants Ltd eirgreen@gmail.com Co. Laois business 22/03/2026 0 requests" [ref=e2974] [cursor=pointer]:
+                  - cell "Active 1mo ago ● No Sub" [ref=e2975]:
+                    - generic [ref=e2976]:
+                      - generic [ref=e2977]: Active
+                      - generic [ref=e2979]:
+                        - generic [ref=e2980]:
+                          - img [ref=e2981]
+                          - generic [ref=e2984]: 1mo ago
+                        - generic "Payment status" [ref=e2985]: ●
+                        - generic [ref=e2986]: No Sub
+                  - cell "Eirgreen Consultants Ltd eirgreen@gmail.com Co. Laois" [ref=e2987]:
+                    - generic [ref=e2988]: Eirgreen Consultants Ltd
+                    - generic [ref=e2989]: eirgreen@gmail.com
+                    - generic [ref=e2990]:
+                      - img [ref=e2991]
+                      - text: Co. Laois
+                  - cell "business" [ref=e2994]
+                  - cell "22/03/2026" [ref=e2995]
+                  - cell "0 requests" [ref=e2996]:
+                    - generic [ref=e2997]:
+                      - img [ref=e2998]
+                      - text: 0 requests
+                  - cell [ref=e3001]:
+                    - generic [ref=e3002]:
+                      - button "View details / Change role" [ref=e3003]:
+                        - img [ref=e3004]
+                      - button "Suspend" [ref=e3007]:
+                        - img [ref=e3008]
+                      - button "Delete user" [ref=e3010]:
+                        - img [ref=e3011]
+                - row "Active Never ● No Sub Better Energy Solutions info@betterenergysolutions.ie Co. Mayo business 22/03/2026 0 requests" [ref=e3014] [cursor=pointer]:
+                  - cell "Active Never ● No Sub" [ref=e3015]:
+                    - generic [ref=e3016]:
+                      - generic [ref=e3017]: Active
+                      - generic [ref=e3019]:
+                        - generic [ref=e3020]:
+                          - img [ref=e3021]
+                          - generic [ref=e3024]: Never
+                        - generic "Payment status" [ref=e3025]: ●
+                        - generic [ref=e3026]: No Sub
+                  - cell "Better Energy Solutions info@betterenergysolutions.ie Co. Mayo" [ref=e3027]:
+                    - generic [ref=e3028]: Better Energy Solutions
+                    - generic [ref=e3029]: info@betterenergysolutions.ie
+                    - generic [ref=e3030]:
+                      - img [ref=e3031]
+                      - text: Co. Mayo
+                  - cell "business" [ref=e3034]
+                  - cell "22/03/2026" [ref=e3035]
+                  - cell "0 requests" [ref=e3036]:
+                    - generic [ref=e3037]:
+                      - img [ref=e3038]
+                      - text: 0 requests
+                  - cell [ref=e3041]:
+                    - generic [ref=e3042]:
+                      - button "View details / Change role" [ref=e3043]:
+                        - img [ref=e3044]
+                      - button "Suspend" [ref=e3047]:
+                        - img [ref=e3048]
+                      - button "Delete user" [ref=e3050]:
+                        - img [ref=e3051]
+                - row "Active 14h ago ● Kieran Richardson krichest@hotmail.com Co. Wexford Assessor 19/03/2026 0 jobs" [ref=e3054] [cursor=pointer]:
+                  - cell "Active 14h ago ●" [ref=e3055]:
+                    - generic [ref=e3056]:
+                      - generic [ref=e3057]: Active
+                      - generic [ref=e3059]:
+                        - generic [ref=e3060]:
+                          - img [ref=e3061]
+                          - generic [ref=e3064]: 14h ago
+                        - generic "Payment status" [ref=e3065]: ●
+                  - cell "Kieran Richardson krichest@hotmail.com Co. Wexford" [ref=e3066]:
+                    - generic [ref=e3067]: Kieran Richardson
+                    - generic [ref=e3068]: krichest@hotmail.com
+                    - generic [ref=e3069]:
+                      - img [ref=e3070]
+                      - text: Co. Wexford
+                  - cell "Assessor" [ref=e3073]
+                  - cell "19/03/2026" [ref=e3074]
+                  - cell "0 jobs" [ref=e3075]:
+                    - generic [ref=e3076]:
+                      - img [ref=e3077]
+                      - text: 0 jobs
+                  - cell [ref=e3080]:
+                    - generic [ref=e3081]:
+                      - button "Add to Catalogue" [ref=e3082]:
+                        - img [ref=e3083]
+                      - button "View details / Change role" [ref=e3084]:
+                        - img [ref=e3085]
+                      - button "Suspend" [ref=e3088]:
+                        - img [ref=e3089]
+                      - button "Delete user" [ref=e3091]:
+                        - img [ref=e3092]
+                - row "Active 1mo ago ● EDWARD LYNCH eddieoz22@yahoo.com Co. Tipperary Assessor 19/03/2026 0 jobs" [ref=e3095] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e3096]:
+                    - generic [ref=e3097]:
+                      - generic [ref=e3098]: Active
+                      - generic [ref=e3100]:
+                        - generic [ref=e3101]:
+                          - img [ref=e3102]
+                          - generic [ref=e3105]: 1mo ago
+                        - generic "Payment status" [ref=e3106]: ●
+                  - cell "EDWARD LYNCH eddieoz22@yahoo.com Co. Tipperary" [ref=e3107]:
+                    - generic [ref=e3108]: EDWARD LYNCH
+                    - generic [ref=e3109]: eddieoz22@yahoo.com
+                    - generic [ref=e3110]:
+                      - img [ref=e3111]
+                      - text: Co. Tipperary
+                  - cell "Assessor" [ref=e3114]
+                  - cell "19/03/2026" [ref=e3115]
+                  - cell "0 jobs" [ref=e3116]:
+                    - generic [ref=e3117]:
+                      - img [ref=e3118]
+                      - text: 0 jobs
+                  - cell [ref=e3121]:
+                    - generic [ref=e3122]:
+                      - button "Add to Catalogue" [ref=e3123]:
+                        - img [ref=e3124]
+                      - button "View details / Change role" [ref=e3125]:
+                        - img [ref=e3126]
+                      - button "Suspend" [ref=e3129]:
+                        - img [ref=e3130]
+                      - button "Delete user" [ref=e3132]:
+                        - img [ref=e3133]
+                - row "Active 23d ago ● Marie Casey mariecasey76@gmail.com user 18/03/2026 0 requests" [ref=e3136] [cursor=pointer]:
+                  - cell "Active 23d ago ●" [ref=e3137]:
+                    - generic [ref=e3138]:
+                      - generic [ref=e3139]: Active
+                      - generic [ref=e3141]:
+                        - generic [ref=e3142]:
+                          - img [ref=e3143]
+                          - generic [ref=e3146]: 23d ago
+                        - generic "Payment status" [ref=e3147]: ●
+                  - cell "Marie Casey mariecasey76@gmail.com" [ref=e3148]:
+                    - generic [ref=e3149]: Marie Casey
+                    - generic [ref=e3150]: mariecasey76@gmail.com
+                  - cell "user" [ref=e3151]
+                  - cell "18/03/2026" [ref=e3152]
+                  - cell "0 requests" [ref=e3153]:
+                    - generic [ref=e3154]:
+                      - img [ref=e3155]
+                      - text: 0 requests
+                  - cell [ref=e3158]:
+                    - generic [ref=e3159]:
+                      - button "View details / Change role" [ref=e3160]:
+                        - img [ref=e3161]
+                      - button "Suspend" [ref=e3164]:
+                        - img [ref=e3165]
+                      - button "Delete user" [ref=e3167]:
+                        - img [ref=e3168]
+                - row "Active 1mo ago ● Muhammad Azzam Khan makhan@betechnologies.ie Co. Wexford Assessor 18/03/2026 0 jobs" [ref=e3171] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e3172]:
+                    - generic [ref=e3173]:
+                      - generic [ref=e3174]: Active
+                      - generic [ref=e3176]:
+                        - generic [ref=e3177]:
+                          - img [ref=e3178]
+                          - generic [ref=e3181]: 1mo ago
+                        - generic "Payment status" [ref=e3182]: ●
+                  - cell "Muhammad Azzam Khan makhan@betechnologies.ie Co. Wexford" [ref=e3183]:
+                    - generic [ref=e3184]: Muhammad Azzam Khan
+                    - generic [ref=e3185]: makhan@betechnologies.ie
+                    - generic [ref=e3186]:
+                      - img [ref=e3187]
+                      - text: Co. Wexford
+                  - cell "Assessor" [ref=e3190]
+                  - cell "18/03/2026" [ref=e3191]
+                  - cell "0 jobs" [ref=e3192]:
+                    - generic [ref=e3193]:
+                      - img [ref=e3194]
+                      - text: 0 jobs
+                  - cell [ref=e3197]:
+                    - generic [ref=e3198]:
+                      - button "Add to Catalogue" [ref=e3199]:
+                        - img [ref=e3200]
+                      - button "View details / Change role" [ref=e3201]:
+                        - img [ref=e3202]
+                      - button "Suspend" [ref=e3205]:
+                        - img [ref=e3206]
+                      - button "Delete user" [ref=e3208]:
+                        - img [ref=e3209]
+                - row "Active 1mo ago ● Donal O'Byrne donieobyrne@yahoo.co.uk Co. Limerick Assessor 18/03/2026 0 jobs" [ref=e3212] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e3213]:
+                    - generic [ref=e3214]:
+                      - generic [ref=e3215]: Active
+                      - generic [ref=e3217]:
+                        - generic [ref=e3218]:
+                          - img [ref=e3219]
+                          - generic [ref=e3222]: 1mo ago
+                        - generic "Payment status" [ref=e3223]: ●
+                  - cell "Donal O'Byrne donieobyrne@yahoo.co.uk Co. Limerick" [ref=e3224]:
+                    - generic [ref=e3225]: Donal O'Byrne
+                    - generic [ref=e3226]: donieobyrne@yahoo.co.uk
+                    - generic [ref=e3227]:
+                      - img [ref=e3228]
+                      - text: Co. Limerick
+                  - cell "Assessor" [ref=e3231]
+                  - cell "18/03/2026" [ref=e3232]
+                  - cell "0 jobs" [ref=e3233]:
+                    - generic [ref=e3234]:
+                      - img [ref=e3235]
+                      - text: 0 jobs
+                  - cell [ref=e3238]:
+                    - generic [ref=e3239]:
+                      - button "Add to Catalogue" [ref=e3240]:
+                        - img [ref=e3241]
+                      - button "View details / Change role" [ref=e3242]:
+                        - img [ref=e3243]
+                      - button "Suspend" [ref=e3246]:
+                        - img [ref=e3247]
+                      - button "Delete user" [ref=e3249]:
+                        - img [ref=e3250]
+                - row "Active 1mo ago ● Kunal Gawande kunalgawande137@gmail.com Co. Dublin Assessor 18/03/2026 0 jobs" [ref=e3253] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e3254]:
+                    - generic [ref=e3255]:
+                      - generic [ref=e3256]: Active
+                      - generic [ref=e3258]:
+                        - generic [ref=e3259]:
+                          - img [ref=e3260]
+                          - generic [ref=e3263]: 1mo ago
+                        - generic "Payment status" [ref=e3264]: ●
+                  - cell "Kunal Gawande kunalgawande137@gmail.com Co. Dublin" [ref=e3265]:
+                    - generic [ref=e3266]: Kunal Gawande
+                    - generic [ref=e3267]: kunalgawande137@gmail.com
+                    - generic [ref=e3268]:
+                      - img [ref=e3269]
+                      - text: Co. Dublin
+                  - cell "Assessor" [ref=e3272]
+                  - cell "18/03/2026" [ref=e3273]
+                  - cell "0 jobs" [ref=e3274]:
+                    - generic [ref=e3275]:
+                      - img [ref=e3276]
+                      - text: 0 jobs
+                  - cell [ref=e3279]:
+                    - generic [ref=e3280]:
+                      - button "Add to Catalogue" [ref=e3281]:
+                        - img [ref=e3282]
+                      - button "View details / Change role" [ref=e3283]:
+                        - img [ref=e3284]
+                      - button "Suspend" [ref=e3287]:
+                        - img [ref=e3288]
+                      - button "Delete user" [ref=e3290]:
+                        - img [ref=e3291]
+                - row "Active 2d ago ● Daragh Hyland daraghber@gmail.com Co. Kilkenny Assessor 18/03/2026 0 jobs" [ref=e3294] [cursor=pointer]:
+                  - cell "Active 2d ago ●" [ref=e3295]:
+                    - generic [ref=e3296]:
+                      - generic [ref=e3297]: Active
+                      - generic [ref=e3299]:
+                        - generic [ref=e3300]:
+                          - img [ref=e3301]
+                          - generic [ref=e3304]: 2d ago
+                        - generic "Payment status" [ref=e3305]: ●
+                  - cell "Daragh Hyland daraghber@gmail.com Co. Kilkenny" [ref=e3306]:
+                    - generic [ref=e3307]: Daragh Hyland
+                    - generic [ref=e3308]: daraghber@gmail.com
+                    - generic [ref=e3309]:
+                      - img [ref=e3310]
+                      - text: Co. Kilkenny
+                  - cell "Assessor" [ref=e3313]
+                  - cell "18/03/2026" [ref=e3314]
+                  - cell "0 jobs" [ref=e3315]:
+                    - generic [ref=e3316]:
+                      - img [ref=e3317]
+                      - text: 0 jobs
+                  - cell [ref=e3320]:
+                    - generic [ref=e3321]:
+                      - button "Add to Catalogue" [ref=e3322]:
+                        - img [ref=e3323]
+                      - button "View details / Change role" [ref=e3324]:
+                        - img [ref=e3325]
+                      - button "Suspend" [ref=e3328]:
+                        - img [ref=e3329]
+                      - button "Delete user" [ref=e3331]:
+                        - img [ref=e3332]
+                - row "Active 23d ago ● Damien Cawley damiencawley@live.ie Co. Mayo Assessor 18/03/2026 0 jobs" [ref=e3335] [cursor=pointer]:
+                  - cell "Active 23d ago ●" [ref=e3336]:
+                    - generic [ref=e3337]:
+                      - generic [ref=e3338]: Active
+                      - generic [ref=e3340]:
+                        - generic [ref=e3341]:
+                          - img [ref=e3342]
+                          - generic [ref=e3345]: 23d ago
+                        - generic "Payment status" [ref=e3346]: ●
+                  - cell "Damien Cawley damiencawley@live.ie Co. Mayo" [ref=e3347]:
+                    - generic [ref=e3348]: Damien Cawley
+                    - generic [ref=e3349]: damiencawley@live.ie
+                    - generic [ref=e3350]:
+                      - img [ref=e3351]
+                      - text: Co. Mayo
+                  - cell "Assessor" [ref=e3354]
+                  - cell "18/03/2026" [ref=e3355]
+                  - cell "0 jobs" [ref=e3356]:
+                    - generic [ref=e3357]:
+                      - img [ref=e3358]
+                      - text: 0 jobs
+                  - cell [ref=e3361]:
+                    - generic [ref=e3362]:
+                      - button "Add to Catalogue" [ref=e3363]:
+                        - img [ref=e3364]
+                      - button "View details / Change role" [ref=e3365]:
+                        - img [ref=e3366]
+                      - button "Suspend" [ref=e3369]:
+                        - img [ref=e3370]
+                      - button "Delete user" [ref=e3372]:
+                        - img [ref=e3373]
+                - row "Active 1mo ago ● Ojas dixit assessors@gmail.com Assessor 16/03/2026 0 jobs" [ref=e3376] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e3377]:
+                    - generic [ref=e3378]:
+                      - generic [ref=e3379]: Active
+                      - generic [ref=e3381]:
+                        - generic [ref=e3382]:
+                          - img [ref=e3383]
+                          - generic [ref=e3386]: 1mo ago
+                        - generic "Payment status" [ref=e3387]: ●
+                  - cell "Ojas dixit assessors@gmail.com" [ref=e3388]:
+                    - generic [ref=e3389]: Ojas dixit
+                    - generic [ref=e3390]: assessors@gmail.com
+                  - cell "Assessor" [ref=e3391]
+                  - cell "16/03/2026" [ref=e3392]
+                  - cell "0 jobs" [ref=e3393]:
+                    - generic [ref=e3394]:
+                      - img [ref=e3395]
+                      - text: 0 jobs
+                  - cell [ref=e3398]:
+                    - generic [ref=e3399]:
+                      - button "Add to Catalogue" [ref=e3400]:
+                        - img [ref=e3401]
+                      - button "View details / Change role" [ref=e3402]:
+                        - img [ref=e3403]
+                      - button "Suspend" [ref=e3406]:
+                        - img [ref=e3407]
+                      - button "Delete user" [ref=e3409]:
+                        - img [ref=e3410]
+                - row "Active 1mo ago ● assessor assessor@gmail.com Co. Limerick Assessor 16/03/2026 0 jobs" [ref=e3413] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e3414]:
+                    - generic [ref=e3415]:
+                      - generic [ref=e3416]: Active
+                      - generic [ref=e3418]:
+                        - generic [ref=e3419]:
+                          - img [ref=e3420]
+                          - generic [ref=e3423]: 1mo ago
+                        - generic "Payment status" [ref=e3424]: ●
+                  - cell "assessor assessor@gmail.com Co. Limerick" [ref=e3425]:
+                    - generic [ref=e3426]: assessor
+                    - generic [ref=e3427]: assessor@gmail.com
+                    - generic [ref=e3428]:
+                      - img [ref=e3429]
+                      - text: Co. Limerick
+                  - cell "Assessor" [ref=e3432]
+                  - cell "16/03/2026" [ref=e3433]
+                  - cell "0 jobs" [ref=e3434]:
+                    - generic [ref=e3435]:
+                      - img [ref=e3436]
+                      - text: 0 jobs
+                  - cell [ref=e3439]:
+                    - generic [ref=e3440]:
+                      - button "Add to Catalogue" [ref=e3441]:
+                        - img [ref=e3442]
+                      - button "View details / Change role" [ref=e3443]:
+                        - img [ref=e3444]
+                      - button "Suspend" [ref=e3447]:
+                        - img [ref=e3448]
+                      - button "Delete user" [ref=e3450]:
+                        - img [ref=e3451]
+                - row "Active 19d ago ● Micheal Quinn bermquinn@gmail.com Co. Carlow Assessor 13/03/2026 0 jobs" [ref=e3454] [cursor=pointer]:
+                  - cell "Active 19d ago ●" [ref=e3455]:
+                    - generic [ref=e3456]:
+                      - generic [ref=e3457]: Active
+                      - generic [ref=e3459]:
+                        - generic [ref=e3460]:
+                          - img [ref=e3461]
+                          - generic [ref=e3464]: 19d ago
+                        - generic "Payment status" [ref=e3465]: ●
+                  - cell "Micheal Quinn bermquinn@gmail.com Co. Carlow" [ref=e3466]:
+                    - generic [ref=e3467]: Micheal Quinn
+                    - generic [ref=e3468]: bermquinn@gmail.com
+                    - generic [ref=e3469]:
+                      - img [ref=e3470]
+                      - text: Co. Carlow
+                  - cell "Assessor" [ref=e3473]
+                  - cell "13/03/2026" [ref=e3474]
+                  - cell "0 jobs" [ref=e3475]:
+                    - generic [ref=e3476]:
+                      - img [ref=e3477]
+                      - text: 0 jobs
+                  - cell [ref=e3480]:
+                    - generic [ref=e3481]:
+                      - button "Add to Catalogue" [ref=e3482]:
+                        - img [ref=e3483]
+                      - button "View details / Change role" [ref=e3484]:
+                        - img [ref=e3485]
+                      - button "Suspend" [ref=e3488]:
+                        - img [ref=e3489]
+                      - button "Delete user" [ref=e3491]:
+                        - img [ref=e3492]
+                - row "Active 1mo ago ● Terence Devey norwestber@gmail.com Co. Sligo Assessor 12/03/2026 0 jobs" [ref=e3495] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e3496]:
+                    - generic [ref=e3497]:
+                      - generic [ref=e3498]: Active
+                      - generic [ref=e3500]:
+                        - generic [ref=e3501]:
+                          - img [ref=e3502]
+                          - generic [ref=e3505]: 1mo ago
+                        - generic "Payment status" [ref=e3506]: ●
+                  - cell "Terence Devey norwestber@gmail.com Co. Sligo" [ref=e3507]:
+                    - generic [ref=e3508]: Terence Devey
+                    - generic [ref=e3509]: norwestber@gmail.com
+                    - generic [ref=e3510]:
+                      - img [ref=e3511]
+                      - text: Co. Sligo
+                  - cell "Assessor" [ref=e3514]
+                  - cell "12/03/2026" [ref=e3515]
+                  - cell "0 jobs" [ref=e3516]:
+                    - generic [ref=e3517]:
+                      - img [ref=e3518]
+                      - text: 0 jobs
+                  - cell [ref=e3521]:
+                    - generic [ref=e3522]:
+                      - button "Add to Catalogue" [ref=e3523]:
+                        - img [ref=e3524]
+                      - button "View details / Change role" [ref=e3525]:
+                        - img [ref=e3526]
+                      - button "Suspend" [ref=e3529]:
+                        - img [ref=e3530]
+                      - button "Delete user" [ref=e3532]:
+                        - img [ref=e3533]
+                - row "Active 1mo ago ● Stephen Lynch slynchber@gmail.com Co. Meath Assessor 12/03/2026 0 jobs" [ref=e3536] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e3537]:
+                    - generic [ref=e3538]:
+                      - generic [ref=e3539]: Active
+                      - generic [ref=e3541]:
+                        - generic [ref=e3542]:
+                          - img [ref=e3543]
+                          - generic [ref=e3546]: 1mo ago
+                        - generic "Payment status" [ref=e3547]: ●
+                  - cell "Stephen Lynch slynchber@gmail.com Co. Meath" [ref=e3548]:
+                    - generic [ref=e3549]: Stephen Lynch
+                    - generic [ref=e3550]: slynchber@gmail.com
+                    - generic [ref=e3551]:
+                      - img [ref=e3552]
+                      - text: Co. Meath
+                  - cell "Assessor" [ref=e3555]
+                  - cell "12/03/2026" [ref=e3556]
+                  - cell "0 jobs" [ref=e3557]:
+                    - generic [ref=e3558]:
+                      - img [ref=e3559]
+                      - text: 0 jobs
+                  - cell [ref=e3562]:
+                    - generic [ref=e3563]:
+                      - button "Add to Catalogue" [ref=e3564]:
+                        - img [ref=e3565]
+                      - button "View details / Change role" [ref=e3566]:
+                        - img [ref=e3567]
+                      - button "Suspend" [ref=e3570]:
+                        - img [ref=e3571]
+                      - button "Delete user" [ref=e3573]:
+                        - img [ref=e3574]
+                - row "Active 1mo ago ● Kevin Magrath kevin.magrath.ber@gmail.com Co. Sligo Assessor 12/03/2026 0 jobs" [ref=e3577] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e3578]:
+                    - generic [ref=e3579]:
+                      - generic [ref=e3580]: Active
+                      - generic [ref=e3582]:
+                        - generic [ref=e3583]:
+                          - img [ref=e3584]
+                          - generic [ref=e3587]: 1mo ago
+                        - generic "Payment status" [ref=e3588]: ●
+                  - cell "Kevin Magrath kevin.magrath.ber@gmail.com Co. Sligo" [ref=e3589]:
+                    - generic [ref=e3590]: Kevin Magrath
+                    - generic [ref=e3591]: kevin.magrath.ber@gmail.com
+                    - generic [ref=e3592]:
+                      - img [ref=e3593]
+                      - text: Co. Sligo
+                  - cell "Assessor" [ref=e3596]
+                  - cell "12/03/2026" [ref=e3597]
+                  - cell "0 jobs" [ref=e3598]:
+                    - generic [ref=e3599]:
+                      - img [ref=e3600]
+                      - text: 0 jobs
+                  - cell [ref=e3603]:
+                    - generic [ref=e3604]:
+                      - button "Add to Catalogue" [ref=e3605]:
+                        - img [ref=e3606]
+                      - button "View details / Change role" [ref=e3607]:
+                        - img [ref=e3608]
+                      - button "Suspend" [ref=e3611]:
+                        - img [ref=e3612]
+                      - button "Delete user" [ref=e3614]:
+                        - img [ref=e3615]
+                - row "Active 1mo ago ● Robert Doran robertdoranbers@gmail.com Co. Wexford Assessor 12/03/2026 0 jobs" [ref=e3618] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e3619]:
+                    - generic [ref=e3620]:
+                      - generic [ref=e3621]: Active
+                      - generic [ref=e3623]:
+                        - generic [ref=e3624]:
+                          - img [ref=e3625]
+                          - generic [ref=e3628]: 1mo ago
+                        - generic "Payment status" [ref=e3629]: ●
+                  - cell "Robert Doran robertdoranbers@gmail.com Co. Wexford" [ref=e3630]:
+                    - generic [ref=e3631]: Robert Doran
+                    - generic [ref=e3632]: robertdoranbers@gmail.com
+                    - generic [ref=e3633]:
+                      - img [ref=e3634]
+                      - text: Co. Wexford
+                  - cell "Assessor" [ref=e3637]
+                  - cell "12/03/2026" [ref=e3638]
+                  - cell "0 jobs" [ref=e3639]:
+                    - generic [ref=e3640]:
+                      - img [ref=e3641]
+                      - text: 0 jobs
+                  - cell [ref=e3644]:
+                    - generic [ref=e3645]:
+                      - button "Add to Catalogue" [ref=e3646]:
+                        - img [ref=e3647]
+                      - button "View details / Change role" [ref=e3648]:
+                        - img [ref=e3649]
+                      - button "Suspend" [ref=e3652]:
+                        - img [ref=e3653]
+                      - button "Delete user" [ref=e3655]:
+                        - img [ref=e3656]
+                - row "Active 1mo ago ● Ruairi Gleeson ruairigleeson76@gmail.com Co. Tipperary Assessor 12/03/2026 0 jobs" [ref=e3659] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e3660]:
+                    - generic [ref=e3661]:
+                      - generic [ref=e3662]: Active
+                      - generic [ref=e3664]:
+                        - generic [ref=e3665]:
+                          - img [ref=e3666]
+                          - generic [ref=e3669]: 1mo ago
+                        - generic "Payment status" [ref=e3670]: ●
+                  - cell "Ruairi Gleeson ruairigleeson76@gmail.com Co. Tipperary" [ref=e3671]:
+                    - generic [ref=e3672]: Ruairi Gleeson
+                    - generic [ref=e3673]: ruairigleeson76@gmail.com
+                    - generic [ref=e3674]:
+                      - img [ref=e3675]
+                      - text: Co. Tipperary
+                  - cell "Assessor" [ref=e3678]
+                  - cell "12/03/2026" [ref=e3679]
+                  - cell "0 jobs" [ref=e3680]:
+                    - generic [ref=e3681]:
+                      - img [ref=e3682]
+                      - text: 0 jobs
+                  - cell [ref=e3685]:
+                    - generic [ref=e3686]:
+                      - button "Add to Catalogue" [ref=e3687]:
+                        - img [ref=e3688]
+                      - button "View details / Change role" [ref=e3689]:
+                        - img [ref=e3690]
+                      - button "Suspend" [ref=e3693]:
+                        - img [ref=e3694]
+                      - button "Delete user" [ref=e3696]:
+                        - img [ref=e3697]
+                - row "Active 3d ago ● Adrian O'Looney adrian_o_looney@yahoo.ie Co. Clare Assessor 12/03/2026 0 jobs" [ref=e3700] [cursor=pointer]:
+                  - cell "Active 3d ago ●" [ref=e3701]:
+                    - generic [ref=e3702]:
+                      - generic [ref=e3703]: Active
+                      - generic [ref=e3705]:
+                        - generic [ref=e3706]:
+                          - img [ref=e3707]
+                          - generic [ref=e3710]: 3d ago
+                        - generic "Payment status" [ref=e3711]: ●
+                  - cell "Adrian O'Looney adrian_o_looney@yahoo.ie Co. Clare" [ref=e3712]:
+                    - generic [ref=e3713]: Adrian O'Looney
+                    - generic [ref=e3714]: adrian_o_looney@yahoo.ie
+                    - generic [ref=e3715]:
+                      - img [ref=e3716]
+                      - text: Co. Clare
+                  - cell "Assessor" [ref=e3719]
+                  - cell "12/03/2026" [ref=e3720]
+                  - cell "0 jobs" [ref=e3721]:
+                    - generic [ref=e3722]:
+                      - img [ref=e3723]
+                      - text: 0 jobs
+                  - cell [ref=e3726]:
+                    - generic [ref=e3727]:
+                      - button "Add to Catalogue" [ref=e3728]:
+                        - img [ref=e3729]
+                      - button "View details / Change role" [ref=e3730]:
+                        - img [ref=e3731]
+                      - button "Suspend" [ref=e3734]:
+                        - img [ref=e3735]
+                      - button "Delete user" [ref=e3737]:
+                        - img [ref=e3738]
+                - row "Active 23d ago ● Niall Condron ntcondron@yahoo.co.uk Co. Offaly Assessor 12/03/2026 0 jobs" [ref=e3741] [cursor=pointer]:
+                  - cell "Active 23d ago ●" [ref=e3742]:
+                    - generic [ref=e3743]:
+                      - generic [ref=e3744]: Active
+                      - generic [ref=e3746]:
+                        - generic [ref=e3747]:
+                          - img [ref=e3748]
+                          - generic [ref=e3751]: 23d ago
+                        - generic "Payment status" [ref=e3752]: ●
+                  - cell "Niall Condron ntcondron@yahoo.co.uk Co. Offaly" [ref=e3753]:
+                    - generic [ref=e3754]: Niall Condron
+                    - generic [ref=e3755]: ntcondron@yahoo.co.uk
+                    - generic [ref=e3756]:
+                      - img [ref=e3757]
+                      - text: Co. Offaly
+                  - cell "Assessor" [ref=e3760]
+                  - cell "12/03/2026" [ref=e3761]
+                  - cell "0 jobs" [ref=e3762]:
+                    - generic [ref=e3763]:
+                      - img [ref=e3764]
+                      - text: 0 jobs
+                  - cell [ref=e3767]:
+                    - generic [ref=e3768]:
+                      - button "Add to Catalogue" [ref=e3769]:
+                        - img [ref=e3770]
+                      - button "View details / Change role" [ref=e3771]:
+                        - img [ref=e3772]
+                      - button "Suspend" [ref=e3775]:
+                        - img [ref=e3776]
+                      - button "Delete user" [ref=e3778]:
+                        - img [ref=e3779]
+                - row "Active 24d ago ● Thomas Casey thomas_casey_15@live.co.uk Co. Kerry Assessor 12/03/2026 0 jobs" [ref=e3782] [cursor=pointer]:
+                  - cell "Active 24d ago ●" [ref=e3783]:
+                    - generic [ref=e3784]:
+                      - generic [ref=e3785]: Active
+                      - generic [ref=e3787]:
+                        - generic [ref=e3788]:
+                          - img [ref=e3789]
+                          - generic [ref=e3792]: 24d ago
+                        - generic "Payment status" [ref=e3793]: ●
+                  - cell "Thomas Casey thomas_casey_15@live.co.uk Co. Kerry" [ref=e3794]:
+                    - generic [ref=e3795]: Thomas Casey
+                    - generic [ref=e3796]: thomas_casey_15@live.co.uk
+                    - generic [ref=e3797]:
+                      - img [ref=e3798]
+                      - text: Co. Kerry
+                  - cell "Assessor" [ref=e3801]
+                  - cell "12/03/2026" [ref=e3802]
+                  - cell "0 jobs" [ref=e3803]:
+                    - generic [ref=e3804]:
+                      - img [ref=e3805]
+                      - text: 0 jobs
+                  - cell [ref=e3808]:
+                    - generic [ref=e3809]:
+                      - button "Add to Catalogue" [ref=e3810]:
+                        - img [ref=e3811]
+                      - button "View details / Change role" [ref=e3812]:
+                        - img [ref=e3813]
+                      - button "Suspend" [ref=e3816]:
+                        - img [ref=e3817]
+                      - button "Delete user" [ref=e3819]:
+                        - img [ref=e3820]
+                - row "Active 1mo ago ● Brendan McGrath brendanmcgrath@hotmail.com Co. Galway Assessor 12/03/2026 0 jobs" [ref=e3823] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e3824]:
+                    - generic [ref=e3825]:
+                      - generic [ref=e3826]: Active
+                      - generic [ref=e3828]:
+                        - generic [ref=e3829]:
+                          - img [ref=e3830]
+                          - generic [ref=e3833]: 1mo ago
+                        - generic "Payment status" [ref=e3834]: ●
+                  - cell "Brendan McGrath brendanmcgrath@hotmail.com Co. Galway" [ref=e3835]:
+                    - generic [ref=e3836]: Brendan McGrath
+                    - generic [ref=e3837]: brendanmcgrath@hotmail.com
+                    - generic [ref=e3838]:
+                      - img [ref=e3839]
+                      - text: Co. Galway
+                  - cell "Assessor" [ref=e3842]
+                  - cell "12/03/2026" [ref=e3843]
+                  - cell "0 jobs" [ref=e3844]:
+                    - generic [ref=e3845]:
+                      - img [ref=e3846]
+                      - text: 0 jobs
+                  - cell [ref=e3849]:
+                    - generic [ref=e3850]:
+                      - button "Add to Catalogue" [ref=e3851]:
+                        - img [ref=e3852]
+                      - button "View details / Change role" [ref=e3853]:
+                        - img [ref=e3854]
+                      - button "Suspend" [ref=e3857]:
+                        - img [ref=e3858]
+                      - button "Delete user" [ref=e3860]:
+                        - img [ref=e3861]
+                - row "Active 1mo ago ● Rory Macadam rory.macadam@gmail.com Co. Galway Assessor 12/03/2026 0 jobs" [ref=e3864] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e3865]:
+                    - generic [ref=e3866]:
+                      - generic [ref=e3867]: Active
+                      - generic [ref=e3869]:
+                        - generic [ref=e3870]:
+                          - img [ref=e3871]
+                          - generic [ref=e3874]: 1mo ago
+                        - generic "Payment status" [ref=e3875]: ●
+                  - cell "Rory Macadam rory.macadam@gmail.com Co. Galway" [ref=e3876]:
+                    - generic [ref=e3877]: Rory Macadam
+                    - generic [ref=e3878]: rory.macadam@gmail.com
+                    - generic [ref=e3879]:
+                      - img [ref=e3880]
+                      - text: Co. Galway
+                  - cell "Assessor" [ref=e3883]
+                  - cell "12/03/2026" [ref=e3884]
+                  - cell "0 jobs" [ref=e3885]:
+                    - generic [ref=e3886]:
+                      - img [ref=e3887]
+                      - text: 0 jobs
+                  - cell [ref=e3890]:
+                    - generic [ref=e3891]:
+                      - button "Add to Catalogue" [ref=e3892]:
+                        - img [ref=e3893]
+                      - button "View details / Change role" [ref=e3894]:
+                        - img [ref=e3895]
+                      - button "Suspend" [ref=e3898]:
+                        - img [ref=e3899]
+                      - button "Delete user" [ref=e3901]:
+                        - img [ref=e3902]
+                - row "Active 23d ago ● Martin Kennedy MARTINKENNEDY25@HOTMAIL.COM Co. Donegal Assessor 12/03/2026 0 jobs" [ref=e3905] [cursor=pointer]:
+                  - cell "Active 23d ago ●" [ref=e3906]:
+                    - generic [ref=e3907]:
+                      - generic [ref=e3908]: Active
+                      - generic [ref=e3910]:
+                        - generic [ref=e3911]:
+                          - img [ref=e3912]
+                          - generic [ref=e3915]: 23d ago
+                        - generic "Payment status" [ref=e3916]: ●
+                  - cell "Martin Kennedy MARTINKENNEDY25@HOTMAIL.COM Co. Donegal" [ref=e3917]:
+                    - generic [ref=e3918]: Martin Kennedy
+                    - generic [ref=e3919]: MARTINKENNEDY25@HOTMAIL.COM
+                    - generic [ref=e3920]:
+                      - img [ref=e3921]
+                      - text: Co. Donegal
+                  - cell "Assessor" [ref=e3924]
+                  - cell "12/03/2026" [ref=e3925]
+                  - cell "0 jobs" [ref=e3926]:
+                    - generic [ref=e3927]:
+                      - img [ref=e3928]
+                      - text: 0 jobs
+                  - cell [ref=e3931]:
+                    - generic [ref=e3932]:
+                      - button "Add to Catalogue" [ref=e3933]:
+                        - img [ref=e3934]
+                      - button "View details / Change role" [ref=e3935]:
+                        - img [ref=e3936]
+                      - button "Suspend" [ref=e3939]:
+                        - img [ref=e3940]
+                      - button "Delete user" [ref=e3942]:
+                        - img [ref=e3943]
+                - row "Active 1mo ago ● Killian Bannon killianpbannon@gmail.com Co. Cavan Assessor 12/03/2026 0 jobs" [ref=e3946] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e3947]:
+                    - generic [ref=e3948]:
+                      - generic [ref=e3949]: Active
+                      - generic [ref=e3951]:
+                        - generic [ref=e3952]:
+                          - img [ref=e3953]
+                          - generic [ref=e3956]: 1mo ago
+                        - generic "Payment status" [ref=e3957]: ●
+                  - cell "Killian Bannon killianpbannon@gmail.com Co. Cavan" [ref=e3958]:
+                    - generic [ref=e3959]: Killian Bannon
+                    - generic [ref=e3960]: killianpbannon@gmail.com
+                    - generic [ref=e3961]:
+                      - img [ref=e3962]
+                      - text: Co. Cavan
+                  - cell "Assessor" [ref=e3965]
+                  - cell "12/03/2026" [ref=e3966]
+                  - cell "0 jobs" [ref=e3967]:
+                    - generic [ref=e3968]:
+                      - img [ref=e3969]
+                      - text: 0 jobs
+                  - cell [ref=e3972]:
+                    - generic [ref=e3973]:
+                      - button "Add to Catalogue" [ref=e3974]:
+                        - img [ref=e3975]
+                      - button "View details / Change role" [ref=e3976]:
+                        - img [ref=e3977]
+                      - button "Suspend" [ref=e3980]:
+                        - img [ref=e3981]
+                      - button "Delete user" [ref=e3983]:
+                        - img [ref=e3984]
+                - row "Active 24d ago ● Paddy Farrell newbercert@gmail.com Co. Carlow Assessor 12/03/2026 0 jobs" [ref=e3987] [cursor=pointer]:
+                  - cell "Active 24d ago ●" [ref=e3988]:
+                    - generic [ref=e3989]:
+                      - generic [ref=e3990]: Active
+                      - generic [ref=e3992]:
+                        - generic [ref=e3993]:
+                          - img [ref=e3994]
+                          - generic [ref=e3997]: 24d ago
+                        - generic "Payment status" [ref=e3998]: ●
+                  - cell "Paddy Farrell newbercert@gmail.com Co. Carlow" [ref=e3999]:
+                    - generic [ref=e4000]: Paddy Farrell
+                    - generic [ref=e4001]: newbercert@gmail.com
+                    - generic [ref=e4002]:
+                      - img [ref=e4003]
+                      - text: Co. Carlow
+                  - cell "Assessor" [ref=e4006]
+                  - cell "12/03/2026" [ref=e4007]
+                  - cell "0 jobs" [ref=e4008]:
+                    - generic [ref=e4009]:
+                      - img [ref=e4010]
+                      - text: 0 jobs
+                  - cell [ref=e4013]:
+                    - generic [ref=e4014]:
+                      - button "Add to Catalogue" [ref=e4015]:
+                        - img [ref=e4016]
+                      - button "View details / Change role" [ref=e4017]:
+                        - img [ref=e4018]
+                      - button "Suspend" [ref=e4021]:
+                        - img [ref=e4022]
+                      - button "Delete user" [ref=e4024]:
+                        - img [ref=e4025]
+                - row "Active 1mo ago ● Shane Duhig shaneduhig@gmail.com Co. Limerick Assessor 12/03/2026 0 jobs" [ref=e4028] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e4029]:
+                    - generic [ref=e4030]:
+                      - generic [ref=e4031]: Active
+                      - generic [ref=e4033]:
+                        - generic [ref=e4034]:
+                          - img [ref=e4035]
+                          - generic [ref=e4038]: 1mo ago
+                        - generic "Payment status" [ref=e4039]: ●
+                  - cell "Shane Duhig shaneduhig@gmail.com Co. Limerick" [ref=e4040]:
+                    - generic [ref=e4041]: Shane Duhig
+                    - generic [ref=e4042]: shaneduhig@gmail.com
+                    - generic [ref=e4043]:
+                      - img [ref=e4044]
+                      - text: Co. Limerick
+                  - cell "Assessor" [ref=e4047]
+                  - cell "12/03/2026" [ref=e4048]
+                  - cell "0 jobs" [ref=e4049]:
+                    - generic [ref=e4050]:
+                      - img [ref=e4051]
+                      - text: 0 jobs
+                  - cell [ref=e4054]:
+                    - generic [ref=e4055]:
+                      - button "Add to Catalogue" [ref=e4056]:
+                        - img [ref=e4057]
+                      - button "View details / Change role" [ref=e4058]:
+                        - img [ref=e4059]
+                      - button "Suspend" [ref=e4062]:
+                        - img [ref=e4063]
+                      - button "Delete user" [ref=e4065]:
+                        - img [ref=e4066]
+                - row "Active 1mo ago ● Aidan Clifford berassessorsmunster@gmail.com Co. Kerry Assessor 11/03/2026 0 jobs" [ref=e4069] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e4070]:
+                    - generic [ref=e4071]:
+                      - generic [ref=e4072]: Active
+                      - generic [ref=e4074]:
+                        - generic [ref=e4075]:
+                          - img [ref=e4076]
+                          - generic [ref=e4079]: 1mo ago
+                        - generic "Payment status" [ref=e4080]: ●
+                  - cell "Aidan Clifford berassessorsmunster@gmail.com Co. Kerry" [ref=e4081]:
+                    - generic [ref=e4082]: Aidan Clifford
+                    - generic [ref=e4083]: berassessorsmunster@gmail.com
+                    - generic [ref=e4084]:
+                      - img [ref=e4085]
+                      - text: Co. Kerry
+                  - cell "Assessor" [ref=e4088]
+                  - cell "11/03/2026" [ref=e4089]
+                  - cell "0 jobs" [ref=e4090]:
+                    - generic [ref=e4091]:
+                      - img [ref=e4092]
+                      - text: 0 jobs
+                  - cell [ref=e4095]:
+                    - generic [ref=e4096]:
+                      - button "Add to Catalogue" [ref=e4097]:
+                        - img [ref=e4098]
+                      - button "View details / Change role" [ref=e4099]:
+                        - img [ref=e4100]
+                      - button "Suspend" [ref=e4103]:
+                        - img [ref=e4104]
+                      - button "Delete user" [ref=e4106]:
+                        - img [ref=e4107]
+                - row "Active 24d ago ● Sean Holohan seanholohan4@gmail.com Co. Mayo Assessor 11/03/2026 0 jobs" [ref=e4110] [cursor=pointer]:
+                  - cell "Active 24d ago ●" [ref=e4111]:
+                    - generic [ref=e4112]:
+                      - generic [ref=e4113]: Active
+                      - generic [ref=e4115]:
+                        - generic [ref=e4116]:
+                          - img [ref=e4117]
+                          - generic [ref=e4120]: 24d ago
+                        - generic "Payment status" [ref=e4121]: ●
+                  - cell "Sean Holohan seanholohan4@gmail.com Co. Mayo" [ref=e4122]:
+                    - generic [ref=e4123]: Sean Holohan
+                    - generic [ref=e4124]: seanholohan4@gmail.com
+                    - generic [ref=e4125]:
+                      - img [ref=e4126]
+                      - text: Co. Mayo
+                  - cell "Assessor" [ref=e4129]
+                  - cell "11/03/2026" [ref=e4130]
+                  - cell "0 jobs" [ref=e4131]:
+                    - generic [ref=e4132]:
+                      - img [ref=e4133]
+                      - text: 0 jobs
+                  - cell [ref=e4136]:
+                    - generic [ref=e4137]:
+                      - button "Add to Catalogue" [ref=e4138]:
+                        - img [ref=e4139]
+                      - button "View details / Change role" [ref=e4140]:
+                        - img [ref=e4141]
+                      - button "Suspend" [ref=e4144]:
+                        - img [ref=e4145]
+                      - button "Delete user" [ref=e4147]:
+                        - img [ref=e4148]
+                - row "Active 24d ago ● Kavisha Yatagampitiya ykavisha@yahoo.com Co. Monaghan Assessor 11/03/2026 0 jobs" [ref=e4151] [cursor=pointer]:
+                  - cell "Active 24d ago ●" [ref=e4152]:
+                    - generic [ref=e4153]:
+                      - generic [ref=e4154]: Active
+                      - generic [ref=e4156]:
+                        - generic [ref=e4157]:
+                          - img [ref=e4158]
+                          - generic [ref=e4161]: 24d ago
+                        - generic "Payment status" [ref=e4162]: ●
+                  - cell "Kavisha Yatagampitiya ykavisha@yahoo.com Co. Monaghan" [ref=e4163]:
+                    - generic [ref=e4164]: Kavisha Yatagampitiya
+                    - generic [ref=e4165]: ykavisha@yahoo.com
+                    - generic [ref=e4166]:
+                      - img [ref=e4167]
+                      - text: Co. Monaghan
+                  - cell "Assessor" [ref=e4170]
+                  - cell "11/03/2026" [ref=e4171]
+                  - cell "0 jobs" [ref=e4172]:
+                    - generic [ref=e4173]:
+                      - img [ref=e4174]
+                      - text: 0 jobs
+                  - cell [ref=e4177]:
+                    - generic [ref=e4178]:
+                      - button "Add to Catalogue" [ref=e4179]:
+                        - img [ref=e4180]
+                      - button "View details / Change role" [ref=e4181]:
+                        - img [ref=e4182]
+                      - button "Suspend" [ref=e4185]:
+                        - img [ref=e4186]
+                      - button "Delete user" [ref=e4188]:
+                        - img [ref=e4189]
+                - row "Active 3d ago ● Rohan Joshi rohanjoshi.joshi03@gmail.com Co. Louth Assessor 11/03/2026 0 jobs" [ref=e4192] [cursor=pointer]:
+                  - cell "Active 3d ago ●" [ref=e4193]:
+                    - generic [ref=e4194]:
+                      - generic [ref=e4195]: Active
+                      - generic [ref=e4197]:
+                        - generic [ref=e4198]:
+                          - img [ref=e4199]
+                          - generic [ref=e4202]: 3d ago
+                        - generic "Payment status" [ref=e4203]: ●
+                  - cell "Rohan Joshi rohanjoshi.joshi03@gmail.com Co. Louth" [ref=e4204]:
+                    - generic [ref=e4205]: Rohan Joshi
+                    - generic [ref=e4206]: rohanjoshi.joshi03@gmail.com
+                    - generic [ref=e4207]:
+                      - img [ref=e4208]
+                      - text: Co. Louth
+                  - cell "Assessor" [ref=e4211]
+                  - cell "11/03/2026" [ref=e4212]
+                  - cell "0 jobs" [ref=e4213]:
+                    - generic [ref=e4214]:
+                      - img [ref=e4215]
+                      - text: 0 jobs
+                  - cell [ref=e4218]:
+                    - generic [ref=e4219]:
+                      - button "Add to Catalogue" [ref=e4220]:
+                        - img [ref=e4221]
+                      - button "View details / Change role" [ref=e4222]:
+                        - img [ref=e4223]
+                      - button "Suspend" [ref=e4226]:
+                        - img [ref=e4227]
+                      - button "Delete user" [ref=e4229]:
+                        - img [ref=e4230]
+                - row "Active 1mo ago ● John Ryan john@ecoea.ie Co. Longford Assessor 11/03/2026 0 jobs" [ref=e4233] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e4234]:
+                    - generic [ref=e4235]:
+                      - generic [ref=e4236]: Active
+                      - generic [ref=e4238]:
+                        - generic [ref=e4239]:
+                          - img [ref=e4240]
+                          - generic [ref=e4243]: 1mo ago
+                        - generic "Payment status" [ref=e4244]: ●
+                  - cell "John Ryan john@ecoea.ie Co. Longford" [ref=e4245]:
+                    - generic [ref=e4246]: John Ryan
+                    - generic [ref=e4247]: john@ecoea.ie
+                    - generic [ref=e4248]:
+                      - img [ref=e4249]
+                      - text: Co. Longford
+                  - cell "Assessor" [ref=e4252]
+                  - cell "11/03/2026" [ref=e4253]
+                  - cell "0 jobs" [ref=e4254]:
+                    - generic [ref=e4255]:
+                      - img [ref=e4256]
+                      - text: 0 jobs
+                  - cell [ref=e4259]:
+                    - generic [ref=e4260]:
+                      - button "Add to Catalogue" [ref=e4261]:
+                        - img [ref=e4262]
+                      - button "View details / Change role" [ref=e4263]:
+                        - img [ref=e4264]
+                      - button "Suspend" [ref=e4267]:
+                        - img [ref=e4268]
+                      - button "Delete user" [ref=e4270]:
+                        - img [ref=e4271]
+                - row "Active 1mo ago ● Barry Michael Walsh barry@midlandsurveying.ie Co. Laois Assessor 11/03/2026 0 jobs" [ref=e4274] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e4275]:
+                    - generic [ref=e4276]:
+                      - generic [ref=e4277]: Active
+                      - generic [ref=e4279]:
+                        - generic [ref=e4280]:
+                          - img [ref=e4281]
+                          - generic [ref=e4284]: 1mo ago
+                        - generic "Payment status" [ref=e4285]: ●
+                  - cell "Barry Michael Walsh barry@midlandsurveying.ie Co. Laois" [ref=e4286]:
+                    - generic [ref=e4287]: Barry Michael Walsh
+                    - generic [ref=e4288]: barry@midlandsurveying.ie
+                    - generic [ref=e4289]:
+                      - img [ref=e4290]
+                      - text: Co. Laois
+                  - cell "Assessor" [ref=e4293]
+                  - cell "11/03/2026" [ref=e4294]
+                  - cell "0 jobs" [ref=e4295]:
+                    - generic [ref=e4296]:
+                      - img [ref=e4297]
+                      - text: 0 jobs
+                  - cell [ref=e4300]:
+                    - generic [ref=e4301]:
+                      - button "Add to Catalogue" [ref=e4302]:
+                        - img [ref=e4303]
+                      - button "View details / Change role" [ref=e4304]:
+                        - img [ref=e4305]
+                      - button "Suspend" [ref=e4308]:
+                        - img [ref=e4309]
+                      - button "Delete user" [ref=e4311]:
+                        - img [ref=e4312]
+                - row "Active 1mo ago ● Philip Carroll info@midlands-ber.ie Assessor 11/03/2026 0 jobs" [ref=e4315] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e4316]:
+                    - generic [ref=e4317]:
+                      - generic [ref=e4318]: Active
+                      - generic [ref=e4320]:
+                        - generic [ref=e4321]:
+                          - img [ref=e4322]
+                          - generic [ref=e4325]: 1mo ago
+                        - generic "Payment status" [ref=e4326]: ●
+                  - cell "Philip Carroll info@midlands-ber.ie" [ref=e4327]:
+                    - generic [ref=e4328]: Philip Carroll
+                    - generic [ref=e4329]: info@midlands-ber.ie
+                  - cell "Assessor" [ref=e4330]
+                  - cell "11/03/2026" [ref=e4331]
+                  - cell "0 jobs" [ref=e4332]:
+                    - generic [ref=e4333]:
+                      - img [ref=e4334]
+                      - text: 0 jobs
+                  - cell [ref=e4337]:
+                    - generic [ref=e4338]:
+                      - button "Add to Catalogue" [ref=e4339]:
+                        - img [ref=e4340]
+                      - button "View details / Change role" [ref=e4341]:
+                        - img [ref=e4342]
+                      - button "Suspend" [ref=e4345]:
+                        - img [ref=e4346]
+                      - button "Delete user" [ref=e4348]:
+                        - img [ref=e4349]
+                - row "Active 55m ago ● David Rice drprice86@hotmail.com Co. Dublin Assessor 09/03/2026 0 jobs" [ref=e4352] [cursor=pointer]:
+                  - cell "Active 55m ago ●" [ref=e4353]:
+                    - generic [ref=e4354]:
+                      - generic [ref=e4355]: Active
+                      - generic [ref=e4357]:
+                        - generic [ref=e4358]:
+                          - img [ref=e4359]
+                          - generic [ref=e4362]: 55m ago
+                        - generic "Payment status" [ref=e4363]: ●
+                  - cell "David Rice drprice86@hotmail.com Co. Dublin" [ref=e4364]:
+                    - generic [ref=e4365]: David Rice
+                    - generic [ref=e4366]: drprice86@hotmail.com
+                    - generic [ref=e4367]:
+                      - img [ref=e4368]
+                      - text: Co. Dublin
+                  - cell "Assessor" [ref=e4371]
+                  - cell "09/03/2026" [ref=e4372]
+                  - cell "0 jobs" [ref=e4373]:
+                    - generic [ref=e4374]:
+                      - img [ref=e4375]
+                      - text: 0 jobs
+                  - cell [ref=e4378]:
+                    - generic [ref=e4379]:
+                      - button "Add to Catalogue" [ref=e4380]:
+                        - img [ref=e4381]
+                      - button "View details / Change role" [ref=e4382]:
+                        - img [ref=e4383]
+                      - button "Suspend" [ref=e4386]:
+                        - img [ref=e4387]
+                      - button "Delete user" [ref=e4389]:
+                        - img [ref=e4390]
+                - row "Active 24d ago ● Gavin Drouhin gavindrouhin@gmail.com Co. Dublin Assessor 09/03/2026 0 jobs" [ref=e4393] [cursor=pointer]:
+                  - cell "Active 24d ago ●" [ref=e4394]:
+                    - generic [ref=e4395]:
+                      - generic [ref=e4396]: Active
+                      - generic [ref=e4398]:
+                        - generic [ref=e4399]:
+                          - img [ref=e4400]
+                          - generic [ref=e4403]: 24d ago
+                        - generic "Payment status" [ref=e4404]: ●
+                  - cell "Gavin Drouhin gavindrouhin@gmail.com Co. Dublin" [ref=e4405]:
+                    - generic [ref=e4406]: Gavin Drouhin
+                    - generic [ref=e4407]: gavindrouhin@gmail.com
+                    - generic [ref=e4408]:
+                      - img [ref=e4409]
+                      - text: Co. Dublin
+                  - cell "Assessor" [ref=e4412]
+                  - cell "09/03/2026" [ref=e4413]
+                  - cell "0 jobs" [ref=e4414]:
+                    - generic [ref=e4415]:
+                      - img [ref=e4416]
+                      - text: 0 jobs
+                  - cell [ref=e4419]:
+                    - generic [ref=e4420]:
+                      - button "Add to Catalogue" [ref=e4421]:
+                        - img [ref=e4422]
+                      - button "View details / Change role" [ref=e4423]:
+                        - img [ref=e4424]
+                      - button "Suspend" [ref=e4427]:
+                        - img [ref=e4428]
+                      - button "Delete user" [ref=e4430]:
+                        - img [ref=e4431]
+                - row "Active 1mo ago ● Mark Kennedy mkberassessor@gmail.com Co. Kildare Assessor 09/03/2026 0 jobs" [ref=e4434] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e4435]:
+                    - generic [ref=e4436]:
+                      - generic [ref=e4437]: Active
+                      - generic [ref=e4439]:
+                        - generic [ref=e4440]:
+                          - img [ref=e4441]
+                          - generic [ref=e4444]: 1mo ago
+                        - generic "Payment status" [ref=e4445]: ●
+                  - cell "Mark Kennedy mkberassessor@gmail.com Co. Kildare" [ref=e4446]:
+                    - generic [ref=e4447]: Mark Kennedy
+                    - generic [ref=e4448]: mkberassessor@gmail.com
+                    - generic [ref=e4449]:
+                      - img [ref=e4450]
+                      - text: Co. Kildare
+                  - cell "Assessor" [ref=e4453]
+                  - cell "09/03/2026" [ref=e4454]
+                  - cell "0 jobs" [ref=e4455]:
+                    - generic [ref=e4456]:
+                      - img [ref=e4457]
+                      - text: 0 jobs
+                  - cell [ref=e4460]:
+                    - generic [ref=e4461]:
+                      - button "Add to Catalogue" [ref=e4462]:
+                        - img [ref=e4463]
+                      - button "View details / Change role" [ref=e4464]:
+                        - img [ref=e4465]
+                      - button "Suspend" [ref=e4468]:
+                        - img [ref=e4469]
+                      - button "Delete user" [ref=e4471]:
+                        - img [ref=e4472]
+                - row "Active 25d ago ● Muhammad Taha Rafique ber_assessor@hotmail.com Co. Kildare Assessor 09/03/2026 0 jobs" [ref=e4475] [cursor=pointer]:
+                  - cell "Active 25d ago ●" [ref=e4476]:
+                    - generic [ref=e4477]:
+                      - generic [ref=e4478]: Active
+                      - generic [ref=e4480]:
+                        - generic [ref=e4481]:
+                          - img [ref=e4482]
+                          - generic [ref=e4485]: 25d ago
+                        - generic "Payment status" [ref=e4486]: ●
+                  - cell "Muhammad Taha Rafique ber_assessor@hotmail.com Co. Kildare" [ref=e4487]:
+                    - generic [ref=e4488]: Muhammad Taha Rafique
+                    - generic [ref=e4489]: ber_assessor@hotmail.com
+                    - generic [ref=e4490]:
+                      - img [ref=e4491]
+                      - text: Co. Kildare
+                  - cell "Assessor" [ref=e4494]
+                  - cell "09/03/2026" [ref=e4495]
+                  - cell "0 jobs" [ref=e4496]:
+                    - generic [ref=e4497]:
+                      - img [ref=e4498]
+                      - text: 0 jobs
+                  - cell [ref=e4501]:
+                    - generic [ref=e4502]:
+                      - button "Add to Catalogue" [ref=e4503]:
+                        - img [ref=e4504]
+                      - button "View details / Change role" [ref=e4505]:
+                        - img [ref=e4506]
+                      - button "Suspend" [ref=e4509]:
+                        - img [ref=e4510]
+                      - button "Delete user" [ref=e4512]:
+                        - img [ref=e4513]
+                - row "Active 1d ago ● Anthony Casey anthonycasey654@gmail.com Co. Carlow Assessor 09/03/2026 0 jobs" [ref=e4516] [cursor=pointer]:
+                  - cell "Active 1d ago ●" [ref=e4517]:
+                    - generic [ref=e4518]:
+                      - generic [ref=e4519]: Active
+                      - generic [ref=e4521]:
+                        - generic [ref=e4522]:
+                          - img [ref=e4523]
+                          - generic [ref=e4526]: 1d ago
+                        - generic "Payment status" [ref=e4527]: ●
+                  - cell "Anthony Casey anthonycasey654@gmail.com Co. Carlow" [ref=e4528]:
+                    - generic [ref=e4529]: Anthony Casey
+                    - generic [ref=e4530]: anthonycasey654@gmail.com
+                    - generic [ref=e4531]:
+                      - img [ref=e4532]
+                      - text: Co. Carlow
+                  - cell "Assessor" [ref=e4535]
+                  - cell "09/03/2026" [ref=e4536]
+                  - cell "0 jobs" [ref=e4537]:
+                    - generic [ref=e4538]:
+                      - img [ref=e4539]
+                      - text: 0 jobs
+                  - cell [ref=e4542]:
+                    - generic [ref=e4543]:
+                      - button "Add to Catalogue" [ref=e4544]:
+                        - img [ref=e4545]
+                      - button "View details / Change role" [ref=e4546]:
+                        - img [ref=e4547]
+                      - button "Suspend" [ref=e4550]:
+                        - img [ref=e4551]
+                      - button "Delete user" [ref=e4553]:
+                        - img [ref=e4554]
+                - row "Active 23d ago ● Pete Davey enquiries@ber-certificate.ie Co. Dublin Assessor 09/03/2026 0 jobs" [ref=e4557] [cursor=pointer]:
+                  - cell "Active 23d ago ●" [ref=e4558]:
+                    - generic [ref=e4559]:
+                      - generic [ref=e4560]: Active
+                      - generic [ref=e4562]:
+                        - generic [ref=e4563]:
+                          - img [ref=e4564]
+                          - generic [ref=e4567]: 23d ago
+                        - generic "Payment status" [ref=e4568]: ●
+                  - cell "Pete Davey enquiries@ber-certificate.ie Co. Dublin" [ref=e4569]:
+                    - generic [ref=e4570]: Pete Davey
+                    - generic [ref=e4571]: enquiries@ber-certificate.ie
+                    - generic [ref=e4572]:
+                      - img [ref=e4573]
+                      - text: Co. Dublin
+                  - cell "Assessor" [ref=e4576]
+                  - cell "09/03/2026" [ref=e4577]
+                  - cell "0 jobs" [ref=e4578]:
+                    - generic [ref=e4579]:
+                      - img [ref=e4580]
+                      - text: 0 jobs
+                  - cell [ref=e4583]:
+                    - generic [ref=e4584]:
+                      - button "Add to Catalogue" [ref=e4585]:
+                        - img [ref=e4586]
+                      - button "View details / Change role" [ref=e4587]:
+                        - img [ref=e4588]
+                      - button "Suspend" [ref=e4591]:
+                        - img [ref=e4592]
+                      - button "Delete user" [ref=e4594]:
+                        - img [ref=e4595]
+                - row "Active 1mo ago ● deawedas@gmail.com deawedas@gmail.com Co. Longford Assessor 06/03/2026 0 jobs" [ref=e4598] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e4599]:
+                    - generic [ref=e4600]:
+                      - generic [ref=e4601]: Active
+                      - generic [ref=e4603]:
+                        - generic [ref=e4604]:
+                          - img [ref=e4605]
+                          - generic [ref=e4608]: 1mo ago
+                        - generic "Payment status" [ref=e4609]: ●
+                  - cell "deawedas@gmail.com deawedas@gmail.com Co. Longford" [ref=e4610]:
+                    - generic [ref=e4611]: deawedas@gmail.com
+                    - generic [ref=e4612]: deawedas@gmail.com
+                    - generic [ref=e4613]:
+                      - img [ref=e4614]
+                      - text: Co. Longford
+                  - cell "Assessor" [ref=e4617]
+                  - cell "06/03/2026" [ref=e4618]
+                  - cell "0 jobs" [ref=e4619]:
+                    - generic [ref=e4620]:
+                      - img [ref=e4621]
+                      - text: 0 jobs
+                  - cell [ref=e4624]:
+                    - generic [ref=e4625]:
+                      - button "Add to Catalogue" [ref=e4626]:
+                        - img [ref=e4627]
+                      - button "View details / Change role" [ref=e4628]:
+                        - img [ref=e4629]
+                      - button "Suspend" [ref=e4632]:
+                        - img [ref=e4633]
+                      - button "Delete user" [ref=e4635]:
+                        - img [ref=e4636]
+                - row "Active 25d ago ● Aleksandra Dutczak adberassessor@gmail.com Co. Kildare Assessor 05/03/2026 0 jobs" [ref=e4639] [cursor=pointer]:
+                  - cell "Active 25d ago ●" [ref=e4640]:
+                    - generic [ref=e4641]:
+                      - generic [ref=e4642]: Active
+                      - generic [ref=e4644]:
+                        - generic [ref=e4645]:
+                          - img [ref=e4646]
+                          - generic [ref=e4649]: 25d ago
+                        - generic "Payment status" [ref=e4650]: ●
+                  - cell "Aleksandra Dutczak adberassessor@gmail.com Co. Kildare" [ref=e4651]:
+                    - generic [ref=e4652]: Aleksandra Dutczak
+                    - generic [ref=e4653]: adberassessor@gmail.com
+                    - generic [ref=e4654]:
+                      - img [ref=e4655]
+                      - text: Co. Kildare
+                  - cell "Assessor" [ref=e4658]
+                  - cell "05/03/2026" [ref=e4659]
+                  - cell "0 jobs" [ref=e4660]:
+                    - generic [ref=e4661]:
+                      - img [ref=e4662]
+                      - text: 0 jobs
+                  - cell [ref=e4665]:
+                    - generic [ref=e4666]:
+                      - button "Add to Catalogue" [ref=e4667]:
+                        - img [ref=e4668]
+                      - button "View details / Change role" [ref=e4669]:
+                        - img [ref=e4670]
+                      - button "Suspend" [ref=e4673]:
+                        - img [ref=e4674]
+                      - button "Delete user" [ref=e4676]:
+                        - img [ref=e4677]
+                - row "Active 23d ago ● Donal Walsh donalwalsh444@gmail.com Co. Dublin Assessor 03/03/2026 0 jobs" [ref=e4680] [cursor=pointer]:
+                  - cell "Active 23d ago ●" [ref=e4681]:
+                    - generic [ref=e4682]:
+                      - generic [ref=e4683]: Active
+                      - generic [ref=e4685]:
+                        - generic [ref=e4686]:
+                          - img [ref=e4687]
+                          - generic [ref=e4690]: 23d ago
+                        - generic "Payment status" [ref=e4691]: ●
+                  - cell "Donal Walsh donalwalsh444@gmail.com Co. Dublin" [ref=e4692]:
+                    - generic [ref=e4693]: Donal Walsh
+                    - generic [ref=e4694]: donalwalsh444@gmail.com
+                    - generic [ref=e4695]:
+                      - img [ref=e4696]
+                      - text: Co. Dublin
+                  - cell "Assessor" [ref=e4699]
+                  - cell "03/03/2026" [ref=e4700]
+                  - cell "0 jobs" [ref=e4701]:
+                    - generic [ref=e4702]:
+                      - img [ref=e4703]
+                      - text: 0 jobs
+                  - cell [ref=e4706]:
+                    - generic [ref=e4707]:
+                      - button "Add to Catalogue" [ref=e4708]:
+                        - img [ref=e4709]
+                      - button "View details / Change role" [ref=e4710]:
+                        - img [ref=e4711]
+                      - button "Suspend" [ref=e4714]:
+                        - img [ref=e4715]
+                      - button "Delete user" [ref=e4717]:
+                        - img [ref=e4718]
+                - row "Active 23d ago ● Martin Lynch lyncharchitect@gmail.com Co. Dublin Assessor 03/03/2026 0 jobs" [ref=e4721] [cursor=pointer]:
+                  - cell "Active 23d ago ●" [ref=e4722]:
+                    - generic [ref=e4723]:
+                      - generic [ref=e4724]: Active
+                      - generic [ref=e4726]:
+                        - generic [ref=e4727]:
+                          - img [ref=e4728]
+                          - generic [ref=e4731]: 23d ago
+                        - generic "Payment status" [ref=e4732]: ●
+                  - cell "Martin Lynch lyncharchitect@gmail.com Co. Dublin" [ref=e4733]:
+                    - generic [ref=e4734]: Martin Lynch
+                    - generic [ref=e4735]: lyncharchitect@gmail.com
+                    - generic [ref=e4736]:
+                      - img [ref=e4737]
+                      - text: Co. Dublin
+                  - cell "Assessor" [ref=e4740]
+                  - cell "03/03/2026" [ref=e4741]
+                  - cell "0 jobs" [ref=e4742]:
+                    - generic [ref=e4743]:
+                      - img [ref=e4744]
+                      - text: 0 jobs
+                  - cell [ref=e4747]:
+                    - generic [ref=e4748]:
+                      - button "Add to Catalogue" [ref=e4749]:
+                        - img [ref=e4750]
+                      - button "View details / Change role" [ref=e4751]:
+                        - img [ref=e4752]
+                      - button "Suspend" [ref=e4755]:
+                        - img [ref=e4756]
+                      - button "Delete user" [ref=e4758]:
+                        - img [ref=e4759]
+                - row "Active 1mo ago ● Sheamus O'Grady sheamusogl15@gmail.com Co. Dublin Assessor 03/03/2026 0 jobs" [ref=e4762] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e4763]:
+                    - generic [ref=e4764]:
+                      - generic [ref=e4765]: Active
+                      - generic [ref=e4767]:
+                        - generic [ref=e4768]:
+                          - img [ref=e4769]
+                          - generic [ref=e4772]: 1mo ago
+                        - generic "Payment status" [ref=e4773]: ●
+                  - cell "Sheamus O'Grady sheamusogl15@gmail.com Co. Dublin" [ref=e4774]:
+                    - generic [ref=e4775]: Sheamus O'Grady
+                    - generic [ref=e4776]: sheamusogl15@gmail.com
+                    - generic [ref=e4777]:
+                      - img [ref=e4778]
+                      - text: Co. Dublin
+                  - cell "Assessor" [ref=e4781]
+                  - cell "03/03/2026" [ref=e4782]
+                  - cell "0 jobs" [ref=e4783]:
+                    - generic [ref=e4784]:
+                      - img [ref=e4785]
+                      - text: 0 jobs
+                  - cell [ref=e4788]:
+                    - generic [ref=e4789]:
+                      - button "Add to Catalogue" [ref=e4790]:
+                        - img [ref=e4791]
+                      - button "View details / Change role" [ref=e4792]:
+                        - img [ref=e4793]
+                      - button "Suspend" [ref=e4796]:
+                        - img [ref=e4797]
+                      - button "Delete user" [ref=e4799]:
+                        - img [ref=e4800]
+                - row "Active 1mo ago ● DR Solar and Electrical Services Ltd info@drsolarandelectrical.ie business 24/02/2026 0 requests" [ref=e4803] [cursor=pointer]:
+                  - cell "Active 1mo ago ●" [ref=e4804]:
+                    - generic [ref=e4805]:
+                      - generic [ref=e4806]: Active
+                      - generic [ref=e4808]:
+                        - generic [ref=e4809]:
+                          - img [ref=e4810]
+                          - generic [ref=e4813]: 1mo ago
+                        - generic "Payment status" [ref=e4814]: ●
+                  - cell "DR Solar and Electrical Services Ltd info@drsolarandelectrical.ie" [ref=e4815]:
+                    - generic [ref=e4816]: DR Solar and Electrical Services Ltd
+                    - generic [ref=e4817]: info@drsolarandelectrical.ie
+                  - cell "business" [ref=e4818]
+                  - cell "24/02/2026" [ref=e4819]
+                  - cell "0 requests" [ref=e4820]:
+                    - generic [ref=e4821]:
+                      - img [ref=e4822]
+                      - text: 0 requests
+                  - cell [ref=e4825]:
+                    - generic [ref=e4826]:
+                      - button "View details / Change role" [ref=e4827]:
+                        - img [ref=e4828]
+                      - button "Suspend" [ref=e4831]:
+                        - img [ref=e4832]
+                      - button "Delete user" [ref=e4834]:
+                        - img [ref=e4835]

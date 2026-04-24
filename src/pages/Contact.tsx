@@ -9,6 +9,7 @@ import {
 import toast from 'react-hot-toast';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
 import SEOHead from '../components/SEOHead';
+import { getTenantFromDomain, getTenantEmail, getTenantDomain } from '../lib/tenant';
 
 const contactSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -37,6 +38,54 @@ const Contact = () => {
     });
 
     const selectedCounty = watch('county');
+    const tenant = getTenantFromDomain();
+    const isSpanish = tenant === 'spain';
+    const tenantEmail = getTenantEmail(tenant);
+    const tenantDomain = getTenantDomain(tenant);
+    const tr = {
+        seoTitle: isSpanish ? 'Contacto' : 'Contact Us',
+        seoDesc: isSpanish ? 'Contacta con Certificado Energético para tus certificados energéticos, calificaciones y mejoras en toda España.' : 'Get in touch with The Berman for BER assessments, energy ratings, and home energy upgrades across Ireland.',
+        badge: isSpanish ? 'Ponte en Contacto' : 'Get In Touch',
+        title1: isSpanish ? '¿En qué podemos' : 'How can we',
+        title2: isSpanish ? 'ayudarte?' : 'help?',
+        subtitle: isSpanish ? '¿Tienes alguna pregunta sobre certificaciones energéticas? Nuestro equipo está aquí para ayudarte.' : 'Have a question about BER assessments? Our team is here to provide the support you need.',
+        ourDetails: isSpanish ? 'Nuestros Datos' : 'Our details',
+        emailUs: isSpanish ? 'Escríbenos' : 'Email Us',
+        website: isSpanish ? 'Sitio Web' : 'Website',
+        sendDetailed: isSpanish ? 'Envíanos un mensaje detallado' : 'Send us a detailed message',
+        fullName: isSpanish ? 'Nombre Completo' : 'Full Name',
+        fullNamePlaceholder: isSpanish ? 'Nombre completo' : 'Full name',
+        phoneNumber: isSpanish ? 'Número de Teléfono' : 'Phone Number',
+        phonePlaceholder: isSpanish ? 'número de teléfono' : 'phone number',
+        emailAddress: isSpanish ? 'Correo Electrónico' : 'Email Address',
+        emailPlaceholder: isSpanish ? 'correo electrónico' : 'email',
+        county: isSpanish ? 'Provincia' : 'County',
+        selectCounty: isSpanish ? 'Seleccionar Provincia' : 'Select County',
+        town: isSpanish ? 'Ciudad / Localidad' : 'Town / City',
+        selectTown: isSpanish ? 'Seleccionar Ciudad' : 'Select Town',
+        selectCountyFirst: isSpanish ? 'Selecciona Provincia Primero' : 'Select County First',
+        propertyType: isSpanish ? 'Tipo de Propiedad' : 'Property Type',
+        selectType: isSpanish ? 'Seleccionar Tipo' : 'Select Type',
+        apartment: isSpanish ? 'Apartamento' : 'Apartment',
+        midTerrace: isSpanish ? 'Casa Adosada (Interior)' : 'Mid-Terrace',
+        endTerrace: isSpanish ? 'Casa Adosada (Esquina)' : 'End-Terrace',
+        semiDetached: isSpanish ? 'Casa Pareada' : 'Semi-Detached',
+        detached: isSpanish ? 'Casa Independiente' : 'Detached',
+        bungalow: isSpanish ? 'Chalet' : 'Bungalow',
+        purposeLabel: isSpanish ? 'Propósito del Certificado' : 'Purpose of BER',
+        selectPurpose: isSpanish ? 'Seleccionar Propósito' : 'Select Purpose',
+        mortgage: isSpanish ? 'Hipoteca/Banco' : 'Mortgage/Bank',
+        selling: isSpanish ? 'Venta' : 'Selling',
+        renting: isSpanish ? 'Alquiler' : 'Renting',
+        grant: isSpanish ? 'Subvención' : 'Govt Grant',
+        other: isSpanish ? 'Otro' : 'Other',
+        message: isSpanish ? 'Mensaje' : 'Message',
+        messagePlaceholder: isSpanish ? 'Cuéntanos más sobre tu solicitud...' : 'Tell us more about your request...',
+        sending: isSpanish ? 'Enviando...' : 'Sending...',
+        sendMessage: isSpanish ? 'Enviar Mensaje' : 'Send Message',
+        toastSuccess: isSpanish ? '¡Mensaje enviado correctamente! Nos pondremos en contacto en breve.' : 'Message sent successfully! We will be in touch shortly.',
+        toastError: isSpanish ? 'Error al enviar el mensaje. Por favor, inténtalo de nuevo.' : 'Failed to send message. Please try again.',
+    };
 
     const onSubmit = async (data: ContactFormData) => {
         if (data.bot_check) {
@@ -66,19 +115,19 @@ const Contact = () => {
                 body: { record: data }
             });
 
-            toast.success('Message sent successfully! We will be in touch shortly.');
+            toast.success(tr.toastSuccess);
             reset();
         } catch (error) {
             console.error('Error:', error);
-            toast.error('Failed to send message. Please try again.');
+            toast.error(tr.toastError);
         }
     };
 
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen">
             <SEOHead
-                title="Contact Us"
-                description="Get in touch with The Berman for BER assessments, energy ratings, and home energy upgrades across Ireland."
+                title={tr.seoTitle}
+                description={tr.seoDesc}
                 canonical="/contact-us"
             />
 
@@ -86,13 +135,13 @@ const Contact = () => {
             <section className="pt-32 pb-8 bg-white">
                 <div className="container mx-auto px-6 text-center max-w-4xl">
                     <span className="inline-block mb-4 px-4 py-1.5 rounded-full bg-green-50 text-[#007F00] text-xs font-black tracking-widest uppercase border border-green-100">
-                        Get In Touch
+                        {tr.badge}
                     </span>
                     <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 leading-tight">
-                        How can we <br className="md:hidden" /> <span className="text-[#007F00]">help?</span>
+                        {tr.title1} <br className="md:hidden" /> <span className="text-[#007F00]">{tr.title2}</span>
                     </h1>
                     <p className="text-base md:text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
-                        Have a question about BER assessments? Our team is here to provide the support you need.
+                        {tr.subtitle}
                     </p>
                 </div>
             </section>
@@ -105,15 +154,15 @@ const Contact = () => {
 
                         {/* UNIFIED CONTACT INFO CARD */}
                         <div className="lg:w-1/3 w-full bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 border border-gray-100 shadow-sm group hover:border-green-100 transition-all h-full">
-                            <h3 className="text-xl font-black text-gray-900 mb-8 uppercase tracking-tight">Our details</h3>
+                            <h3 className="text-xl font-black text-gray-900 mb-8 uppercase tracking-tight">{tr.ourDetails}</h3>
 
                             <div className="space-y-6">
 
                                 <InfoItem
                                     icon={<Mail size={20} />}
-                                    title="Email Us"
-                                    value="hello@theberman.eu"
-                                    href="mailto:hello@theberman.eu"
+                                    title={tr.emailUs}
+                                    value={tenantEmail}
+                                    href={`mailto:${tenantEmail}`}
                                 />
                                 {/* <div className="space-y-3">
                                     <InfoItem
@@ -135,8 +184,8 @@ const Contact = () => {
                                 <div className="pt-6 border-t border-gray-50">
                                     <InfoItem
                                         icon={<Globe size={20} />}
-                                        title="Website"
-                                        value="theberman.eu"
+                                        title={tr.website}
+                                        value={tenantDomain}
                                     />
                                 </div>
                             </div>
@@ -144,41 +193,41 @@ const Contact = () => {
 
                         {/* FORM COLUMN */}
                         <div className="lg:w-2/3 w-full bg-gray-50 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 border border-gray-100 shadow-sm transition-all hover:shadow-md">
-                            <h3 className="text-lg md:text-xl font-black text-gray-900 mb-6 text-center uppercase tracking-tight px-4">Send us a detailed message</h3>
+                            <h3 className="text-lg md:text-xl font-black text-gray-900 mb-6 text-center uppercase tracking-tight px-4">{tr.sendDetailed}</h3>
 
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                                 <div className="grid md:grid-cols-2 gap-4">
                                     <FormInput
-                                        label="Full Name"
+                                        label={tr.fullName}
                                         register={register('name')}
                                         error={errors.name}
-                                        placeholder="Full name"
+                                        placeholder={tr.fullNamePlaceholder}
                                     />
                                     <FormInput
-                                        label="Phone Number"
+                                        label={tr.phoneNumber}
                                         register={register('phone')}
                                         error={errors.phone}
-                                        placeholder="phone number"
+                                        placeholder={tr.phonePlaceholder}
                                     />
                                 </div>
 
                                 <div className="grid md:grid-cols-2 gap-4">
                                     <FormInput
-                                        label="Email Address"
+                                        label={tr.emailAddress}
                                         type="email"
                                         register={register('email')}
                                         error={errors.email}
-                                        placeholder="email"
+                                        placeholder={tr.emailPlaceholder}
                                     />
                                     <div className="space-y-1">
-                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">County</label>
+                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">{tr.county}</label>
                                         <select
                                             {...register('county', {
                                                 onChange: () => setValue('town', '') // Reset town when county changes
                                             })}
                                             className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer ${errors.county ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'}`}
                                         >
-                                            <option value="">Select County</option>
+                                            <option value="">{tr.selectCounty}</option>
                                             {Object.keys(TOWNS_BY_COUNTY).sort().map((county) => (
                                                 <option key={county} value={county}>{county}</option>
                                             ))}
@@ -189,13 +238,13 @@ const Contact = () => {
 
                                 <div className="grid md:grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Town / City</label>
+                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">{tr.town}</label>
                                         <select
                                             {...register('town')}
                                             disabled={!selectedCounty}
                                             className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer ${errors.town ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'} ${!selectedCounty ? 'bg-gray-50 opacity-50 cursor-not-allowed' : ''}`}
                                         >
-                                            <option value="">{selectedCounty ? 'Select Town' : 'Select County First'}</option>
+                                            <option value="">{selectedCounty ? tr.selectTown : tr.selectCountyFirst}</option>
                                             {selectedCounty && TOWNS_BY_COUNTY[selectedCounty]?.map((town) => (
                                                 <option key={town} value={town}>{town}</option>
                                             ))}
@@ -203,46 +252,46 @@ const Contact = () => {
                                         {errors.town && <p className="text-red-500 text-xs font-bold mt-1 ml-1">{errors.town.message}</p>}
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Property Type</label>
+                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">{tr.propertyType}</label>
                                         <select
                                             {...register('property_type')}
                                             className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer ${errors.property_type ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'}`}
                                         >
-                                            <option value="">Select Type</option>
-                                            <option value="Apartment">Apartment</option>
-                                            <option value="Mid-Terrace">Mid-Terrace</option>
-                                            <option value="End-Terrace">End-Terrace</option>
-                                            <option value="Semi-Detached">Semi-Detached</option>
-                                            <option value="Detached">Detached</option>
-                                            <option value="Bungalow">Bungalow</option>
+                                            <option value="">{tr.selectType}</option>
+                                            <option value="Apartment">{tr.apartment}</option>
+                                            <option value="Mid-Terrace">{tr.midTerrace}</option>
+                                            <option value="End-Terrace">{tr.endTerrace}</option>
+                                            <option value="Semi-Detached">{tr.semiDetached}</option>
+                                            <option value="Detached">{tr.detached}</option>
+                                            <option value="Bungalow">{tr.bungalow}</option>
                                         </select>
                                         {errors.property_type && <p className="text-red-500 text-xs font-bold mt-1 ml-1">{errors.property_type.message}</p>}
                                     </div>
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Purpose of BER</label>
+                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">{tr.purposeLabel}</label>
                                     <select
                                         {...register('purpose')}
                                         className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer ${errors.purpose ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'}`}
                                     >
-                                        <option value="">Select Purpose</option>
-                                        <option value="Mortgage/Bank">Mortgage/Bank</option>
-                                        <option value="Selling">Selling</option>
-                                        <option value="Renting">Renting</option>
-                                        <option value="Govt Grant">Govt Grant</option>
-                                        <option value="Other">Other</option>
+                                        <option value="">{tr.selectPurpose}</option>
+                                        <option value="Mortgage/Bank">{tr.mortgage}</option>
+                                        <option value="Selling">{tr.selling}</option>
+                                        <option value="Renting">{tr.renting}</option>
+                                        <option value="Govt Grant">{tr.grant}</option>
+                                        <option value="Other">{tr.other}</option>
                                     </select>
                                     {errors.purpose && <p className="text-red-500 text-xs font-bold mt-1 ml-1">{errors.purpose.message}</p>}
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Message</label>
+                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">{tr.message}</label>
                                     <textarea
                                         {...register('message')}
                                         rows={3}
                                         className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all resize-none ${errors.message ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'}`}
-                                        placeholder="Tell us more about your request..."
+                                        placeholder={tr.messagePlaceholder}
                                     ></textarea>
                                     {errors.message && <p className="text-red-500 text-xs font-bold mt-1 ml-1">{errors.message.message}</p>}
                                 </div>
@@ -260,12 +309,12 @@ const Contact = () => {
                                     {isSubmitting ? (
                                         <>
                                             <Loader2 className="animate-spin" size={20} />
-                                            Sending...
+                                            {tr.sending}
                                         </>
                                     ) : (
                                         <>
                                             <Send size={20} />
-                                            Send Message
+                                            {tr.sendMessage}
                                         </>
                                     )}
                                 </button>

@@ -7,6 +7,7 @@ import SEOHead from '../components/SEOHead';
 import ArticleSocialShare from '../components/ArticleSocialShare';
 import ArticleCTABanner from '../components/ArticleCTABanner';
 import ArticleNewsletter from '../components/ArticleNewsletter';
+import { getTenantFromDomain } from '../lib/tenant';
 
 interface NewsArticle {
     id: string;
@@ -30,10 +31,12 @@ const NewsDetail = () => {
             if (!id) return;
             setLoading(true);
             try {
+                const tenant = getTenantFromDomain();
                 const { data, error } = await supabase
                     .from('news_articles')
                     .select('*')
                     .eq('id', id)
+                    .eq('tenant', tenant)
                     .single();
 
                 if (error) throw error;

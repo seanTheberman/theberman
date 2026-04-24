@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { CustomSmtpClient } from "../shared/smtp.ts"
+import { getTenantConfig } from "../shared/tenant.ts"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -14,7 +15,7 @@ serve(async (req: Request) => {
     }
 
     try {
-        const { registrationData, paymentIntentId } = await req.json()
+        const { registrationData, paymentIntentId, tenant = 'ireland' } = await req.json()
         const {
             user_id,
             user_email,
@@ -162,21 +163,21 @@ serve(async (req: Request) => {
         `;
 
         // 4. Send Confirmation Emails
-        const smtpHostname = Deno.env.get('SMTP_HOSTNAME')!;
-        const smtpPort = parseInt(Deno.env.get('SMTP_PORT') || '587');
-        const smtpUsername = Deno.env.get('SMTP_USERNAME')!;
-        const smtpPassword = Deno.env.get('SMTP_PASSWORD')!;
-        const smtpFromEnv = Deno.env.get('SMTP_FROM') || 'hello@theberman.eu';
-        const smtpFrom = smtpFromEnv.includes('<') ? smtpFromEnv : `The Berman.eu <${smtpFromEnv}>`;
+        const config = await getTenantConfig(supabase, tenant);
+        const smtpHostname = config.smtp_hostname;
+        const smtpPort = config.smtp_port;
+        const smtpUsername = config.smtp_username;
+        const smtpPassword = config.smtp_password;
+        const smtpFrom = config.smtp_from;
 
         const client = new CustomSmtpClient();
         try {
             await client.connect(smtpHostname, smtpPort);
             await client.authenticate(smtpUsername, smtpPassword);
 
-            // Fetch admin email from settings or use fallback
+            // Fetch admin email from settings or use tenant fallback
             const { data: settings } = await supabase.from('app_settings').select('support_email').maybeSingle();
-            const adminEmail = settings?.support_email || 'hello@theberman.eu';
+            const adminEmail = settings?.support_email || config.smtp_username;
 
             // Email 1: To User
             await client.send(

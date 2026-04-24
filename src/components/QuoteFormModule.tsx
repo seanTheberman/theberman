@@ -3,6 +3,8 @@ import { ChevronRight, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from '../hooks/useTranslation';
+import { getTenantFromDomain } from '../lib/tenant';
 import EmailVerification from './EmailVerification';
 import IdentityAuth from './IdentityAuth';
 import JobConfirmation from './JobConfirmation';
@@ -120,6 +122,7 @@ interface QuoteFormModuleProps {
 
 const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
     const { user } = useAuth();
+    const { t, o, isSpanish } = useTranslation();
     const [currentStep, setCurrentStep] = useState(0); // Start at step 0 (Job Type)
     const [sizeUnit, setSizeUnit] = useState<'ft' | 'm'>('m'); // Default to m²
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -165,7 +168,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
     const updateField = (field: keyof FormData, value: string | string[]) => {
         setFormData((prev: FormData) => {
             const newData = { ...prev, [field]: value };
-            if (field === 'county' && typeof value === 'string' && !prev.eircode) {
+            if (field === 'county' && typeof value === 'string' && !prev.eircode && !isSpanish) {
                 newData.eircode = (ROUTING_KEYS[value] || '').replace(/\s/g, '');
             }
             return newData;
@@ -175,7 +178,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
     const updateFieldAndAdvance = (field: keyof FormData, value: string | string[]) => {
         setFormData((prev: FormData) => {
             const newData = { ...prev, [field]: value };
-            if (field === 'county' && typeof value === 'string' && !prev.eircode) {
+            if (field === 'county' && typeof value === 'string' && !prev.eircode && !isSpanish) {
                 newData.eircode = (ROUTING_KEYS[value] || '').replace(/\s/g, '');
             }
             return newData;
@@ -252,7 +255,9 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 case 11: {
                     const key = ROUTING_KEYS[formData.county];
                     const cleanEircode = formData.eircode.replace(/\s/g, '');
-                    const eircodeValid = cleanEircode.length >= 7 && (!key || cleanEircode.startsWith(key));
+                    const eircodeValid = isSpanish
+                        ? cleanEircode.length >= 5
+                        : cleanEircode.length >= 7 && (!key || cleanEircode.startsWith(key));
                     return !!formData.fullName && !!formData.email && !!formData.phone && eircodeValid;
                 }
                 case 12: return true;
@@ -276,7 +281,9 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 case 11: {
                     const key = ROUTING_KEYS[formData.county];
                     const cleanEircode = formData.eircode.replace(/\s/g, '');
-                    const eircodeValid = cleanEircode.length >= 7 && (!key || cleanEircode.startsWith(key));
+                    const eircodeValid = isSpanish
+                        ? cleanEircode.length >= 5
+                        : cleanEircode.length >= 7 && (!key || cleanEircode.startsWith(key));
                     return !!formData.fullName && !!formData.email && !!formData.phone && eircodeValid;
                 }
                 case 12: return true;
@@ -385,9 +392,12 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 };
             }
 
+            const tenant = getTenantFromDomain();
+            const payloadWithTenant = { ...insertPayload, tenant };
+
             const { data, error: dbError } = await supabase
                 .from('assessments')
-                .insert(insertPayload)
+                .insert(payloadWithTenant)
                 .select()
                 .single();
 
@@ -395,6 +405,16 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
 
             const newAssessmentId = data.id;
             setAssessmentId(newAssessmentId);
+
+            // Set status to live immediately and send notifications to contractors
+            const { error: updateError } = await supabase
+                .from('assessments')
+                .update({ status: 'live' })
+                .eq('id', newAssessmentId);
+
+            if (updateError) {
+                console.error('Failed to set assessment to live:', updateError);
+            }
 
             // Send email notifications to contractors
             try {
@@ -405,20 +425,21 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                         county: formData.county,
                         town: formData.town,
                         assessmentId: newAssessmentId,
-                        jobType: formData.jobType
+                        jobType: formData.jobType,
+                        tenant
                     }
                 });
             } catch (emailErr) {
                 console.error('Failed to send job live email:', emailErr);
-                toast.error('Email notification failed but job is live');
+                toast.error(t('email_notify_failed', 'Email notification failed but job is live'));
             }
 
-            toast.success('Quotes requested successfully!');
+            toast.success(t('quotes_requested', 'Quotes requested successfully!'));
             setCurrentStep(14);
 
         } catch (error: any) {
             console.error('Error finalising quote:', error);
-            toast.error(error.message || 'Failed to submit details.');
+            toast.error(error.message || t('submit_failed', 'Failed to submit details.'));
         } finally {
             setIsSubmitting(false);
         }
@@ -457,16 +478,16 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
 
     const renderDateStep = () => (
         <div className="space-y-6">
-            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Your preferred date</h2>
+            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('preferred_date')}</h2>
             <p className="text-gray-500 text-center text-sm md:text-base -mt-4">
-                Not sure yet? Just select <span className="italic font-medium text-gray-700">I'm Flexible.</span>
+                {t('flexible_note', "Not sure yet? Just select")} <span className="italic font-medium text-gray-700">{t('flexible', "I'm Flexible")}.</span>
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 max-w-5xl mx-auto overflow-y-auto max-h-[50vh] p-2 custom-scrollbar">
                 <button
                     onClick={() => updateFieldAndAdvance('preferredDate', 'Flexible')}
                     className={`p-4 rounded-xl border-2 transition-all font-bold text-sm ${formData.preferredDate === 'Flexible' ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white text-gray-600'}`}
                 >
-                    I'm Flexible
+                    {t('flexible', "I'm Flexible")}
                 </button>
                 {generateCalendarDates().map((date) => (
                     <button
@@ -483,7 +504,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
 
     const renderTimeStep = () => (
         <div className="space-y-6">
-            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Your preferred time</h2>
+            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('preferred_time')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-3xl mx-auto">
                 {TIME_SLOTS.map((time) => (
                     <button
@@ -498,7 +519,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
 
     const renderCountyStep = () => (
         <div className="space-y-6">
-            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">County?</h2>
+            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('county')}?</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-w-4xl mx-auto max-h-[60vh] overflow-y-auto p-2 custom-scrollbar">
                 {COUNTIES.map((county) => (
                     <button
@@ -510,13 +531,13 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                     </button>
                 ))}
             </div>
-            <p className="text-center text-gray-400 text-sm mt-4">Scroll to see more counties</p>
+            <p className="text-center text-gray-400 text-sm mt-4">{t('scroll_counties', 'Scroll to see more counties')}</p>
         </div>
     );
 
     const renderTownStep = () => (
         <div className="space-y-6">
-            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Nearest Town / Eircode?</h2>
+            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('town')} / {t('eircode')}?</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-w-4xl mx-auto max-h-[60vh] overflow-y-auto p-2 custom-scrollbar">
                 {(TOWNS_BY_COUNTY[formData.county] || []).map((town) => (
                     <button
@@ -528,21 +549,26 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                     </button>
                 ))}
             </div>
-            <p className="text-center text-gray-400 text-sm mt-4">Scroll to see more towns</p>
+            <p className="text-center text-gray-400 text-sm mt-4">{t('scroll_towns', 'Scroll to see more towns')}</p>
         </div>
     );
 
     const renderContactStep = () => (
         <div className="space-y-6">
-            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center italic">Contact Details</h2>
+            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center italic">{t('contact_details', 'Contact Details')}</h2>
             <div className="max-w-lg mx-auto space-y-4">
-                <input type="text" value={formData.fullName} onChange={(e) => updateField('fullName', e.target.value)} placeholder="Full Name*" className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-green-500" />
-                <input type="email" value={formData.email} onChange={(e) => updateField('email', e.target.value)} placeholder="Email Address*" className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-green-500" />
+                <input type="text" value={formData.fullName} onChange={(e) => updateField('fullName', e.target.value)} placeholder={`${t('full_name')}*`} className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-green-500" />
+                <input type="email" value={formData.email} onChange={(e) => updateField('email', e.target.value)} placeholder={`${t('email_address')}*`} className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-green-500" />
                 <div className="grid grid-cols-2 gap-4">
-                    <input type="tel" value={formData.phone} onChange={(e) => updateField('phone', e.target.value)} placeholder="Mobile Number*" className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-green-500" />
+                    <div className="flex">
+                        <span className="flex items-center px-3 border-2 border-r-0 border-gray-200 rounded-l-xl text-sm font-bold text-gray-500 bg-gray-50 whitespace-nowrap">
+                            {isSpanish ? '+34' : '+353'}
+                        </span>
+                        <input type="tel" value={formData.phone} onChange={(e) => updateField('phone', e.target.value)} placeholder={`${t('phone_number')}*`} className="flex-1 p-4 border-2 border-l-0 border-gray-200 rounded-r-xl focus:border-green-500 focus:outline-none" />
+                    </div>
                     <div className="space-y-1">
-                        <input type="text" value={formData.eircode} onChange={(e) => updateField('eircode', e.target.value.toUpperCase())} placeholder="Eircode*" className={`w-full p-4 border-2 rounded-xl focus:border-green-500 ${formData.eircode && formData.eircode.replace(/\s/g, '').length >= 7 && ROUTING_KEYS[formData.county] && !formData.eircode.replace(/\s/g, '').startsWith(ROUTING_KEYS[formData.county]) ? 'border-red-300 bg-red-50' : 'border-gray-200'}`} />
-                        {formData.county && ROUTING_KEYS[formData.county] && (
+                        <input type="text" value={formData.eircode} onChange={(e) => updateField('eircode', e.target.value.toUpperCase())} placeholder={`${t('eircode')}*`} className={`w-full p-4 border-2 rounded-xl focus:border-green-500 ${!isSpanish && formData.eircode && formData.eircode.replace(/\s/g, '').length >= 7 && ROUTING_KEYS[formData.county] && !formData.eircode.replace(/\s/g, '').startsWith(ROUTING_KEYS[formData.county]) ? 'border-red-300 bg-red-50' : 'border-gray-200'}`} />
+                        {!isSpanish && formData.county && ROUTING_KEYS[formData.county] && (
                             <p className={`text-[10px] font-bold px-1 uppercase tracking-wide ${formData.eircode.replace(/\s/g, '').startsWith(ROUTING_KEYS[formData.county]) ? 'text-green-600' : 'text-amber-600'}`}>
                                 Required: Must start with {ROUTING_KEYS[formData.county]}
                             </p>
@@ -553,7 +579,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                     <textarea
                         value={formData.notes}
                         onChange={(e) => updateField('notes', e.target.value)}
-                        placeholder="Additional notes (optional)"
+                        placeholder={t('notes', 'Additional notes (optional)')}
                         rows={3}
                         className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-green-500 resize-none"
                     />
@@ -569,9 +595,9 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
         if (currentStep === 0) {
             return (
                 <div className="space-y-6">
-                    <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">What type of BER do you need?</h2>
+                    <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('assessment_type')}</h2>
                     <p className="text-gray-500 text-center text-sm md:text-base -mt-4">
-                        Choose the type of property you need assessed.
+                        {t('choose_property_type_desc', 'Choose the type of property you need assessed.')}
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
                         <button
@@ -579,16 +605,16 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                             className={`p-8 rounded-2xl border-2 transition-all text-center group hover:shadow-lg ${formData.jobType === 'domestic' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                         >
                             <div className="text-4xl mb-4"></div>
-                            <h3 className={`text-xl font-bold mb-2 ${formData.jobType === 'domestic' ? 'text-green-700' : 'text-gray-800'}`}>BER (Domestic)</h3>
-                            <p className="text-sm text-gray-500">Houses, apartments, duplexes &amp; other residential properties</p>
+                            <h3 className={`text-xl font-bold mb-2 ${formData.jobType === 'domestic' ? 'text-green-700' : 'text-gray-800'}`}>{t('domestic')} (BER)</h3>
+                            <p className="text-sm text-gray-500">{t('domestic_desc', 'Houses, apartments, duplexes & other residential properties')}</p>
                         </button>
                         <button
                             onClick={() => updateFieldAndAdvance('jobType', 'commercial')}
                             className={`p-8 rounded-2xl border-2 transition-all text-center group hover:shadow-lg ${formData.jobType === 'commercial' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                         >
                             <div className="text-4xl mb-4"></div>
-                            <h3 className={`text-xl font-bold mb-2 ${formData.jobType === 'commercial' ? 'text-green-700' : 'text-gray-800'}`}>Commercial (Non-domestic)</h3>
-                            <p className="text-sm text-gray-500">Offices, retail, warehouses, hospitality &amp; other commercial buildings</p>
+                            <h3 className={`text-xl font-bold mb-2 ${formData.jobType === 'commercial' ? 'text-green-700' : 'text-gray-800'}`}>{t('commercial')} (No-vivienda)</h3>
+                            <p className="text-sm text-gray-500">{t('commercial_desc', 'Offices, retail, warehouses, hospitality & other commercial buildings')}</p>
                         </button>
                     </div>
                 </div>
@@ -603,12 +629,12 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 case 3:
                     return (
                         <div className="space-y-6">
-                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Property type?</h2>
+                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('property_type')}?</h2>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
                                 {PROPERTY_TYPES.map((type) => (
                                     <button key={type} onClick={() => updateFieldAndAdvance('propertyType', type)}
                                         className={`p-4 rounded-lg border-2 transition-all text-center ${formData.propertyType === type ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
-                                    >{type}</button>
+                                    >{o(type)}</button>
                                 ))}
                             </div>
                         </div>
@@ -616,17 +642,17 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 case 4:
                     return (
                         <div className="space-y-6">
-                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Property size?</h2>
+                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('property_size')}?</h2>
                             <div className="flex justify-center mb-6">
                                 <div className="inline-flex p-1 bg-gray-100 rounded-xl">
                                     <button
                                         onClick={() => setSizeUnit('m')}
                                         className={`px-6 py-2 rounded-lg font-bold transition-all ${sizeUnit === 'm' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                                    >Sq. Meters</button>
+                                    >{o('Sq. Meters')}</button>
                                     <button
                                         onClick={() => setSizeUnit('ft')}
                                         className={`px-6 py-2 rounded-lg font-bold transition-all ${sizeUnit === 'ft' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                                    >Sq. Feet</button>
+                                    >{o('Sq. Feet')}</button>
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-2xl mx-auto">
@@ -641,7 +667,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 case 5:
                     return (
                         <div className="space-y-6">
-                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Bedrooms?</h2>
+                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('number_of_bedrooms')}?</h2>
                             <div className="flex justify-center gap-4 flex-wrap max-w-xl mx-auto">
                                 {['1', '2', '3', '4', '5', '6'].map((num) => (
                                     <button key={num} onClick={() => updateFieldAndAdvance('bedrooms', num)}
@@ -654,13 +680,13 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 case 6:
                     return (
                         <div className="space-y-6">
-                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Additional features?</h2>
+                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('additional_features')}?</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-xl mx-auto">
                                 {ADDITIONAL_FEATURES.map((feature) => (
                                     <button key={feature} onClick={() => toggleFeature(feature)}
                                         className={`p-4 rounded-lg border-2 transition-all text-center flex items-center justify-between ${formData.additionalFeatures.includes(feature) ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                                     >
-                                        <span>{feature}</span>
+                                        <span>{o(feature)}</span>
                                         {formData.additionalFeatures.includes(feature) && <Check size={20} className="text-green-500" />}
                                     </button>
                                 ))}
@@ -670,12 +696,12 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 case 7:
                     return (
                         <div className="space-y-6">
-                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Heat pump?</h2>
+                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('heat_pump')}?</h2>
                             <div className="flex justify-center gap-4 flex-wrap max-w-xl mx-auto">
                                 {HEAT_PUMP_OPTIONS.map((option) => (
                                     <button key={option} onClick={() => updateFieldAndAdvance('heatPump', option)}
                                         className={`px-8 py-4 rounded-lg border-2 transition-all ${formData.heatPump === option ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
-                                    >{option}</button>
+                                    >{o(option)}</button>
                                 ))}
                             </div>
                         </div>
@@ -685,12 +711,12 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 case 10:
                     return (
                         <div className="space-y-6">
-                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">BER Purpose?</h2>
+                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('ber_purpose')}?</h2>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
                                 {BER_PURPOSES.map((purpose) => (
                                     <button key={purpose} onClick={() => updateFieldAndAdvance('berPurpose', purpose)}
                                         className={`p-4 rounded-lg border-2 transition-all text-center ${formData.berPurpose === purpose ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
-                                    >{purpose}</button>
+                                    >{o(purpose)}</button>
                                 ))}
                             </div>
                         </div>
@@ -745,13 +771,13 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 case 3:
                     return (
                         <div className="space-y-6">
-                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Building type?</h2>
-                            <p className="text-gray-500 text-center text-sm -mt-4">Select the type of commercial building</p>
+                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('building_type_prompt', 'Building type')}?</h2>
+                            <p className="text-gray-500 text-center text-sm -mt-4">{t('select_building_type', 'Select the type of commercial building')}</p>
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-3xl mx-auto">
                                 {BUILDING_TYPES.map((type) => (
                                     <button key={type} onClick={() => updateFieldAndAdvance('buildingType', type)}
                                         className={`p-5 rounded-xl border-2 transition-all text-center ${formData.buildingType === type ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
-                                    >{type}</button>
+                                    >{o(type)}</button>
                                 ))}
                             </div>
                         </div>
@@ -759,17 +785,17 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 case 4:
                     return (
                         <div className="space-y-6">
-                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Approx. floor area?</h2>
+                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('floor_area_prompt', 'Approx. floor area')}?</h2>
                             <div className="flex justify-center mb-6">
                                 <div className="inline-flex p-1 bg-gray-100 rounded-xl">
                                     <button
                                         onClick={() => setSizeUnit('m')}
                                         className={`px-6 py-2 rounded-lg font-bold transition-all ${sizeUnit === 'm' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                                    >Sq. Meters</button>
+                                    >{o('Sq. Meters')}</button>
                                     <button
                                         onClick={() => setSizeUnit('ft')}
                                         className={`px-6 py-2 rounded-lg font-bold transition-all ${sizeUnit === 'ft' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                                    >Sq. Feet</button>
+                                    >{o('Sq. Feet')}</button>
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-3xl mx-auto">
@@ -784,12 +810,12 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 case 5:
                     return (
                         <div className="space-y-6">
-                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Building complexity?</h2>
+                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('building_complexity_prompt', 'Building complexity')}?</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-xl mx-auto">
                                 {BUILDING_COMPLEXITY_OPTIONS.map((opt) => (
                                     <button key={opt} onClick={() => updateFieldAndAdvance('buildingComplexity', opt)}
                                         className={`p-4 rounded-lg border-2 transition-all text-center ${formData.buildingComplexity === opt ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
-                                    >{opt}</button>
+                                    >{o(opt)}</button>
                                 ))}
                             </div>
                         </div>
@@ -797,14 +823,14 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 case 6:
                     return (
                         <div className="space-y-6">
-                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Existing documentation?</h2>
-                            <p className="text-gray-500 text-center text-sm -mt-4">Select all that apply</p>
+                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('existing_docs_prompt', 'Existing documentation')}?</h2>
+                            <p className="text-gray-500 text-center text-sm -mt-4">{t('select_all_that_apply', 'Select all that apply')}</p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-xl mx-auto">
                                 {EXISTING_DOCS_OPTIONS.map((doc) => (
                                     <button key={doc} onClick={() => toggleExistingDoc(doc)}
                                         className={`p-4 rounded-lg border-2 transition-all text-center flex items-center justify-between ${formData.existingDocs.includes(doc) ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                                     >
-                                        <span>{doc}</span>
+                                        <span>{o(doc)}</span>
                                         {formData.existingDocs.includes(doc) && <Check size={20} className="text-green-500" />}
                                     </button>
                                 ))}
@@ -814,12 +840,12 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 case 7:
                     return (
                         <div className="space-y-6">
-                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Purpose of assessment?</h2>
+                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('purpose_prompt', 'Purpose of assessment')}?</h2>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
                                 {COMMERCIAL_PURPOSES.map((purpose) => (
                                     <button key={purpose} onClick={() => updateFieldAndAdvance('assessmentPurpose', purpose)}
                                         className={`p-4 rounded-lg border-2 transition-all text-center ${formData.assessmentPurpose === purpose ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
-                                    >{purpose}</button>
+                                    >{o(purpose)}</button>
                                 ))}
                             </div>
                         </div>
@@ -827,14 +853,14 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 case 8:
                     return (
                         <div className="space-y-6">
-                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">Heating / Cooling Systems?</h2>
-                            <p className="text-gray-500 text-center text-sm -mt-4">Select all that apply</p>
+                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('heating_cooling_prompt', 'Heating / Cooling Systems')}?</h2>
+                            <p className="text-gray-500 text-center text-sm -mt-4">{t('select_all_that_apply', 'Select all that apply')}</p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-xl mx-auto">
                                 {HEATING_COOLING_OPTIONS.map((system) => (
                                     <button key={system} onClick={() => toggleHeatingCooling(system)}
                                         className={`p-4 rounded-lg border-2 transition-all text-center flex items-center justify-between ${formData.heatingCoolingSystems.includes(system) ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                                     >
-                                        <span>{system}</span>
+                                        <span>{o(system)}</span>
                                         {formData.heatingCoolingSystems.includes(system) && <Check size={20} className="text-green-500" />}
                                     </button>
                                 ))}
@@ -902,14 +928,14 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
     };
 
     const getProgressInfo = () => {
-        if (currentStep === 0) return { label: 'Step 1 of 12', percent: 0 };
+        if (currentStep === 0) return { label: t('step_1_of_12', 'Step 1 of 12'), percent: 0 };
         if (currentStep >= 12) {
-            const authLabel = currentStep === 12 ? 'Verify' : 'Auth';
-            return { label: `Step ${authLabel}`, percent: 100 };
+            const authLabel = currentStep === 12 ? t('verify', 'Verify') : t('auth', 'Auth');
+            return { label: `${t('step', 'Step')} ${authLabel}`, percent: 100 };
         }
-        const stepNum = currentStep + 1; // +1 because step 0 is also shown
+        const stepNum = currentStep + 1;
         return {
-            label: `Step ${stepNum} of ${TOTAL_FORM_STEPS}`,
+            label: `${t('step', 'Step')} ${stepNum} ${t('of', 'of')} ${TOTAL_FORM_STEPS}`,
             percent: Math.round((stepNum / TOTAL_FORM_STEPS) * 100)
         };
     };
@@ -922,7 +948,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 <div className="px-8 pt-8">
                     <div className="flex justify-between text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
                         <span>{progress.label}</span>
-                        <span>{progress.percent}% Complete</span>
+                        <span>{progress.percent}% {t('percent_complete', 'Complete')}</span>
                     </div>
                     <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                         <div className="h-full bg-green-500 transition-all duration-500" style={{ width: `${progress.percent}%` }} />
@@ -930,7 +956,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                     {formData.jobType && currentStep > 0 && currentStep < 12 && (
                         <div className="mt-3 flex justify-center">
                             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isDomestic ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-purple-50 text-purple-600 border border-purple-100'}`}>
-                                {isDomestic ? 'Domestic BER' : 'Commercial BER'}
+                                {isDomestic ? t('domestic_ber_tag', 'Domestic BER') : t('commercial_ber_tag', 'Commercial BER')}
                             </span>
                         </div>
                     )}
@@ -945,12 +971,12 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 <div className="p-8 bg-gray-50 border-t border-gray-100 flex justify-between gap-4">
                     <button onClick={handleBack} disabled={currentStep === 0}
                         className={`px-6 py-4 rounded-xl font-bold transition-all ${currentStep === 0 ? 'text-gray-300' : 'text-gray-500 hover:bg-gray-200'}`}
-                    >Back</button>
+                    >{t('back')}</button>
                     {needsNextButton() && (
                         <button onClick={handleNext} disabled={!canProceed()}
                             className={`px-10 py-4 rounded-xl font-bold transition-all flex items-center gap-2 ${canProceed() ? 'bg-green-500 text-white shadow-lg shadow-green-100 hover:bg-green-600' : 'bg-gray-200 text-gray-400'}`}
                         >
-                            {currentStep === LAST_FORM_STEP ? (isSubmitting ? 'Submitting...' : 'Get Quotes') : 'Next'}
+                            {currentStep === LAST_FORM_STEP ? (isSubmitting ? t('loading') : t('get_quotes', 'Get Quotes')) : t('next')}
                             {currentStep < LAST_FORM_STEP && <ChevronRight size={18} />}
                         </button>
                     )}

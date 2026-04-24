@@ -6,6 +6,7 @@ import SEOHead from '../components/SEOHead';
 import ArticleSocialShare from '../components/ArticleSocialShare';
 import ArticleCTABanner from '../components/ArticleCTABanner';
 import ArticleNewsletter from '../components/ArticleNewsletter';
+import { getTenantFromDomain } from '../lib/tenant';
 
 interface BlogArticle {
     id: string;
@@ -52,11 +53,13 @@ const BlogDetail = () => {
             if (!slug) return;
             setLoading(true);
             try {
+                const tenant = getTenantFromDomain();
                 // Try slug first, then id
                 let { data, error } = await supabase
                     .from('blog_articles')
                     .select('*')
                     .eq('slug', slug)
+                    .eq('tenant', tenant)
                     .single();
 
                 if (error || !data) {
@@ -64,6 +67,7 @@ const BlogDetail = () => {
                         .from('blog_articles')
                         .select('*')
                         .eq('id', slug)
+                        .eq('tenant', tenant)
                         .single();
                     data = result.data;
                     error = result.error;
@@ -78,6 +82,7 @@ const BlogDetail = () => {
                         .from('blog_articles')
                         .select('id, title, excerpt, image_url, category, author, read_time, slug, published_at')
                         .eq('is_live', true)
+                        .eq('tenant', tenant)
                         .eq('category', data.category)
                         .neq('id', data.id)
                         .order('published_at', { ascending: false })
@@ -89,6 +94,7 @@ const BlogDetail = () => {
                         .from('blog_articles')
                         .select('id, title, slug, image_url')
                         .eq('is_live', true)
+                        .eq('tenant', tenant)
                         .lt('published_at', data.published_at)
                         .order('published_at', { ascending: false })
                         .limit(1);
@@ -97,6 +103,7 @@ const BlogDetail = () => {
                         .from('blog_articles')
                         .select('id, title, slug, image_url')
                         .eq('is_live', true)
+                        .eq('tenant', tenant)
                         .gt('published_at', data.published_at)
                         .order('published_at', { ascending: true })
                         .limit(1);

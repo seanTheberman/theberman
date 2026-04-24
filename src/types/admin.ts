@@ -10,6 +10,7 @@ export interface Lead {
     town?: string;
     property_type?: string;
     purpose?: string;
+    tenant?: string;
 }
 
 export interface Profile {
@@ -41,6 +42,8 @@ export interface Profile {
     is_admin_created?: boolean;
     last_login?: string;
     registration_amount?: number;
+    tenant?: string;
+    preferred_towns?: string[];
 }
 
 export interface Quote {
@@ -106,6 +109,7 @@ export interface Assessment {
     job_live_email_sent?: boolean | null;
     job_live_sms_sent?: boolean | null;
     job_live_notified_at?: string | null;
+    tenant?: string;
 }
 
 export interface Sponsor {
@@ -116,6 +120,7 @@ export interface Sponsor {
     image_url: string;
     destination_url: string;
     is_active: boolean;
+    tenant?: string;
 }
 
 export interface Payment {
@@ -131,6 +136,7 @@ export interface Payment {
         full_name: string;
         email: string;
     };
+    tenant?: string;
 }
 
 export interface AppSettings {
@@ -145,6 +151,7 @@ export interface AppSettings {
     bundle_assessor_price: number;
     business_registration_price: number;
     business_subscription_amount: number;
+    tenant?: string;
 }
 
 export interface NewsArticle {
@@ -160,6 +167,7 @@ export interface NewsArticle {
     is_live: boolean;
     show_badge?: boolean;
     read_time: string;
+    tenant?: string;
 }
 
 export interface BlogArticle {
@@ -177,6 +185,7 @@ export interface BlogArticle {
     show_badge?: boolean;
     read_time: string;
     slug?: string;
+    tenant?: string;
 }
 
 export interface FaqItem {
@@ -189,6 +198,7 @@ export interface FaqItem {
     is_active: boolean;
     created_at: string;
     updated_at: string;
+    tenant?: string;
 }
 
 export interface PageContent {
@@ -292,4 +302,5 @@ export interface CatalogueListing {
     };
     additional_addresses?: string[];
     features?: string[];
+    tenant?: string;
 }

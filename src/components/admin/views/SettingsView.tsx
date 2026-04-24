@@ -1,8 +1,156 @@
-import { TrendingUp, Briefcase, Loader2, CreditCard } from 'lucide-react';
+import { TrendingUp, Briefcase, Loader2, CreditCard, KeyRound, Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import type { AppSettings } from '../../../types/admin';
 import { REGISTRATION_PRICES } from '../../../constants/pricing';
 import toast from 'react-hot-toast';
+
+const ChangePasswordSection = () => {
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [showCurrent, setShowCurrent] = useState(false);
+    const [showNew, setShowNew] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!currentPassword) {
+            toast.error('Please enter your current password');
+            return;
+        }
+        if (newPassword.length < 8) {
+            toast.error('New password must be at least 8 characters');
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            toast.error('New passwords do not match');
+            return;
+        }
+        if (newPassword === currentPassword) {
+            toast.error('New password must be different from current password');
+            return;
+        }
+        try {
+            setIsSaving(true);
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user?.email) throw new Error('Unable to verify signed-in admin');
+
+            const { error: verifyError } = await supabase.auth.signInWithPassword({
+                email: user.email,
+                password: currentPassword,
+            });
+            if (verifyError) {
+                toast.error('Current password is incorrect');
+                return;
+            }
+
+            const { error } = await supabase.auth.updateUser({ password: newPassword });
+            if (error) throw error;
+            toast.success('Admin password updated successfully');
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmPassword('');
+        } catch (err: any) {
+            toast.error(err.message || 'Failed to update password');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    return (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
+                <KeyRound size={20} className="text-[#007F00]" />
+                Change Admin Password
+            </h3>
+            <p className="text-xs text-gray-500 mb-4">Enter your current password to confirm it's you, then set a new password.</p>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Current Password</label>
+                    <div className="relative">
+                        <input
+                            type={showCurrent ? 'text' : 'password'}
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                            required
+                            autoComplete="current-password"
+                            placeholder="Enter current password"
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 text-sm focus:ring-2 focus:ring-[#007F00] focus:border-[#007F00]"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowCurrent((v) => !v)}
+                            className="absolute inset-y-0 right-0 px-3 text-gray-500 hover:text-gray-700"
+                            aria-label={showCurrent ? 'Hide password' : 'Show password'}
+                        >
+                            {showCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">New Password</label>
+                        <div className="relative">
+                            <input
+                                type={showNew ? 'text' : 'password'}
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                minLength={8}
+                                required
+                                autoComplete="new-password"
+                                placeholder="At least 8 characters"
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 text-sm focus:ring-2 focus:ring-[#007F00] focus:border-[#007F00]"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowNew((v) => !v)}
+                                className="absolute inset-y-0 right-0 px-3 text-gray-500 hover:text-gray-700"
+                                aria-label={showNew ? 'Hide password' : 'Show password'}
+                            >
+                                {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Confirm New Password</label>
+                        <div className="relative">
+                            <input
+                                type={showConfirm ? 'text' : 'password'}
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                minLength={8}
+                                required
+                                autoComplete="new-password"
+                                placeholder="Re-enter new password"
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 text-sm focus:ring-2 focus:ring-[#007F00] focus:border-[#007F00]"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirm((v) => !v)}
+                                className="absolute inset-y-0 right-0 px-3 text-gray-500 hover:text-gray-700"
+                                aria-label={showConfirm ? 'Hide password' : 'Show password'}
+                            >
+                                {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex justify-end">
+                    <button
+                        type="submit"
+                        disabled={isSaving || !currentPassword || !newPassword || !confirmPassword}
+                        className="bg-[#007F00] text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                        {isSaving ? <Loader2 className="animate-spin" size={18} /> : <KeyRound size={18} />}
+                        {isSaving ? 'Updating...' : 'Update Password'}
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
+};
 
 interface PromoSettings {
     id: number;
@@ -276,5 +424,8 @@ export const SettingsView = ({
                 </div>
             </form>
         </div>
+
+        {/* Change Admin Password */}
+        <ChangePasswordSection />
     </div>
 );

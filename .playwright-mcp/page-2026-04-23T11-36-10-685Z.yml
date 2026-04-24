@@ -1,0 +1,152 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "The Berman Logo" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img "The Berman Logo" [ref=e7]
+      - generic [ref=e8]:
+        - link "Catálogo de Eficiencia Energética" [ref=e9] [cursor=pointer]:
+          - /url: /catalogue
+          - generic [ref=e11]: Catálogo de Eficiencia Energética
+        - button [ref=e12]:
+          - img [ref=e13]
+  - main [ref=e14]:
+    - generic [ref=e15]:
+      - generic [ref=e17]:
+        - generic [ref=e18]: Legal
+        - heading "Política de Cookies." [level=1] [ref=e19]
+        - paragraph [ref=e20]: Usamos cookies para mejorar este sitio web. Si continúas utilizándolo, entendemos que aceptas su uso.
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - generic [ref=e26]:
+            - img [ref=e27]
+            - heading "¿Qué es una Cookie?" [level=2] [ref=e30]
+          - paragraph [ref=e32]: Una cookie es un pequeño fragmento de datos que un sitio web envía y que se almacena en tu ordenador a través de tu navegador mientras navegas por nuestro sitio. Las cookies fueron diseñadas como un mecanismo fiable para que los sitios recuerden información (como los artículos añadidos al carrito en una tienda online) o registren la actividad del usuario (pulsar botones, iniciar sesión, o registrar qué páginas se han visitado). También pueden recordar información introducida previamente en formularios, como nombres, direcciones, contraseñas o datos de pago.
+        - generic [ref=e33]:
+          - generic [ref=e35]:
+            - img [ref=e36]
+            - heading "Cookies que Usamos" [level=2] [ref=e37]
+          - generic [ref=e38]:
+            - paragraph [ref=e39]: "Podemos usar, entre otras, las siguientes cookies en nuestro sitio web:"
+            - list [ref=e40]:
+              - listitem [ref=e41]:
+                - strong [ref=e42]: tawkuuid
+                - text: — aplicación de chat de soporte
+              - listitem [ref=e43]:
+                - strong [ref=e44]: utma / utmz
+                - text: — Google Analytics
+              - listitem [ref=e45]:
+                - strong [ref=e46]: cookies cfclient
+                - text: — cookies de cliente/sesión/servidor de ColdFusion
+              - listitem [ref=e47]:
+                - strong [ref=e48]: adNetwork
+                - text: — seguimiento de redes publicitarias
+              - listitem [ref=e49]:
+                - strong [ref=e50]: Cookies de publicidad y remarketing
+        - generic [ref=e51]:
+          - generic [ref=e53]:
+            - img [ref=e54]
+            - heading "Rechazar" [level=2] [ref=e57]
+          - paragraph [ref=e59]:
+            - text: Si no aceptas nuestro uso de cookies, por favor abandona este sitio web
+            - link "haciendo clic aquí" [ref=e60] [cursor=pointer]:
+              - /url: /
+            - text: .
+  - contentinfo [ref=e61]:
+    - generic [ref=e62]:
+      - generic [ref=e63]:
+        - generic [ref=e64]:
+          - generic [ref=e65]:
+            - img "Certificado Energético" [ref=e66]
+            - generic [ref=e67]: Certificado Energético
+          - paragraph [ref=e68]: Su socio de confianza para certificados energéticos y consultoría energética.
+          - generic [ref=e69]:
+            - link [ref=e70] [cursor=pointer]:
+              - /url: https://www.facebook.com/profile.php?id=61578159843471
+              - img [ref=e71]
+            - link [ref=e73] [cursor=pointer]:
+              - /url: https://www.instagram.com/thebermanireland?igsh=amtidXdjNmZrMWJz&utm_source=qr
+              - img [ref=e74]
+            - link [ref=e77] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/the-berman/posts/?feedView=all
+              - img [ref=e78]
+            - link [ref=e82] [cursor=pointer]:
+              - /url: https://twitter.com
+              - img [ref=e83]
+        - generic [ref=e85]:
+          - heading "Enlaces Rápidos" [level=4] [ref=e86]
+          - list [ref=e87]:
+            - listitem [ref=e88]:
+              - link "Inicio" [ref=e89] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e90]:
+              - link "Sobre Nosotros" [ref=e91] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e92]:
+              - link "Catálogo de Eficiencia Energética" [ref=e93] [cursor=pointer]:
+                - /url: /catalogue
+            - listitem [ref=e94]:
+              - link "Habla con un Asesor Energético" [ref=e95] [cursor=pointer]:
+                - /url: /hire-agent
+            - listitem [ref=e96]:
+              - link "Registro de Negocio" [ref=e97] [cursor=pointer]:
+                - /url: /signup?role=business
+            - listitem [ref=e98]:
+              - link "FAQ" [ref=e99] [cursor=pointer]:
+                - /url: /faq
+        - generic [ref=e100]:
+          - heading "Cuenta" [level=4] [ref=e101]
+          - list [ref=e102]:
+            - listitem [ref=e103]:
+              - link "Reservar Certificadores" [ref=e104] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e105]:
+              - link "Ubicaciones" [ref=e106] [cursor=pointer]:
+                - /url: /locations
+            - listitem [ref=e107]:
+              - link "Nuestras Noticias" [ref=e108] [cursor=pointer]:
+                - /url: /news
+            - listitem [ref=e109]:
+              - link "Blog" [ref=e110] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e111]:
+              - link "Contacto" [ref=e112] [cursor=pointer]:
+                - /url: /contact-us
+            - listitem [ref=e113]:
+              - link "Iniciar Sesión" [ref=e114] [cursor=pointer]:
+                - /url: /login
+            - listitem [ref=e115]:
+              - link "Registrarse" [ref=e116] [cursor=pointer]:
+                - /url: /signup
+            - listitem [ref=e117]:
+              - button "Suscribirse a Noticias" [ref=e118] [cursor=pointer]
+        - generic [ref=e119]:
+          - heading "Legal" [level=4] [ref=e120]
+          - list [ref=e121]:
+            - listitem [ref=e122]:
+              - link "Política de Privacidad" [ref=e123] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e124]:
+              - link "Términos y Condiciones" [ref=e125] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e126]:
+              - link "Política de Cookies" [ref=e127] [cursor=pointer]:
+                - /url: /cookie-policy
+        - generic [ref=e128]:
+          - heading "Contacto" [level=4] [ref=e129]
+          - list [ref=e130]:
+            - listitem [ref=e131]:
+              - img [ref=e132]
+              - link "hola@certificadoenergético.eu" [ref=e135] [cursor=pointer]:
+                - /url: mailto:hola@certificadoenergético.eu
+            - listitem [ref=e136]:
+              - img [ref=e137]
+              - link "certificadoenergético.eu" [ref=e140] [cursor=pointer]:
+                - /url: https://certificadoenergético.eu
+      - generic [ref=e141]:
+        - paragraph [ref=e142]: © 2026 Certificado Energético. Todos los derechos reservados.
+        - generic [ref=e143]:
+          - link "Política de Privacidad" [ref=e144] [cursor=pointer]:
+            - /url: /privacy
+          - link "Términos de Servicio" [ref=e145] [cursor=pointer]:
+            - /url: /terms

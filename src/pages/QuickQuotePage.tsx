@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { ArrowLeft, MapPin, Home, Calendar, Clock, Euro, Mail, Phone, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
@@ -35,11 +35,15 @@ interface QuoteData {
 const QuickQuotePage = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    
+    // Phone pre-filled from SMS link — skip the contact step
+    const phoneFromUrl = searchParams.get('phone') || '';
     
     const [assessment, setAssessment] = useState<Assessment | null>(null);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-    const [currentStep, setCurrentStep] = useState(1); // 1: Quote form, 2: Email/Phone, 3: Results
+    const [currentStep, setCurrentStep] = useState(1); // 1: Quote form, 2: Email/Phone (skipped if phone in URL), 3: Results
     
     const [quoteData, setQuoteData] = useState<QuoteData>({
         price: '',
@@ -50,7 +54,7 @@ const QuickQuotePage = () => {
     
     const [contactInfo, setContactInfo] = useState({
         email: '',
-        phone: ''
+        phone: phoneFromUrl
     });
     
     const [searchResult, setSearchResult] = useState<{
@@ -91,14 +95,50 @@ const QuickQuotePage = () => {
             return;
         }
         
+        // If phone came from the SMS link, skip step 2 and auto-identify by phone
+        if (phoneFromUrl) {
+            setSubmitting(true);
+            try {
+                const { data: contractor, error: searchError } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('role', 'contractor')
+                    .eq('phone', phoneFromUrl)
+                    .maybeSingle();
+
+                if (searchError) throw searchError;
+
+                if (contractor) {
+                    setSearchResult({
+                        found: true,
+                        contractor,
+                        message: `Welcome back, ${contractor.full_name || 'Assessor'}! Your quote has been submitted.`
+                    });
+                    await submitQuote(contractor.id);
+                } else {
+                    setSearchResult({
+                        found: false,
+                        message: 'No account found for this phone number. Please register to submit your quote.'
+                    });
+                }
+            } catch (error: any) {
+                toast.error('Something went wrong. Please try again.');
+                console.error('Error:', error);
+            } finally {
+                setSubmitting(false);
+                setCurrentStep(3);
+            }
+            return;
+        }
+        
         setCurrentStep(2);
     };
 
     const handleContactSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!contactInfo.email || !contactInfo.phone) {
-            toast.error('Please provide both email and phone number');
+        if (!contactInfo.phone) {
+            toast.error('Please provide your phone number');
             return;
         }
         

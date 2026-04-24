@@ -1,0 +1,221 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "The Berman Logo" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img "The Berman Logo" [ref=e7]
+      - generic [ref=e8]:
+        - link "Home Energy Upgrade Catalogue" [ref=e9] [cursor=pointer]:
+          - /url: /catalogue
+          - generic [ref=e11]: Home Energy Upgrade Catalogue
+        - button [ref=e12]:
+          - img [ref=e13]
+  - main [ref=e14]:
+    - generic [ref=e15]:
+      - generic [ref=e17]:
+        - generic [ref=e18]: Our Mission
+        - heading "Precision in every Assessment." [level=1] [ref=e19]:
+          - text: Precision in every
+          - text: Assessment.
+        - paragraph [ref=e20]: Helping homeowners across Ireland understand, improve, and certify their property's energy efficiency since 2015.
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - heading "Our Story" [level=2] [ref=e26]
+          - paragraph [ref=e27]: "The Berman was founded with a singular objective: to bring professional clarity and technical rigor to Ireland's energy rating industry. We recognized that homeowners and businesses weren't just looking for a certificate. They were looking for a roadmap to a more sustainable, cost-effective future."
+          - paragraph [ref=e28]: What began as a specialized team in Dublin has grown into a nationwide network of SEAI-registered experts. Our growth has been fueled by a commitment to accuracy, integrity, and a deep understanding of the Irish building stock. We don't just measure energy performance; we interpret it, providing actionable insights that lead to real-world savings.
+          - paragraph [ref=e29]: "Today, The Berman stands as a benchmark for energy consultancy in Ireland. We have successfully completed over 10,000 assessments, helping families and enterprises navigate the complexities of BER ratings and SEAI grants. Our mission remains unchanged: to empower our clients with the knowledge they need to make informed decisions about their property's energy journey."
+          - paragraph [ref=e30]: As we look toward the future, our focus continues to be on innovation and excellence. We are constantly refining our processes and staying at the forefront of energy technology to ensure our clients receive the highest standard of service. At The Berman, we believe that an energy-efficient home is the foundation of a modern, sustainable Ireland.
+        - generic [ref=e32]:
+          - generic [ref=e33]:
+            - paragraph [ref=e34]: 1k+
+            - paragraph [ref=e35]:
+              - text: Completed
+              - text: BER Assessments
+          - generic [ref=e36]:
+            - paragraph [ref=e37]: 100+
+            - paragraph [ref=e38]:
+              - text: Nationwide
+              - text: Network Assessors
+          - generic [ref=e39]:
+            - paragraph [ref=e40]: SEAI
+            - paragraph [ref=e41]:
+              - text: Fully Registered
+              - text: Energy Experts
+      - generic [ref=e43]:
+        - generic [ref=e44]:
+          - heading "How We Work" [level=2] [ref=e45]
+          - paragraph [ref=e46]: The Berman Principles
+        - generic [ref=e47]:
+          - generic [ref=e48] [cursor=pointer]:
+            - img [ref=e50]
+            - heading "Speed & Accuracy" [level=3] [ref=e52]
+            - paragraph [ref=e53]: We understand your time is valuable. Our assessors provide precise ratings with a focus on fast turnaround.
+          - generic [ref=e54] [cursor=pointer]:
+            - img [ref=e56]
+            - heading "Expert Integrity" [level=3] [ref=e58]
+            - paragraph [ref=e59]: All assessments are handled by fully insured and registered professionals committed to honest reporting.
+          - generic [ref=e60] [cursor=pointer]:
+            - img [ref=e62]
+            - heading "Green Future" [level=3] [ref=e65]
+            - paragraph [ref=e66]: We provide recommendations aimed at long-term energy savings and environmental impact reduction.
+      - generic [ref=e68]:
+        - generic [ref=e69]:
+          - heading "Frequently Asked Questions" [level=2] [ref=e70]
+          - paragraph [ref=e71]: Everything you need to know
+        - generic [ref=e72]:
+          - generic [ref=e73] [cursor=pointer]:
+            - generic [ref=e74]:
+              - heading "What is a BER Certificate?" [level=3] [ref=e75]
+              - img [ref=e77]
+            - paragraph [ref=e81]: A BER (Building Energy Rating) Certificate shows how energy efficient a property is. It rates buildings from A (most efficient) to G (least efficient), similar to appliance energy labels.
+          - generic [ref=e82] [cursor=pointer]:
+            - generic [ref=e83]:
+              - heading "Is a BER Certificate mandatory in Ireland?" [level=3] [ref=e84]
+              - img [ref=e86]
+            - paragraph [ref=e90]: Yes. A BER certificate is legally required when a property is sold, rented, or advertised for sale or rent, with limited exemptions.
+          - generic [ref=e91] [cursor=pointer]:
+            - generic [ref=e92]:
+              - heading "How much does a BER Certificate cost?" [level=3] [ref=e93]
+              - img [ref=e95]
+            - paragraph [ref=e99]: The cost depends on the size and type of the property. Prices vary, which is why comparing quotes from multiple assessors helps you get the best price.
+          - generic [ref=e100] [cursor=pointer]:
+            - generic [ref=e101]:
+              - heading "How long does a BER assessment take?" [level=3] [ref=e102]
+              - img [ref=e104]
+            - paragraph [ref=e108]: The on-site assessment usually takes 1–3 hours, depending on the property size.
+          - generic [ref=e109] [cursor=pointer]:
+            - generic [ref=e110]:
+              - heading "How long is a BER Certificate valid for?" [level=3] [ref=e111]
+              - img [ref=e113]
+            - paragraph [ref=e117]: A BER certificate is valid for 10 years, unless major changes are made to the property that affect energy performance.
+          - generic [ref=e118] [cursor=pointer]:
+            - generic [ref=e119]:
+              - heading "How do I get a BER Certificate?" [level=3] [ref=e120]
+              - img [ref=e122]
+            - paragraph [ref=e126]: You book a SEAI-registered BER assessor, they visit and assess your property, and your certificate is issued and registered with SEAI.
+          - generic [ref=e127] [cursor=pointer]:
+            - generic [ref=e128]:
+              - heading "Can I choose my assessment date and time?" [level=3] [ref=e129]
+              - img [ref=e131]
+            - paragraph [ref=e135]: Yes. You can select a preferred date and time when booking through the platform.
+          - generic [ref=e136] [cursor=pointer]:
+            - generic [ref=e137]:
+              - heading "Are BER assessors registered and trusted?" [level=3] [ref=e138]
+              - img [ref=e140]
+            - paragraph [ref=e144]: Yes. All BER assessments are carried out by SEAI-registered assessors who follow an official code of practice.
+          - generic [ref=e145] [cursor=pointer]:
+            - generic [ref=e146]:
+              - heading "What happens if I get a bad rating?" [level=3] [ref=e147]
+              - img [ref=e149]
+            - paragraph [ref=e153]: A bad rating does not prevent you from selling. It simply informs the buyer. Our advisory report will suggest ways to improve it.
+      - generic [ref=e157]:
+        - heading "Join the Berman Family" [level=2] [ref=e158]:
+          - text: Join the Berman
+          - text: Family
+        - paragraph [ref=e159]: Ready for a professional BER assessment? Our nationwide team is here to help you today.
+        - link "Get My Quote" [ref=e160] [cursor=pointer]:
+          - /url: /contact-us
+          - button "Get My Quote" [ref=e161]:
+            - text: Get My Quote
+            - img [ref=e162]
+  - contentinfo [ref=e164]:
+    - generic [ref=e165]:
+      - generic [ref=e166]:
+        - generic [ref=e167]:
+          - generic [ref=e168]:
+            - img "The Berman" [ref=e169]
+            - generic [ref=e170]: The Berman
+          - paragraph [ref=e171]: Ireland's trusted partner for BER assessments and energy consultancy.
+          - generic [ref=e172]:
+            - link [ref=e173] [cursor=pointer]:
+              - /url: https://www.facebook.com/profile.php?id=61578159843471
+              - img [ref=e174]
+            - link [ref=e176] [cursor=pointer]:
+              - /url: https://www.instagram.com/thebermanireland?igsh=amtidXdjNmZrMWJz&utm_source=qr
+              - img [ref=e177]
+            - link [ref=e180] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/the-berman/posts/?feedView=all
+              - img [ref=e181]
+            - link [ref=e185] [cursor=pointer]:
+              - /url: https://twitter.com
+              - img [ref=e186]
+        - generic [ref=e188]:
+          - heading "Quick Links" [level=4] [ref=e189]
+          - list [ref=e190]:
+            - listitem [ref=e191]:
+              - link "Home" [ref=e192] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e193]:
+              - link "About Us" [ref=e194] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e195]:
+              - link "Energy Upgrade Catalogue" [ref=e196] [cursor=pointer]:
+                - /url: /catalogue
+            - listitem [ref=e197]:
+              - link "Speak to an Energy Advisor" [ref=e198] [cursor=pointer]:
+                - /url: /hire-agent
+            - listitem [ref=e199]:
+              - link "Business Registration" [ref=e200] [cursor=pointer]:
+                - /url: /signup?role=business
+            - listitem [ref=e201]:
+              - link "FAQ" [ref=e202] [cursor=pointer]:
+                - /url: /faq
+        - generic [ref=e203]:
+          - heading "Account" [level=4] [ref=e204]
+          - list [ref=e205]:
+            - listitem [ref=e206]:
+              - link "Book BER Assessors" [ref=e207] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e208]:
+              - link "Locations" [ref=e209] [cursor=pointer]:
+                - /url: /locations
+            - listitem [ref=e210]:
+              - link "Our News" [ref=e211] [cursor=pointer]:
+                - /url: /news
+            - listitem [ref=e212]:
+              - link "Blog" [ref=e213] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e214]:
+              - link "Contact Us" [ref=e215] [cursor=pointer]:
+                - /url: /contact-us
+            - listitem [ref=e216]:
+              - link "Login to Portal" [ref=e217] [cursor=pointer]:
+                - /url: /login
+            - listitem [ref=e218]:
+              - link "Sign Up" [ref=e219] [cursor=pointer]:
+                - /url: /signup
+            - listitem [ref=e220]:
+              - button "Subscribe to News" [ref=e221] [cursor=pointer]
+        - generic [ref=e222]:
+          - heading "Legal" [level=4] [ref=e223]
+          - list [ref=e224]:
+            - listitem [ref=e225]:
+              - link "Privacy Policy" [ref=e226] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e227]:
+              - link "Terms & Conditions" [ref=e228] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e229]:
+              - link "Cookie Policy" [ref=e230] [cursor=pointer]:
+                - /url: /cookie-policy
+            - listitem [ref=e231]:
+              - link "SEAI.ie" [ref=e232] [cursor=pointer]:
+                - /url: https://www.seai.ie
+        - generic [ref=e233]:
+          - heading "Get in Touch" [level=4] [ref=e234]
+          - list [ref=e235]:
+            - listitem [ref=e236]:
+              - img [ref=e237]
+              - link "hello@theberman.eu" [ref=e240] [cursor=pointer]:
+                - /url: mailto:hello@theberman.eu
+            - listitem [ref=e241]:
+              - img [ref=e242]
+              - link "theberman.eu" [ref=e245] [cursor=pointer]:
+                - /url: https://theberman.eu
+      - generic [ref=e246]:
+        - paragraph [ref=e247]: © 2026 The Berman. All rights reserved.
+        - generic [ref=e248]:
+          - link "Privacy Policy" [ref=e249] [cursor=pointer]:
+            - /url: /privacy
+          - link "Terms of Service" [ref=e250] [cursor=pointer]:
+            - /url: /terms

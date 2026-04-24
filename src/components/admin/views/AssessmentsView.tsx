@@ -74,6 +74,7 @@ export const AssessmentsView = React.memo(({
                         <thead>
                             <tr className="border-b border-gray-100 bg-gray-50/80">
                                 <th className="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status</th>
+                                <th className="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Notified</th>
                                 <th className="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Property</th>
                                 <th className="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Client</th>
                                 <th className="px-5 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Assessor</th>
@@ -98,6 +99,32 @@ export const AssessmentsView = React.memo(({
                                         <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${getStatusColor(a.status)}`}>
                                             {a.status.replace(/_/g, ' ')}
                                         </span>
+                                    </td>
+                                    <td className="px-5 py-3">
+                                        {a.job_live_notified_at ? (
+                                            <div className="flex flex-col gap-1">
+                                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700">
+                                                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                                                    Sent
+                                                </span>
+                                                <span className="text-[9px] text-gray-400">
+                                                    {new Date(a.job_live_notified_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                                {(a.job_live_email_sent || a.job_live_sms_sent) && (
+                                                    <span className="text-[8px] text-gray-400">
+                                                        {[
+                                                            a.job_live_email_sent && 'Email',
+                                                            a.job_live_sms_sent && 'SMS'
+                                                        ].filter(Boolean).join(' + ')}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-500">
+                                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"/></svg>
+                                                Pending
+                                            </span>
+                                        )}
                                     </td>
                                     <td className="px-5 py-3">
                                         <div className="font-semibold text-gray-800 text-[13px] leading-tight max-w-[180px] truncate">{a.property_address}</div>

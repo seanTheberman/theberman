@@ -2,6 +2,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { CustomSmtpClient } from "../shared/smtp.ts";
+import { getTenantConfig } from "../shared/tenant.ts";
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -19,6 +20,9 @@ Deno.serve(async (req: Request) => {
         const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
         const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
         const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+        const body = await req.json().catch(() => ({}));
+        const tenant = body.tenant || 'ireland';
 
         // Find all pending quotes older than 5 days
         const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString();
@@ -53,20 +57,20 @@ Deno.serve(async (req: Request) => {
         console.log(`[expire-quotes] Found ${expiredQuotes.length} expired quote(s)`);
 
         // SMTP setup for notifications
-        const smtpHostname = Deno.env.get('SMTP_HOSTNAME');
-        const smtpPortStr = Deno.env.get('SMTP_PORT');
-        const smtpUsername = Deno.env.get('SMTP_USERNAME');
-        const smtpPassword = Deno.env.get('SMTP_PASSWORD');
-        const smtpFromEnv = Deno.env.get('SMTP_FROM') || 'hello@theberman.eu';
-        const smtpFrom = smtpFromEnv.includes('<') ? smtpFromEnv : `The Berman.eu <${smtpFromEnv}>`;
-        const websiteUrl = Deno.env.get('PUBLIC_WEBSITE_URL') || 'https://theberman.eu';
+        const config = await getTenantConfig(supabase, tenant);
+        const smtpHostname = config.smtp_hostname;
+        const smtpPort = config.smtp_port;
+        const smtpUsername = config.smtp_username;
+        const smtpPassword = config.smtp_password;
+        const smtpFrom = config.smtp_from;
+        const websiteUrl = config.website_url;
 
         let smtpClient: CustomSmtpClient | null = null;
 
         if (smtpHostname && smtpUsername && smtpPassword) {
             try {
                 smtpClient = new CustomSmtpClient();
-                await smtpClient.connect(smtpHostname, parseInt(smtpPortStr || '587'));
+                await smtpClient.connect(smtpHostname, smtpPort);
                 await smtpClient.authenticate(smtpUsername, smtpPassword);
             } catch (smtpErr) {
                 console.error('[expire-quotes] SMTP connection failed:', smtpErr);

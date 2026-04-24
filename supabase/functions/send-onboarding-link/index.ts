@@ -1,6 +1,8 @@
 // @ts-nocheck
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { CustomSmtpClient } from "../shared/smtp.ts";
+import { getTenantConfig } from "../shared/tenant.ts";
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -15,21 +17,26 @@ Deno.serve(async (req: Request) => {
     }
 
     try {
-        const { fullName, email, password, onboardingUrl, role, userId, type } = await req.json();
+        const { fullName, email, password, onboardingUrl, role, userId, type, tenant = 'ireland' } = await req.json();
 
         if (!email || !fullName) {
             throw new Error("Missing recipient details");
         }
 
-        const smtpHostname = Deno.env.get('SMTP_HOSTNAME')
-        const smtpPort = parseInt(Deno.env.get('SMTP_PORT') || '587')
-        const smtpUsername = Deno.env.get('SMTP_USERNAME')
-        const smtpPassword = Deno.env.get('SMTP_PASSWORD')
-        const websiteUrl = Deno.env.get('PUBLIC_WEBSITE_URL')?.replace(/\/$/, '') || 'https://theberman.eu';
-        const smtpFrom = `The Berman <${smtpUsername}>`;
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+        const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+        const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+        const config = await getTenantConfig(supabase, tenant);
+        const smtpHostname = config.smtp_hostname;
+        const smtpPort = config.smtp_port;
+        const smtpUsername = config.smtp_username;
+        const smtpPassword = config.smtp_password;
+        const websiteUrl = (config.website_url || 'https://theberman.eu').replace(/\/$/, '');
+        const smtpFrom = config.smtp_from || `${config.display_name} <${smtpUsername}>`;
 
         if (!smtpHostname || !smtpUsername || !smtpPassword) {
-            throw new Error('SMTP credentials missing');
+            throw new Error(`SMTP credentials missing for tenant ${tenant}`);
         }
 
         const client = new CustomSmtpClient()

@@ -2,6 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from '../hooks/useTranslation';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -32,6 +33,7 @@ const signupSchema = z.object({
 type SignUpFormData = z.infer<typeof signupSchema>;
 
 const SignUp = () => {
+    const { t, isSpanish } = useTranslation();
     const { signUp, user, role, loading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -75,28 +77,23 @@ const SignUp = () => {
 
 
     const getHeaderContent = () => {
+        if (isSpanish) {
+            switch (activeRole) {
+                case 'contractor':
+                    return { title: 'Registro de Certificador', subtitle: 'Únete a nuestra red de certificadores energéticos profesionales.', nameLabel: 'Nombre Completo', namePlaceholder: 'Nombre completo' };
+                case 'business':
+                    return { title: 'Registro de Negocio', subtitle: 'Registra tu empresa en nuestro Catálogo de Eficiencia Energética.', nameLabel: 'Nombre Completo del Negocio', namePlaceholder: 'Nombre completo del negocio' };
+                default:
+                    return { title: 'Registro de Propietario', subtitle: 'Regístrate para empezar.', nameLabel: 'Nombre Completo', namePlaceholder: 'Nombre completo' };
+            }
+        }
         switch (activeRole) {
             case 'contractor':
-                return {
-                    title: 'Assessor Registration',
-                    subtitle: 'Join our network of professional BER assessors.',
-                    nameLabel: 'Full Name',
-                    namePlaceholder: 'Full name'
-                };
+                return { title: 'Assessor Registration', subtitle: 'Join our network of professional BER assessors.', nameLabel: 'Full Name', namePlaceholder: 'Full name' };
             case 'business':
-                return {
-                    title: 'Business Registration',
-                    subtitle: 'Register your company in our Home Energy Catalogue.',
-                    nameLabel: 'Full Business Name',
-                    namePlaceholder: 'Full business name'
-                };
+                return { title: 'Business Registration', subtitle: 'Register your company in our Home Energy Catalogue.', nameLabel: 'Full Business Name', namePlaceholder: 'Full business name' };
             default:
-                return {
-                    title: 'Homeowner Registration',
-                    subtitle: 'Sign up to get started.',
-                    nameLabel: 'Full Name',
-                    namePlaceholder: 'Full name'
-                };
+                return { title: 'Homeowner Registration', subtitle: 'Sign up to get started.', nameLabel: 'Full Name', namePlaceholder: 'Full name' };
         }
     };
 
@@ -204,7 +201,7 @@ const SignUp = () => {
                                     : 'border-transparent text-gray-400 hover:text-gray-600'
                                     }`}
                             >
-                                HOMEOWNER
+                                {isSpanish ? 'PROPIETARIO' : 'HOMEOWNER'}
                             </button>
                             <button
                                 type="button"
@@ -214,7 +211,7 @@ const SignUp = () => {
                                     : 'border-transparent text-gray-400 hover:text-gray-600'
                                     }`}
                             >
-                                ASSESSOR
+                                {isSpanish ? 'CERTIFICADOR' : 'ASSESSOR'}
                             </button>
                             <button
                                 type="button"
@@ -224,7 +221,7 @@ const SignUp = () => {
                                     : 'border-transparent text-gray-400 hover:text-gray-600'
                                     }`}
                             >
-                                BUSINESS CATALOGUE
+                                {isSpanish ? 'CATÁLOGO NEGOCIOS' : 'BUSINESS CATALOGUE'}
                             </button>
                         </div>
                     )}
@@ -242,25 +239,30 @@ const SignUp = () => {
                             {errors.fullName && <p className="text-red-500 text-xs mt-1 font-medium ml-1">{errors.fullName.message}</p>}
                         </div>
                         <div className="space-y-1 text-left">
-                            <label className="text-sm font-bold text-gray-700 ml-1">Email</label>
+                            <label className="text-sm font-bold text-gray-700 ml-1">{t('email_address')}</label>
                             <input
                                 {...register('email')}
                                 type="email"
                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                placeholder="email"
+                                placeholder={isSpanish ? 'correo@empresa.com' : 'email'}
                             />
                             {errors.email && <p className="text-red-500 text-xs mt-1 font-medium ml-1">{errors.email.message}</p>}
                         </div>
 
                         {activeRole === 'user' && (
                             <div className="space-y-1 text-left">
-                                <label className="text-sm font-bold text-gray-700 ml-1">Phone Number</label>
-                                <input
-                                    {...register('phone')}
-                                    type="tel"
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                    placeholder="087 123 4567"
-                                />
+                                <label className="text-sm font-bold text-gray-700 ml-1">{t('phone_number')}</label>
+                                <div className="flex">
+                                    <span className="flex items-center px-3 bg-gray-100 border border-r-0 border-gray-200 rounded-l-xl text-sm font-bold text-gray-500 whitespace-nowrap">
+                                        {isSpanish ? '+34' : '+353'}
+                                    </span>
+                                    <input
+                                        {...register('phone')}
+                                        type="tel"
+                                        className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-r-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
+                                        placeholder={isSpanish ? '600 123 456' : '087 123 4567'}
+                                    />
+                                </div>
                                 {errors.phone && <p className="text-red-500 text-xs mt-1 font-medium ml-1">{errors.phone.message}</p>}
                             </div>
                         )}
@@ -268,7 +270,7 @@ const SignUp = () => {
 
                         <div className="grid md:grid-cols-2 gap-4">
                             <div className="space-y-1 text-left">
-                                <label className="text-sm font-bold text-gray-700 ml-1">Password</label>
+                                <label className="text-sm font-bold text-gray-700 ml-1">{t('password')}</label>
                                 <input
                                     {...register('password')}
                                     type="password"
@@ -278,7 +280,7 @@ const SignUp = () => {
                                 {errors.password && <p className="text-red-500 text-xs mt-1 font-medium ml-1">{errors.password.message}</p>}
                             </div>
                             <div className="space-y-1 text-left">
-                                <label className="text-sm font-bold text-gray-700 ml-1">Confirm</label>
+                                <label className="text-sm font-bold text-gray-700 ml-1">{isSpanish ? 'Confirmar' : 'Confirm'}</label>
                                 <input
                                     {...register('confirmPassword')}
                                     type="password"
@@ -297,18 +299,18 @@ const SignUp = () => {
                             {isSubmitting ? (
                                 <>
                                     <Loader2 className="animate-spin" size={20} />
-                                    Creating Account...
+                                    {isSpanish ? 'Creando Cuenta...' : 'Creating Account...'}
                                 </>
                             ) : (
-                                'Sign Up'
+                                t('sign_up')
                             )}
                         </button>
 
                         <div className="text-center mt-6">
                             <p className="text-gray-500 font-medium">
-                                Already have an account?{' '}
+                                {isSpanish ? '¿Ya tienes una cuenta?' : 'Already have an account?'}{' '}
                                 <Link to="/login" className="text-[#007F00] font-black hover:underline">
-                                    Log in
+                                    {isSpanish ? 'Inicia sesión' : 'Log in'}
                                 </Link>
                             </p>
                         </div>

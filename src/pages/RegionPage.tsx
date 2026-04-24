@@ -8,6 +8,7 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { supabase } from '../lib/supabase';
+import { getTenantFromDomain } from '../lib/tenant';
 
 // Fix Leaflet marker icons icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -121,14 +122,15 @@ const RegionPage = () => {
                 regionQuery = supabase.from('catalogue_locations').select('name, latitude, longitude').eq('slug', countySlug).single();
             }
 
+            const currentTenant = getTenantFromDomain();
             const [regionRes, listingsRes, categoriesRes] = await Promise.all([
                 regionQuery || Promise.resolve({ data: null }),
                 supabase.from('catalogue_listings').select(`
                     *,
                     categories:catalogue_listing_categories(catalogue_categories(*)),
                     locations:catalogue_listing_locations(catalogue_locations(*))
-                `).eq('status', 'active'),
-                supabase.from('catalogue_categories').select('*').order('name')
+                `).eq('tenant', currentTenant).eq('status', 'active'),
+                supabase.from('catalogue_categories').select('*').eq('tenant', currentTenant).order('name')
             ]);
 
             if (countySlug && regionRes.data) {
