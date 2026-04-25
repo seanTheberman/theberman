@@ -5,6 +5,7 @@ import {
     RefreshCw, Users
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useTranslation } from '../hooks/useTranslation';
 
 export interface NavItem {
     id: string;
@@ -39,6 +40,7 @@ const DashboardLayout = ({
     roleLabel
 }: DashboardLayoutProps) => {
     const { user, signOut } = useAuth();
+    const { isSpanish } = useTranslation();
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [desktopExpanded, setDesktopExpanded] = useState(true);
@@ -70,10 +72,22 @@ const DashboardLayout = ({
                 {/* Logo */}
                 <div className="h-14 flex items-center justify-between px-4 border-b border-white/10 flex-shrink-0">
                     <Link to="/" className={`block ${desktopExpanded ? 'md:block' : 'md:hidden'} lg:block`}>
-                        <img src="/logo.svg" alt="The Berman" className="h-7 w-auto" />
+                        {isSpanish ? (
+                            <span style={{ fontFamily: "'Brush Script MT', 'Lucida Calligraphy', 'Snell Roundhand', cursive", fontSize: '1.2rem', color: 'white', letterSpacing: '0.5px', lineHeight: 1.2 }}>
+                                Certificado Energético
+                            </span>
+                        ) : (
+                            <img src="/logo.svg" alt="The Berman" className="h-7 w-auto" />
+                        )}
                     </Link>
                     <div className={`flex items-center justify-center ${desktopExpanded ? 'md:hidden' : 'md:flex'} lg:hidden`}>
-                        <img src="/logo.svg" alt="The Berman" className="h-7 w-auto" />
+                        {isSpanish ? (
+                            <span style={{ fontFamily: "'Brush Script MT', 'Lucida Calligraphy', 'Snell Roundhand', cursive", fontSize: '1rem', color: 'white', letterSpacing: '0.5px', lineHeight: 1.2 }}>
+                                Certificado Energético
+                            </span>
+                        ) : (
+                            <img src="/logo.svg" alt="The Berman" className="h-7 w-auto" />
+                        )}
                     </div>
                     {/* Close on mobile */}
                     <button onClick={() => setSidebarOpen(false)} className="md:hidden text-white/40 hover:text-white p-1">

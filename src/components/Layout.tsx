@@ -130,7 +130,13 @@ const Layout = () => {
 
                     {/* Logo */}
                     <Link to="/" onClick={closeMenu}>
-                        <img src="/logo.svg" alt="The Berman Logo" className="h-18 w-auto relative z-10" />
+                        {isSpanish ? (
+                            <span style={{ fontFamily: "'Brush Script MT', 'Lucida Calligraphy', 'Snell Roundhand', cursive", fontSize: '1.75rem', color: 'white', letterSpacing: '0.5px', lineHeight: 1.2 }}>
+                                Certificado Energético
+                            </span>
+                        ) : (
+                            <img src="/logo.svg" alt="The Berman Logo" className="h-18 w-auto relative z-10" />
+                        )}
                     </Link>
 
                     {/* Catalogue-only inline nav (desktop only) */}
@@ -358,8 +364,16 @@ const Layout = () => {
                     <div className="grid md:grid-cols-5 gap-12 mb-12">
                         <div className="col-span-1">
                             <div className="flex items-center gap-2 mb-6">
-                                <img src="/logo.svg" alt={tenantDisplayName} className="h-16" />
-                                <span className="text-xl font-serif font-bold">{tenantDisplayName}</span>
+                                {isSpanish ? (
+                                    <span style={{ fontFamily: "'Brush Script MT', 'Lucida Calligraphy', 'Snell Roundhand', cursive", fontSize: '1.6rem', color: 'white', letterSpacing: '0.5px', lineHeight: 1.2 }}>
+                                        Certificado Energético
+                                    </span>
+                                ) : (
+                                    <>
+                                        <img src="/logo.svg" alt={tenantDisplayName} className="h-16" />
+                                        <span className="text-xl font-serif font-bold">{tenantDisplayName}</span>
+                                    </>
+                                )}
                             </div>
                             <p className="text-gray-400 text-sm leading-relaxed mb-6">
                                 {isSpanish ? 'Su socio de confianza para certificados energéticos y consultoría energética.' : "Ireland's trusted partner for BER assessments and energy consultancy."}
@@ -434,6 +448,13 @@ const Layout = () => {
                                 <li><Link to="/privacy" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{isSpanish ? 'Política de Privacidad' : 'Privacy Policy'}</Link></li>
                                 <li><Link to="/terms" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{isSpanish ? 'Términos y Condiciones' : 'Terms & Conditions'}</Link></li>
                                 <li><Link to="/cookie-policy" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{isSpanish ? 'Política de Cookies' : 'Cookie Policy'}</Link></li>
+                                {isSpanish && (
+                                    <>
+                                        <li><a href="https://www.boe.es/buscar/act.php?id=BOE-A-2013-4394" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">RD 235/2013 (CEE)</a></li>
+                                        <li><a href="https://www.boe.es/buscar/act.php?id=BOE-A-2021-7357" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">Ley 7/2021 Cambio Climático</a></li>
+                                        <li><a href="https://www.miteco.gob.es/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">MITECO</a></li>
+                                    </>
+                                )}
                                 {!isSpanish && <li><a href="https://www.seai.ie" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">SEAI.ie</a></li>}
                             </ul>
                         </div>

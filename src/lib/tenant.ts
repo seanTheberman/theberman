@@ -6,6 +6,12 @@ const DOMAIN_TO_TENANT: Record<string, string> = {
   'www.theberman.eu': 'ireland',
   'certificadoenergético.eu': 'spain',
   'www.certificadoenergético.eu': 'spain',
+  'certificadosenergetico.com': 'spain',
+  'www.certificadosenergetico.com': 'spain',
+  'certificadosenergetico.eu': 'spain',
+  'www.certificadosenergetico.eu': 'spain',
+  'certificadosenergetico.es': 'spain',
+  'www.certificadosenergetico.es': 'spain',
   'localhost': 'ireland', // default for local dev
 };
 
@@ -48,26 +54,37 @@ export function getTenantCurrency(tenant: string): string {
   return map[tenant] || 'EUR';
 }
 
+function getCurrentHostname(): string | null {
+  if (typeof window === 'undefined') return null;
+  return window.location.hostname.replace(/^www\./, '');
+}
+
 export function getTenantWebsiteUrl(tenant: string): string {
-  const map: Record<string, string> = {
-    'ireland': 'https://theberman.eu',
-    'spain': 'https://certificadoenergético.eu',
-  };
-  return map[tenant] || 'https://theberman.eu';
+  if (tenant === 'spain') {
+    const host = getCurrentHostname();
+    if (host && host.includes('certificado')) return `https://${host}`;
+    return 'https://certificadoenergético.eu';
+  }
+  return 'https://theberman.eu';
 }
 
 export function getTenantEmail(tenant: string): string {
-  const map: Record<string, string> = {
-    'ireland': 'hello@theberman.eu',
-    'spain': 'hola@certificadoenergético.eu',
-  };
-  return map[tenant] || 'hello@theberman.eu';
+  if (tenant === 'spain') {
+    const host = getCurrentHostname();
+    if (host && host.includes('certificado')) {
+      const domain = host.replace(/^www\./, '');
+      return `hola@${domain}`;
+    }
+    return 'hola@certificadoenergético.eu';
+  }
+  return 'hello@theberman.eu';
 }
 
 export function getTenantDomain(tenant: string): string {
-  const map: Record<string, string> = {
-    'ireland': 'theberman.eu',
-    'spain': 'certificadoenergético.eu',
-  };
-  return map[tenant] || 'theberman.eu';
+  if (tenant === 'spain') {
+    const host = getCurrentHostname();
+    if (host && host.includes('certificado')) return host.replace(/^www\./, '');
+    return 'certificadoenergético.eu';
+  }
+  return 'theberman.eu';
 }
