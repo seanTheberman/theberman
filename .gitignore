@@ -24,6 +24,9 @@ dist-ssr
 *.sw?
 
 .env
+.env.*
+!.env.example
 db.ts
 
 supabase/.temp/cli-latest
+.vercel
