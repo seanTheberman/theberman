@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 import { type User, type Session, type AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { clearRateLimit } from '../lib/rateLimiter';
-import { getTenantFromDomain } from '../lib/tenant';
+import { getTenantFromDomain, getTenantWebsiteUrl } from '../lib/tenant';
 
 interface AuthContextType {
     user: User | null;
@@ -153,8 +153,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const resetPassword = async (email: string) => {
+        const currentTenant = getTenantFromDomain();
+        const websiteUrl = getTenantWebsiteUrl(currentTenant);
         return await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: window.location.origin + '/update-password',
+            redirectTo: websiteUrl + '/update-password',
         });
     };
 

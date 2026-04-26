@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getTenantConfig } from "../shared/tenant.ts";
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -95,7 +96,14 @@ Deno.serve(async (req: Request) => {
         }
 
         // 3. Generate a password-recovery magic link that redirects to /update-password
-        const websiteUrl = Deno.env.get('PUBLIC_WEBSITE_URL')?.replace(/\/$/, '') || 'https://theberman.eu';
+        // Use tenant config from DB for correct website URL (Ireland vs Spain)
+        let websiteUrl = 'https://theberman.eu';
+        try {
+            const tenantConfig = await getTenantConfig(supabaseAdmin, tenant);
+            websiteUrl = (tenantConfig.website_url || `https://${tenantConfig.domain}`).replace(/\/$/, '');
+        } catch (tenantErr: any) {
+            console.warn('[create-admin-user] tenant config lookup failed, falling back to default:', tenantErr.message);
+        }
         const redirectTo = `${websiteUrl}/update-password`;
 
         let magicLink: string | null = null;
