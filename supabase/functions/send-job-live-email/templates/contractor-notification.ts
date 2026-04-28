@@ -1,8 +1,11 @@
-export const generateContractorEmail = (customerCounty: string, customerTown: string, contractorName: string, promoHtml: string, websiteUrl: string = "https://theberman.eu", jobType?: string, eircode?: string, propertyAddress?: string, assessmentId?: string) => {
+export const generateContractorEmail = (customerCounty: string, customerTown: string, contractorName: string, promoHtml: string, websiteUrl: string = "https://theberman.eu", jobType?: string, eircode?: string, propertyAddress?: string, assessmentId?: string, contractorPhone?: string) => {
     const isCommercial = jobType === 'commercial';
     const jobTitle = isCommercial ? 'Commercial BER Certificate' : 'Domestic BER Certificate';
     const locationStr = `${customerTown}${customerTown && customerCounty ? ', Co. ' : ''}${customerCounty}`;
-    const dashboardUrl = `${websiteUrl}/quote/${assessmentId || ''}`;
+    // Include ?phone so the assessor can submit without logging in — QuickQuotePage
+    // auto-identifies them by phone and attaches the quote to their profile.
+    const phoneParam = contractorPhone ? `?phone=${encodeURIComponent(contractorPhone)}` : '';
+    const dashboardUrl = `${websiteUrl}/quote/${assessmentId || ''}${phoneParam}`;
     const currentYear = new Date().getFullYear();
 
     return `

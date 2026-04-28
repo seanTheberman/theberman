@@ -1087,15 +1087,22 @@ const Admin = () => {
         }
     }, [selectedAssessmentForAssignment, logAudit, fetchAssessments]);
 
-    const handleGoLive = useCallback(async () => {
+    const handleResendNotifications = useCallback(async () => {
         if (!selectedAssessment) return;
         setIsUpdating(true);
         try {
-            // Update assessment status to live
-            const { error: updateError } = await supabase.from('assessments').update({ status: 'live' }).eq('id', selectedAssessment.id);
-            if (updateError) throw updateError;
+            // Ensure assessment is live (no-op if already live)
+            if (selectedAssessment.status !== 'live') {
+                const { error: updateError } = await supabase
+                    .from('assessments')
+                    .update({ status: 'live' })
+                    .eq('id', selectedAssessment.id);
+                if (updateError) throw updateError;
+            }
 
-            // Send email notifications to contractors
+            const alreadyNotified = !!selectedAssessment.job_live_notified_at;
+
+            // Force=true bypasses the idempotency guard so the admin can deliberately resend.
             await supabase.functions.invoke('send-job-live-email', {
                 body: {
                     email: selectedAssessment.contact_email,
@@ -1104,12 +1111,14 @@ const Admin = () => {
                     town: selectedAssessment.town,
                     assessmentId: selectedAssessment.id,
                     jobType: selectedAssessment.job_type || 'domestic',
-                    tenant: selectedTenant
+                    customerPhone: selectedAssessment.contact_phone,
+                    tenant: selectedTenant,
+                    force: alreadyNotified,
                 }
             }).catch(err => console.error('Failed to send job live email:', err));
 
-            await logAudit('go_live', 'assessment', selectedAssessment.id, { status: 'live' });
-            toast.success('Job is now live! Contractors have been notified.');
+            await logAudit(alreadyNotified ? 'resend_notifications' : 'go_live', 'assessment', selectedAssessment.id, { status: 'live' });
+            toast.success(alreadyNotified ? 'Notifications resent to matched assessors.' : 'Job is now live! Assessors have been notified.');
             setShowAssessmentDetailModal(false);
             fetchAssessments();
         } catch (error: any) {
@@ -1117,7 +1126,7 @@ const Admin = () => {
         } finally {
             setIsUpdating(false);
         }
-    }, [selectedAssessment, logAudit, fetchAssessments]);
+    }, [selectedAssessment, logAudit, fetchAssessments, selectedTenant]);
 
     const handleGenerateQuote = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
@@ -2036,7 +2045,7 @@ const Admin = () => {
                     assessment={selectedAssessment}
                     onClose={() => setShowAssessmentDetailModal(false)}
                     onGenerateQuote={() => { setShowQuoteModal(true); setShowAssessmentDetailModal(false); }}
-                    onGoLive={handleGoLive}
+                    onResendNotifications={handleResendNotifications}
                     onAssignAssessor={() => { setSelectedAssessmentForAssignment(selectedAssessment); setShowAssignModal(true); setShowAssessmentDetailModal(false); }}
                     onSchedule={() => { setShowScheduleModal(true); setShowAssessmentDetailModal(false); }}
                     onComplete={() => { setShowCompleteModal(true); setShowAssessmentDetailModal(false); }}

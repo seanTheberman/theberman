@@ -20,7 +20,7 @@ Deno.serve(async (req: Request) => {
     const responseHeaders = { ...corsHeaders, 'Content-Type': 'application/json' };
 
     try {
-        const { email, customerName, county, town, assessmentId, jobType, customerPhone, tenant = 'ireland' } = await req.json();
+        const { email, customerName, county, town, assessmentId, jobType, customerPhone, tenant = 'ireland', force = false } = await req.json();
         const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
         const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
         const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
@@ -33,7 +33,8 @@ Deno.serve(async (req: Request) => {
         // Idempotency guard: only proceed if this assessment has not already been notified.
         // This prevents duplicate emails when the function is invoked twice (e.g. double-click,
         // race between admin Go-Live and a re-trigger, or retries).
-        if (assessmentId) {
+        // When `force` is true (admin resend), bypass the guard entirely.
+        if (assessmentId && !force) {
             const { data: existing, error: fetchErr } = await supabase
                 .from('assessments')
                 .select('id, status, job_live_email_sent, job_live_notified_at')
@@ -249,7 +250,8 @@ Deno.serve(async (req: Request) => {
                             jobType,
                             assessmentDetails?.eircode,
                             assessmentDetails?.property_address,
-                            assessmentId
+                            assessmentId,
+                            contractor.phone
                         );
                         await client.send(smtpFrom, contractor.email, `New ${jobType === 'commercial' ? 'Commercial' : 'Domestic'} BER Job in ${jobLocation}`, contractorHtml);
                         contractorEmailSentCount++;

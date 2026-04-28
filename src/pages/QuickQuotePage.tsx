@@ -95,35 +95,11 @@ const QuickQuotePage = () => {
             return;
         }
         
-        // If phone came from the SMS link, skip step 2 and auto-identify by phone
+        // If phone came from the SMS/email link, skip step 2 and submit via RPC
         if (phoneFromUrl) {
             setSubmitting(true);
             try {
-                const { data: contractor, error: searchError } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('role', 'contractor')
-                    .eq('phone', phoneFromUrl)
-                    .maybeSingle();
-
-                if (searchError) throw searchError;
-
-                if (contractor) {
-                    setSearchResult({
-                        found: true,
-                        contractor,
-                        message: `Welcome back, ${contractor.full_name || 'Assessor'}! Your quote has been submitted.`
-                    });
-                    await submitQuote(contractor.id);
-                } else {
-                    setSearchResult({
-                        found: false,
-                        message: 'No account found for this phone number. Please register to submit your quote.'
-                    });
-                }
-            } catch (error: any) {
-                toast.error('Something went wrong. Please try again.');
-                console.error('Error:', error);
+                await submitQuoteByPhone(phoneFromUrl);
             } finally {
                 setSubmitting(false);
                 setCurrentStep(3);
@@ -143,65 +119,67 @@ const QuickQuotePage = () => {
         }
         
         setSubmitting(true);
-        
         try {
-            // Search for existing contractor
-            const { data: contractor, error: searchError } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('role', 'contractor')
-                .or(`email.eq.${contactInfo.email.toLowerCase()},phone.eq.${contactInfo.phone}`)
-                .single();
-            
-            if (searchError && searchError.code !== 'PGRST116') {
-                throw searchError;
-            }
-            
-            if (contractor) {
-                // Found existing contractor
-                setSearchResult({
-                    found: true,
-                    contractor: contractor,
-                    message: 'Found your account! We\'ll link this quote to your profile.'
-                });
-                
-                // Submit the quote
-                await submitQuote(contractor.id);
-            } else {
-                // No contractor found
-                setSearchResult({
-                    found: false,
-                    message: 'No account found with this email/phone. Please register to submit your quote.'
-                });
-            }
-        } catch (error: any) {
-            toast.error('Something went wrong. Please try again.');
-            console.error('Error:', error);
+            await submitQuoteByPhone(contactInfo.phone);
         } finally {
             setSubmitting(false);
             setCurrentStep(3);
         }
     };
 
-    const submitQuote = async (contractorId: string) => {
+    // Submits the quote via a SECURITY DEFINER RPC that matches the contractor by
+    // phone server-side. Anonymous-safe and impersonation-safe.
+    const submitQuoteByPhone = async (phone: string) => {
         try {
-            const { error: quoteError } = await supabase
-                .from('quotes')
-                .insert({
-                    assessment_id: id,
-                    created_by: contractorId,
-                    price: parseFloat(quoteData.price),
-                    notes: quoteData.notes,
-                    status: 'pending'
-                });
-            
-            if (quoteError) throw quoteError;
-            
+            const { data, error } = await supabase.rpc('submit_anonymous_quote', {
+                p_assessment_id: id,
+                p_phone: phone,
+                p_price: parseFloat(quoteData.price),
+                p_notes: quoteData.notes || null,
+            });
+
+            if (error) {
+                const msg = (error.message || '').toLowerCase();
+                if (msg.includes('contractor_not_found')) {
+                    setSearchResult({
+                        found: false,
+                        message: 'No assessor account found for this phone number. Please register to submit your quote.'
+                    });
+                    return;
+                }
+                if (msg.includes('already_quoted')) {
+                    setSearchResult({
+                        found: true,
+                        message: 'You have already submitted a quote for this job. Please log in to update it.'
+                    });
+                    return;
+                }
+                if (msg.includes('assessment_not_found')) {
+                    setSearchResult({
+                        found: false,
+                        message: 'This job is no longer available for quoting.'
+                    });
+                    return;
+                }
+                throw error;
+            }
+
+            const row = Array.isArray(data) ? data[0] : data;
+            setSearchResult({
+                found: true,
+                contractor: row ? { id: row.contractor_id, full_name: row.contractor_name } : undefined,
+                message: row?.contractor_name
+                    ? `Welcome back, ${row.contractor_name}! Your quote has been submitted and linked to your account.`
+                    : 'Your quote has been submitted and linked to your account.',
+            });
             toast.success('Quote submitted successfully!');
-        } catch (error: any) {
-            toast.error('Failed to submit quote');
-            console.error('Quote submission error:', error);
-            throw error;
+        } catch (err: any) {
+            console.error('Quote submission error:', err);
+            toast.error('Failed to submit quote. Please try again.');
+            setSearchResult({
+                found: false,
+                message: 'Something went wrong submitting your quote. Please try again or log in.'
+            });
         }
     };
 

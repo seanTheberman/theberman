@@ -194,7 +194,7 @@ const UserDashboard = () => {
         setSubmittingAssessmentId(id);
         try {
             // 1. Fetch assessment details for notification
-            const { error: fetchError } = await supabase
+            const { data: assessment, error: fetchError } = await supabase
                 .from('assessments')
                 .select('*, profiles(full_name, email)')
                 .eq('id', id)
@@ -210,21 +210,24 @@ const UserDashboard = () => {
 
             if (updateError) throw updateError;
 
-            // EMAIL TEMPORARILY DISABLED
-            // try {
-            //     await supabase.functions.invoke('send-job-live-email', {
-            //         body: {
-            //             email: assessment.profiles?.email || assessment.contact_email,
-            //             customerName: assessment.profiles?.full_name || assessment.contact_name,
-            //             county: assessment.county,
-            //             town: assessment.town,
-            //             assessmentId: id,
-            //             jobType: assessment.job_type
-            //         }
-            //     });
-            // } catch (emailErr) {
-            //     console.error('Failed to send job live email:', emailErr);
-            // }
+            // 3. Notify contractors. The edge function is idempotent, so repeat
+            // clicks won't resend duplicate emails.
+            try {
+                await supabase.functions.invoke('send-job-live-email', {
+                    body: {
+                        email: assessment?.profiles?.email || assessment?.contact_email,
+                        customerName: assessment?.profiles?.full_name || assessment?.contact_name,
+                        county: assessment?.county,
+                        town: assessment?.town,
+                        assessmentId: id,
+                        jobType: assessment?.job_type || 'domestic',
+                        customerPhone: assessment?.contact_phone,
+                        tenant: assessment?.tenant || 'ireland',
+                    }
+                });
+            } catch (emailErr) {
+                console.error('Failed to send job live email:', emailErr);
+            }
 
             toast.success(isSpanish ? '¡La certificación está activa y los certificadores han sido notificados!' : 'Assessment is now live and assessors have been notified!');
             fetchAssessments();

@@ -6,7 +6,7 @@ interface Props {
     assessment: Assessment;
     onClose: () => void;
     onGenerateQuote: () => void;
-    onGoLive: () => void;
+    onResendNotifications: () => void;
     onAssignAssessor: () => void;
     onSchedule: () => void;
     onComplete: () => void;
@@ -14,7 +14,7 @@ interface Props {
 }
 
 export const AssessmentDetailModal = ({
-    assessment, onClose, onGenerateQuote, onGoLive, onAssignAssessor, onSchedule, onComplete, onMessage,
+    assessment, onClose, onGenerateQuote, onResendNotifications, onAssignAssessor, onSchedule, onComplete, onMessage,
 }: Props) => (
     <div
         className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
@@ -248,22 +248,23 @@ export const AssessmentDetailModal = ({
                         <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Required Actions</h4>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                             {assessment.status === 'submitted' && (
-                                <>
-                                    <button
-                                        onClick={onGenerateQuote}
-                                        className="bg-[#007F00] text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-sm flex items-center justify-center gap-2"
-                                    >
-                                        <Euro size={18} />
-                                        Generate Quote
-                                    </button>
-                                    <button
-                                        onClick={onGoLive}
-                                        className="bg-blue-600 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-sm flex items-center justify-center gap-2"
-                                    >
-                                        <Send size={18} />
-                                        Go Live (Notify Contractors)
-                                    </button>
-                                </>
+                                <button
+                                    onClick={onGenerateQuote}
+                                    className="bg-[#007F00] text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-sm flex items-center justify-center gap-2"
+                                >
+                                    <Euro size={18} />
+                                    Generate Quote
+                                </button>
+                            )}
+                            {(assessment.status === 'submitted' || assessment.status === 'live') && (
+                                <button
+                                    onClick={onResendNotifications}
+                                    className="bg-blue-600 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-sm flex items-center justify-center gap-2"
+                                    title={assessment.job_live_notified_at ? `Last notified: ${new Date(assessment.job_live_notified_at).toLocaleString()}` : 'Notify matched assessors now'}
+                                >
+                                    <Send size={18} />
+                                    {assessment.job_live_notified_at ? 'Resend Notifications' : 'Notify Assessors'}
+                                </button>
                             )}
                             {assessment.status === 'pending_quote' && (
                                 <button
