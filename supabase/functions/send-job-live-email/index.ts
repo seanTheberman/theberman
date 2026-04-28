@@ -30,16 +30,50 @@ Deno.serve(async (req: Request) => {
         const websiteUrl = config.website_url;
         const smtpFrom = config.smtp_from || `${config.display_name} <${config.smtp_username}>`;
 
-        // Update assessment status
+        // Idempotency guard: only proceed if this assessment has not already been notified.
+        // This prevents duplicate emails when the function is invoked twice (e.g. double-click,
+        // race between admin Go-Live and a re-trigger, or retries).
         if (assessmentId) {
-            const { error: updateError } = await supabase
+            const { data: existing, error: fetchErr } = await supabase
                 .from('assessments')
-                .update({ status: 'live' })
+                .select('id, status, job_live_email_sent, job_live_notified_at')
                 .eq('id', assessmentId)
-                .eq('tenant', tenant);
+                .eq('tenant', tenant)
+                .maybeSingle();
 
-            if (updateError) {
-                console.error(`[send-job-live-email] Error updating assessment ${assessmentId}:`, updateError);
+            if (fetchErr) {
+                console.error(`[send-job-live-email] Error fetching assessment ${assessmentId}:`, fetchErr);
+            }
+
+            if (existing?.job_live_notified_at || existing?.job_live_email_sent) {
+                console.log(`[send-job-live-email] Skipping ${assessmentId} – already notified at ${existing.job_live_notified_at}`);
+                return new Response(
+                    JSON.stringify({ success: true, skipped: true, reason: 'already_notified', assessmentId }),
+                    { headers: responseHeaders },
+                );
+            }
+
+            // Atomically claim the notification slot. If another concurrent invocation already set
+            // job_live_notified_at, the WHERE clause will match 0 rows and we abort.
+            const claimAt = new Date().toISOString();
+            const { data: claimed, error: claimErr } = await supabase
+                .from('assessments')
+                .update({ status: 'live', job_live_notified_at: claimAt })
+                .eq('id', assessmentId)
+                .eq('tenant', tenant)
+                .is('job_live_notified_at', null)
+                .select('id');
+
+            if (claimErr) {
+                console.error(`[send-job-live-email] Error claiming assessment ${assessmentId}:`, claimErr);
+            }
+
+            if (!claimed || claimed.length === 0) {
+                console.log(`[send-job-live-email] Skipping ${assessmentId} – lost claim race, another invocation already notified.`);
+                return new Response(
+                    JSON.stringify({ success: true, skipped: true, reason: 'race_lost', assessmentId }),
+                    { headers: responseHeaders },
+                );
             }
         }
 
@@ -155,14 +189,40 @@ Deno.serve(async (req: Request) => {
         let contractorEmailSentCount = 0;
 
         if (contractors && contractors.length > 0) {
+            const norm = (s: any) => (typeof s === 'string' ? s.trim().toLowerCase() : '');
+            const targetTown = norm(town);
+
             const relevantContractors = contractors.filter(c => {
-                if (quotedContractorIds.has(c.id)) return false;
-                // Only notify if they explicitly selected this town
-                if (!c.preferred_towns || c.preferred_towns.length === 0) return false;
-                return c.preferred_towns.includes(town);
+                if (quotedContractorIds.has(c.id)) {
+                    console.log(`[send-job-live-email] Skipping ${c.email}: already quoted on this assessment`);
+                    return false;
+                }
+                // Strict match: must have a non-empty preferred_towns list including this job's town.
+                if (!Array.isArray(c.preferred_towns) || c.preferred_towns.length === 0) {
+                    console.log(`[send-job-live-email] Skipping ${c.email}: no preferred_towns configured`);
+                    return false;
+                }
+                if (!targetTown) {
+                    console.log(`[send-job-live-email] Skipping ${c.email}: assessment has no town`);
+                    return false;
+                }
+                const matches = c.preferred_towns.some((t: any) => norm(t) === targetTown);
+                if (!matches) {
+                    console.log(`[send-job-live-email] Skipping ${c.email}: '${town}' not in preferred_towns [${(c.preferred_towns || []).join(', ')}]`);
+                }
+                return matches;
             });
 
-            console.log(`[send-job-live-email] Notifying ${relevantContractors.length} contractors in ${town} (tenant: ${tenant})`);
+            // Deduplicate by email (in case the same email exists on multiple contractor profiles)
+            const seenEmails = new Set<string>();
+            const dedupedContractors = relevantContractors.filter(c => {
+                const key = norm(c.email);
+                if (!key || seenEmails.has(key)) return false;
+                seenEmails.add(key);
+                return true;
+            });
+
+            console.log(`[send-job-live-email] Notifying ${dedupedContractors.length} contractors in ${town} (tenant: ${tenant}, total contractors scanned: ${contractors.length})`);
 
             // Get assessment details for Eircode
             const { data: assessmentDetails } = await supabase
@@ -172,7 +232,7 @@ Deno.serve(async (req: Request) => {
                 .eq('tenant', tenant)
                 .single();
 
-            for (const contractor of relevantContractors) {
+            for (const contractor of dedupedContractors) {
                 const jobLocation = town || county;
                 const assessorName = contractor.full_name || 'Assessor';
                 const quoteLink = `${websiteUrl}/quote/${assessmentId}?phone=${encodeURIComponent(contractor.phone || '')}`;

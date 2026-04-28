@@ -8,6 +8,17 @@ const corsHeaders = {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
+function generateSecurePassword(length = 12): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    const randomBytes = new Uint8Array(length);
+    crypto.getRandomValues(randomBytes);
+    let password = '';
+    for (let i = 0; i < length; i++) {
+        password += chars[randomBytes[i] % chars.length];
+    }
+    return password;
+}
+
 Deno.serve(async (req: Request) => {
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
@@ -20,11 +31,14 @@ Deno.serve(async (req: Request) => {
         );
 
         const body = await req.json();
-        const { fullName, email, password, phone, role, county, town, seaiNumber, assessorType, companyName, businessAddress, website, companyNumber, vatNumber, description, tenant = 'ireland' } = body;
+        const { fullName, email, password: providedPassword, phone, role, county, town, seaiNumber, assessorType, companyName, businessAddress, website, companyNumber, vatNumber, description, tenant = 'ireland' } = body;
 
-        if (!email || !password || !fullName || !role) {
+        if (!email || !fullName || !role) {
             throw new Error('Missing required fields');
         }
+
+        // Always generate a strong unique temporary password per user unless the caller explicitly provided one.
+        const password = providedPassword && providedPassword.length >= 8 ? providedPassword : generateSecurePassword(14);
 
         // 1. Create user in Auth
         const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -95,8 +109,7 @@ Deno.serve(async (req: Request) => {
             console.error('[create-admin-user] Profile update error:', profileError);
         }
 
-        // 3. Generate a password-recovery magic link that redirects to /update-password
-        // Use tenant config from DB for correct website URL (Ireland vs Spain)
+        // 3. Resolve tenant website URL for the login link in the welcome email
         let websiteUrl = 'https://theberman.eu';
         try {
             const tenantConfig = await getTenantConfig(supabaseAdmin, tenant);
@@ -104,33 +117,17 @@ Deno.serve(async (req: Request) => {
         } catch (tenantErr: any) {
             console.warn('[create-admin-user] tenant config lookup failed, falling back to default:', tenantErr.message);
         }
-        const redirectTo = `${websiteUrl}/update-password`;
-
-        let magicLink: string | null = null;
-        try {
-            const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-                type: 'recovery',
-                email: email,
-                options: {
-                    redirectTo: redirectTo,
-                    expiresIn: 604800, // 1 week (7 days) in seconds
-                }
-            });
-            if (linkError) {
-                console.error('[create-admin-user] generateLink error:', linkError.message);
-            } else {
-                magicLink = linkData?.properties?.action_link ?? null;
-            }
-        } catch (linkErr: any) {
-            console.error('[create-admin-user] generateLink threw:', linkErr.message);
-        }
+        const loginUrl = `${websiteUrl}/login`;
 
         return new Response(
             JSON.stringify({
                 success: true,
                 message: "User created successfully",
                 user: authData.user,
-                magicLink: magicLink,
+                password: password,
+                loginUrl: loginUrl,
+                // Back-compat: older frontend code reads `magicLink` – return the login URL so it still works.
+                magicLink: loginUrl,
             }),
             { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
         )

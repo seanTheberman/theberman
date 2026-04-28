@@ -758,7 +758,7 @@ const Admin = () => {
                 body: {
                     fullName: newUserFormData.fullName,
                     email: newUserFormData.email,
-                    password: 'Welcome@TheBerman123',
+                    // Let backend generate a strong unique random password per user
                     phone: newUserFormData.phone || null,
                     county: newUserFormData.county || null,
                     town: newUserFormData.town || null,
@@ -785,11 +785,12 @@ const Admin = () => {
                     body: {
                         fullName: newUserFormData.fullName,
                         email: newUserFormData.email,
-                        password: 'Welcome@TheBerman123',
+                        password: fnData.password,
                         town: newUserFormData.town || '',
-                        onboardingUrl: fnData.magicLink,
+                        onboardingUrl: fnData.loginUrl || fnData.magicLink,
                         role: newUserRole,
-                        userId: fnData.user.id
+                        userId: fnData.user.id,
+                        tenant: selectedTenant,
                     }
                 });
                 if (emailData?.success) {

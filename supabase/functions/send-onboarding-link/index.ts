@@ -130,11 +130,11 @@ Deno.serve(async (req: Request) => {
             </div>
             `;
         } else {
-            // ─── ASSESSOR EMAIL: unchanged ───
+            // ─── ASSESSOR EMAIL: credentials-first onboarding ───
             const roleName = 'BER Assessor';
-            const actionUrl = onboardingUrl || `${websiteUrl}/login`;
+            const loginUrl = `${websiteUrl}/login`;
 
-            subject = "Welcome! Set Your Password – The Berman BER Assessor";
+            subject = "Welcome to The Berman – Your BER Assessor Login Details";
 
             html = `
             <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
@@ -145,37 +145,32 @@ Deno.serve(async (req: Request) => {
                 <p style="font-size: 16px; color: #333;">Hello <strong>${fullName}</strong>,</p>
                 <p style="font-size: 15px; color: #555; line-height: 1.6;">
                     Your account as a <strong>${roleName}</strong> has been successfully created.
-                    We are excited to have you join our network of energy professionals in Ireland.
+                    We are excited to have you join our network of energy professionals.
                 </p>
 
-                <p style="font-size: 15px; color: #555; line-height: 1.6;">
-                    Please click the button below to <strong>set your own password</strong> and access your dashboard.
-                    For your security, this direct setup link is valid for <strong>7 days</strong>.
-                </p>
-
-                <div style="text-align: center; margin: 40px 0;">
-                    <a href="${actionUrl}" target="_blank" style="display:inline-block;background-color:#2e7d32;color:#ffffff;padding:16px 35px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:18px;box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
-                        Set My Password &amp; Login
-                    </a>
-                </div>
-
-                <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 30px;">
-                    <h3 style="margin-top: 0; font-size: 14px; color: #333; text-transform: uppercase; letter-spacing: 0.5px;">Fallback Credentials</h3>
-                    <p style="margin: 10px 0; font-size: 14px; color: #555;"><strong>Login Email:</strong> ${email}</p>
-                    ${password ? `<p style="margin: 10px 0; font-size: 14px; color: #555;"><strong>Temporary Password:</strong> <code style="background:#eee; padding:2px 4px; border-radius:3px;">${password}</code></p>` : ''}
-                    <p style="margin: 15px 0 0 0; font-size: 12px; color: #777; line-height: 1.4;">
-                        <em>If the button above has expired, you can still sign in manually at <strong>${websiteUrl}/login</strong> using these details.</em>
+                <div style="background-color: #f1f8e9; padding: 22px; border-radius: 8px; border: 1px solid #c5e1a5; margin: 30px 0;">
+                    <h3 style="margin-top: 0; font-size: 14px; color: #2e7d32; text-transform: uppercase; letter-spacing: 0.5px;">Your Login Details</h3>
+                    <p style="margin: 10px 0; font-size: 15px; color: #333;"><strong>Email:</strong> ${email}</p>
+                    ${password ? `<p style="margin: 10px 0; font-size: 15px; color: #333;"><strong>Temporary Password:</strong> <code style="background:#fff; padding:4px 8px; border-radius:4px; border:1px solid #ddd; font-size:15px;">${password}</code></p>` : ''}
+                    <p style="margin: 15px 0 0 0; font-size: 13px; color: #b71c1c; line-height: 1.5;">
+                        <strong>⚠ Important:</strong> Please change this password after your first login from your dashboard settings, or use "Forgot Password" on the login page anytime.
                     </p>
                 </div>
 
+                <div style="text-align: center; margin: 35px 0;">
+                    <a href="${loginUrl}" target="_blank" style="display:inline-block;background-color:#2e7d32;color:#ffffff;padding:16px 35px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:18px;box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
+                        Login to Your Dashboard
+                    </a>
+                </div>
+
                 <p style="color: #888; font-size: 13px; text-align: center;">
-                    Direct Link:<br>
-                    <a href="${actionUrl}" style="color: #2e7d32; text-decoration: none; font-size: 11px; word-break: break-all;">${actionUrl}</a>
+                    Login URL:<br>
+                    <a href="${loginUrl}" style="color: #2e7d32; text-decoration: none; font-size: 12px; word-break: break-all;">${loginUrl}</a>
                 </p>
 
                 <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
                 <p style="font-size: 12px; color: #999; text-align: center; line-height: 1.6;">
-                    &copy; ${new Date().getFullYear()} The Berman. Registered in Ireland.<br>
+                    &copy; ${new Date().getFullYear()} ${config.display_name}.<br>
                     Supporting sustainable energy goals through professional assessments.
                 </p>
             </div>
