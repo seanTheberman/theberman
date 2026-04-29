@@ -6,6 +6,7 @@ import { ChevronLeft, Save, X, Loader2, Newspaper, Eye, Upload } from 'lucide-re
 import toast from 'react-hot-toast';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
+import { getTenantFromDomain } from '../lib/tenant';
 
 interface NewsArticle {
     id: string;
@@ -108,6 +109,7 @@ const AdminNewsAction = () => {
         }
 
         const formData = new FormData(e.target as HTMLFormElement);
+        const tenant = getTenantFromDomain();
         const updates = {
             title: formData.get('title') as string,
             excerpt: formData.get('excerpt') as string,
@@ -118,7 +120,8 @@ const AdminNewsAction = () => {
             is_live: formData.get('is_live') === 'true',
             show_badge: formData.get('show_badge') === 'true',
             published_at: new Date(formData.get('published_at') as string).toISOString(),
-            content: article.content || ''
+            content: article.content || '',
+            tenant: tenant
         };
 
         setIsSaving(true);
