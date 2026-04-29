@@ -112,7 +112,7 @@ const Admin = () => {
         fullName: '', email: '', phone: '', county: '', town: '',
         seaiNumber: '', assessorType: 'Domestic Assessor', companyName: '',
         businessAddress: '', website: '', description: '', companyNumber: '', vatNumber: '',
-        registrationAmount: 0,
+        registrationAmount: 0, preferredCounties: [] as string[], preferredTowns: [] as string[],
     });
 
     // Catalogue form
@@ -770,6 +770,8 @@ const Admin = () => {
                     companyNumber: newUserFormData.companyNumber || null,
                     vatNumber: newUserFormData.vatNumber || null,
                     registrationAmount: newUserFormData.registrationAmount || 0,
+                    preferredCounties: newUserFormData.preferredCounties || [],
+                    preferredTowns: newUserFormData.preferredTowns || [],
                     role: newUserRole,
                     tenant: selectedTenant,
                 }
@@ -811,7 +813,7 @@ const Admin = () => {
                 fullName: '', email: '', phone: '', county: '', town: '',
                 seaiNumber: '', assessorType: 'Domestic Assessor', companyName: '',
                 businessAddress: '', website: '', description: '', companyNumber: '', vatNumber: '',
-                registrationAmount: 0,
+                registrationAmount: 0, preferredCounties: [], preferredTowns: [],
             });
         } catch (error: any) {
             console.error('Add user error:', error);
@@ -2119,7 +2121,7 @@ const Admin = () => {
                     newUserRole={newUserRole}
                     newUserFormData={newUserFormData} setNewUserFormData={setNewUserFormData}
                     isUpdating={isUpdating}
-                    onClose={() => { setShowAddUserModal(false); setNewUserFormData({ fullName: '', email: '', phone: '', county: '', town: '', seaiNumber: '', assessorType: 'Domestic Assessor', companyName: '', businessAddress: '', website: '', description: '', companyNumber: '', vatNumber: '', registrationAmount: 0 }); }}
+                    onClose={() => { setShowAddUserModal(false); setNewUserFormData({ fullName: '', email: '', phone: '', county: '', town: '', seaiNumber: '', assessorType: 'Domestic Assessor', companyName: '', businessAddress: '', website: '', description: '', companyNumber: '', vatNumber: '', registrationAmount: 0, preferredCounties: [], preferredTowns: [] }); }}
                     onSubmit={handleAddUser}
                 />
             )}

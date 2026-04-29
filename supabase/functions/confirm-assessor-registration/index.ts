@@ -36,6 +36,14 @@ serve(async (req: Request) => {
             socialLinkedin
         } = registrationData
 
+        // Validate required fields for contractors
+        if (!serviceAreas || serviceAreas.length === 0) {
+            throw new Error('At least one service area (county) is required')
+        }
+        if (!assessorTypes || assessorTypes.length === 0) {
+            throw new Error('At least one assessor type is required')
+        }
+
         // Initialize Supabase Admin Client
         const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
         const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''

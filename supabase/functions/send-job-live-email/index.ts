@@ -179,7 +179,7 @@ Deno.serve(async (req: Request) => {
 
         const { data: contractors } = await supabase
             .from('profiles')
-            .select('id, email, full_name, phone, preferred_towns')
+            .select('id, email, full_name, phone, preferred_towns, preferred_counties, assessor_type')
             .eq('role', 'contractor')
             .eq('is_active', true)
             .eq('tenant', tenant)
@@ -189,29 +189,69 @@ Deno.serve(async (req: Request) => {
         let contractorSmsSentCount = 0;
         let contractorEmailSentCount = 0;
 
+        // Get assessment job_type and property_type for assessor type matching
+        const { data: assessmentData } = await supabase
+            .from('assessments')
+            .select('job_type, property_type')
+            .eq('id', assessmentId)
+            .eq('tenant', tenant)
+            .single();
+
         if (contractors && contractors.length > 0) {
             const norm = (s: any) => (typeof s === 'string' ? s.trim().toLowerCase() : '');
             const targetTown = norm(town);
+            const targetCounty = norm(county);
 
             const relevantContractors = contractors.filter(c => {
                 if (quotedContractorIds.has(c.id)) {
                     console.log(`[send-job-live-email] Skipping ${c.email}: already quoted on this assessment`);
                     return false;
                 }
-                // Strict match: must have a non-empty preferred_towns list including this job's town.
-                if (!Array.isArray(c.preferred_towns) || c.preferred_towns.length === 0) {
-                    console.log(`[send-job-live-email] Skipping ${c.email}: no preferred_towns configured`);
+
+                // Must have at least one preference configured (towns or counties)
+                const prefTownsNorm = Array.isArray(c.preferred_towns)
+                    ? c.preferred_towns.map(norm).filter(Boolean)
+                    : [];
+                const prefCountiesNorm = Array.isArray(c.preferred_counties)
+                    ? c.preferred_counties.map(norm).filter(Boolean)
+                    : [];
+                if (prefTownsNorm.length === 0 && prefCountiesNorm.length === 0) {
+                    console.log(`[send-job-live-email] Skipping ${c.email}: no preferred_towns or preferred_counties configured`);
                     return false;
                 }
-                if (!targetTown) {
-                    console.log(`[send-job-live-email] Skipping ${c.email}: assessment has no town`);
+
+                // Town match (preferred) or county fallback – case-insensitive
+                const townMatches = prefTownsNorm.length > 0 && targetTown
+                    ? prefTownsNorm.includes(targetTown)
+                    : false;
+                const countyMatches = prefCountiesNorm.length > 0 && targetCounty
+                    ? prefCountiesNorm.includes(targetCounty)
+                    : false;
+
+                if (!townMatches && !countyMatches) {
+                    console.log(`[send-job-live-email] Skipping ${c.email}: '${town || county}' not in preferred_towns [${prefTownsNorm.join(', ')}] or preferred_counties [${prefCountiesNorm.join(', ')}]`);
                     return false;
                 }
-                const matches = c.preferred_towns.some((t: any) => norm(t) === targetTown);
-                if (!matches) {
-                    console.log(`[send-job-live-email] Skipping ${c.email}: '${town}' not in preferred_towns [${(c.preferred_towns || []).join(', ')}]`);
+
+                // Assessor type match - consistent with send-job-reminder-cron
+                const assessorType = c.assessor_type || 'Domestic Assessor';
+                const isDomesticAssessor = assessorType.includes('Domestic');
+                const isCommercialAssessor = assessorType.includes('Commercial');
+
+                const isCommercialJob = assessmentData?.job_type === 'commercial' ||
+                    ['commercial', 'office', 'retail', 'industrial', 'warehouse'].some(type =>
+                        (assessmentData?.property_type || '').toLowerCase().includes(type),
+                    );
+                if (isCommercialJob && !isCommercialAssessor) {
+                    console.log(`[send-job-live-email] Skipping ${c.email}: commercial job but assessor is not commercial`);
+                    return false;
                 }
-                return matches;
+                if (!isCommercialJob && !isDomesticAssessor) {
+                    console.log(`[send-job-live-email] Skipping ${c.email}: domestic job but assessor is not domestic`);
+                    return false;
+                }
+
+                return true;
             });
 
             // Deduplicate by email (in case the same email exists on multiple contractor profiles)

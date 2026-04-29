@@ -31,10 +31,23 @@ Deno.serve(async (req: Request) => {
         );
 
         const body = await req.json();
-        const { fullName, email, password: providedPassword, phone, role, county, town, seaiNumber, assessorType, companyName, businessAddress, website, companyNumber, vatNumber, description, tenant = 'ireland' } = body;
+        const { fullName, email, password: providedPassword, phone, role, county, town, seaiNumber, assessorType, companyName, businessAddress, website, companyNumber, vatNumber, description, preferredCounties, preferredTowns, tenant = 'ireland' } = body;
 
         if (!email || !fullName || !role) {
             throw new Error('Missing required fields');
+        }
+
+        // For contractors, require at least one service area (county or town)
+        if (role === 'contractor') {
+            if ((!preferredCounties || preferredCounties.length === 0) && (!preferredTowns || preferredTowns.length === 0)) {
+                throw new Error('At least one preferred county or town is required for contractors');
+            }
+            if (!seaiNumber) {
+                throw new Error('SEAI number is required for contractors');
+            }
+            if (!assessorType) {
+                throw new Error('Assessor type is required for contractors');
+            }
         }
 
         // Always generate a strong unique temporary password per user unless the caller explicitly provided one.
@@ -84,6 +97,8 @@ Deno.serve(async (req: Request) => {
                 seai_number: seaiNumber,
                 assessor_type: assessorType,
                 company_name: companyName,
+                preferred_counties: preferredCounties || [],
+                preferred_towns: preferredTowns || [],
                 subscription_status: 'active',
                 stripe_payment_id: 'FREE_ASSESSOR',
             };

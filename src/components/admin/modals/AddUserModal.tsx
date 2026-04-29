@@ -24,6 +24,8 @@ interface NewUserFormData {
     companyNumber: string;
     vatNumber: string;
     registrationAmount: number;
+    preferredCounties: string[];
+    preferredTowns: string[];
 }
 
 interface Props {
@@ -128,9 +130,10 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
                             <h4 className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest mb-4">Assessor Details</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">SEAI Registration #</label>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">SEAI Registration # *</label>
                                     <input
                                         type="text"
+                                        required
                                         placeholder="e.g. 10XXX"
                                         value={newUserFormData.seaiNumber}
                                         onChange={(e) => setNewUserFormData({ ...newUserFormData, seaiNumber: e.target.value })}
@@ -140,6 +143,7 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
                                 <div>
                                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Assessor Type</label>
                                     <select
+                                        required
                                         value={newUserFormData.assessorType}
                                         onChange={(e) => setNewUserFormData({ ...newUserFormData, assessorType: e.target.value })}
                                         className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white"
@@ -159,6 +163,34 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
                                         className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
                                     />
                                 </div>
+                            </div>
+
+                            <div className="mt-6">
+                                <label className="block text-[10px] font-black text-red-600 uppercase tracking-widest mb-3">Service Areas (Counties) *</label>
+                                <p className="text-xs text-gray-500 mb-3">Select at least one county where this assessor can work</p>
+                                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-40 overflow-y-auto p-2 border border-gray-200 rounded-xl bg-gray-50">
+                                    {IRISH_COUNTIES.map(county => (
+                                        <button
+                                            key={county}
+                                            type="button"
+                                            onClick={() => {
+                                                const current = newUserFormData.preferredCounties || [];
+                                                const updated = current.includes(county)
+                                                    ? current.filter(c => c !== county)
+                                                    : [...current, county];
+                                                setNewUserFormData({ ...newUserFormData, preferredCounties: updated });
+                                            }}
+                                            className={`text-xs py-2 px-2 rounded-lg border transition-all ${
+                                                newUserFormData.preferredCounties?.includes(county)
+                                                    ? 'bg-[#007F00] text-white border-[#007F00]'
+                                                    : 'bg-white text-gray-600 border-gray-200 hover:border-[#007F00] hover:text-[#007F00]'
+                                            }`}
+                                        >
+                                            {county}
+                                        </button>
+                                    ))}
+                                </div>
+                                <p className="text-xs text-gray-500 mt-2">{newUserFormData.preferredCounties?.length || 0} counties selected</p>
                             </div>
                         </div>
                     )}
