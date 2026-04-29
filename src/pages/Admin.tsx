@@ -249,6 +249,7 @@ const Admin = () => {
             .map(u => u.id);
 
         if (expiredUserIds.length > 0) {
+            // Silently disable expired accounts without showing any notification
             await supabase
                 .from('profiles')
                 .update({ is_active: false, subscription_status: 'expired' })
@@ -1668,6 +1669,7 @@ const Admin = () => {
     // ─── Render ───────────────────────────────────────────────────────────────────
     const pendingAssessors = users_list.filter(u => u.role === 'contractor' && u.registration_status === 'pending' && !listings.some(l => l.user_id === u.id || l.owner_id === u.id)).length;
     const pendingBusinesses = users_list.filter(u => u.role === 'business' && u.registration_status === 'pending' && !listings.some(l => l.user_id === u.id || l.owner_id === u.id)).length;
+    const expiredAccounts = users_list.filter(u => (u.role === 'business' || u.role === 'contractor') && u.subscription_status === 'expired').length;
 
     const NAV_ITEMS: any[] = [
         { id: 'stats', label: 'Overview', icon: BarChart2, badge: 0 },
@@ -1675,7 +1677,7 @@ const Admin = () => {
         { id: 'assessments', label: 'Assessments', icon: ClipboardList, badge: 0 },
         { id: 'jobs', label: 'Jobs', icon: Briefcase, badge: 0 },
         { id: 'homeowners', label: 'Homeowners', icon: Home, badge: 0 },
-        { id: 'businesses', label: 'Businesses', icon: Building2, badge: 0 },
+        { id: 'businesses', label: 'Businesses', icon: Building2, badge: expiredAccounts },
         { id: 'assessors', label: 'BER Assessors', icon: HardHat, badge: pendingAssessors },
         { id: 'catalogue', label: 'Catalogue', icon: BookOpen, badge: 0 },
         { id: 'payments', label: 'Payments', icon: DollarSign, badge: 0 },
