@@ -8,9 +8,11 @@ export const generateJobReminderEmail = (
         ber_purpose: string;
     }>,
     promoHtml: string,
-    websiteUrl: string = "https://theberman.eu"
+    websiteUrl: string = "https://theberman.eu",
+    contractorPhone?: string,
 ) => {
     const jobCount = jobs.length;
+    const phoneParam = contractorPhone ? `?phone=${encodeURIComponent(contractorPhone)}` : '';
     const jobRows = jobs.map(job => `
     <tr style="border-bottom: 1px solid #eee;">
       <td style="padding: 12px; font-size: 14px; color: #333;">${job.county}</td>
@@ -18,7 +20,7 @@ export const generateJobReminderEmail = (
       <td style="padding: 12px; font-size: 14px; color: #333;">${job.property_type}</td>
       <td style="padding: 12px; font-size: 14px; color: #333;">${job.ber_purpose}</td>
       <td style="padding: 12px; text-align: center;">
-        <a href="${websiteUrl}/dashboard?view=available&jobId=${job.id}" style="background-color: #5CB85C; color: white !important; padding: 8px 12px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-block;">
+        <a href="${websiteUrl}/quote/${job.id}${phoneParam}" style="background-color: #5CB85C; color: white !important; padding: 8px 12px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-block;">
           Quote Here
         </a>
       </td>
