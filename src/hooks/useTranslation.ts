@@ -64,6 +64,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     contractor: 'Assessor',
     business: 'Business',
     create_account: 'Create Account',
+    technical_assessor: 'Technical Assessor',
     // Dashboards
     my_jobs: 'My Jobs',
     available_jobs: 'Available Jobs',
@@ -175,6 +176,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     contractor: 'Certificador',
     business: 'Empresa',
     create_account: 'Crear Cuenta',
+    technical_assessor: 'Certificador Técnico',
     // Dashboards
     my_jobs: 'Mis Trabajos',
     available_jobs: 'Trabajos Disponibles',

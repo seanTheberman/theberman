@@ -185,6 +185,7 @@ Deno.serve(async (req: Request) => {
                 const assessorType = contractor.assessor_type || 'Domestic Assessor';
                 const isDomesticAssessor = assessorType.includes('Domestic');
                 const isCommercialAssessor = assessorType.includes('Commercial');
+                const isTechnicalAssessor = assessorType.includes('Technical');
 
                 const matchingJobs = (assessments || []).filter(job => {
                     if (quotedIds.has(job.id)) return false;
@@ -203,8 +204,10 @@ Deno.serve(async (req: Request) => {
                         ['commercial', 'office', 'retail', 'industrial', 'warehouse'].some(type =>
                             (job.property_type || '').toLowerCase().includes(type),
                         );
+                    const isTechnicalJob = job.job_type === 'technical';
                     if (isCommercialJob && !isCommercialAssessor) return false;
-                    if (!isCommercialJob && !isDomesticAssessor) return false;
+                    if (isTechnicalJob && !isTechnicalAssessor) return false;
+                    if (!isCommercialJob && !isTechnicalJob && !isDomesticAssessor) return false;
 
                     // Cooldown: skip if this contractor was reminded about this job recently.
                     if (recentReminderKey.has(`${job.id}::${contractor.id}`)) return false;

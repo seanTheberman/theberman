@@ -150,6 +150,7 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
                                     >
                                         <option value="Domestic Assessor">Domestic Assessor</option>
                                         <option value="Commercial Assessor">Commercial Assessor</option>
+                                        <option value="Technical Assessor">Technical Assessor</option>
                                         <option value="Both">Both (Domestic & Commercial)</option>
                                     </select>
                                 </div>

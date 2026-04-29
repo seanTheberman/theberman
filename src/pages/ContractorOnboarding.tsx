@@ -293,6 +293,25 @@ const ContractorOnboarding = () => {
                                     {years.map(y => <option key={y} value={y}>{y}</option>)}
                                 </select>
                             </div>
+
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-bold text-gray-700 mb-3">Assessor Type (select one or more) <span className="text-red-500">*</span></label>
+                                <div className="flex flex-wrap gap-4">
+                                    {['Domestic Assessor', 'Commercial Assessor', 'Technical Assessor'].map((type) => (
+                                        <button
+                                            key={type}
+                                            type="button"
+                                            onClick={() => handleAssessorTypeToggle(type)}
+                                            className={`px-6 py-3 rounded-xl border-2 font-bold transition-all flex items-center gap-2 ${formData.assessorTypes.includes(type) ? 'border-[#007F00] bg-green-50 text-[#007F00]' : 'border-gray-200 bg-white text-gray-400'}`}
+                                        >
+                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${formData.assessorTypes.includes(type) ? 'border-[#007F00]' : 'border-gray-300'}`}>
+                                                {formData.assessorTypes.includes(type) && <div className="w-2.5 h-2.5 rounded-full bg-[#007F00]" />}
+                                            </div>
+                                            {type}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
 
                         {/* BUSINESS DETAILS */}
@@ -449,33 +468,12 @@ const ContractorOnboarding = () => {
                             </div>
                         </div>
 
+                        {/* CATALOGUE LISTING */}
                         <div className="pt-6">
-                            <label className="block text-sm font-bold text-gray-700 mb-3">Domestic or Commercial <span className="text-red-500">*</span></label>
-                            <div className="flex flex-wrap gap-4">
-                                {['Domestic Assessor', 'Commercial Assessor'].map((type) => (
-                                    <button
-                                        key={type}
-                                        type="button"
-                                        onClick={() => handleAssessorTypeToggle(type)}
-                                        className={`px-6 py-3 rounded-xl border-2 font-bold transition-all flex items-center gap-2 ${formData.assessorTypes.includes(type) ? 'border-[#007F00] bg-green-50 text-[#007F00]' : 'border-gray-200 bg-white text-gray-400'}`}
-                                    >
-                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${formData.assessorTypes.includes(type) ? 'border-[#007F00]' : 'border-gray-300'}`}>
-                                            {formData.assessorTypes.includes(type) && <div className="w-2.5 h-2.5 rounded-full bg-[#007F00]" />}
-                                        </div>
-                                        {type}
-                                    </button>
-                                ))}
-                            </div>
-                            <p className="text-xs text-gray-500 mt-2">You can select both if you provide both services.</p>
-                        </div>
-
-
-                        {/* Service Selection Simplified */}
-                        <div className="pt-8 border-t border-gray-100">
-                            <label className="block text-sm font-bold text-gray-900 mb-2">
+                            <label className="block text-sm font-bold text-gray-700 mb-2">
                                 Would you like to be listed in our Home Energy catalogue as a 'BER ASSESSOR'?
                             </label>
-                            <p className="text-sm text-gray-500 mb-6">This will help homeowners find you directly for BER assessments in your area.</p>
+                            <p className="text-sm text-gray-500 mb-4">This will help homeowners find you directly for BER assessments in your area.</p>
 
                             <div className="flex gap-4">
                                 <button

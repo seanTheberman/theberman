@@ -90,7 +90,7 @@ const COMMERCIAL_FLOOR_AREAS_IMPERIAL = [
 
 interface FormData {
     // Shared
-    jobType: 'domestic' | 'commercial' | '';
+    jobType: 'domestic' | 'commercial' | 'technical' | '';
     preferredDate: string;
     preferredTime: string;
     county: string;
@@ -158,6 +158,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
 
     const isDomestic = formData.jobType === 'domestic';
     const isCommercial = formData.jobType === 'commercial';
+    const isTechnical = formData.jobType === 'technical';
 
     // Total form steps (excluding auth steps):
     // Domestic: 0 (job type) + 1-11 (form) = 12 steps (0..11)
@@ -266,7 +267,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
             }
         }
 
-        if (isCommercial) {
+        if (isCommercial || isTechnical) {
             switch (currentStep) {
                 case 1: return !!formData.preferredDate;
                 case 2: return !!formData.preferredTime;
@@ -599,7 +600,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                     <p className="text-gray-500 text-center text-sm md:text-base -mt-4">
                         {t('choose_property_type_desc', 'Choose the type of property you need assessed.')}
                     </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
                         <button
                             onClick={() => updateFieldAndAdvance('jobType', 'domestic')}
                             className={`p-8 rounded-2xl border-2 transition-all text-center group hover:shadow-lg ${formData.jobType === 'domestic' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-300 bg-white'}`}
@@ -613,8 +614,16 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                             className={`p-8 rounded-2xl border-2 transition-all text-center group hover:shadow-lg ${formData.jobType === 'commercial' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                         >
                             <div className="text-4xl mb-4"></div>
-                            <h3 className={`text-xl font-bold mb-2 ${formData.jobType === 'commercial' ? 'text-green-700' : 'text-gray-800'}`}>{t('commercial')} (No-vivienda)</h3>
-                            <p className="text-sm text-gray-500">{t('commercial_desc', 'Offices, retail, warehouses, hospitality & other commercial buildings')}</p>
+                            <h3 className={`text-xl font-bold mb-2 ${formData.jobType === 'commercial' ? 'text-green-700' : 'text-gray-800'}`}>{t('commercial')} (BER)</h3>
+                            <p className="text-sm text-gray-500">{t('commercial_desc', 'Offices, retail, warehouses & other commercial properties')}</p>
+                        </button>
+                        <button
+                            onClick={() => updateFieldAndAdvance('jobType', 'technical')}
+                            className={`p-8 rounded-2xl border-2 transition-all text-center group hover:shadow-lg ${formData.jobType === 'technical' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-300 bg-white'}`}
+                        >
+                            <div className="text-4xl mb-4"></div>
+                            <h3 className={`text-xl font-bold mb-2 ${formData.jobType === 'technical' ? 'text-green-700' : 'text-gray-800'}`}>Technical Assessor</h3>
+                            <p className="text-sm text-gray-500">Technical assessments, energy audits & specialized services</p>
                         </button>
                     </div>
                 </div>
@@ -921,7 +930,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
         if (isDomestic) {
             return currentStep === 6 || currentStep === 11; // features (multi-select) & contact
         }
-        if (isCommercial) {
+        if (isCommercial || isTechnical) {
             return currentStep === 6 || currentStep === 8 || currentStep === 11; // docs, heating/cooling (multi-select) & contact
         }
         return false;
@@ -955,8 +964,8 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                     </div>
                     {formData.jobType && currentStep > 0 && currentStep < 12 && (
                         <div className="mt-3 flex justify-center">
-                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isDomestic ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-purple-50 text-purple-600 border border-purple-100'}`}>
-                                {isDomestic ? t('domestic_ber_tag', 'Domestic BER') : t('commercial_ber_tag', 'Commercial BER')}
+                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isDomestic ? 'bg-blue-50 text-blue-600 border border-blue-100' : isTechnical ? 'bg-orange-50 text-orange-600 border border-orange-100' : 'bg-purple-50 text-purple-600 border border-purple-100'}`}>
+                                {isDomestic ? t('domestic_ber_tag', 'Domestic BER') : isTechnical ? 'Technical Assessor' : t('commercial_ber_tag', 'Commercial BER')}
                             </span>
                         </div>
                     )}

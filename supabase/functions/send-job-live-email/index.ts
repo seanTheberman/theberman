@@ -237,19 +237,17 @@ Deno.serve(async (req: Request) => {
                 const assessorType = c.assessor_type || 'Domestic Assessor';
                 const isDomesticAssessor = assessorType.includes('Domestic');
                 const isCommercialAssessor = assessorType.includes('Commercial');
+                const isTechnicalAssessor = assessorType.includes('Technical');
 
                 const isCommercialJob = assessmentData?.job_type === 'commercial' ||
                     ['commercial', 'office', 'retail', 'industrial', 'warehouse'].some(type =>
                         (assessmentData?.property_type || '').toLowerCase().includes(type),
                     );
-                if (isCommercialJob && !isCommercialAssessor) {
-                    console.log(`[send-job-live-email] Skipping ${c.email}: commercial job but assessor is not commercial`);
-                    return false;
-                }
-                if (!isCommercialJob && !isDomesticAssessor) {
-                    console.log(`[send-job-live-email] Skipping ${c.email}: domestic job but assessor is not domestic`);
-                    return false;
-                }
+                const isTechnicalJob = assessmentData?.job_type === 'technical';
+
+                if (isCommercialJob && !isCommercialAssessor) return false;
+                if (isTechnicalJob && !isTechnicalAssessor) return false;
+                if (!isCommercialJob && !isTechnicalJob && !isDomesticAssessor) return false;
 
                 return true;
             });
