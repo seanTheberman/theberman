@@ -333,6 +333,7 @@ export const UserDetailsModal = ({
                                 <option value="">— Not Set —</option>
                                 <option value="Domestic Assessor">Domestic Assessor</option>
                                 <option value="Commercial Assessor">Commercial Assessor</option>
+                                <option value="Technical Assessor">Technical Assessor</option>
                                 <option value="Both">Both (Domestic &amp; Commercial)</option>
                             </select>
                         </div>

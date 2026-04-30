@@ -45,11 +45,13 @@ export const UsersView = React.memo(({
         const inBoth = type.includes('both') || type.includes('&');
         const matchDomestic = type.includes('domestic') || inBoth;
         const matchCommercial = type.includes('commercial') || inBoth;
+        const matchTechnical = type.includes('technical');
         const matchBoth = inBoth || (type.includes('domestic') && type.includes('commercial'));
 
         if (filter === 'both') return matchBoth;
         if (filter === 'domestic') return matchDomestic;
         if (filter === 'commercial') return matchCommercial;
+        if (filter === 'technical') return matchTechnical;
         return true;
     };
 
@@ -142,6 +144,7 @@ export const UsersView = React.memo(({
                                 <option value="">All Types</option>
                                 <option value="domestic">Domestic ({users_list.filter(u => u.role === 'contractor' && isTypeMatch(u.assessor_type, 'domestic')).length})</option>
                                 <option value="commercial">Commercial ({users_list.filter(u => u.role === 'contractor' && isTypeMatch(u.assessor_type, 'commercial')).length})</option>
+                                <option value="technical">Technical ({users_list.filter(u => u.role === 'contractor' && isTypeMatch(u.assessor_type, 'technical')).length})</option>
                                 <option value="both">Both ({users_list.filter(u => u.role === 'contractor' && isTypeMatch(u.assessor_type, 'both')).length})</option>
                             </select>
                         </div>

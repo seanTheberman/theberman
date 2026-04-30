@@ -622,8 +622,8 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                             className={`p-8 rounded-2xl border-2 transition-all text-center group hover:shadow-lg ${formData.jobType === 'technical' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                         >
                             <div className="text-4xl mb-4"></div>
-                            <h3 className={`text-xl font-bold mb-2 ${formData.jobType === 'technical' ? 'text-green-700' : 'text-gray-800'}`}>Technical Assessor</h3>
-                            <p className="text-sm text-gray-500">Technical assessments, energy audits & specialized services</p>
+                            <h3 className={`text-xl font-bold mb-2 ${formData.jobType === 'technical' ? 'text-green-700' : 'text-gray-800'}`}>Technical Assessment</h3>
+                            <p className="text-sm text-gray-500">Heat pumps, new builds & energy audits</p>
                         </button>
                     </div>
                 </div>
