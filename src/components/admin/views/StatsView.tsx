@@ -1,6 +1,24 @@
 import React, { useState } from 'react';
-import { Home, ClipboardList, Building2, DollarSign, Briefcase, TrendingUp, ArrowRight, Hourglass, CheckCircle2, AlertTriangle, Edit2, Plus, Eye, MapPin, Users, Trash2, Filter as FilterIcon } from 'lucide-react';
-import { Search } from 'lucide-react';
+import {
+    Home,
+    ClipboardList,
+    Building2,
+    DollarSign,
+    Briefcase,
+    TrendingUp,
+    ArrowRight,
+    Hourglass,
+    CheckCircle2,
+    AlertTriangle,
+    Edit2,
+    Plus,
+    Eye,
+    MapPin,
+    Users,
+    Trash2,
+    Filter as FilterIcon,
+    Search,
+} from 'lucide-react';
 import type { Profile, Assessment, Payment, AdminView, CatalogueListing } from '../../../types/admin';
 import { StatusCell, PaymentStatusBadge } from '../StatusBadges';
 
@@ -52,6 +70,78 @@ const TYPE_TABS: { id: UserType; label: string; icon: React.ElementType; color: 
     { id: 'businesses', label: 'Businesses', icon: Building2, color: 'text-purple-600 border-purple-200 bg-purple-50', activeColor: 'bg-purple-600 text-white border-purple-600', count: s => s.businessLeads },
 ];
 
+const isTypeMatch = (assessorType: string | null | undefined, filter: string) => {
+    if (!filter) return true;
+    if (!assessorType) return false;
+
+    const type = assessorType.toLowerCase();
+    const inBoth = type.includes('both') || type.includes('&');
+    const matchBoth = inBoth || (type.includes('domestic') && type.includes('commercial'));
+
+    switch (filter) {
+        case 'both':
+            return matchBoth;
+        case 'domestic':
+            return type.includes('domestic') || inBoth;
+        case 'commercial':
+            return type.includes('commercial') || inBoth;
+        case 'technical':
+            return type.includes('technical');
+        default:
+            return true;
+    }
+};
+
+const getTypeGroup = (users: Profile[], userType: UserType, typeFilter: string) => {
+    switch (userType) {
+        case 'assessors':
+            return users.filter(u => u.role === 'contractor' && isTypeMatch(u.assessor_type, typeFilter));
+        case 'businesses':
+            return users.filter(u => u.role === 'business');
+        case 'homeowners':
+            return users.filter(u => u.role === 'user' || u.role === 'homeowner');
+        default:
+            return users.filter(u => u.role !== 'admin');
+    }
+};
+
+const isRoleMatch = (profile: Profile, userType: UserType) => {
+    switch (userType) {
+        case 'assessors':
+            return profile.role === 'contractor';
+        case 'businesses':
+            return profile.role === 'business';
+        case 'homeowners':
+            return profile.role === 'user' || profile.role === 'homeowner';
+        default:
+            return profile.role !== 'admin';
+    }
+};
+
+const getUserCount = (users: Profile[]) => users.filter(u => u.role !== 'admin').length;
+
+const getUserLocations = (profile: Profile) => {
+    const baseLocations = [profile.home_county, profile.county];
+
+    if (profile.role === 'contractor' || profile.role === 'business') {
+        return [...baseLocations, ...(profile.preferred_counties || [])];
+    }
+
+    return baseLocations;
+};
+
+const getColumnCount = (showRole: boolean, showActivity: boolean, showPayment: boolean) => {
+    let count = 4;
+
+    if (showRole) count += 1;
+    if (showActivity) count += 1;
+    if (showPayment) count += 1;
+
+    return count;
+};
+
+const formatDate = (date: string) => new Date(date).toLocaleDateString('en-GB');
+
 export const StatsView = React.memo(({
     stats, users_list, listings, assessments, payments,
     searchTerm, setSearchTerm, locationFilter, setLocationFilter,
@@ -62,33 +152,11 @@ export const StatsView = React.memo(({
 
     const switchType = (t: UserType) => { setUserType(t); setLocationFilter(''); setSearchTerm(''); setTypeFilter(''); };
 
-    const isTypeMatch = (assessorType: string | null | undefined, filter: string) => {
-        if (!filter) return true;
-        if (!assessorType) return false;
-        const type = assessorType.toLowerCase();
-
-        const inBoth = type.includes('both') || type.includes('&');
-        const matchDomestic = type.includes('domestic') || inBoth;
-        const matchCommercial = type.includes('commercial') || inBoth;
-        const matchTechnical = type.includes('technical');
-        const matchBoth = inBoth || (type.includes('domestic') && type.includes('commercial'));
-
-        if (filter === 'both') return matchBoth;
-        if (filter === 'domestic') return matchDomestic;
-        if (filter === 'commercial') return matchCommercial;
-        if (filter === 'technical') return matchTechnical;
-        return true;
-    };
-
-    const typeGroup = userType === 'assessors' ? users_list.filter(u => u.role === 'contractor' && isTypeMatch(u.assessor_type, typeFilter))
-        : userType === 'businesses' ? users_list.filter(u => u.role === 'business')
-            : userType === 'homeowners' ? users_list.filter(u => u.role === 'user' || u.role === 'homeowner')
-                : users_list.filter(u => u.role !== 'admin');
+    const totalVisibleUsers = getUserCount(users_list);
+    const typeGroup = getTypeGroup(users_list, userType, typeFilter);
 
     const activeLocations = Array.from(new Set(
-        typeGroup.flatMap(u => (u.role === 'contractor' || u.role === 'business')
-            ? [u.home_county, u.county, ...(u.preferred_counties || [])]
-            : [u.home_county, u.county])
+        typeGroup.flatMap(getUserLocations)
     )).filter(Boolean).sort() as string[];
 
     const countForLoc = (loc: string) => typeGroup.filter(u =>
@@ -98,11 +166,6 @@ export const StatsView = React.memo(({
     ).length;
 
     const filtered = users_list.filter(u => {
-        const matchRole =
-            userType === 'all' ? u.role !== 'admin' :
-                userType === 'assessors' ? u.role === 'contractor' :
-                    userType === 'businesses' ? u.role === 'business' :
-                        (u.role === 'user' || u.role === 'homeowner');
         const q = searchTerm.toLowerCase();
         const matchSearch = !q || u.full_name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q);
         const matchLocation = !locationFilter ||
@@ -110,13 +173,13 @@ export const StatsView = React.memo(({
             u.home_county === locationFilter ||
             u.preferred_counties?.includes(locationFilter);
         const matchType = userType !== 'assessors' || isTypeMatch(u.assessor_type, typeFilter);
-        return matchRole && matchSearch && matchLocation && matchType;
+        return isRoleMatch(u, userType) && matchSearch && matchLocation && matchType;
     });
 
     const showActivity = userType !== 'businesses';
     const showRole = userType === 'all';
     const showPayment = userType === 'assessors';
-    const colCount = showRole ? (showActivity ? 6 : 5) : (showActivity ? (showPayment ? 6 : 5) : 4);
+    const colCount = getColumnCount(showRole, showActivity, showPayment);
 
     return (
         <div className="space-y-5">
@@ -195,7 +258,7 @@ export const StatsView = React.memo(({
                                 <Icon size={13} />
                                 {label}
                                 <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${userType === id ? 'bg-white/20' : 'bg-white/60'}`}>
-                                    {count(stats, users_list.filter(u => u.role !== 'admin').length)}
+                                    {count(stats, totalVisibleUsers)}
                                 </span>
                             </button>
                         ))}
@@ -298,7 +361,7 @@ export const StatsView = React.memo(({
                                             </td>
                                         )}
                                         <td className="px-5 py-3 text-[12px] text-gray-400 whitespace-nowrap">
-                                            {new Date(u.created_at).toLocaleDateString('en-GB')}
+                                            {formatDate(u.created_at)}
                                         </td>
                                         {showActivity && (
                                             <td className="px-5 py-3">
@@ -314,7 +377,7 @@ export const StatsView = React.memo(({
                                                     <PaymentStatusBadge profile={u} />
                                                     {u.subscription_end_date && (
                                                         <span className={`text-[10px] ${new Date(u.subscription_end_date) < new Date() ? 'text-red-400' : 'text-gray-400'}`}>
-                                                            {new Date(u.subscription_end_date) < new Date() ? 'Expired' : `Until ${new Date(u.subscription_end_date).toLocaleDateString('en-GB')}`}
+                                                            {new Date(u.subscription_end_date) < new Date() ? 'Expired' : `Until ${formatDate(u.subscription_end_date)}`}
                                                         </span>
                                                     )}
                                                 </div>

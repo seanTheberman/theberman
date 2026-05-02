@@ -6,6 +6,30 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const EXPIRY_DAYS = 7;
+const OPEN_JOB_STATUSES = ['live', 'submitted', 'pending_quote'];
+
+const getLastActivityTime = (assessment: any, quotes: any[] = []) => {
+    let latest = new Date(assessment.created_at).getTime();
+
+    for (const quote of quotes) {
+        const quoteTime = new Date(quote.created_at).getTime();
+        if (quoteTime > latest) latest = quoteTime;
+    }
+
+    if (assessment.scheduled_date) {
+        const scheduledTime = new Date(assessment.scheduled_date).getTime();
+        if (scheduledTime > latest) latest = scheduledTime;
+    }
+
+    return latest;
+};
+
+const isExpiredAssessment = (assessment: any, quotes: any[] = []) => {
+    const daysSinceActivity = Math.floor((Date.now() - getLastActivityTime(assessment, quotes)) / (1000 * 60 * 60 * 24));
+    return daysSinceActivity >= EXPIRY_DAYS;
+};
+
 function formatPhoneE164(phone: string): string | null {
     if (!phone) return null;
     const digits = phone.replace(/[^\d+]/g, '');
@@ -53,7 +77,27 @@ Deno.serve(async (req: Request) => {
 
         let smsSent = false;
 
-        const { data: existingQuotes } = await supabase.from('quotes').select('created_by').eq('assessment_id', assessmentId);
+        const { data: assessment } = await supabase
+            .from('assessments')
+            .select('id, status, created_at, scheduled_date, completed_at')
+            .eq('id', assessmentId)
+            .maybeSingle();
+
+        if (!assessment || assessment.completed_at || !OPEN_JOB_STATUSES.includes(assessment.status)) {
+            return new Response(
+                JSON.stringify({ success: true, skipped: true, reason: 'not_open', assessmentId, status: assessment?.status }),
+                { headers: responseHeaders },
+            );
+        }
+
+        const { data: existingQuotes } = await supabase.from('quotes').select('created_by, created_at, status').eq('assessment_id', assessmentId);
+        if (isExpiredAssessment(assessment, existingQuotes || [])) {
+            return new Response(
+                JSON.stringify({ success: true, skipped: true, reason: 'expired', assessmentId }),
+                { headers: responseHeaders },
+            );
+        }
+
         const quotedIds = new Set((existingQuotes || []).map((q: any) => q.created_by));
 
         const { data: contractors } = await supabase
@@ -73,7 +117,6 @@ Deno.serve(async (req: Request) => {
         console.log(`Notifying ${relevant.length} contractors for ${county}`);
 
         const { data: asmnt } = await supabase.from('assessments').select('contact_phone').eq('id', assessmentId).single();
-
         const smsPhone = customerPhone || asmnt?.contact_phone || null;
         if (smsPhone) {
             smsSent = await trySendSms(smsPhone, `Hi ${customerName}, your BER assessment request in ${town || county} is now live on TheBerman.eu!`);

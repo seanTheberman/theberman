@@ -10,6 +10,29 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const EXPIRY_DAYS = 7;
+
+const getLastActivityTime = (job: any, quotes: any[] = []) => {
+    let latest = new Date(job.created_at).getTime();
+
+    for (const quote of quotes) {
+        const quoteTime = new Date(quote.created_at).getTime();
+        if (quoteTime > latest) latest = quoteTime;
+    }
+
+    if (job.scheduled_date) {
+        const scheduledTime = new Date(job.scheduled_date).getTime();
+        if (scheduledTime > latest) latest = scheduledTime;
+    }
+
+    return latest;
+};
+
+const isFreshJob = (job: any, quotes: any[] = []) => {
+    const daysSinceActivity = Math.floor((Date.now() - getLastActivityTime(job, quotes)) / (1000 * 60 * 60 * 24));
+    return daysSinceActivity < EXPIRY_DAYS;
+};
+
 class CustomSmtpClient {
     private conn: Deno.Conn | null = null;
     private reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
@@ -109,10 +132,6 @@ Deno.serve(async (req: Request) => {
             if (tenants.length === 0) tenants = ['ireland'];
         }
 
-        // Only include jobs created within the last 15 days
-        const fifteenDaysAgo = new Date();
-        fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
-
         const norm = (s: any) => (typeof s === 'string' ? s.trim().toLowerCase() : '');
 
         const perTenantResults: Record<string, { sent: number; skipped: number }> = {};
@@ -150,28 +169,44 @@ Deno.serve(async (req: Request) => {
                 continue;
             }
 
-            // 2. Only currently LIVE jobs, less than 15 days old, for this tenant
-            const { data: activeJobs, error: jobsError } = await supabase
+            // 2. Only currently LIVE jobs that are fresh by the same 7-day inactivity rule
+            // used in the admin and contractor dashboards.
+            const { data: liveJobs, error: jobsError } = await supabase
                 .from('assessments')
-                .select('id, county, town, property_type, job_type, ber_purpose, created_at')
+                .select('id, county, town, property_type, job_type, ber_purpose, created_at, scheduled_date')
                 .eq('tenant', tenant)
                 .eq('status', 'live')
-                .gte('created_at', fifteenDaysAgo.toISOString());
+                .is('completed_at', null);
 
-            if (jobsError || !activeJobs || activeJobs.length === 0) {
+            if (jobsError || !liveJobs || liveJobs.length === 0) {
                 console.log(`[send-job-digest] No live jobs for tenant ${tenant}.`);
                 continue;
             }
 
-            // 3. Fetch existing quotes to exclude jobs already quoted by each contractor
-            const { data: allQuotes } = await supabase
+            // 3. Fetch existing quotes. These are used both for expiry activity and for
+            // excluding jobs already quoted by each contractor.
+            const { data: allJobQuotes } = await supabase
                 .from('quotes')
-                .select('assessment_id, created_by')
-                .in('assessment_id', activeJobs.map(j => j.id))
-                .in('created_by', contractors.map(c => c.id));
+                .select('assessment_id, created_by, created_at, status')
+                .in('assessment_id', liveJobs.map(j => j.id));
+
+            const quotesByJob = new Map<string, any[]>();
+            (allJobQuotes || []).forEach(q => {
+                if (!quotesByJob.has(q.assessment_id)) {
+                    quotesByJob.set(q.assessment_id, []);
+                }
+                quotesByJob.get(q.assessment_id)!.push(q);
+            });
+
+            const activeJobs = liveJobs.filter(job => isFreshJob(job, quotesByJob.get(job.id) || []));
+            if (activeJobs.length === 0) {
+                console.log(`[send-job-digest] No fresh live jobs for tenant ${tenant}.`);
+                continue;
+            }
 
             const contractorQuotes = new Map<string, Set<string>>();
-            (allQuotes || []).forEach(q => {
+            const eligibleContractorIds = new Set(contractors.map(c => c.id));
+            (allJobQuotes || []).filter(q => eligibleContractorIds.has(q.created_by)).forEach(q => {
                 if (!contractorQuotes.has(q.created_by)) {
                     contractorQuotes.set(q.created_by, new Set());
                 }

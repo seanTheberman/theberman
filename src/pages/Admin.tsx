@@ -39,6 +39,32 @@ import { UserDetailsModal } from '../components/admin/modals/UserDetailsModal';
 import { SuspendUserModal } from '../components/admin/modals/SuspendUserModal';
 import { AddUserModal } from '../components/admin/modals/AddUserModal';
 
+const JOB_NOTIFICATION_EXPIRY_DAYS = 7;
+const NOTIFIABLE_JOB_STATUSES = ['live', 'submitted', 'pending_quote'] as const;
+
+const getAssessmentLastActivityDate = (assessment: Assessment) => {
+    let latest = new Date(assessment.created_at);
+
+    for (const quote of assessment.quotes || []) {
+        const quoteDate = new Date(quote.created_at);
+        if (quoteDate > latest) latest = quoteDate;
+    }
+
+    if (assessment.scheduled_date) {
+        const scheduledDate = new Date(assessment.scheduled_date);
+        if (scheduledDate > latest) latest = scheduledDate;
+    }
+
+    return latest;
+};
+
+const isAssessmentExpiredForNotifications = (assessment: Assessment) => {
+    const lastActivity = getAssessmentLastActivityDate(assessment);
+    const daysSinceActivity = Math.floor((Date.now() - lastActivity.getTime()) / (1000 * 60 * 60 * 24));
+
+    return daysSinceActivity >= JOB_NOTIFICATION_EXPIRY_DAYS;
+};
+
 const Admin = () => {
     // ─── State ──────────────────────────────────────────────────────────────────
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -1094,6 +1120,14 @@ const Admin = () => {
         if (!selectedAssessment) return;
         setIsUpdating(true);
         try {
+            if (!NOTIFIABLE_JOB_STATUSES.includes(selectedAssessment.status as typeof NOTIFIABLE_JOB_STATUSES[number])) {
+                throw new Error('This job is closed and cannot be sent to assessors.');
+            }
+
+            if (selectedAssessment.completed_at || isAssessmentExpiredForNotifications(selectedAssessment)) {
+                throw new Error('This job is expired and cannot be sent to assessors.');
+            }
+
             // Ensure assessment is live (no-op if already live)
             if (selectedAssessment.status !== 'live') {
                 const { error: updateError } = await supabase

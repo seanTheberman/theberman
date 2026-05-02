@@ -11,6 +11,29 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const EXPIRY_DAYS = 7;
+
+const getLastActivityTime = (job: any, quotes: any[] = []) => {
+    let latest = new Date(job.created_at).getTime();
+
+    for (const quote of quotes) {
+        const quoteTime = new Date(quote.created_at).getTime();
+        if (quoteTime > latest) latest = quoteTime;
+    }
+
+    if (job.scheduled_date) {
+        const scheduledTime = new Date(job.scheduled_date).getTime();
+        if (scheduledTime > latest) latest = scheduledTime;
+    }
+
+    return latest;
+};
+
+const isFreshJob = (job: any, quotes: any[] = []) => {
+    const daysSinceActivity = Math.floor((Date.now() - getLastActivityTime(job, quotes)) / (1000 * 60 * 60 * 24));
+    return daysSinceActivity < EXPIRY_DAYS;
+};
+
 Deno.serve(async (req: Request) => {
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders });
@@ -37,27 +60,6 @@ Deno.serve(async (req: Request) => {
             if (tenantErr) throw tenantErr;
             tenants = (tenantRows || []).map((r: any) => r.tenant).filter(Boolean);
             if (tenants.length === 0) tenants = ['ireland'];
-        }
-
-        // ---- Global one-shot: auto-close stale jobs across ALL tenants ----
-        // Jobs older than 15 days that are still "open" get auto-completed so they stop
-        // being matched for reminders. This runs once per cron invocation, tenant-scoped
-        // only implicitly via the status filter.
-        const fifteenDaysAgo = new Date();
-        fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
-        const { error: closeError, count: closedCount } = await supabase
-            .from('assessments')
-            .update({
-                status: 'completed',
-                completed_at: new Date().toISOString(),
-                notes: 'Auto-completed - job older than 15 days',
-            }, { count: 'exact' })
-            .lt('created_at', fifteenDaysAgo.toISOString())
-            .in('status', ['live']);
-        if (closeError) {
-            console.error('[send-job-reminder-cron] Error auto-closing old jobs:', closeError);
-        } else {
-            console.log(`[send-job-reminder-cron] Auto-closed ${closedCount ?? 0} jobs older than 15 days.`);
         }
 
         // ---- Reminder cooldown: don't re-remind a contractor about the same job
@@ -102,30 +104,68 @@ Deno.serve(async (req: Request) => {
                 continue;
             }
 
-            // 2. Only currently live jobs in this tenant, less than 15 days old.
+            // 2. Only currently live jobs in this tenant that are fresh by the same
+            //    7-day inactivity rule used in the admin and contractor dashboards.
             //    `submitted` and `pending_quote` are NOT included – those aren't open-quote.
-            const { data: assessments, error: assessmentsError } = await supabase
+            const { data: liveAssessments, error: assessmentsError } = await supabase
                 .from('assessments')
-                .select('id, town, county, property_type, job_type, ber_purpose, eircode, created_at, tenant')
+                .select('id, town, county, property_type, job_type, ber_purpose, eircode, created_at, scheduled_date, tenant')
                 .eq('tenant', tenant)
                 .eq('status', 'live')
-                .gte('created_at', fifteenDaysAgo.toISOString());
+                .is('completed_at', null);
             if (assessmentsError) throw assessmentsError;
 
-            if (!assessments || assessments.length === 0) {
+            if (!liveAssessments || liveAssessments.length === 0) {
                 console.log(`[send-job-reminder-cron] No live jobs for tenant ${tenant}.`);
                 continue;
             }
 
-            const assessmentIds = assessments.map(a => a.id);
+            const liveAssessmentIds = liveAssessments.map(a => a.id);
 
             // 3. Quotes already made by these contractors on these jobs (so we exclude them).
-            const { data: allQuotes, error: quotesError } = await supabase
+            const { data: allJobQuotes, error: quotesError } = await supabase
                 .from('quotes')
-                .select('assessment_id, created_by')
-                .in('assessment_id', assessmentIds)
-                .in('created_by', contractors.map(c => c.id));
+                .select('assessment_id, created_by, created_at, status')
+                .in('assessment_id', liveAssessmentIds);
             if (quotesError) throw quotesError;
+
+            const quotesByJob = new Map<string, any[]>();
+            (allJobQuotes || []).forEach(q => {
+                if (!quotesByJob.has(q.assessment_id)) {
+                    quotesByJob.set(q.assessment_id, []);
+                }
+                quotesByJob.get(q.assessment_id)!.push(q);
+            });
+
+            const assessments = liveAssessments.filter(job => isFreshJob(job, quotesByJob.get(job.id) || []));
+            const staleAssessmentIds = liveAssessments
+                .filter(job => !isFreshJob(job, quotesByJob.get(job.id) || []))
+                .map(job => job.id);
+
+            if (staleAssessmentIds.length > 0) {
+                const { error: closeError, count: closedCount } = await supabase
+                    .from('assessments')
+                    .update({
+                        status: 'completed',
+                        completed_at: new Date().toISOString(),
+                        notes: `Auto-completed - no activity for ${EXPIRY_DAYS} days`,
+                    }, { count: 'exact' })
+                    .in('id', staleAssessmentIds)
+                    .eq('tenant', tenant)
+                    .eq('status', 'live');
+                if (closeError) {
+                    console.error(`[send-job-reminder-cron] Error auto-closing stale jobs for ${tenant}:`, closeError);
+                } else {
+                    console.log(`[send-job-reminder-cron] Auto-closed ${closedCount ?? 0} stale jobs for ${tenant}.`);
+                }
+            }
+
+            if (assessments.length === 0) {
+                console.log(`[send-job-reminder-cron] No fresh live jobs for tenant ${tenant}.`);
+                continue;
+            }
+
+            const assessmentIds = assessments.map(a => a.id);
 
             // 4. Previous reminders within the cooldown window.
             const { data: recentReminders, error: remErr } = await supabase
@@ -165,7 +205,7 @@ Deno.serve(async (req: Request) => {
 
             for (const contractor of contractors) {
                 const quotedIds = new Set(
-                    (allQuotes || [])
+                    (allJobQuotes || [])
                         .filter((q: any) => q.created_by === contractor.id)
                         .map((q: any) => q.assessment_id),
                 );

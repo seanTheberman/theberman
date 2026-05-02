@@ -12,6 +12,30 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const EXPIRY_DAYS = 7;
+const OPEN_JOB_STATUSES = ['live', 'submitted', 'pending_quote'];
+
+const getLastActivityTime = (assessment: any, quotes: any[] = []) => {
+    let latest = new Date(assessment.created_at).getTime();
+
+    for (const quote of quotes) {
+        const quoteTime = new Date(quote.created_at).getTime();
+        if (quoteTime > latest) latest = quoteTime;
+    }
+
+    if (assessment.scheduled_date) {
+        const scheduledTime = new Date(assessment.scheduled_date).getTime();
+        if (scheduledTime > latest) latest = scheduledTime;
+    }
+
+    return latest;
+};
+
+const isExpiredAssessment = (assessment: any, quotes: any[] = []) => {
+    const daysSinceActivity = Math.floor((Date.now() - getLastActivityTime(assessment, quotes)) / (1000 * 60 * 60 * 24));
+    return daysSinceActivity >= EXPIRY_DAYS;
+};
+
 Deno.serve(async (req: Request) => {
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders });
@@ -25,6 +49,57 @@ Deno.serve(async (req: Request) => {
         const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
         const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
+        if (!assessmentId) {
+            return new Response(
+                JSON.stringify({ success: false, error: 'assessmentId is required' }),
+                { status: 400, headers: responseHeaders },
+            );
+        }
+
+        const { data: existingAssessment, error: existingErr } = await supabase
+            .from('assessments')
+            .select('id, status, created_at, scheduled_date, completed_at, job_live_email_sent, job_live_notified_at')
+            .eq('id', assessmentId)
+            .eq('tenant', tenant)
+            .maybeSingle();
+
+        if (existingErr) {
+            console.error(`[send-job-live-email] Error fetching assessment ${assessmentId}:`, existingErr);
+            return new Response(
+                JSON.stringify({ success: false, error: 'Failed to fetch assessment' }),
+                { status: 500, headers: responseHeaders },
+            );
+        }
+
+        if (!existingAssessment) {
+            return new Response(
+                JSON.stringify({ success: false, error: 'Assessment not found', assessmentId }),
+                { status: 404, headers: responseHeaders },
+            );
+        }
+
+        const { data: activityQuotes } = await supabase
+            .from('quotes')
+            .select('created_at, status')
+            .eq('assessment_id', assessmentId)
+            .eq('tenant', tenant);
+
+        if (existingAssessment.completed_at || !OPEN_JOB_STATUSES.includes(existingAssessment.status)) {
+            console.log(`[send-job-live-email] Skipping ${assessmentId} – status '${existingAssessment.status}' is not open for notifications.`);
+            return new Response(
+                JSON.stringify({ success: true, skipped: true, reason: 'not_open', assessmentId, status: existingAssessment.status }),
+                { headers: responseHeaders },
+            );
+        }
+
+        if (isExpiredAssessment(existingAssessment, activityQuotes || [])) {
+            console.log(`[send-job-live-email] Skipping ${assessmentId} – expired by ${EXPIRY_DAYS}-day inactivity rule.`);
+            return new Response(
+                JSON.stringify({ success: true, skipped: true, reason: 'expired', assessmentId }),
+                { headers: responseHeaders },
+            );
+        }
+
         // Load tenant config (SMTP/Twilio credentials)
         const config = await getTenantConfig(supabase, tenant);
         const websiteUrl = config.website_url;
@@ -34,20 +109,9 @@ Deno.serve(async (req: Request) => {
         // This prevents duplicate emails when the function is invoked twice (e.g. double-click,
         // race between admin Go-Live and a re-trigger, or retries).
         // When `force` is true (admin resend), bypass the guard entirely.
-        if (assessmentId && !force) {
-            const { data: existing, error: fetchErr } = await supabase
-                .from('assessments')
-                .select('id, status, job_live_email_sent, job_live_notified_at')
-                .eq('id', assessmentId)
-                .eq('tenant', tenant)
-                .maybeSingle();
-
-            if (fetchErr) {
-                console.error(`[send-job-live-email] Error fetching assessment ${assessmentId}:`, fetchErr);
-            }
-
-            if (existing?.job_live_notified_at || existing?.job_live_email_sent) {
-                console.log(`[send-job-live-email] Skipping ${assessmentId} – already notified at ${existing.job_live_notified_at}`);
+        if (!force) {
+            if (existingAssessment.job_live_notified_at || existingAssessment.job_live_email_sent) {
+                console.log(`[send-job-live-email] Skipping ${assessmentId} – already notified at ${existingAssessment.job_live_notified_at}`);
                 return new Response(
                     JSON.stringify({ success: true, skipped: true, reason: 'already_notified', assessmentId }),
                     { headers: responseHeaders },
@@ -62,6 +126,7 @@ Deno.serve(async (req: Request) => {
                 .update({ status: 'live', job_live_notified_at: claimAt })
                 .eq('id', assessmentId)
                 .eq('tenant', tenant)
+                .in('status', OPEN_JOB_STATUSES)
                 .is('job_live_notified_at', null)
                 .select('id');
 
