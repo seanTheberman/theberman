@@ -96,110 +96,170 @@ Deno.serve(async (req: Request) => {
         const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
         const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-        const smtpHostname = Deno.env.get('SMTP_HOSTNAME');
-        const smtpPortStr = Deno.env.get('SMTP_PORT');
-        const smtpUsername = Deno.env.get('SMTP_USERNAME');
-        const smtpPassword = Deno.env.get('SMTP_PASSWORD');
-        const smtpFrom = Deno.env.get('SMTP_FROM') || 'no-reply@theberman.eu';
-        const websiteUrl = Deno.env.get('PUBLIC_WEBSITE_URL') || 'https://theberman.eu';
-
-        if (!smtpHostname || !smtpUsername || !smtpPassword) {
-            return new Response(JSON.stringify({ success: false, message: 'SMTP credentials missing' }), { headers: responseHeaders });
+        const body = await req.json().catch(() => ({}));
+        let tenants: string[];
+        if (body.tenant) {
+            tenants = [body.tenant];
+        } else {
+            const { data: tenantRows } = await supabase
+                .from('tenant_configurations')
+                .select('tenant')
+                .eq('is_active', true);
+            tenants = (tenantRows || []).map((r: any) => r.tenant).filter(Boolean);
+            if (tenants.length === 0) tenants = ['ireland'];
         }
 
-        const smtpPort = parseInt(smtpPortStr || '587');
+        // Only include jobs created within the last 15 days
+        const fifteenDaysAgo = new Date();
+        fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
 
-        // 1. Fetch Active Contractors
-        const { data: contractors, error: contractorsError } = await supabase
-            .from('profiles')
-            .select('id, email, full_name, preferred_counties')
-            .eq('role', 'contractor')
-            .eq('is_active', true);
+        const norm = (s: any) => (typeof s === 'string' ? s.trim().toLowerCase() : '');
 
-        if (contractorsError || !contractors) {
-            console.error('Failed to fetch contractors:', contractorsError);
-            throw new Error('Failed to fetch contractors');
-        }
+        const perTenantResults: Record<string, { sent: number; skipped: number }> = {};
 
-        // 2. Fetch Live Assessments
-        const { data: activeJobs, error: jobsError } = await supabase
-            .from('assessments')
-            .select('id, county, town, property_type, ber_purpose, created_at')
-            .in('status', ['live', 'submitted', 'pending_quote']);
+        for (const tenant of tenants) {
+            perTenantResults[tenant] = { sent: 0, skipped: 0 };
 
-        if (jobsError || !activeJobs) {
-            console.error('Failed to fetch active jobs:', jobsError);
-            throw new Error('Failed to fetch active jobs');
-        }
-
-        if (activeJobs.length === 0) {
-            return new Response(JSON.stringify({ success: true, message: 'No live jobs available' }), { headers: responseHeaders });
-        }
-
-        // 3. Fetch Existing Quotes (to filter out)
-        const { data: allQuotes, error: quotesError } = await supabase
-            .from('quotes')
-            .select('assessment_id, created_by')
-            .in('assessment_id', activeJobs.map(j => j.id));
-
-        if (quotesError) {
-            console.error('Failed to fetch quotes:', quotesError);
-            throw new Error('Failed to fetch existing quotes');
-        }
-
-        const contractorQuotes = new Map<string, Set<string>>();
-        (allQuotes || []).forEach(q => {
-            if (!contractorQuotes.has(q.created_by)) {
-                contractorQuotes.set(q.created_by, new Set());
+            let config;
+            try {
+                const { getTenantConfig } = await import("../shared/tenant.ts");
+                config = await getTenantConfig(supabase, tenant);
+            } catch (e: any) {
+                console.error(`[send-job-digest] Tenant config load failed for ${tenant}:`, e.message);
+                continue;
             }
-            contractorQuotes.get(q.created_by)!.add(q.assessment_id);
-        });
+            const { smtp_hostname: smtpHostname, smtp_port: smtpPort, smtp_username: smtpUsername, smtp_password: smtpPassword, smtp_from: smtpFrom, website_url: websiteUrl } = config;
 
-        // 4. Process and Send Emails
-        const client = new CustomSmtpClient();
-        await client.connect(smtpHostname, smtpPort);
-        await client.authenticate(smtpUsername, smtpPassword);
+            if (!smtpHostname || !smtpUsername || !smtpPassword) {
+                console.error(`[send-job-digest] SMTP not configured for tenant ${tenant}, skipping.`);
+                continue;
+            }
 
-        let emailsSent = 0;
+            // 1. Only active, fully-onboarded contractors for this tenant
+            const { data: contractors, error: contractorsError } = await supabase
+                .from('profiles')
+                .select('id, email, full_name, preferred_counties, preferred_towns, assessor_type')
+                .eq('role', 'contractor')
+                .eq('tenant', tenant)
+                .eq('is_active', true)
+                .is('deleted_at', null)
+                .in('registration_status', ['active', 'completed']);
 
-        for (const contractor of contractors) {
-            const quotedJobIds = contractorQuotes.get(contractor.id) || new Set();
+            if (contractorsError || !contractors || contractors.length === 0) {
+                console.log(`[send-job-digest] No eligible contractors for tenant ${tenant}.`);
+                continue;
+            }
 
-            const relevantJobs = activeJobs.filter(job => {
-                // Check if already quoted
-                if (quotedJobIds.has(job.id)) return false;
+            // 2. Only currently LIVE jobs, less than 15 days old, for this tenant
+            const { data: activeJobs, error: jobsError } = await supabase
+                .from('assessments')
+                .select('id, county, town, property_type, job_type, ber_purpose, created_at')
+                .eq('tenant', tenant)
+                .eq('status', 'live')
+                .gte('created_at', fifteenDaysAgo.toISOString());
 
-                // Check location preference. If invalid or empty, return false.
-                if (!contractor.preferred_counties || !Array.isArray(contractor.preferred_counties) || contractor.preferred_counties.length === 0) return false;
-                return contractor.preferred_counties.includes(job.county);
+            if (jobsError || !activeJobs || activeJobs.length === 0) {
+                console.log(`[send-job-digest] No live jobs for tenant ${tenant}.`);
+                continue;
+            }
+
+            // 3. Fetch existing quotes to exclude jobs already quoted by each contractor
+            const { data: allQuotes } = await supabase
+                .from('quotes')
+                .select('assessment_id, created_by')
+                .in('assessment_id', activeJobs.map(j => j.id))
+                .in('created_by', contractors.map(c => c.id));
+
+            const contractorQuotes = new Map<string, Set<string>>();
+            (allQuotes || []).forEach(q => {
+                if (!contractorQuotes.has(q.created_by)) {
+                    contractorQuotes.set(q.created_by, new Set());
+                }
+                contractorQuotes.get(q.created_by)!.add(q.assessment_id);
             });
 
-            if (relevantJobs.length > 0) {
+            // 4. Send digest emails
+            const client = new CustomSmtpClient();
+            try {
+                await client.connect(smtpHostname, smtpPort);
+                await client.authenticate(smtpUsername, smtpPassword);
+            } catch (e: any) {
+                console.error(`[send-job-digest] SMTP connect failed for tenant ${tenant}:`, e.message);
+                continue;
+            }
+
+            for (const contractor of contractors) {
+                const quotedJobIds = contractorQuotes.get(contractor.id) || new Set();
+
+                const prefTownsNorm = Array.isArray(contractor.preferred_towns)
+                    ? contractor.preferred_towns.map(norm).filter(Boolean)
+                    : [];
+                const prefCountiesNorm = Array.isArray(contractor.preferred_counties)
+                    ? contractor.preferred_counties.map(norm).filter(Boolean)
+                    : [];
+
+                if (prefTownsNorm.length === 0 && prefCountiesNorm.length === 0) {
+                    perTenantResults[tenant].skipped++;
+                    continue;
+                }
+
+                const assessorType = contractor.assessor_type || 'Domestic Assessor';
+                const isDomesticAssessor = assessorType.includes('Domestic');
+                const isCommercialAssessor = assessorType.includes('Commercial');
+                const isTechnicalAssessor = assessorType.includes('Technical');
+
+                const relevantJobs = activeJobs.filter(job => {
+                    if (quotedJobIds.has(job.id)) return false;
+
+                    // Town match (preferred) or county fallback – case-insensitive
+                    const townMatches = prefTownsNorm.length > 0 && norm(job.town)
+                        ? prefTownsNorm.includes(norm(job.town))
+                        : false;
+                    const countyMatches = prefCountiesNorm.length > 0 && norm(job.county)
+                        ? prefCountiesNorm.includes(norm(job.county))
+                        : false;
+                    if (!townMatches && !countyMatches) return false;
+
+                    // Assessor type match
+                    const isCommercialJob = job.job_type === 'commercial' ||
+                        ['commercial', 'office', 'retail', 'industrial', 'warehouse'].some(type =>
+                            (job.property_type || '').toLowerCase().includes(type),
+                        );
+                    const isTechnicalJob = job.job_type === 'technical';
+                    if (isCommercialJob && !isCommercialAssessor) return false;
+                    if (isTechnicalJob && !isTechnicalAssessor) return false;
+                    if (!isCommercialJob && !isTechnicalJob && !isDomesticAssessor) return false;
+
+                    return true;
+                });
+
+                if (relevantJobs.length === 0) {
+                    perTenantResults[tenant].skipped++;
+                    continue;
+                }
+
                 try {
-                    console.log(`Sending digest with ${relevantJobs.length} jobs to ${contractor.email}`);
+                    console.log(`[send-job-digest] Sending digest with ${relevantJobs.length} jobs to ${contractor.email} (tenant: ${tenant})`);
                     const html = generateDigestEmail(contractor.full_name, relevantJobs, websiteUrl);
                     await client.send(smtpFrom, contractor.email, `${relevantJobs.length}x Jobs Still Available to Quote`, html);
-                    emailsSent++;
+                    perTenantResults[tenant].sent++;
                 } catch (sendErr) {
-                    console.error(`Failed to send digest to ${contractor.email}:`, sendErr);
+                    console.error(`[send-job-digest] Failed to send digest to ${contractor.email}:`, sendErr);
                 }
             }
-        }
 
-        await client.close();
+            await client.close();
+            console.log(`[send-job-digest] Tenant ${tenant}: sent=${perTenantResults[tenant].sent}, skipped=${perTenantResults[tenant].skipped}.`);
+        }
 
         return new Response(JSON.stringify({
             success: true,
-            message: `Digest sent to ${emailsSent} contractors`,
-            details: {
-                totalContractors: contractors.length,
-                totalActiveJobs: activeJobs.length,
-                emailsSent
-            }
+            message: 'Digest processed.',
+            results: perTenantResults,
         }), { headers: responseHeaders });
 
     } catch (err: any) {
-        console.error("[GLOBAL ERROR]", err);
+        console.error("[send-job-digest] GLOBAL ERROR", err);
         return new Response(JSON.stringify({ success: false, error: 'Internal Error', details: err?.message }), { headers: responseHeaders });
     }
 });
