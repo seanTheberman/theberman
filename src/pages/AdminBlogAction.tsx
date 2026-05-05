@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { getTenantFromDomain } from '../lib/tenant';
 import { ChevronLeft, Save, X, Loader2, BookOpen, Eye, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ReactQuill from 'react-quill-new';
@@ -113,6 +114,7 @@ const AdminBlogAction = () => {
 
         const formData = new FormData(e.target as HTMLFormElement);
         const title = formData.get('title') as string;
+        const tenant = getTenantFromDomain();
         const updates = {
             title,
             subtitle: formData.get('subtitle') as string || null,
@@ -126,6 +128,7 @@ const AdminBlogAction = () => {
             published_at: new Date(formData.get('published_at') as string).toISOString(),
             content: article.content || '',
             slug: article.slug || generateSlug(title),
+            tenant: tenant,
         };
 
         setIsSaving(true);
