@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useTranslation } from '../hooks/useTranslation';
+import { usePageContent, cmsValue } from '../hooks/usePageContent';
 import SEOHead from '../components/SEOHead';
 
 interface PromoSettings {
@@ -20,6 +21,8 @@ interface PromoSettings {
 
 const HomePage = () => {
     const { t, isSpanish } = useTranslation();
+    const { content: cms } = usePageContent('home');
+    const c = (section: string, key: string, fallback: string) => cmsValue(cms, section, key, fallback);
     const [promo, setPromo] = useState<PromoSettings | null>(null);
     const [isDismissed, setIsDismissed] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,27 +78,24 @@ const HomePage = () => {
                     <div className="max-w-4xl mx-auto text-center">
                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-100 rounded-full mb-8 animate-fade-in">
                             <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span className="text-sm font-bold text-green-700">{isSpanish ? 'La Mayor Plataforma de Certificados Energéticos' : "Ireland's Largest BER Website"}</span>
+                            <span className="text-sm font-bold text-green-700">{c('hero', 'badge_text', isSpanish ? 'La Mayor Plataforma de Certificados Energéticos' : "Ireland's Largest BER Website")}</span>
                         </div>
 
-                        <h1 className={`font-black text-gray-900 mb-6 md:mb-8 leading-[1.1] tracking-tight ${isSpanish ? 'text-4xl md:text-5xl lg:text-6xl' : 'text-5xl md:text-7xl lg:text-8xl'}`}>
-                            {isSpanish ? (
-                                <>¿Necesitas un <span className="text-[#007F00]">Certificado Energético?</span></>
-                            ) : (
-                                <>Need a <span className="text-[#007F00]">BER Cert?</span></>
-                            )}
+                        <h1 className={`font-black mb-6 md:mb-8 leading-[1.1] tracking-tight ${isSpanish ? 'text-4xl md:text-5xl lg:text-6xl' : 'text-5xl md:text-7xl lg:text-8xl'}`} style={{ color: c('hero', 'heading_color', '#111827') }}>
+                            {c('hero', 'heading', isSpanish ? '¿Necesitas un' : 'Need a')}{' '}
+                            <span style={{ color: c('hero', 'highlight_color', '#007F00') }}>{c('hero', 'heading_highlight', isSpanish ? 'Certificado Energético?' : 'BER Cert?')}</span>
                         </h1>
 
                         <p className={`text-gray-600 max-w-2xl mx-auto leading-relaxed font-medium ${isSpanish ? 'text-base md:text-lg mb-6 md:mb-8' : 'text-lg md:text-2xl mb-10 md:mb-12'}`}>
-                            {isSpanish
+                            {c('hero', 'subheading', isSpanish
                                 ? 'La forma más rápida y fiable de obtener tu Certificado Energético. Los mejores precios garantizados de más de 100 certificadores en toda España.'
-                                : 'The fastest, most reliable way to get your Building Energy Rating. Guaranteed lowest prices from 100+ assessors nationwide.'}
+                                : 'The fastest, most reliable way to get your Building Energy Rating. Guaranteed lowest prices from 100+ assessors nationwide.')}
                         </p>
 
-                        <p className={`text-[#007F00] font-bold animate-fade-in ${isSpanish ? 'my-4 text-lg md:text-xl' : 'my-6 text-2xl md:text-3xl'}`}>
-                            {isSpanish
+                        <p className={`font-bold animate-fade-in ${isSpanish ? 'my-4 text-lg md:text-xl' : 'my-6 text-2xl md:text-3xl'}`} style={{ color: c('hero', 'highlight_color', '#007F00') }}>
+                            {c('hero', 'cta_line', isSpanish
                                 ? 'Obtén los mejores presupuestos de certificadores locales hoy mismo.'
-                                : 'Get the Best Quotes from local BER Assessors today.'}
+                                : 'Get the Best Quotes from local BER Assessors today.')}
                         </p>
                         {/* Dual Primary CTAs */}
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-2xl mx-auto mb-16 px-4">
@@ -110,9 +110,9 @@ const HomePage = () => {
                         {/* Fast Benefits Row */}
                         <div className="flex flex-wrap justify-center gap-x-12 gap-y-6">
                             {[
-                                { icon: <Users size={20} />, text: isSpanish ? '100+ Certificadores en Toda España' : "100+ Assessors Nationwide" },
-                                { icon: <ShieldCheck size={20} />, text: isSpanish ? 'SOLO CERTIFICADORES ACREDITADOS' : "SEAI REGISTERED ASSESSORS ONLY" },
-                                { icon: <Clock size={20} />, text: isSpanish ? 'Elige tu Fecha y Hora' : "Choose Your Date & Time" }
+                                { icon: <Users size={20} />, text: c('hero', 'benefit_1', isSpanish ? '100+ Certificadores en Toda España' : "100+ Assessors Nationwide") },
+                                { icon: <ShieldCheck size={20} />, text: c('hero', 'benefit_2', isSpanish ? 'SOLO CERTIFICADORES ACREDITADOS' : "SEAI REGISTERED ASSESSORS ONLY") },
+                                { icon: <Clock size={20} />, text: c('hero', 'benefit_3', isSpanish ? 'Elige tu Fecha y Hora' : "Choose Your Date & Time") }
                             ].map((item, i) => (
                                 <div key={i} className="flex items-center gap-2 text-gray-500 font-bold text-sm tracking-wide uppercase">
                                     <span className="text-[#007F00]">{item.icon}</span>
@@ -128,8 +128,8 @@ const HomePage = () => {
             <section className="py-24 bg-gray-50 border-y border-gray-100">
                 <div className="container mx-auto px-6">
                     <div className="text-center mb-20">
-                        <span className="text-[#007F00] font-bold uppercase tracking-widest text-sm mb-4 block">{isSpanish ? 'Proceso Sencillo' : 'Simple Process'}</span>
-                        <h2 className="text-4xl md:text-5xl font-black text-gray-900">{isSpanish ? 'Cómo Funciona' : 'How It Works'}</h2>
+                        <span className="text-[#007F00] font-bold uppercase tracking-widest text-sm mb-4 block">{c('how_it_works', 'tag', isSpanish ? 'Proceso Sencillo' : 'Simple Process')}</span>
+                        <h2 className="text-4xl md:text-5xl font-black text-gray-900">{c('how_it_works', 'heading', isSpanish ? 'Cómo Funciona' : 'How It Works')}</h2>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
@@ -140,26 +140,26 @@ const HomePage = () => {
                             {
                                 step: "01",
                                 icon: <Clock size={32} />,
-                                title: isSpanish ? "Elige Fecha" : "Select Date",
-                                desc: isSpanish ? "Indícanos tu fecha y hora preferida para la certificación." : "Tell us your preferred date & time for assessment."
+                                title: c('how_it_works', 'step1_title', isSpanish ? "Elige Fecha" : "Select Date"),
+                                desc: c('how_it_works', 'step1_desc', isSpanish ? "Indícanos tu fecha y hora preferida para la certificación." : "Tell us your preferred date & time for assessment.")
                             },
                             {
                                 step: "02",
                                 icon: <ClipboardList size={32} />,
-                                title: isSpanish ? "Envía Detalles" : "Post Details",
-                                desc: isSpanish ? "Comparte la información de tu propiedad en menos de 1 minuto." : "Share your property info in less than 1 minute."
+                                title: c('how_it_works', 'step2_title', isSpanish ? "Envía Detalles" : "Post Details"),
+                                desc: c('how_it_works', 'step2_desc', isSpanish ? "Comparte la información de tu propiedad en menos de 1 minuto." : "Share your property info in less than 1 minute.")
                             },
                             {
                                 step: "03",
                                 icon: <TrendingUp size={32} />,
-                                title: isSpanish ? "Recibe Presupuestos" : "Get Quotes",
-                                desc: isSpanish ? "Recibe precios competitivos de certificadores locales." : "Receive competitive prices from local assessors."
+                                title: c('how_it_works', 'step3_title', isSpanish ? "Recibe Presupuestos" : "Get Quotes"),
+                                desc: c('how_it_works', 'step3_desc', isSpanish ? "Recibe precios competitivos de certificadores locales." : "Receive competitive prices from local assessors.")
                             },
                             {
                                 step: "04",
                                 icon: <CheckCircle2 size={32} />,
-                                title: isSpanish ? "Reserva Online" : "Book Online",
-                                desc: isSpanish ? "Elige tu presupuesto favorito y confirma al instante." : "Choose your favorite quote and confirm instantly."
+                                title: c('how_it_works', 'step4_title', isSpanish ? "Reserva Online" : "Book Online"),
+                                desc: c('how_it_works', 'step4_desc', isSpanish ? "Elige tu presupuesto favorito y confirma al instante." : "Choose your favorite quote and confirm instantly.")
                             }
                         ].map((item, i) => (
                             <div key={i} className="relative z-10 bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all group overflow-hidden cursor-pointer">
@@ -182,20 +182,17 @@ const HomePage = () => {
                 <div className="container mx-auto px-6">
                     <div className="flex flex-col lg:flex-row items-center gap-16">
                         <div className="flex-1">
-                            <span className="text-[#007F00] font-bold uppercase tracking-widest text-sm mb-4 block">{isSpanish ? 'La Ventaja' : 'The Advantage'}</span>
+                            <span className="text-[#007F00] font-bold uppercase tracking-widest text-sm mb-4 block">{c('benefits', 'tag', isSpanish ? 'La Ventaja' : 'The Advantage')}</span>
                             <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-8 leading-tight">
-                                {isSpanish ? (
-                                    <>¿Por qué Confían <br /> <span className="text-[#007F00]">en Nosotros</span> los Propietarios?</>
-                                ) : (
-                                    <>Why Homeowners Trust <br /> <span className="text-[#007F00]">The BER Man</span></>
-                                )}
+                                {c('benefits', 'heading', isSpanish ? '¿Por qué Confían en Nosotros' : 'Why Homeowners Trust')} <br />
+                                <span className="text-[#007F00]">{c('benefits', 'heading_highlight', isSpanish ? 'los Propietarios?' : 'The BER Man')}</span>
                             </h2>
                             <div className="space-y-6">
                                 {[
-                                    { title: isSpanish ? "Mejor Precio Garantizado" : "Lowest Prices Guaranteed", desc: isSpanish ? "Recibe múltiples presupuestos y elige la mejor opción para ti." : "Receive multiple quotes and choose the best option for you.." },
-                                    { title: isSpanish ? "Solo Certificadores Acreditados" : "BER Registered Assessors Only", desc: isSpanish ? "Todos los certificadores están plenamente acreditados y verificados." : "Every assessor is fully certified and vetted for quality." },
-                                    { title: isSpanish ? "Garantía de Devolución" : "Money-Back Guarantee", desc: isSpanish ? "Te aseguramos un servicio profesional o te devolvemos tu dinero." : "We ensure you get a professional service or your money back." },
-                                    { title: isSpanish ? "Reserva Online Instantánea" : "Instant Online Booking", desc: isSpanish ? "Sin llamadas de teléfono de ida y vuelta. Reserva todo en tiempo real." : "No back-and-forth phone calls. Book everything in real-time." }
+                                    { title: c('benefits', 'benefit1_title', isSpanish ? "Mejor Precio Garantizado" : "Lowest Prices Guaranteed"), desc: c('benefits', 'benefit1_desc', isSpanish ? "Recibe múltiples presupuestos y elige la mejor opción para ti." : "Receive multiple quotes and choose the best option for you.") },
+                                    { title: c('benefits', 'benefit2_title', isSpanish ? "Solo Certificadores Acreditados" : "BER Registered Assessors Only"), desc: c('benefits', 'benefit2_desc', isSpanish ? "Todos los certificadores están plenamente acreditados y verificados." : "Every assessor is fully certified and vetted for quality.") },
+                                    { title: c('benefits', 'benefit3_title', isSpanish ? "Garantía de Devolución" : "Money-Back Guarantee"), desc: c('benefits', 'benefit3_desc', isSpanish ? "Te aseguramos un servicio profesional o te devolvemos tu dinero." : "We ensure you get a professional service or your money back.") },
+                                    { title: c('benefits', 'benefit4_title', isSpanish ? "Reserva Online Instantánea" : "Instant Online Booking"), desc: c('benefits', 'benefit4_desc', isSpanish ? "Sin llamadas de teléfono de ida y vuelta. Reserva todo en tiempo real." : "No back-and-forth phone calls. Book everything in real-time.") }
                                 ].map((benefit, i) => (
                                     <div key={i} className="flex gap-4">
                                         <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-[#007F00]">
@@ -213,18 +210,18 @@ const HomePage = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-4 pt-8">
                                     <div className="bg-gray-50 p-8 rounded-3xl border border-gray-100">
-                                        <div className="text-4xl font-black text-[#007F00] mb-2">1k+</div>
-                                        <div className="text-sm font-bold text-gray-500 uppercase">{isSpanish ? 'Usuarios Atendidos' : 'Users Served'}</div>
+                                        <div className="text-4xl font-black text-[#007F00] mb-2">{c('benefits', 'stat1_value', isSpanish ? '1k+' : '1k+')}</div>
+                                        <div className="text-sm font-bold text-gray-500 uppercase">{c('benefits', 'stat1_label', isSpanish ? 'Usuarios Atendidos' : 'Users Served')}</div>
                                     </div>
                                     <div className="bg-green-50 p-8 rounded-3xl border border-green-100">
-                                        <div className="text-4xl font-black text-[#007F00] mb-2">100+</div>
-                                        <div className="text-sm font-bold text-gray-500 uppercase">{isSpanish ? 'Certificadores' : 'Assessors'}</div>
+                                        <div className="text-4xl font-black text-[#007F00] mb-2">{c('benefits', 'stat2_value', isSpanish ? '100+' : '100+')}</div>
+                                        <div className="text-sm font-bold text-gray-500 uppercase">{c('benefits', 'stat2_label', isSpanish ? 'Certificadores' : 'Assessors')}</div>
                                     </div>
                                 </div>
                                 <div className="space-y-4">
                                     <div className="bg-[#007F00] p-8 rounded-3xl text-white shadow-xl shadow-green-100">
-                                        <div className="text-4xl font-black mb-2">4.9/5</div>
-                                        <div className="text-sm font-bold opacity-80 uppercase tracking-widest">{isSpanish ? 'Valoración Media' : 'Average Rating'}</div>
+                                        <div className="text-4xl font-black mb-2">{c('benefits', 'stat3_value', '4.9/5')}</div>
+                                        <div className="text-sm font-bold opacity-80 uppercase tracking-widest">{c('benefits', 'stat3_label', isSpanish ? 'Valoración Media' : 'Average Rating')}</div>
                                         <div className="flex gap-1 mt-4">
                                             {[1, 2, 3, 4, 5].map(s => <Star key={s} size={16} fill="white" />)}
                                         </div>
@@ -246,51 +243,32 @@ const HomePage = () => {
                     <div className="text-center mb-16">
                         <div className="flex items-center justify-center gap-2 mb-4">
                             <Star className="text-green-500 fill-green-500" size={32} />
-                            <span className="text-3xl font-black">{isSpanish ? 'Excelente' : 'Excellent'}</span>
+                            <span className="text-3xl font-black">{c('reviews', 'heading', isSpanish ? 'Excelente' : 'Excellent')}</span>
                         </div>
-                        <p className="text-gray-500 font-bold uppercase tracking-widest text-sm">{isSpanish ? 'Basado en 1.000 valoraciones verificadas de clientes' : 'Based on 1,000 Verified Customer Ratings'}</p>
+                        <p className="text-gray-500 font-bold uppercase tracking-widest text-sm">{c('reviews', 'subheading', isSpanish ? 'Basado en 1.000 valoraciones verificadas de clientes' : 'Based on 1,000 Verified Customer Ratings')}</p>
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-8 items-stretch">
-                        {(isSpanish ? [
+                        {[
                             {
-                                author: "Carlos García",
-                                location: "Madrid",
-                                quote: "He usado la plataforma dos veces. En ambas recibí varios presupuestos en menos de una hora y el certificador fue muy profesional. Ahorré unos 30€ respecto a otras webs.",
+                                author: c('reviews', 'review1_author', isSpanish ? "Carlos García" : "Michael Byrne"),
+                                location: c('reviews', 'review1_location', isSpanish ? "Madrid" : "Dublin"),
+                                quote: c('reviews', 'review1_quote', isSpanish ? "He usado la plataforma dos veces. En ambas recibí varios presupuestos en menos de una hora y el certificador fue muy profesional. Ahorré unos 30€ respecto a otras webs." : "Used the platform twice now. Both times I got several quotes within an hour and the assessor was super professional. Saved about €30 vs other sites."),
                                 rating: 5
                             },
                             {
-                                author: "Lucía Martínez",
-                                location: "Barcelona",
-                                quote: "Extremadamente fácil de usar. Me encantó poder ver la acreditación y las reseñas de los certificadores antes de reservar. Muy recomendable para propietarios.",
+                                author: c('reviews', 'review2_author', isSpanish ? "Lucía Martínez" : "Sarah O'Toole"),
+                                location: c('reviews', 'review2_location', isSpanish ? "Barcelona" : "Cork"),
+                                quote: c('reviews', 'review2_quote', isSpanish ? "Extremadamente fácil de usar. Me encantó poder ver la acreditación y las reseñas de los certificadores antes de reservar. Muy recomendable para propietarios." : "Extremely easy to use. I loved that I could see the SEAI registration numbers and reviews for the assessors before booking. Highly recommended for landlords."),
                                 rating: 5
                             },
                             {
-                                author: "Javier Fernández",
-                                location: "Valencia",
-                                quote: "Rapidez y precios competitivos. El portal hace muy sencillo gestionarlo todo y el certificado se emitió en las 24 horas siguientes a la inspección.",
+                                author: c('reviews', 'review3_author', isSpanish ? "Javier Fernández" : "James Murphy"),
+                                location: c('reviews', 'review3_location', isSpanish ? "Valencia" : "Galway"),
+                                quote: c('reviews', 'review3_quote', isSpanish ? "Rapidez y precios competitivos. El portal hace muy sencillo gestionarlo todo y el certificado se emitió en las 24 horas siguientes a la inspección." : "Fast turnaround and competitive pricing. The portal makes it very simple to manage everything and the certificate was issued within 24 hours of inspection."),
                                 rating: 5
                             }
-                        ] : [
-                            {
-                                author: "Michael Byrne",
-                                location: "Dublin",
-                                quote: "Used the platform twice now. Both times I got several quotes within an hour and the assessor was super professional. Saved about €30 vs other sites.",
-                                rating: 5
-                            },
-                            {
-                                author: "Sarah O'Toole",
-                                location: "Cork",
-                                quote: "Extremely easy to use. I loved that I could see the SEAI registration numbers and reviews for the assessors before booking. Highly recommended for landlords.",
-                                rating: 5
-                            },
-                            {
-                                author: "James Murphy",
-                                location: "Galway",
-                                quote: "Fast turnaround and competitive pricing. The portal makes it very simple to manage everything and the certificate was issued within 24 hours of inspection.",
-                                rating: 5
-                            }
-                        ]).map((testi, i) => (
+                        ].map((testi, i) => (
                             <div key={i} className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm relative group overflow-hidden flex flex-col h-full cursor-pointer">
                                 <div className="flex gap-1 mb-4">
                                     {[1, 2, 3, 4, 5].map(s => <Star key={s} size={16} className="text-green-500 fill-green-500" />)}
@@ -314,15 +292,15 @@ const HomePage = () => {
             {/* ASSESSOR CTA SECTION */}
             <section className="py-20 bg-gray-50 border-b border-gray-100">
                 <div className="container mx-auto px-6 text-center">
-                    <h2 className="text-3xl md:text-4xl font-black text-[#007F00] mb-4">{isSpanish ? '¿Eres Certificador Energético?' : 'Are You a BER Assessor?'}</h2>
+                    <h2 className="text-3xl md:text-4xl font-black text-[#007F00] mb-4">{c('assessor_cta', 'heading', isSpanish ? '¿Eres Certificador Energético?' : 'Are You a BER Assessor?')}</h2>
                     <p className="text-gray-600 font-medium mb-8 max-w-2xl mx-auto">
-                        {isSpanish
+                        {c('assessor_cta', 'description', isSpanish
                             ? 'Regístrate y recibe leads de trabajo locales, directamente en tu teléfono.'
-                            : 'Register with theberman.eu and receive local job leads, straight to your phone.'}
+                            : 'Register with theberman.eu and receive local job leads, straight to your phone.')}
                     </p>
-                    <Link to="/signup?role=contractor">
+                    <Link to={c('assessor_cta', 'cta_url', '/signup?role=contractor')}>
                         <button className="px-12 py-4 border-2 border-[#007F00] text-[#007F00] hover:bg-[#007F00] hover:text-white font-black rounded-xl transition-all shadow-sm hover:shadow-lg transform hover:-translate-y-0.5 cursor-pointer">
-                            {isSpanish ? 'Únete Ahora' : 'Join Now'}
+                            {c('assessor_cta', 'cta_text', isSpanish ? 'Únete Ahora' : 'Join Now')}
                         </button>
                     </Link>
                 </div>
@@ -372,18 +350,15 @@ const HomePage = () => {
                 <div className="container mx-auto px-6 relative z-10">
                     <div className="flex flex-col lg:flex-row items-center gap-16">
                         <div className="flex-1">
-                            <span className="inline-block px-4 py-1.5 rounded-full bg-[#007F00]/10 text-[#007F00] text-xs font-black uppercase tracking-widest mb-6">{isSpanish ? 'Explora Nuestra Red' : 'Explore Our Network'}</span>
+                            <span className="inline-block px-4 py-1.5 rounded-full bg-[#007F00]/10 text-[#007F00] text-xs font-black uppercase tracking-widest mb-6">{c('catalogue_promo', 'tag', isSpanish ? 'Explora Nuestra Red' : 'Explore Our Network')}</span>
                             <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-8 leading-tight">
-                                {isSpanish ? (
-                                    <>Encuentra los Mejores <br /><span className="text-[#007F00]">Socios de Eficiencia</span> Energética.</>
-                                ) : (
-                                    <>Find the Best <br /><span className="text-[#007F00]">Home Energy</span> Partners.</>
-                                )}
+                                {c('catalogue_promo', 'heading', isSpanish ? 'Encuentra los Mejores' : 'Find the Best')} <br />
+                                <span className="text-[#007F00]">{c('catalogue_promo', 'heading_highlight', isSpanish ? 'Socios de Eficiencia Energética.' : 'Home Energy Partners.')}</span>
                             </h2>
                             <p className="text-lg md:text-xl text-gray-500 font-medium leading-relaxed mb-10 max-w-2xl">
-                                {isSpanish
+                                {c('catalogue_promo', 'description', isSpanish
                                     ? 'Accede a nuestro catálogo seleccionado de empresas certificadas de eficiencia energética. Desde instaladores de paneles solares hasta especialistas en aislamiento, encuentra el socio adecuado para el camino de tu hogar hacia la eficiencia.'
-                                    : "Access our curated catalogue of certified home energy businesses. From solar panel installers to insulation specialists, find the right partner for your home's journey to efficiency."}
+                                    : "Access our curated catalogue of certified home energy businesses. From solar panel installers to insulation specialists, find the right partner for your home's journey to efficiency.")}
                             </p>
                             <div className="flex flex-wrap gap-4">
                                 <Link to="/catalogue">
@@ -407,7 +382,7 @@ const HomePage = () => {
                         <div className="hidden lg:block flex-1 relative w-full max-w-xl mx-auto">
                             <div className="relative aspect-square bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-gray-100 group">
                                 <img
-                                    src="https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=800"
+                                    src={c('catalogue_promo', 'image_url', 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=800')}
                                     alt="Home Energy Upgrades"
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                                 />
@@ -438,20 +413,15 @@ const HomePage = () => {
             <section className="py-24 bg-white relative">
                 <div className="container mx-auto px-6 grid md:grid-cols-2 gap-20 items-center">
                     <div>
-                        <span className="text-[#007F00] font-bold uppercase tracking-widest text-sm mb-4 block">{isSpanish ? 'Base de Conocimiento' : 'Knowledge Base'}</span>
-                        <h2 className="text-4xl font-black mb-8 text-gray-900 leading-tight">{isSpanish ? <>Preguntas <br /> Frecuentes</> : <>Frequently Asked <br /> Questions</>}</h2>
+                        <span className="text-[#007F00] font-bold uppercase tracking-widest text-sm mb-4 block">{c('faq', 'tag', isSpanish ? 'Base de Conocimiento' : 'Knowledge Base')}</span>
+                        <h2 className="text-4xl font-black mb-8 text-gray-900 leading-tight">{c('faq', 'heading', isSpanish ? 'Preguntas Frecuentes' : 'Frequently Asked Questions')}</h2>
                         <div className="space-y-6">
-                            {(isSpanish ? [
-                                { q: "¿Qué es un Certificado Energético?", a: "El Certificado de Eficiencia Energética indica el nivel de eficiencia energética de tu vivienda, calificada de la A (más eficiente) a la G (menos eficiente)." },
-                                { q: "¿Por qué necesito un Certificado Energético?", a: "Es obligatorio por ley para vender o alquilar una vivienda. También es necesario para acceder a subvenciones de rehabilitación energética." },
-                                { q: "¿Cuánto cuesta?", a: "El precio depende del tamaño de la propiedad. Nuestra plataforma te garantiza los presupuestos más competitivos de certificadores locales." },
-                                { q: "¿Cuánto tiempo es válido?", a: "Un Certificado Energético tiene una validez de hasta 10 años, salvo que se realicen cambios importantes que alteren el rendimiento energético de la propiedad." }
-                            ] : [
-                                { q: "What is a BER Certificate?", a: "A Building Energy Rating (BER) tells you how energy efficient your home is, rated from A (most efficient) to G (least efficient)." },
-                                { q: "Why do I need a BER?", a: "It's legally required to sell or rent a property. It's also needed for SEAI energy upgrade grants." },
-                                { q: "How much does it cost?", a: "Prices vary based on property size. Our platform ensures you get the most competitive quotes from local assessors." },
-                                { q: "How long is it valid for?", a: "A BER certificate is valid for up to 10 years, unless there are major changes to the property's energy performance." }
-                            ]).map((faq, i) => (
+                            {[
+                                { q: c('faq', 'faq1_q', isSpanish ? "¿Qué es un Certificado Energético?" : "What is a BER Certificate?"), a: c('faq', 'faq1_a', isSpanish ? "El Certificado de Eficiencia Energética indica el nivel de eficiencia energética de tu vivienda, calificada de la A (más eficiente) a la G (menos eficiente)." : "A Building Energy Rating (BER) tells you how energy efficient your home is, rated from A (most efficient) to G (least efficient).") },
+                                { q: c('faq', 'faq2_q', isSpanish ? "¿Por qué necesito un Certificado Energético?" : "Why do I need a BER?"), a: c('faq', 'faq2_a', isSpanish ? "Es obligatorio por ley para vender o alquilar una vivienda. También es necesario para acceder a subvenciones de rehabilitación energética." : "It's legally required to sell or rent a property. It's also needed for SEAI energy upgrade grants.") },
+                                { q: c('faq', 'faq3_q', isSpanish ? "¿Cuánto cuesta?" : "How much does it cost?"), a: c('faq', 'faq3_a', isSpanish ? "El precio depende del tamaño de la propiedad. Nuestra plataforma te garantiza los presupuestos más competitivos de certificadores locales." : "Prices vary based on property size. Our platform ensures you get the most competitive quotes from local assessors.") },
+                                { q: c('faq', 'faq4_q', isSpanish ? "¿Cuánto tiempo es válido?" : "How long is it valid for?"), a: c('faq', 'faq4_a', isSpanish ? "Un Certificado Energético tiene una validez de hasta 10 años, salvo que se realicen cambios importantes que alteren el rendimiento energético de la propiedad." : "A BER certificate is valid for up to 10 years, unless there are major changes to the property's energy performance.") }
+                            ].map((faq, i) => (
                                 <div key={i} className="group cursor-pointer">
                                     <h4 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-[#007F00] transition-colors">{faq.q}</h4>
                                     <p className="text-gray-500 text-sm font-medium leading-relaxed">{faq.a}</p>
@@ -468,9 +438,9 @@ const HomePage = () => {
 
                     <div className="bg-gray-900 text-white p-12 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white/5 blur-3xl"></div>
-                        <h3 className="text-3xl font-black mb-6">{isSpanish ? <>¿Listo para tu <br /> Certificado Energético?</> : <>Ready to get your <br /> BER Certificate?</>}</h3>
+                        <h3 className="text-3xl font-black mb-6">{c('faq', 'cta_heading', isSpanish ? '¿Listo para tu Certificado Energético?' : 'Ready to get your BER Certificate?')}</h3>
                         <p className="text-gray-400 mb-10 text-lg leading-relaxed">
-                            {isSpanish ? 'Únete a más de 1.000 propietarios satisfechos. Obtén presupuestos competitivos de certificadores locales de confianza en segundos.' : 'Join over 1,000 satisfied homeowners. Get competitive quotes from trusted local assessors in seconds.'}
+                            {c('faq', 'cta_description', isSpanish ? 'Únete a más de 1.000 propietarios satisfechos. Obtén presupuestos competitivos de certificadores locales de confianza en segundos.' : 'Join over 1,000 satisfied homeowners. Get competitive quotes from trusted local assessors in seconds.')}
                         </p>
                         <div className="space-y-6 mb-12">
 
@@ -564,10 +534,10 @@ const HomePage = () => {
                         <div className="absolute bottom-0 left-0 -ml-32 -mb-32 w-80 h-80 rounded-full bg-white/5 blur-3xl"></div>
 
                         <div className="relative z-10 max-w-3xl mx-auto">
-                            <span className="text-[#007F00] font-bold uppercase tracking-widest text-sm mb-6 block">{isSpanish ? 'Recursos Premium' : 'Premium Resources'}</span>
-                            <h2 className="text-4xl md:text-5xl font-black mb-8 leading-tight text-gray-900">{isSpanish ? <>Consigue nuestra guía completa <br /> de mejoras energéticas</> : <>Get Our Complete Home <br /> Energy Upgrade Guide</>}</h2>
+                            <span className="text-[#007F00] font-bold uppercase tracking-widest text-sm mb-6 block">{c('newsletter', 'tag', isSpanish ? 'Recursos Premium' : 'Premium Resources')}</span>
+                            <h2 className="text-4xl md:text-5xl font-black mb-8 leading-tight text-gray-900">{c('newsletter', 'heading', isSpanish ? 'Consigue nuestra guía completa de mejoras energéticas' : 'Get Our Complete Home Energy Upgrade Guide')}</h2>
                             <p className="text-gray-600 mb-12 text-xl font-medium leading-relaxed">
-                                {isSpanish ? 'Únete a más de 5.000 propietarios que reciben nuestras novedades energéticas semanales, ofertas flash y promociones exclusivas de rehabilitación energética.' : 'Join 5,000+ homeowners receiving our weekly energy updates, flash sales, and exclusive energy upgrade offers.'}
+                                {c('newsletter', 'description', isSpanish ? 'Únete a más de 5.000 propietarios que reciben nuestras novedades energéticas semanales, ofertas flash y promociones exclusivas de rehabilitación energética.' : 'Join 5,000+ homeowners receiving our weekly energy updates, flash sales, and exclusive energy upgrade offers.')}
                             </p>
 
                             <form
@@ -608,7 +578,7 @@ const HomePage = () => {
                             >
                                 <input
                                     type="email"
-                                    placeholder={isSpanish ? 'Introduce tu correo electrónico' : 'Enter your email address'}
+                                    placeholder={c('newsletter', 'placeholder', isSpanish ? 'Introduce tu correo electrónico' : 'Enter your email address')}
                                     className="flex-grow bg-white border border-gray-200 rounded-2xl px-6 py-5 text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#007F00] transition-all font-bold text-lg"
                                     required
                                     disabled={isSubmitting}
@@ -617,7 +587,7 @@ const HomePage = () => {
                                     disabled={isSubmitting}
                                     className="bg-[#007F00] text-white font-black px-10 py-5 rounded-2xl hover:bg-[#006400] transition-all shadow-xl shadow-green-100 whitespace-nowrap text-lg cursor-pointer disabled:opacity-70 flex items-center justify-center min-w-[200px]"
                                 >
-                                    {isSubmitting ? (isSpanish ? 'Enviando...' : 'Sending...') : (isSpanish ? 'Suscribirse' : 'Subscribe to news')}
+                                    {isSubmitting ? (isSpanish ? 'Enviando...' : 'Sending...') : c('newsletter', 'button_text', isSpanish ? 'Suscribirse' : 'Subscribe to news')}
                                 </button>
                             </form>
 

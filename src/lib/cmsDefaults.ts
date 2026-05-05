@@ -1,0 +1,438 @@
+// CMS Page/Section definitions with field types and default content per tenant
+
+export type FieldType = 'text' | 'textarea' | 'richtext' | 'image' | 'color' | 'number' | 'select' | 'toggle' | 'url';
+
+export interface FieldDefinition {
+    key: string;
+    label: string;
+    type: FieldType;
+    placeholder?: string;
+    options?: string[]; // for select
+    group?: string; // group label for organizing fields
+}
+
+export interface SectionDefinition {
+    id: string;
+    label: string;
+    description: string;
+    icon: string; // emoji icon
+    fields: FieldDefinition[];
+    defaults: {
+        ireland: Record<string, any>;
+        spain: Record<string, any>;
+    };
+}
+
+export interface PageDefinition {
+    id: string;
+    label: string;
+    path: string;
+    sections: SectionDefinition[];
+}
+
+export const CMS_PAGES: PageDefinition[] = [
+    {
+        id: 'home',
+        label: 'Home',
+        path: '/',
+        sections: [
+            {
+                id: 'hero',
+                label: 'Hero Section',
+                description: 'Main banner at the top of the homepage',
+                icon: '🏠',
+                fields: [
+                    { key: 'badge_text', label: 'Badge Text', type: 'text', group: 'Content' },
+                    { key: 'heading', label: 'Heading', type: 'text', group: 'Content' },
+                    { key: 'heading_highlight', label: 'Highlighted Text', type: 'text', group: 'Content' },
+                    { key: 'subheading', label: 'Subheading', type: 'textarea', group: 'Content' },
+                    { key: 'cta_line', label: 'CTA Line', type: 'text', group: 'Content' },
+                    { key: 'cta_button_text', label: 'Button Text', type: 'text', group: 'Content' },
+                    { key: 'cta_button_url', label: 'Button URL', type: 'url', group: 'Content' },
+                    { key: 'benefit_1', label: 'Benefit 1', type: 'text', group: 'Benefits Row' },
+                    { key: 'benefit_2', label: 'Benefit 2', type: 'text', group: 'Benefits Row' },
+                    { key: 'benefit_3', label: 'Benefit 3', type: 'text', group: 'Benefits Row' },
+                    { key: 'heading_color', label: 'Heading Color', type: 'color', group: 'Style' },
+                    { key: 'highlight_color', label: 'Highlight Color', type: 'color', group: 'Style' },
+                    { key: 'bg_color', label: 'Background Color', type: 'color', group: 'Style' },
+                    { key: 'heading_font_size', label: 'Heading Font Size', type: 'select', options: ['3xl', '4xl', '5xl', '6xl', '7xl', '8xl'], group: 'Style' },
+                ],
+                defaults: {
+                    ireland: {
+                        badge_text: "Ireland's Largest BER Website",
+                        heading: 'Need a',
+                        heading_highlight: 'BER Cert?',
+                        subheading: 'The fastest, most reliable way to get your Building Energy Rating. Guaranteed lowest prices from 100+ assessors nationwide.',
+                        cta_line: 'Get the Best Quotes from local BER Assessors today.',
+                        cta_button_text: 'Get a Free Quote',
+                        cta_button_url: '/get-quote',
+                        benefit_1: '100+ Assessors Nationwide',
+                        benefit_2: 'SEAI REGISTERED ASSESSORS ONLY',
+                        benefit_3: 'Choose Your Date & Time',
+                        heading_color: '#111827',
+                        highlight_color: '#007F00',
+                        bg_color: '#ffffff',
+                        heading_font_size: '7xl',
+                    },
+                    spain: {
+                        badge_text: 'La Mayor Plataforma de Certificados Energéticos',
+                        heading: '¿Necesitas un',
+                        heading_highlight: 'Certificado Energético?',
+                        subheading: 'La forma más rápida y fiable de obtener tu Certificado Energético. Los mejores precios garantizados de más de 100 certificadores en toda España.',
+                        cta_line: 'Obtén los mejores presupuestos de certificadores locales hoy mismo.',
+                        cta_button_text: 'Solicitar Presupuesto Gratis',
+                        cta_button_url: '/get-quote',
+                        benefit_1: '100+ Certificadores en Toda España',
+                        benefit_2: 'SOLO CERTIFICADORES ACREDITADOS',
+                        benefit_3: 'Elige tu Fecha y Hora',
+                        heading_color: '#111827',
+                        highlight_color: '#007F00',
+                        bg_color: '#ffffff',
+                        heading_font_size: '6xl',
+                    },
+                },
+            },
+            {
+                id: 'how_it_works',
+                label: 'How It Works',
+                description: '4-step process section',
+                icon: '⚙️',
+                fields: [
+                    { key: 'tag', label: 'Section Tag', type: 'text', group: 'Content' },
+                    { key: 'heading', label: 'Heading', type: 'text', group: 'Content' },
+                    { key: 'step1_title', label: 'Step 1 Title', type: 'text', group: 'Steps' },
+                    { key: 'step1_desc', label: 'Step 1 Description', type: 'textarea', group: 'Steps' },
+                    { key: 'step2_title', label: 'Step 2 Title', type: 'text', group: 'Steps' },
+                    { key: 'step2_desc', label: 'Step 2 Description', type: 'textarea', group: 'Steps' },
+                    { key: 'step3_title', label: 'Step 3 Title', type: 'text', group: 'Steps' },
+                    { key: 'step3_desc', label: 'Step 3 Description', type: 'textarea', group: 'Steps' },
+                    { key: 'step4_title', label: 'Step 4 Title', type: 'text', group: 'Steps' },
+                    { key: 'step4_desc', label: 'Step 4 Description', type: 'textarea', group: 'Steps' },
+                    { key: 'bg_color', label: 'Background Color', type: 'color', group: 'Style' },
+                ],
+                defaults: {
+                    ireland: {
+                        tag: 'Simple Process', heading: 'How It Works',
+                        step1_title: 'Select Date', step1_desc: 'Tell us your preferred date & time for assessment.',
+                        step2_title: 'Post Details', step2_desc: 'Share your property info in less than 1 minute.',
+                        step3_title: 'Get Quotes', step3_desc: 'Receive competitive prices from local assessors.',
+                        step4_title: 'Book Online', step4_desc: 'Choose your favorite quote and confirm instantly.',
+                        bg_color: '#f9fafb',
+                    },
+                    spain: {
+                        tag: 'Proceso Sencillo', heading: 'Cómo Funciona',
+                        step1_title: 'Elige Fecha', step1_desc: 'Indícanos tu fecha y hora preferida para la certificación.',
+                        step2_title: 'Envía Detalles', step2_desc: 'Comparte la información de tu propiedad en menos de 1 minuto.',
+                        step3_title: 'Recibe Presupuestos', step3_desc: 'Recibe precios competitivos de certificadores locales.',
+                        step4_title: 'Reserva Online', step4_desc: 'Elige tu presupuesto favorito y confirma al instante.',
+                        bg_color: '#f9fafb',
+                    },
+                },
+            },
+            {
+                id: 'benefits',
+                label: 'Why Choose Us',
+                description: 'Trust & benefits section with stats',
+                icon: '✅',
+                fields: [
+                    { key: 'tag', label: 'Section Tag', type: 'text', group: 'Content' },
+                    { key: 'heading', label: 'Heading', type: 'text', group: 'Content' },
+                    { key: 'heading_highlight', label: 'Highlighted Text', type: 'text', group: 'Content' },
+                    { key: 'benefit1_title', label: 'Benefit 1 Title', type: 'text', group: 'Benefits' },
+                    { key: 'benefit1_desc', label: 'Benefit 1 Description', type: 'textarea', group: 'Benefits' },
+                    { key: 'benefit2_title', label: 'Benefit 2 Title', type: 'text', group: 'Benefits' },
+                    { key: 'benefit2_desc', label: 'Benefit 2 Description', type: 'textarea', group: 'Benefits' },
+                    { key: 'benefit3_title', label: 'Benefit 3 Title', type: 'text', group: 'Benefits' },
+                    { key: 'benefit3_desc', label: 'Benefit 3 Description', type: 'textarea', group: 'Benefits' },
+                    { key: 'benefit4_title', label: 'Benefit 4 Title', type: 'text', group: 'Benefits' },
+                    { key: 'benefit4_desc', label: 'Benefit 4 Description', type: 'textarea', group: 'Benefits' },
+                    { key: 'stat1_value', label: 'Stat 1 Value', type: 'text', group: 'Stats' },
+                    { key: 'stat1_label', label: 'Stat 1 Label', type: 'text', group: 'Stats' },
+                    { key: 'stat2_value', label: 'Stat 2 Value', type: 'text', group: 'Stats' },
+                    { key: 'stat2_label', label: 'Stat 2 Label', type: 'text', group: 'Stats' },
+                    { key: 'stat3_value', label: 'Stat 3 Value', type: 'text', group: 'Stats' },
+                    { key: 'stat3_label', label: 'Stat 3 Label', type: 'text', group: 'Stats' },
+                ],
+                defaults: {
+                    ireland: {
+                        tag: 'The Advantage', heading: 'Why Homeowners Trust', heading_highlight: 'The BER Man',
+                        benefit1_title: 'Lowest Prices Guaranteed', benefit1_desc: 'Receive multiple quotes and choose the best option for you.',
+                        benefit2_title: 'BER Registered Assessors Only', benefit2_desc: 'Every assessor is fully certified and vetted for quality.',
+                        benefit3_title: 'Money-Back Guarantee', benefit3_desc: 'We ensure you get a professional service or your money back.',
+                        benefit4_title: 'Instant Online Booking', benefit4_desc: 'No back-and-forth phone calls. Book everything in real-time.',
+                        stat1_value: '1k+', stat1_label: 'Users Served',
+                        stat2_value: '100+', stat2_label: 'Assessors',
+                        stat3_value: '4.9/5', stat3_label: 'Average Rating',
+                    },
+                    spain: {
+                        tag: 'La Ventaja', heading: '¿Por qué Confían en Nosotros', heading_highlight: 'los Propietarios?',
+                        benefit1_title: 'Mejor Precio Garantizado', benefit1_desc: 'Recibe múltiples presupuestos y elige la mejor opción para ti.',
+                        benefit2_title: 'Solo Certificadores Acreditados', benefit2_desc: 'Todos los certificadores están plenamente acreditados y verificados.',
+                        benefit3_title: 'Garantía de Devolución', benefit3_desc: 'Te aseguramos un servicio profesional o te devolvemos tu dinero.',
+                        benefit4_title: 'Reserva Online Instantánea', benefit4_desc: 'Sin llamadas de teléfono de ida y vuelta. Reserva todo en tiempo real.',
+                        stat1_value: '1k+', stat1_label: 'Usuarios Atendidos',
+                        stat2_value: '100+', stat2_label: 'Certificadores',
+                        stat3_value: '4.9/5', stat3_label: 'Valoración Media',
+                    },
+                },
+            },
+            {
+                id: 'reviews',
+                label: 'Reviews',
+                description: 'Customer testimonials section',
+                icon: '⭐',
+                fields: [
+                    { key: 'heading', label: 'Rating Label', type: 'text', group: 'Content' },
+                    { key: 'subheading', label: 'Subtitle', type: 'text', group: 'Content' },
+                    { key: 'review1_author', label: 'Review 1 Author', type: 'text', group: 'Review 1' },
+                    { key: 'review1_location', label: 'Review 1 Location', type: 'text', group: 'Review 1' },
+                    { key: 'review1_quote', label: 'Review 1 Quote', type: 'textarea', group: 'Review 1' },
+                    { key: 'review2_author', label: 'Review 2 Author', type: 'text', group: 'Review 2' },
+                    { key: 'review2_location', label: 'Review 2 Location', type: 'text', group: 'Review 2' },
+                    { key: 'review2_quote', label: 'Review 2 Quote', type: 'textarea', group: 'Review 2' },
+                    { key: 'review3_author', label: 'Review 3 Author', type: 'text', group: 'Review 3' },
+                    { key: 'review3_location', label: 'Review 3 Location', type: 'text', group: 'Review 3' },
+                    { key: 'review3_quote', label: 'Review 3 Quote', type: 'textarea', group: 'Review 3' },
+                ],
+                defaults: {
+                    ireland: {
+                        heading: 'Excellent', subheading: 'Based on 1,000 Verified Customer Ratings',
+                        review1_author: 'Michael Byrne', review1_location: 'Dublin', review1_quote: 'Used the platform twice now. Both times I got several quotes within an hour and the assessor was super professional. Saved about €30 vs other sites.',
+                        review2_author: "Sarah O'Toole", review2_location: 'Cork', review2_quote: 'Extremely easy to use. I loved that I could see the SEAI registration numbers and reviews for the assessors before booking. Highly recommended for landlords.',
+                        review3_author: 'James Murphy', review3_location: 'Galway', review3_quote: 'Fast turnaround and competitive pricing. The portal makes it very simple to manage everything and the certificate was issued within 24 hours of inspection.',
+                    },
+                    spain: {
+                        heading: 'Excelente', subheading: 'Basado en 1.000 valoraciones verificadas de clientes',
+                        review1_author: 'Carlos García', review1_location: 'Madrid', review1_quote: 'He usado la plataforma dos veces. En ambas recibí varios presupuestos en menos de una hora y el certificador fue muy profesional. Ahorré unos 30€ respecto a otras webs.',
+                        review2_author: 'Lucía Martínez', review2_location: 'Barcelona', review2_quote: 'Extremadamente fácil de usar. Me encantó poder ver la acreditación y las reseñas de los certificadores antes de reservar. Muy recomendable para propietarios.',
+                        review3_author: 'Javier Fernández', review3_location: 'Valencia', review3_quote: 'Rapidez y precios competitivos. El portal hace muy sencillo gestionarlo todo y el certificado se emitió en las 24 horas siguientes a la inspección.',
+                    },
+                },
+            },
+            {
+                id: 'assessor_cta',
+                label: 'Assessor CTA',
+                description: 'Call to action for assessors to join',
+                icon: '📣',
+                fields: [
+                    { key: 'heading', label: 'Heading', type: 'text', group: 'Content' },
+                    { key: 'description', label: 'Description', type: 'textarea', group: 'Content' },
+                    { key: 'cta_text', label: 'Button Text', type: 'text', group: 'Content' },
+                    { key: 'cta_url', label: 'Button URL', type: 'url', group: 'Content' },
+                ],
+                defaults: {
+                    ireland: { heading: 'Are You a BER Assessor?', description: 'Register with theberman.eu and receive local job leads, straight to your phone.', cta_text: 'Join Now', cta_url: '/signup?role=contractor' },
+                    spain: { heading: '¿Eres Certificador Energético?', description: 'Regístrate y recibe leads de trabajo locales, directamente en tu teléfono.', cta_text: 'Únete Ahora', cta_url: '/signup?role=contractor' },
+                },
+            },
+            {
+                id: 'catalogue_promo',
+                label: 'Energy Catalogue',
+                description: 'Home energy partners catalogue section',
+                icon: '🔍',
+                fields: [
+                    { key: 'tag', label: 'Section Tag', type: 'text', group: 'Content' },
+                    { key: 'heading', label: 'Heading', type: 'text', group: 'Content' },
+                    { key: 'heading_highlight', label: 'Highlighted Text', type: 'text', group: 'Content' },
+                    { key: 'description', label: 'Description', type: 'textarea', group: 'Content' },
+                    { key: 'cta1_text', label: 'CTA 1 Text', type: 'text', group: 'Buttons' },
+                    { key: 'cta2_text', label: 'CTA 2 Text', type: 'text', group: 'Buttons' },
+                    { key: 'cta3_text', label: 'CTA 3 Text', type: 'text', group: 'Buttons' },
+                    { key: 'image_url', label: 'Section Image', type: 'image', group: 'Media' },
+                ],
+                defaults: {
+                    ireland: {
+                        tag: 'Explore Our Network', heading: 'Find the Best', heading_highlight: 'Home Energy Partners.',
+                        description: "Access our curated catalogue of certified home energy businesses. From solar panel installers to insulation specialists, find the right partner for your home's journey to efficiency.",
+                        cta1_text: 'Browse Catalogue', cta2_text: 'Register your Business', cta3_text: 'Speak to Advisor',
+                        image_url: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=800',
+                    },
+                    spain: {
+                        tag: 'Explora Nuestra Red', heading: 'Encuentra los Mejores', heading_highlight: 'Socios de Eficiencia Energética.',
+                        description: 'Accede a nuestro catálogo seleccionado de empresas certificadas de eficiencia energética. Desde instaladores de paneles solares hasta especialistas en aislamiento, encuentra el socio adecuado para el camino de tu hogar hacia la eficiencia.',
+                        cta1_text: 'Explorar Catálogo', cta2_text: 'Registra tu Negocio', cta3_text: 'Habla con un Asesor',
+                        image_url: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=800',
+                    },
+                },
+            },
+            {
+                id: 'faq',
+                label: 'FAQ Section',
+                description: 'Frequently asked questions',
+                icon: '❓',
+                fields: [
+                    { key: 'tag', label: 'Section Tag', type: 'text', group: 'Content' },
+                    { key: 'heading', label: 'Heading', type: 'text', group: 'Content' },
+                    { key: 'faq1_q', label: 'FAQ 1 Question', type: 'text', group: 'FAQ 1' },
+                    { key: 'faq1_a', label: 'FAQ 1 Answer', type: 'textarea', group: 'FAQ 1' },
+                    { key: 'faq2_q', label: 'FAQ 2 Question', type: 'text', group: 'FAQ 2' },
+                    { key: 'faq2_a', label: 'FAQ 2 Answer', type: 'textarea', group: 'FAQ 2' },
+                    { key: 'faq3_q', label: 'FAQ 3 Question', type: 'text', group: 'FAQ 3' },
+                    { key: 'faq3_a', label: 'FAQ 3 Answer', type: 'textarea', group: 'FAQ 3' },
+                    { key: 'faq4_q', label: 'FAQ 4 Question', type: 'text', group: 'FAQ 4' },
+                    { key: 'faq4_a', label: 'FAQ 4 Answer', type: 'textarea', group: 'FAQ 4' },
+                    { key: 'cta_heading', label: 'CTA Heading', type: 'text', group: 'CTA Box' },
+                    { key: 'cta_description', label: 'CTA Description', type: 'textarea', group: 'CTA Box' },
+                    { key: 'cta_button', label: 'CTA Button Text', type: 'text', group: 'CTA Box' },
+                ],
+                defaults: {
+                    ireland: {
+                        tag: 'Knowledge Base', heading: 'Frequently Asked Questions',
+                        faq1_q: 'What is a BER Certificate?', faq1_a: 'A Building Energy Rating (BER) tells you how energy efficient your home is, rated from A (most efficient) to G (least efficient).',
+                        faq2_q: 'Why do I need a BER?', faq2_a: "It's legally required to sell or rent a property. It's also needed for SEAI energy upgrade grants.",
+                        faq3_q: 'How much does it cost?', faq3_a: 'Prices vary based on property size. Our platform ensures you get the most competitive quotes from local assessors.',
+                        faq4_q: 'How long is it valid for?', faq4_a: "A BER certificate is valid for up to 10 years, unless there are major changes to the property's energy performance.",
+                        cta_heading: 'Ready to get your BER Certificate?', cta_description: 'Join over 1,000 satisfied homeowners. Get competitive quotes from trusted local assessors in seconds.',
+                        cta_button: 'Get a Quote Online',
+                    },
+                    spain: {
+                        tag: 'Base de Conocimiento', heading: 'Preguntas Frecuentes',
+                        faq1_q: '¿Qué es un Certificado Energético?', faq1_a: 'El Certificado de Eficiencia Energética indica el nivel de eficiencia energética de tu vivienda, calificada de la A (más eficiente) a la G (menos eficiente).',
+                        faq2_q: '¿Por qué necesito un Certificado Energético?', faq2_a: 'Es obligatorio por ley para vender o alquilar una vivienda. También es necesario para acceder a subvenciones de rehabilitación energética.',
+                        faq3_q: '¿Cuánto cuesta?', faq3_a: 'El precio depende del tamaño de la propiedad. Nuestra plataforma te garantiza los presupuestos más competitivos de certificadores locales.',
+                        faq4_q: '¿Cuánto tiempo es válido?', faq4_a: 'Un Certificado Energético tiene una validez de hasta 10 años, salvo que se realicen cambios importantes que alteren el rendimiento energético de la propiedad.',
+                        cta_heading: '¿Listo para tu Certificado Energético?', cta_description: 'Únete a más de 1.000 propietarios satisfechos. Obtén presupuestos competitivos de certificadores locales de confianza en segundos.',
+                        cta_button: 'Pide Presupuesto Online',
+                    },
+                },
+            },
+            {
+                id: 'newsletter',
+                label: 'Newsletter',
+                description: 'Email subscription section',
+                icon: '📧',
+                fields: [
+                    { key: 'tag', label: 'Section Tag', type: 'text', group: 'Content' },
+                    { key: 'heading', label: 'Heading', type: 'text', group: 'Content' },
+                    { key: 'description', label: 'Description', type: 'textarea', group: 'Content' },
+                    { key: 'button_text', label: 'Button Text', type: 'text', group: 'Content' },
+                    { key: 'placeholder', label: 'Email Placeholder', type: 'text', group: 'Content' },
+                ],
+                defaults: {
+                    ireland: {
+                        tag: 'Premium Resources', heading: 'Get Our Complete Home Energy Upgrade Guide',
+                        description: 'Join 5,000+ homeowners receiving our weekly energy updates, flash sales, and exclusive energy upgrade offers.',
+                        button_text: 'Subscribe to news', placeholder: 'Enter your email address',
+                    },
+                    spain: {
+                        tag: 'Recursos Premium', heading: 'Consigue nuestra guía completa de mejoras energéticas',
+                        description: 'Únete a más de 5.000 propietarios que reciben nuestras novedades energéticas semanales, ofertas flash y promociones exclusivas de rehabilitación energética.',
+                        button_text: 'Suscribirse', placeholder: 'Introduce tu correo electrónico',
+                    },
+                },
+            },
+        ],
+    },
+    {
+        id: 'about',
+        label: 'About',
+        path: '/about',
+        sections: [
+            {
+                id: 'hero',
+                label: 'Hero Section',
+                description: 'About page header',
+                icon: '🏢',
+                fields: [
+                    { key: 'tag', label: 'Section Tag', type: 'text', group: 'Content' },
+                    { key: 'heading_line1', label: 'Heading Line 1', type: 'text', group: 'Content' },
+                    { key: 'heading_line2', label: 'Heading Line 2', type: 'text', group: 'Content' },
+                    { key: 'description', label: 'Description', type: 'textarea', group: 'Content' },
+                ],
+                defaults: {
+                    ireland: { tag: 'Our Mission', heading_line1: 'Precision in every', heading_line2: 'Assessment.', description: "Helping homeowners across Ireland understand, improve, and certify their property's energy efficiency since 2015." },
+                    spain: { tag: 'Nuestra Misión', heading_line1: 'Precisión en cada', heading_line2: 'Certificación.', description: 'Ayudamos a los propietarios de toda España a entender, mejorar y certificar la eficiencia energética de sus propiedades desde 2015.' },
+                },
+            },
+            {
+                id: 'story',
+                label: 'Our Story',
+                description: 'Company history and story',
+                icon: '📖',
+                fields: [
+                    { key: 'heading', label: 'Heading', type: 'text', group: 'Content' },
+                    { key: 'paragraph1', label: 'Paragraph 1', type: 'textarea', group: 'Content' },
+                    { key: 'paragraph2', label: 'Paragraph 2', type: 'textarea', group: 'Content' },
+                    { key: 'paragraph3', label: 'Paragraph 3', type: 'textarea', group: 'Content' },
+                    { key: 'paragraph4', label: 'Paragraph 4', type: 'textarea', group: 'Content' },
+                    { key: 'stat1_value', label: 'Stat 1 Value', type: 'text', group: 'Stats' },
+                    { key: 'stat1_label', label: 'Stat 1 Label', type: 'text', group: 'Stats' },
+                    { key: 'stat2_value', label: 'Stat 2 Value', type: 'text', group: 'Stats' },
+                    { key: 'stat2_label', label: 'Stat 2 Label', type: 'text', group: 'Stats' },
+                    { key: 'stat3_value', label: 'Stat 3 Value', type: 'text', group: 'Stats' },
+                    { key: 'stat3_label', label: 'Stat 3 Label', type: 'text', group: 'Stats' },
+                ],
+                defaults: {
+                    ireland: {
+                        heading: 'Our Story',
+                        paragraph1: "The Berman was founded with a singular objective: to bring professional clarity and technical rigor to Ireland's energy rating industry.",
+                        paragraph2: "What began as a specialized team in Dublin has grown into a nationwide network of SEAI-registered experts.",
+                        paragraph3: "Today, The Berman stands as a benchmark for energy consultancy in Ireland. We have successfully completed over 10,000 assessments.",
+                        paragraph4: "As we look toward the future, our focus continues to be on innovation and excellence.",
+                        stat1_value: '1k+', stat1_label: 'Completed BER Assessments',
+                        stat2_value: '100+', stat2_label: 'Nationwide Network Assessors',
+                        stat3_value: 'SEAI', stat3_label: 'Fully Registered Energy Experts',
+                    },
+                    spain: {
+                        heading: 'Nuestra Historia',
+                        paragraph1: 'Certificado Energético se fundó con un objetivo claro: aportar claridad profesional y rigor técnico al sector de la certificación energética en España.',
+                        paragraph2: 'Lo que comenzó como un equipo especializado en Madrid se ha convertido en una red nacional de certificadores acreditados.',
+                        paragraph3: 'Hoy, Certificado Energético es una referencia en consultoría energética en España. Hemos realizado con éxito más de 10.000 certificaciones.',
+                        paragraph4: 'Mirando al futuro, nos centramos en la innovación y la excelencia.',
+                        stat1_value: '10k+', stat1_label: 'Certificaciones Energéticas Emitidas',
+                        stat2_value: '100+', stat2_label: 'Red Nacional de Certificadores',
+                        stat3_value: 'CEE', stat3_label: 'Certificadores Acreditados',
+                    },
+                },
+            },
+            {
+                id: 'cta',
+                label: 'Join CTA',
+                description: 'Bottom call-to-action',
+                icon: '🚀',
+                fields: [
+                    { key: 'heading', label: 'Heading', type: 'text', group: 'Content' },
+                    { key: 'heading_highlight', label: 'Brand Name', type: 'text', group: 'Content' },
+                    { key: 'description', label: 'Description', type: 'textarea', group: 'Content' },
+                    { key: 'button_text', label: 'Button Text', type: 'text', group: 'Content' },
+                ],
+                defaults: {
+                    ireland: { heading: 'Join the', heading_highlight: 'The Berman', description: 'Ready for a professional BER assessment? Our nationwide team is ready to help you today.', button_text: 'Get My BER Quote' },
+                    spain: { heading: 'Únete a la familia', heading_highlight: 'Certificado Energético', description: '¿Preparado para tu certificación energética profesional? Nuestro equipo nacional está listo para ayudarte hoy mismo.', button_text: 'Pedir mi Presupuesto' },
+                },
+            },
+        ],
+    },
+    {
+        id: 'contact',
+        label: 'Contact',
+        path: '/contact-us',
+        sections: [
+            {
+                id: 'hero',
+                label: 'Contact Header',
+                description: 'Contact page heading and intro',
+                icon: '📞',
+                fields: [
+                    { key: 'badge', label: 'Badge Text', type: 'text', group: 'Content' },
+                    { key: 'heading_line1', label: 'Heading Line 1', type: 'text', group: 'Content' },
+                    { key: 'heading_line2', label: 'Heading Line 2', type: 'text', group: 'Content' },
+                    { key: 'subtitle', label: 'Subtitle', type: 'textarea', group: 'Content' },
+                ],
+                defaults: {
+                    ireland: { badge: 'Get In Touch', heading_line1: 'How can we', heading_line2: 'help?', subtitle: 'Have a question about BER assessments? Our team is here to provide the support you need.' },
+                    spain: { badge: 'Ponte en Contacto', heading_line1: '¿En qué podemos', heading_line2: 'ayudarte?', subtitle: '¿Tienes alguna pregunta sobre certificaciones energéticas? Nuestro equipo está aquí para ayudarte.' },
+                },
+            },
+        ],
+    },
+];
+
+export function getDefaultsForTenant(pageId: string, sectionId: string, tenant: string): Record<string, any> {
+    const page = CMS_PAGES.find(p => p.id === pageId);
+    if (!page) return {};
+    const section = page.sections.find(s => s.id === sectionId);
+    if (!section) return {};
+    const tenantKey = tenant as keyof typeof section.defaults;
+    return section.defaults[tenantKey] || section.defaults.ireland || {};
+}

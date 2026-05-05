@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, RefreshCw, BarChart2, Building2, BookOpen, ClipboardList, HardHat, Home, Inbox, DollarSign, Newspaper, Settings as SettingsIcon, Users, Layers, Menu, X, ChevronLeft, ChevronRight, Trash2, Briefcase, HelpCircle } from 'lucide-react';
+import { LogOut, RefreshCw, BarChart2, Building2, BookOpen, ClipboardList, HardHat, Home, Inbox, DollarSign, Newspaper, Settings as SettingsIcon, Users, Layers, Menu, X, ChevronLeft, ChevronRight, Trash2, Briefcase, HelpCircle, PaintBucket } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { geocodeAddress, COUNTY_COORDINATES } from '../lib/geocoding';
+import { getTenantFromDomain } from '../lib/tenant';
 
 // Types
 import type { Lead, Assessment, Profile, Payment, Sponsor, AppSettings, NewsArticle, BlogArticle, FaqItem, CatalogueFormData, AdminView, DeletedItem, CatalogueListing } from '../types/admin';
@@ -24,6 +25,7 @@ import { BlogView } from '../components/admin/views/BlogView';
 import { FaqView } from '../components/admin/views/FaqView';
 import { SettingsView } from '../components/admin/views/SettingsView';
 import { RecentlyDeletedView } from '../components/admin/views/RecentlyDeletedView';
+import { VisualEditorView } from '../components/admin/views/VisualEditorView';
 
 // Modals
 import { LeadDetailsModal } from '../components/admin/modals/LeadDetailsModal';
@@ -97,7 +99,7 @@ const Admin = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [locationFilter, setLocationFilter] = useState('');
     const [customMonths, setCustomMonths] = useState<number>(1);
-    const [selectedTenant, setSelectedTenant] = useState<string>('ireland');
+    const [selectedTenant, setSelectedTenant] = useState<string>(getTenantFromDomain());
 
     const TENANTS = [
         { id: 'ireland', label: 'Ireland', domain: 'theberman.eu' },
@@ -1719,6 +1721,7 @@ const Admin = () => {
         { id: 'news', label: 'News', icon: Newspaper, badge: 0 },
         { id: 'blog', label: 'Blog', icon: Layers, badge: 0 },
         { id: 'faq-management', label: 'FAQ', icon: HelpCircle, badge: 0 },
+        { id: 'visual-editor', label: 'Visual Editor', icon: PaintBucket, badge: 0 },
         { type: 'divider', group: '' },
         { id: 'recently-deleted', label: 'Recently Deleted', icon: Trash2, badge: deletedItems.length },
         { id: 'settings', label: 'Settings', icon: SettingsIcon, badge: 0 },
@@ -2005,6 +2008,8 @@ const Admin = () => {
                             faqItems={faqItems} loading={loading}
                             fetchFaqItems={fetchFaqItems}
                         />
+                    ) : view === 'visual-editor' ? (
+                        <VisualEditorView selectedTenant={selectedTenant} />
                     ) : view === 'settings' ? (
                         <SettingsView
                             appSettings={appSettings}

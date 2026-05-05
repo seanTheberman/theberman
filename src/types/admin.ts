@@ -254,6 +254,7 @@ export type AdminView =
     | 'blog'
     | 'faq-management'
     | 'page-content'
+    | 'visual-editor'
     | 'add-to-catalogue'
     | 'catalogue'
     | 'recently-deleted';
