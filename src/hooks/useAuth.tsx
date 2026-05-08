@@ -13,7 +13,7 @@ interface AuthContextType {
     role: 'admin' | 'contractor' | 'user' | 'homeowner' | 'business' | null;
     tenant: string;
     signIn: (email: string, password: string) => Promise<{ data: { user: User | null, session: Session | null }, error: AuthError | null }>;
-    signUp: (email: string, password: string, fullName: string, role: 'user' | 'contractor' | 'homeowner' | 'business', phone?: string) => Promise<{ data: { user: User | null, session: Session | null }, error: AuthError | null }>;
+    signUp: (email: string, password: string, fullName: string, role: 'user' | 'contractor' | 'homeowner' | 'business', phone?: string, seaiNumber?: string) => Promise<{ data: { user: User | null, session: Session | null }, error: AuthError | null }>;
     resetPassword: (email: string) => Promise<{ data: Record<string, unknown> | null, error: AuthError | null }>;
     updateUserPassword: (password: string) => Promise<{ data: { user: User | null }, error: AuthError | null }>;
     signOut: () => Promise<void>;
@@ -135,7 +135,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
-    const signUp = async (email: string, password: string, fullName: string, role: 'user' | 'contractor' | 'homeowner' | 'business', phone?: string) => {
+    const signUp = async (email: string, password: string, fullName: string, role: 'user' | 'contractor' | 'homeowner' | 'business', phone?: string, seaiNumber?: string) => {
         const currentTenant = getTenantFromDomain();
         return await supabase.auth.signUp({
             email,
@@ -145,6 +145,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     full_name: fullName,
                     role: role,
                     phone: phone,
+                    seai_number: seaiNumber,
                     tenant: currentTenant,
                     registration_status: (role === 'business' || role === 'contractor') ? 'pending' : 'active',
                 },

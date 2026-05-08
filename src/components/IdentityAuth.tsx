@@ -55,7 +55,7 @@ const IdentityAuth = ({ email, fullName, phone, isExternalSubmitting = false, on
                 if (error) throw error;
                 toast.success('Signed in successfully!');
             } else {
-                const { error } = await signUp(email, password, fullName, 'user', phone);
+                const { error } = await signUp(email, password, fullName, 'user', phone, undefined);
                 if (error) throw error;
                 toast.success('Account created successfully!');
             }

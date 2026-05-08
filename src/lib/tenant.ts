@@ -2,17 +2,29 @@
 // Maps frontend domain to tenant identifier
 
 const DOMAIN_TO_TENANT: Record<string, string> = {
+  // Ireland
   'theberman.eu': 'ireland',
   'www.theberman.eu': 'ireland',
+  // Spain - Unicode versions (browser display)
   'certificadoenergético.eu': 'spain',
   'www.certificadoenergético.eu': 'spain',
+  // Spain - Punycode versions (Vercel/DNS internal format)
+  'xn--certificadoenergtico-9ec.eu': 'spain',
+  'www.xn--certificadoenergtico-9ec.eu': 'spain',
+  // Spain - Other domains
   'certificadosenergetico.com': 'spain',
   'www.certificadosenergetico.com': 'spain',
   'certificadosenergetico.eu': 'spain',
   'www.certificadosenergetico.eu': 'spain',
   'certificadosenergetico.es': 'spain',
   'www.certificadosenergetico.es': 'spain',
-  'localhost': 'ireland', // default for local dev
+  // England
+  'epccert.com': 'england',
+  'www.epccert.com': 'england',
+  'epccert.be': 'england',
+  'www.epccert.be': 'england',
+  // Local dev
+  'localhost': 'ireland',
 };
 
 export function getTenantFromDomain(): string {
@@ -46,6 +58,7 @@ export function getTenantDisplayName(tenant: string): string {
   const map: Record<string, string> = {
     'ireland': 'The Berman',
     'spain': 'Certificado Energético',
+    'england': 'EPC Cert',
   };
   return map[tenant] || tenant;
 }
@@ -54,6 +67,7 @@ export function getTenantCurrency(tenant: string): string {
   const map: Record<string, string> = {
     'ireland': 'EUR',
     'spain': 'EUR',
+    'england': 'GBP',
   };
   return map[tenant] || 'EUR';
 }
@@ -69,6 +83,11 @@ export function getTenantWebsiteUrl(tenant: string): string {
     if (host && host.includes('certificado')) return `https://${host}`;
     return 'https://certificadoenergético.eu';
   }
+  if (tenant === 'england') {
+    const host = getCurrentHostname();
+    if (host && host.includes('epccert')) return `https://${host}`;
+    return 'https://epccert.com';
+  }
   return 'https://theberman.eu';
 }
 
@@ -81,6 +100,9 @@ export function getTenantEmail(tenant: string): string {
     }
     return 'hola@certificadoenergético.eu';
   }
+  if (tenant === 'england') {
+    return 'hello@epccert.com';
+  }
   return 'hello@theberman.eu';
 }
 
@@ -89,6 +111,11 @@ export function getTenantDomain(tenant: string): string {
     const host = getCurrentHostname();
     if (host && host.includes('certificado')) return host.replace(/^www\./, '');
     return 'certificadoenergético.eu';
+  }
+  if (tenant === 'england') {
+    const host = getCurrentHostname();
+    if (host && host.includes('epccert')) return host.replace(/^www\./, '');
+    return 'epccert.com';
   }
   return 'theberman.eu';
 }

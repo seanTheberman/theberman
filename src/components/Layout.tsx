@@ -21,11 +21,25 @@ const NAV_LINKS = [
     { label: 'Contact', path: '/contact-us' },
 ];
 
-const PROVINCES: Record<string, string[]> = {
+const PROVINCES_IRELAND: Record<string, string[]> = {
     Leinster: ['Carlow', 'Dublin', 'Kildare', 'Kilkenny', 'Laois', 'Longford', 'Louth', 'Meath', 'Offaly', 'Westmeath', 'Wexford', 'Wicklow'],
     Munster: ['Clare', 'Cork', 'Kerry', 'Limerick', 'Tipperary', 'Waterford'],
     Connacht: ['Galway', 'Leitrim', 'Mayo', 'Roscommon', 'Sligo'],
     Ulster: ['Cavan', 'Donegal', 'Monaghan', 'Antrim', 'Armagh', 'Down', 'Fermanagh', 'Londonderry', 'Tyrone'],
+};
+
+const PROVINCES_SPAIN: Record<string, string[]> = {
+    Centro: ['Madrid', 'Toledo', 'Guadalajara', 'Ciudad Real', 'Cuenca', 'Albacete'],
+    'Cataluña': ['Barcelona', 'Tarragona', 'Girona', 'Lleida'],
+    'Andalucía': ['Sevilla', 'Málaga', 'Granada', 'Córdoba', 'Cádiz', 'Jaén'],
+    Valencia: ['Valencia', 'Alicante', 'Castellón'],
+};
+
+const PROVINCES_ENGLAND: Record<string, string[]> = {
+    'London & South East': ['London', 'Kent', 'Surrey', 'Sussex', 'Essex', 'Hertfordshire'],
+    Midlands: ['Birmingham', 'Nottingham', 'Leicester', 'Coventry', 'Derby', 'Stoke-on-Trent'],
+    North: ['Manchester', 'Liverpool', 'Leeds', 'Sheffield', 'Newcastle', 'York'],
+    'South West': ['Bristol', 'Bath', 'Exeter', 'Plymouth', 'Southampton', 'Brighton'],
 };
 
 const Layout = () => {
@@ -35,21 +49,30 @@ const Layout = () => {
     const tenantEmail = getTenantEmail(tenant);
     const tenantDomain = getTenantDomain(tenant);
     const getNavLabel = (label: string) => {
-        if (!isSpanish) return label;
-        const map: Record<string, string> = {
-            'Home': 'Inicio',
-            'About': 'Sobre Nosotros',
-            'Home Energy Upgrade Catalogue': 'Catálogo de Eficiencia Energética',
-            'Speak to an Energy Advisor': 'Habla con un Asesor Energético',
-            'Book Ber Assessors': 'Reservar Certificadores',
-            'Our News': 'Nuestras Noticias',
-            'Blog': 'Blog',
-            'FAQ': 'FAQ',
-            'Location': 'Ubicaciones',
-            'Contact': 'Contacto',
-        };
-        return map[label] || label;
+        if (isSpanish) {
+            const map: Record<string, string> = {
+                'Home': 'Inicio',
+                'About': 'Sobre Nosotros',
+                'Home Energy Upgrade Catalogue': 'Catálogo de Eficiencia Energética',
+                'Speak to an Energy Advisor': 'Habla con un Asesor Energético',
+                'Book Ber Assessors': 'Reservar Certificadores',
+                'Our News': 'Nuestras Noticias',
+                'Blog': 'Blog',
+                'FAQ': 'FAQ',
+                'Location': 'Ubicaciones',
+                'Contact': 'Contacto',
+            };
+            return map[label] || label;
+        }
+        if (tenant === 'england') {
+            const map: Record<string, string> = {
+                'Book Ber Assessors': 'Book EPC Assessors',
+            };
+            return map[label] || label;
+        }
+        return label;
     };
+    const PROVINCES = tenant === 'england' ? PROVINCES_ENGLAND : (tenant === 'spain' ? PROVINCES_SPAIN : PROVINCES_IRELAND);
     const [locations, setLocations] = useState<any[]>([]);
     const [isLocationsOpen, setIsLocationsOpen] = useState(false);
     const [expandedProvince, setExpandedProvince] = useState<string | null>(null);
@@ -134,8 +157,12 @@ const Layout = () => {
                             <span style={{ fontFamily: "'Brush Script MT', 'Lucida Calligraphy', 'Snell Roundhand', cursive", fontSize: '1.75rem', color: 'white', letterSpacing: '0.5px', lineHeight: 1.2 }}>
                                 Certificado Energético
                             </span>
+                        ) : tenant === 'england' ? (
+                            <span style={{ fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif", fontSize: '1.75rem', color: 'white', letterSpacing: '1px', lineHeight: 1.2, fontWeight: 900 }}>
+                                EPC Cert
+                            </span>
                         ) : (
-                            <img src="/logo.svg" alt="The Berman Logo" className="h-18 w-auto relative z-10" />
+                            <img src="/logo.svg" alt={`${tenantDisplayName} Logo`} className="h-18 w-auto relative z-10" />
                         )}
                     </Link>
 
@@ -368,6 +395,10 @@ const Layout = () => {
                                     <span style={{ fontFamily: "'Brush Script MT', 'Lucida Calligraphy', 'Snell Roundhand', cursive", fontSize: '1.6rem', color: 'white', letterSpacing: '0.5px', lineHeight: 1.2 }}>
                                         Certificado Energético
                                     </span>
+                                ) : tenant === 'england' ? (
+                                    <span style={{ fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif", fontSize: '1.6rem', color: 'white', letterSpacing: '1px', lineHeight: 1.2, fontWeight: 900 }}>
+                                        EPC Cert
+                                    </span>
                                 ) : (
                                     <>
                                         <img src="/logo.svg" alt={tenantDisplayName} className="h-16" />
@@ -376,7 +407,7 @@ const Layout = () => {
                                 )}
                             </div>
                             <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                                {isSpanish ? 'Su socio de confianza para certificados energéticos y consultoría energética.' : "Ireland's trusted partner for BER assessments and energy consultancy."}
+                                {isSpanish ? 'Su socio de confianza para certificados energéticos y consultoría energética.' : tenant === 'england' ? "England's trusted partner for EPC assessments and energy performance certification." : "Ireland's trusted partner for BER assessments and energy consultancy."}
                             </p>
                             <div className="flex gap-4">
                                 <a href="https://www.facebook.com/profile.php?id=61578159843471" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#007F00] hover:text-white transition cursor-pointer"><Facebook size={16} /></a>
@@ -412,7 +443,7 @@ const Layout = () => {
                             <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">{isSpanish ? 'Cuenta' : 'Account'}</h4>
                             <ul className="space-y-3">
                                 {[
-                                    { label: isSpanish ? 'Reservar Certificadores' : 'Book BER Assessors', path: '/' },
+                                    { label: isSpanish ? 'Reservar Certificadores' : (tenant === 'england' ? 'Book EPC Assessors' : 'Book BER Assessors'), path: '/' },
                                     { label: isSpanish ? 'Ubicaciones' : 'Locations', path: '/locations' },
                                     { label: isSpanish ? 'Nuestras Noticias' : 'Our News', path: '/news' },
                                     { label: 'Blog', path: '/blog' },
@@ -455,7 +486,13 @@ const Layout = () => {
                                         <li><a href="https://www.miteco.gob.es/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">MITECO</a></li>
                                     </>
                                 )}
-                                {!isSpanish && <li><a href="https://www.seai.ie" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">SEAI.ie</a></li>}
+                                {!isSpanish && (
+                                    tenant === 'england' ? (
+                                        <li><a href="https://www.gov.uk/government/collections/domestic-energy-performance-certificates" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">GOV.UK EPCs</a></li>
+                                    ) : (
+                                        <li><a href="https://www.seai.ie" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">SEAI.ie</a></li>
+                                    )
+                                )}
                             </ul>
                         </div>
 

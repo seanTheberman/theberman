@@ -1,9 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import QuoteFormModule from '../components/QuoteFormModule';
+import { useTranslation } from '../hooks/useTranslation';
 
 const QuoteForm = () => {
     const navigate = useNavigate();
+    const { isSpanish, tenant } = useTranslation();
+    const ratingName = isSpanish ? 'Certificado Energético' : (tenant === 'england' ? 'EPC' : 'BER');
+    const assessorDesc = isSpanish ? 'certificadores acreditados' : (tenant === 'england' ? 'accredited EPC assessors' : 'SEAI registered BER assessors');
 
     return (
         <div className="min-h-screen bg-white">
@@ -20,10 +24,10 @@ const QuoteForm = () => {
 
                 <div className="text-center mb-12">
                     <h1 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 mb-4">
-                        Get Your BER Quote
+                        {isSpanish ? 'Solicita tu Presupuesto' : `Get Your ${ratingName} Quote`}
                     </h1>
                     <p className="text-gray-500 max-w-2xl mx-auto">
-                        Complete the form below to receive competitive quotes from SEAI registered BER assessors in your area.
+                        {isSpanish ? 'Rellena el formulario para recibir presupuestos competitivos de certificadores acreditados en tu zona.' : `Complete the form below to receive competitive quotes from ${assessorDesc} in your area.`}
                     </p>
                 </div>
 

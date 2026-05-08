@@ -20,6 +20,7 @@ export interface SectionDefinition {
     defaults: {
         ireland: Record<string, any>;
         spain: Record<string, any>;
+        england: Record<string, any>;
     };
 }
 
@@ -90,6 +91,22 @@ export const CMS_PAGES: PageDefinition[] = [
                         bg_color: '#ffffff',
                         heading_font_size: '6xl',
                     },
+                    england: {
+                        badge_text: "England's Leading EPC Platform",
+                        heading: 'Need an',
+                        heading_highlight: 'EPC Certificate?',
+                        subheading: 'The fastest, most reliable way to get your Energy Performance Certificate. Guaranteed lowest prices from 100+ accredited assessors across England.',
+                        cta_line: 'Get the best quotes from local EPC Assessors today.',
+                        cta_button_text: 'Get a Free Quote',
+                        cta_button_url: '/get-quote',
+                        benefit_1: '100+ Assessors Across England',
+                        benefit_2: 'FULLY ACCREDITED DEAs ONLY',
+                        benefit_3: 'Choose Your Date & Time',
+                        heading_color: '#111827',
+                        highlight_color: '#007F00',
+                        bg_color: '#ffffff',
+                        heading_font_size: '7xl',
+                    },
                 },
             },
             {
@@ -125,6 +142,14 @@ export const CMS_PAGES: PageDefinition[] = [
                         step2_title: 'Envía Detalles', step2_desc: 'Comparte la información de tu propiedad en menos de 1 minuto.',
                         step3_title: 'Recibe Presupuestos', step3_desc: 'Recibe precios competitivos de certificadores locales.',
                         step4_title: 'Reserva Online', step4_desc: 'Elige tu presupuesto favorito y confirma al instante.',
+                        bg_color: '#f9fafb',
+                    },
+                    england: {
+                        tag: 'Simple Process', heading: 'How It Works',
+                        step1_title: 'Select Date', step1_desc: 'Tell us your preferred date & time for the EPC assessment.',
+                        step2_title: 'Enter Details', step2_desc: 'Share your property information in less than 1 minute.',
+                        step3_title: 'Get Quotes', step3_desc: 'Receive competitive prices from local accredited DEAs.',
+                        step4_title: 'Book Online', step4_desc: 'Choose your preferred assessor and confirm instantly.',
                         bg_color: '#f9fafb',
                     },
                 },
@@ -174,6 +199,16 @@ export const CMS_PAGES: PageDefinition[] = [
                         stat2_value: '100+', stat2_label: 'Certificadores',
                         stat3_value: '4.9/5', stat3_label: 'Valoración Media',
                     },
+                    england: {
+                        tag: 'The Advantage', heading: 'Why Homeowners Trust', heading_highlight: 'EPC Cert',
+                        benefit1_title: 'Lowest Prices Guaranteed', benefit1_desc: 'Receive multiple quotes and choose the best option for you.',
+                        benefit2_title: 'Accredited DEAs Only', benefit2_desc: 'Every Domestic Energy Assessor is fully accredited and vetted.',
+                        benefit3_title: 'Money-Back Guarantee', benefit3_desc: 'We ensure you get a professional service or your money back.',
+                        benefit4_title: 'Instant Online Booking', benefit4_desc: 'No back-and-forth phone calls. Book everything in real-time.',
+                        stat1_value: '1k+', stat1_label: 'Homeowners Served',
+                        stat2_value: '100+', stat2_label: 'DEA Assessors',
+                        stat3_value: '4.9/5', stat3_label: 'Average Rating',
+                    },
                 },
             },
             {
@@ -207,6 +242,12 @@ export const CMS_PAGES: PageDefinition[] = [
                         review2_author: 'Lucía Martínez', review2_location: 'Barcelona', review2_quote: 'Extremadamente fácil de usar. Me encantó poder ver la acreditación y las reseñas de los certificadores antes de reservar. Muy recomendable para propietarios.',
                         review3_author: 'Javier Fernández', review3_location: 'Valencia', review3_quote: 'Rapidez y precios competitivos. El portal hace muy sencillo gestionarlo todo y el certificado se emitió en las 24 horas siguientes a la inspección.',
                     },
+                    england: {
+                        heading: 'Excellent', subheading: 'Based on 1,000 Verified Customer Ratings',
+                        review1_author: 'James Thompson', review1_location: 'London', review1_quote: 'Used the platform twice now. Both times I got several quotes within an hour and the assessor was super professional. Saved about £30 vs other sites.',
+                        review2_author: 'Sarah Williams', review2_location: 'Manchester', review2_quote: 'Extremely easy to use. I loved that I could verify the DEA accreditation and read reviews before booking. Highly recommended for landlords needing EPCs.',
+                        review3_author: 'David Clarke', review3_location: 'Birmingham', review3_quote: 'Fast turnaround and competitive pricing. The portal makes it very simple to manage everything and the EPC was issued within 24 hours of the assessment.',
+                    },
                 },
             },
             {
@@ -223,6 +264,7 @@ export const CMS_PAGES: PageDefinition[] = [
                 defaults: {
                     ireland: { heading: 'Are You a BER Assessor?', description: 'Register with theberman.eu and receive local job leads, straight to your phone.', cta_text: 'Join Now', cta_url: '/signup?role=contractor' },
                     spain: { heading: '¿Eres Certificador Energético?', description: 'Regístrate y recibe leads de trabajo locales, directamente en tu teléfono.', cta_text: 'Únete Ahora', cta_url: '/signup?role=contractor' },
+                    england: { heading: 'Are You a Domestic Energy Assessor?', description: 'Register with epccert.com and receive local EPC job leads, straight to your phone.', cta_text: 'Join Now', cta_url: '/signup?role=contractor' },
                 },
             },
             {
@@ -251,6 +293,12 @@ export const CMS_PAGES: PageDefinition[] = [
                         tag: 'Explora Nuestra Red', heading: 'Encuentra los Mejores', heading_highlight: 'Socios de Eficiencia Energética.',
                         description: 'Accede a nuestro catálogo seleccionado de empresas certificadas de eficiencia energética. Desde instaladores de paneles solares hasta especialistas en aislamiento, encuentra el socio adecuado para el camino de tu hogar hacia la eficiencia.',
                         cta1_text: 'Explorar Catálogo', cta2_text: 'Registra tu Negocio', cta3_text: 'Habla con un Asesor',
+                        image_url: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=800',
+                    },
+                    england: {
+                        tag: 'Explore Our Network', heading: 'Find the Best', heading_highlight: 'Home Energy Partners.',
+                        description: "Access our curated catalogue of certified home energy businesses. From solar panel installers to insulation specialists, find the right partner for your home's journey to efficiency.",
+                        cta1_text: 'Browse Catalogue', cta2_text: 'Register your Business', cta3_text: 'Speak to Advisor',
                         image_url: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=800',
                     },
                 },
@@ -294,6 +342,15 @@ export const CMS_PAGES: PageDefinition[] = [
                         cta_heading: '¿Listo para tu Certificado Energético?', cta_description: 'Únete a más de 1.000 propietarios satisfechos. Obtén presupuestos competitivos de certificadores locales de confianza en segundos.',
                         cta_button: 'Pide Presupuesto Online',
                     },
+                    england: {
+                        tag: 'Knowledge Base', heading: 'Frequently Asked Questions',
+                        faq1_q: 'What is an EPC?', faq1_a: 'An Energy Performance Certificate (EPC) tells you how energy efficient your property is, rated from A (most efficient) to G (least efficient). It also shows potential improvements.',
+                        faq2_q: 'Why do I need an EPC?', faq2_a: "It's a legal requirement to have a valid EPC when selling, letting, or building a property in England and Wales. Fines of up to £5,000 apply for non-compliance.",
+                        faq3_q: 'How much does it cost?', faq3_a: 'EPC costs typically range from £35 to £120 depending on property size. Our platform ensures you get the most competitive quotes from local accredited DEAs.',
+                        faq4_q: 'How long is it valid for?', faq4_a: 'An EPC is valid for 10 years from the date of issue, unless a new one is produced for the property.',
+                        cta_heading: 'Ready to get your EPC?', cta_description: 'Join over 1,000 satisfied homeowners. Get competitive quotes from trusted local assessors in seconds.',
+                        cta_button: 'Get a Quote Online',
+                    },
                 },
             },
             {
@@ -319,6 +376,11 @@ export const CMS_PAGES: PageDefinition[] = [
                         description: 'Únete a más de 5.000 propietarios que reciben nuestras novedades energéticas semanales, ofertas flash y promociones exclusivas de rehabilitación energética.',
                         button_text: 'Suscribirse', placeholder: 'Introduce tu correo electrónico',
                     },
+                    england: {
+                        tag: 'Premium Resources', heading: 'Get Our Complete Home Energy Upgrade Guide',
+                        description: 'Join 5,000+ homeowners receiving our weekly energy updates, EPC tips, and exclusive home improvement offers.',
+                        button_text: 'Subscribe to news', placeholder: 'Enter your email address',
+                    },
                 },
             },
         ],
@@ -342,6 +404,7 @@ export const CMS_PAGES: PageDefinition[] = [
                 defaults: {
                     ireland: { tag: 'Our Mission', heading_line1: 'Precision in every', heading_line2: 'Assessment.', description: "Helping homeowners across Ireland understand, improve, and certify their property's energy efficiency since 2015." },
                     spain: { tag: 'Nuestra Misión', heading_line1: 'Precisión en cada', heading_line2: 'Certificación.', description: 'Ayudamos a los propietarios de toda España a entender, mejorar y certificar la eficiencia energética de sus propiedades desde 2015.' },
+                    england: { tag: 'Our Mission', heading_line1: 'Precision in every', heading_line2: 'Assessment.', description: "Helping homeowners across England understand, improve, and certify their property's energy performance." },
                 },
             },
             {
@@ -383,6 +446,16 @@ export const CMS_PAGES: PageDefinition[] = [
                         stat2_value: '100+', stat2_label: 'Red Nacional de Certificadores',
                         stat3_value: 'CEE', stat3_label: 'Certificadores Acreditados',
                     },
+                    england: {
+                        heading: 'Our Story',
+                        paragraph1: "EPC Cert was founded with a singular objective: to bring professional clarity and technical rigor to England's energy performance certificate industry.",
+                        paragraph2: "What began as a small team in London has grown into a nationwide network of accredited Domestic Energy Assessors.",
+                        paragraph3: "Today, EPC Cert stands as a trusted platform for energy assessments across England. We have successfully facilitated thousands of EPCs.",
+                        paragraph4: "As we look toward the future, our focus continues to be on innovation, compliance, and helping homeowners meet the latest EPC regulations.",
+                        stat1_value: '1k+', stat1_label: 'Completed EPC Assessments',
+                        stat2_value: '100+', stat2_label: 'Accredited DEAs Nationwide',
+                        stat3_value: 'Level 3', stat3_label: 'Qualified Energy Assessors',
+                    },
                 },
             },
             {
@@ -399,6 +472,7 @@ export const CMS_PAGES: PageDefinition[] = [
                 defaults: {
                     ireland: { heading: 'Join the', heading_highlight: 'The Berman', description: 'Ready for a professional BER assessment? Our nationwide team is ready to help you today.', button_text: 'Get My BER Quote' },
                     spain: { heading: 'Únete a la familia', heading_highlight: 'Certificado Energético', description: '¿Preparado para tu certificación energética profesional? Nuestro equipo nacional está listo para ayudarte hoy mismo.', button_text: 'Pedir mi Presupuesto' },
+                    england: { heading: 'Join', heading_highlight: 'EPC Cert', description: 'Ready for a professional EPC assessment? Our nationwide network of accredited DEAs is ready to help you today.', button_text: 'Get My EPC Quote' },
                 },
             },
         ],
@@ -422,6 +496,7 @@ export const CMS_PAGES: PageDefinition[] = [
                 defaults: {
                     ireland: { badge: 'Get In Touch', heading_line1: 'How can we', heading_line2: 'help?', subtitle: 'Have a question about BER assessments? Our team is here to provide the support you need.' },
                     spain: { badge: 'Ponte en Contacto', heading_line1: '¿En qué podemos', heading_line2: 'ayudarte?', subtitle: '¿Tienes alguna pregunta sobre certificaciones energéticas? Nuestro equipo está aquí para ayudarte.' },
+                    england: { badge: 'Get In Touch', heading_line1: 'How can we', heading_line2: 'help?', subtitle: 'Have a question about EPC assessments? Our team is here to provide the support you need.' },
                 },
             },
         ],

@@ -9,6 +9,14 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { trackReferral } from '../lib/referralTracking';
 import { supabase } from '../lib/supabase';
+import { getTenantFromDomain } from '../lib/tenant';
+
+// Tenant-specific registration number labels
+const REGISTRATION_NUMBER_LABELS: Record<string, { label: string; placeholder: string }> = {
+    ireland: { label: 'SEAI Registration #', placeholder: 'e.g. 10XXX' },
+    spain: { label: 'CEE Registration #', placeholder: 'e.g. 123456' },
+    england: { label: 'Accreditation #', placeholder: 'e.g. ELH123456' }
+};
 
 const signupSchema = z.object({
     fullName: z.string().min(2, 'Full name must be at least 2 characters'),
@@ -17,6 +25,7 @@ const signupSchema = z.object({
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z.string(),
     role: z.enum(['user', 'contractor', 'business']),
+    seaiNumber: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
@@ -39,6 +48,8 @@ const SignUp = () => {
     const location = useLocation();
     const defaultRole = 'user';
     const [isRoleFixed, setIsRoleFixed] = useState(false);
+    const tenant = getTenantFromDomain();
+    const regLabels = REGISTRATION_NUMBER_LABELS[tenant] || REGISTRATION_NUMBER_LABELS.ireland;
 
     // Redirect if already authenticated
     useEffect(() => {
@@ -116,11 +127,20 @@ const SignUp = () => {
                 data.password,
                 data.fullName,
                 data.role,
-                data.phone // Pass phone number
+                data.phone,
+                data.seaiNumber // Pass registration number
             );
             if (error) throw error;
 
             if (authData?.user) {
+                // Update profiles table with seai_number for contractors
+                if (data.role === 'contractor' && data.seaiNumber) {
+                    await supabase
+                        .from('profiles')
+                        .update({ seai_number: data.seaiNumber })
+                        .eq('id', authData.user.id);
+                }
+
                 // Track referral if this is a business signup with referral code
                 if (data.role === 'business' && referralCode) {
                     await trackReferral(authData.user.id, referralCode);
@@ -264,6 +284,18 @@ const SignUp = () => {
                                     />
                                 </div>
                                 {errors.phone && <p className="text-red-500 text-xs mt-1 font-medium ml-1">{errors.phone.message}</p>}
+                            </div>
+                        )}
+
+                        {activeRole === 'contractor' && (
+                            <div className="space-y-1 text-left">
+                                <label className="text-sm font-bold text-gray-700 ml-1">{regLabels.label} <span className="text-gray-400 font-normal">(optional)</span></label>
+                                <input
+                                    {...register('seaiNumber')}
+                                    type="text"
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
+                                    placeholder={regLabels.placeholder}
+                                />
                             </div>
                         )}
 

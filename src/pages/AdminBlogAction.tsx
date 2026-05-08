@@ -114,7 +114,9 @@ const AdminBlogAction = () => {
 
         const formData = new FormData(e.target as HTMLFormElement);
         const title = formData.get('title') as string;
-        const tenant = getTenantFromDomain();
+        // Use tenant from URL query param (passed from admin) or fall back to domain detection
+        const urlParams = new URLSearchParams(window.location.search);
+        const tenant = urlParams.get('tenant') || getTenantFromDomain();
         const updates = {
             title,
             subtitle: formData.get('subtitle') as string || null,

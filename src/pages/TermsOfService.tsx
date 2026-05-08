@@ -5,8 +5,9 @@ import { getTenantFromDomain, getTenantDomain } from '../lib/tenant';
 const TermsOfService = () => {
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
+    const isEngland = tenant === 'england';
     const tenantDomain = getTenantDomain(tenant);
-    const brand = isSpanish ? 'Certificado Energético' : 'The Berman';
+    const brand = isSpanish ? 'Certificado Energético' : (isEngland ? 'EPC Cert' : 'The Berman');
     const lastUpdated = isSpanish ? '2 de febrero de 2026' : 'February 2, 2026';
 
     const tr = isSpanish ? {
@@ -49,6 +50,29 @@ const TermsOfService = () => {
         availabilityP: 'No se garantiza: Funcionamiento continuo Ausencia de errores La Plataforma podrá modificar o suspender el servicio en cualquier momento.',
         governingLawH: '14. LEGISLACIÓN APLICABLE',
         governingLawP: 'Estas condiciones se rigen por: Legislación de la Unión Europea Legislación española.',
+    } : isEngland ? {
+        seoTitle: 'Terms of Service',
+        seoDesc: 'Terms and Conditions of Service for EPC Cert. Our agreement for energy performance certificate assessments in England.',
+        badge: 'Legal',
+        title1: 'Terms of',
+        title2: 'Service.',
+        lastUpdatedLabel: 'Last Updated',
+        hero: 'Please read these terms carefully before using our platform or booking an assessment.',
+        agreementH: 'The Agreement',
+        agreementP: `By accessing or using the ${tenantDomain} website, you agree to be bound by these Terms of Service and all applicable laws and regulations in England. If you do not agree with any of these terms, you are prohibited from using or accessing this site.`,
+        servicesH: 'Our Services',
+        servicesP1: `${brand} acts as a platform connecting homeowners and property managers with accredited Domestic Energy Assessors. We facilitate quote comparisons and booking management for EPC assessments.`,
+        servicesP2: 'Note: While we vet all assessors for accreditation, the actual assessment contract is between the user and the chosen assessor.',
+        bookingH: 'Bookings',
+        bookingItems: [
+            'Quotes provided on the platform are based on the information supplied by the user.',
+            'Assessors reserve the right to adjust pricing if the property details provided are significantly inaccurate.',
+            'Cancellations should be made at least 24 hours prior to the scheduled assessment time.',
+        ],
+        liabilityH: 'Liability',
+        liabilityP: `${brand} is not responsible for the accuracy of individual EPC certificates. EPC certificates are issued under the assessor's accreditation. We shall not be liable for any direct, indirect, or consequential loss arising from the use of our platform or services.`,
+        lawH: 'Governing Law',
+        lawP: 'These terms and conditions are governed by and construed in accordance with the laws of England and Wales. You irrevocably submit to the exclusive jurisdiction of the courts in England for any dispute related to these terms.',
     } : {
         seoTitle: 'Terms of Service',
         seoDesc: 'Terms and Conditions of Service for The Berman. Our agreement for building energy rating assessments in Ireland.',

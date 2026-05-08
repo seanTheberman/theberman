@@ -6,13 +6,58 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
 import { geocodeAddress } from '../lib/geocoding';
+import { getTenantFromDomain } from '../lib/tenant';
 
 const COUNTIES = Object.keys(TOWNS_BY_COUNTY).sort();
+
+// Tenant-specific registration number labels
+const REGISTRATION_NUMBER_LABELS: Record<string, { label: string; placeholder: string; sinceLabel: string }> = {
+    ireland: {
+        label: 'SEAI Registration #',
+        placeholder: 'e.g. 10XXX',
+        sinceLabel: 'SEAI Assessor since'
+    },
+    spain: {
+        label: 'CEE Registration #',
+        placeholder: 'e.g. 123456',
+        sinceLabel: 'Certificado desde'
+    },
+    england: {
+        label: 'Accreditation #',
+        placeholder: 'e.g. ELH123456',
+        sinceLabel: 'Accredited since'
+    }
+};
+
+// Tenant-specific page titles and labels
+const TENANT_LABELS: Record<string, { title: string; subtitle: string; catalogueLabel: string; catalogueDesc: string }> = {
+    ireland: {
+        title: 'BER Assessor Registration',
+        subtitle: 'Complete your profile to get more BER jobs in your area.',
+        catalogueLabel: 'Would you like to be listed in our Home Energy catalogue as a "BER ASSESSOR"?',
+        catalogueDesc: 'This will help homeowners find you directly for BER assessments in your area.'
+    },
+    spain: {
+        title: 'Registro de Certificador Energético',
+        subtitle: 'Completa tu perfil para recibir más trabajos de certificados energéticos en tu zona.',
+        catalogueLabel: '¿Te gustaría aparecer en nuestro catálogo de Eficiencia Energética como "CERTIFICADOR ENERGÉTICO"?',
+        catalogueDesc: 'Esto ayudará a los propietarios a encontrarte directamente para certificaciones energéticas en tu zona.'
+    },
+    england: {
+        title: 'EPC Assessor Registration',
+        subtitle: 'Complete your profile to get more EPC jobs in your area.',
+        catalogueLabel: 'Would you like to be listed in our Home Energy catalogue as an "EPC ASSESSOR"?',
+        catalogueDesc: 'This will help homeowners find you directly for EPC assessments in your area.'
+    }
+};
 
 const ContractorOnboarding = () => {
     const { user, refreshProfile } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const tenant = getTenantFromDomain();
+    const regLabels = REGISTRATION_NUMBER_LABELS[tenant] || REGISTRATION_NUMBER_LABELS.ireland;
+    const tenantLabels = TENANT_LABELS[tenant] || TENANT_LABELS.ireland;
 
     // Form State
     const [formData, setFormData] = useState({
@@ -110,7 +155,7 @@ const ContractorOnboarding = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.phone || !formData.homeCounty || !formData.homeTown || !formData.seaiNumber || !formData.seaiYear || formData.assessorTypes.length === 0) {
+        if (!formData.phone || !formData.homeCounty || !formData.homeTown || formData.assessorTypes.length === 0) {
             toast.error('Please fill in all required fields including Assessor Type');
             return;
         }
@@ -193,10 +238,10 @@ const ContractorOnboarding = () => {
             <div className="max-w-3xl mx-auto">
                 <div className="text-center mb-10">
                     <h1 className="text-3xl font-extrabold text-gray-900 font-serif">
-                        BER Assessor Registration
+                        {tenantLabels.title}
                     </h1>
                     <p className="mt-2 text-gray-600">
-                        Complete your profile to get more BER jobs in your area.
+                        {tenantLabels.subtitle}
                     </p>
                 </div>
 
@@ -268,13 +313,12 @@ const ContractorOnboarding = () => {
                             </div>
 
                             <div>
-                                <label htmlFor="seaiNumber" className="block text-sm font-bold text-gray-700 mb-1">SEAI Registration #</label>
+                                <label htmlFor="seaiNumber" className="block text-sm font-bold text-gray-700 mb-1">{regLabels.label} <span className="text-gray-400 font-normal">(optional)</span></label>
                                 <input
                                     type="text"
                                     name="seaiNumber"
                                     id="seaiNumber"
-                                    required
-                                    placeholder="e.g. 10XXX"
+                                    placeholder={regLabels.placeholder}
                                     className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
                                     value={formData.seaiNumber}
                                     onChange={(e) => setFormData({ ...formData, seaiNumber: e.target.value })}
@@ -282,7 +326,7 @@ const ContractorOnboarding = () => {
                             </div>
 
                             <div>
-                                <label htmlFor="seaiYear" className="block text-sm font-bold text-gray-700 mb-1">SEAI Assessor since</label>
+                                <label htmlFor="seaiYear" className="block text-sm font-bold text-gray-700 mb-1">{regLabels.sinceLabel}</label>
                                 <select
                                     id="seaiYear"
                                     name="seaiYear"
@@ -471,9 +515,9 @@ const ContractorOnboarding = () => {
                         {/* CATALOGUE LISTING */}
                         <div className="pt-6">
                             <label className="block text-sm font-bold text-gray-700 mb-2">
-                                Would you like to be listed in our Home Energy catalogue as a 'BER ASSESSOR'?
+                                {tenantLabels.catalogueLabel}
                             </label>
-                            <p className="text-sm text-gray-500 mb-4">This will help homeowners find you directly for BER assessments in your area.</p>
+                            <p className="text-sm text-gray-500 mb-4">{tenantLabels.catalogueDesc}</p>
 
                             <div className="flex gap-4">
                                 <button

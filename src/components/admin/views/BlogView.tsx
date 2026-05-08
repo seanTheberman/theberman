@@ -8,9 +8,10 @@ interface Props {
     loading: boolean;
     fetchBlogArticles: () => void;
     handleDeleteBlogArticle: (id: string) => void;
+    selectedTenant: string;
 }
 
-export const BlogView = React.memo(({ blogArticles, loading, fetchBlogArticles, handleDeleteBlogArticle }: Props) => {
+export const BlogView = React.memo(({ blogArticles, loading, fetchBlogArticles, handleDeleteBlogArticle, selectedTenant }: Props) => {
     const navigate = useNavigate();
 
     return (
@@ -30,7 +31,7 @@ export const BlogView = React.memo(({ blogArticles, loading, fetchBlogArticles, 
                         <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
                     </button>
                     <button
-                        onClick={() => navigate('/admin/blog/new')}
+                        onClick={() => navigate(`/admin/blog/new?tenant=${selectedTenant}`)}
                         className="bg-[#007F00] text-white px-3 sm:px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#006600] transition-colors flex items-center gap-2"
                     >
                         <BookOpen size={16} />
@@ -45,7 +46,7 @@ export const BlogView = React.memo(({ blogArticles, loading, fetchBlogArticles, 
                 {blogArticles.map((article) => (
                     <div
                         key={article.id}
-                        onClick={() => navigate(`/admin/blog/edit/${article.id}`)}
+                        onClick={() => navigate(`/admin/blog/edit/${article.id}?tenant=${selectedTenant}`)}
                         className="p-4 flex gap-3 cursor-pointer hover:bg-gray-50 transition-colors"
                     >
                         {article.image_url && (
@@ -67,7 +68,7 @@ export const BlogView = React.memo(({ blogArticles, loading, fetchBlogArticles, 
                             <div className="text-xs text-gray-400">{new Date(article.published_at).toLocaleDateString()}</div>
                             <div className="flex items-center gap-2 mt-2" onClick={e => e.stopPropagation()}>
                                 <button
-                                    onClick={() => navigate(`/admin/blog/edit/${article.id}`)}
+                                    onClick={() => navigate(`/admin/blog/edit/${article.id}?tenant=${selectedTenant}`)}
                                     className="p-1.5 hover:bg-blue-50 rounded-lg transition-colors text-[#007EA7]"
                                     title="Edit Post"
                                 >
@@ -114,7 +115,7 @@ export const BlogView = React.memo(({ blogArticles, loading, fetchBlogArticles, 
                         {blogArticles.map((article) => (
                             <tr
                                 key={article.id}
-                                onClick={() => navigate(`/admin/blog/edit/${article.id}`)}
+                                onClick={() => navigate(`/admin/blog/edit/${article.id}?tenant=${selectedTenant}`)}
                                 className="hover:bg-gray-50 transition-colors cursor-pointer"
                             >
                                 <td className="px-6 py-4 max-w-sm">
@@ -148,7 +149,7 @@ export const BlogView = React.memo(({ blogArticles, loading, fetchBlogArticles, 
                                 <td className="px-6 py-4 text-right">
                                     <div className="flex items-center justify-end gap-2 text-[#007EA7]" onClick={e => e.stopPropagation()}>
                                         <button
-                                            onClick={() => navigate(`/admin/blog/edit/${article.id}`)}
+                                            onClick={() => navigate(`/admin/blog/edit/${article.id}?tenant=${selectedTenant}`)}
                                             className="p-1.5 hover:bg-blue-50 rounded-lg transition-colors"
                                             title="Edit Post"
                                         >

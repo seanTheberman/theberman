@@ -9,14 +9,44 @@ import EmailVerification from './EmailVerification';
 import IdentityAuth from './IdentityAuth';
 import JobConfirmation from './JobConfirmation';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
+import { TOWNS_BY_COUNTY_ENGLAND } from '../data/englandTowns';
+import { TOWNS_BY_COUNTY_SPAIN } from '../data/spainTowns';
+
+const getTownsForTenant = (tenant: string): Record<string, string[]> => {
+    if (tenant === 'england') return TOWNS_BY_COUNTY_ENGLAND;
+    if (tenant === 'spain') return TOWNS_BY_COUNTY_SPAIN;
+    return TOWNS_BY_COUNTY;
+};
 
 // Irish Counties
-const COUNTIES = [
+const COUNTIES_IRELAND = [
     'Carlow', 'Cavan', 'Clare', 'Cork', 'Donegal', 'Dublin', 'Galway', 'Kerry',
     'Kildare', 'Kilkenny', 'Laois', 'Leitrim', 'Limerick', 'Longford', 'Louth',
     'Mayo', 'Meath', 'Monaghan', 'Offaly', 'Roscommon', 'Sligo', 'Tipperary',
     'Waterford', 'Westmeath', 'Wexford', 'Wicklow'
 ];
+
+// Spain Provinces
+const COUNTIES_SPAIN = [
+    'Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Zaragoza', 'Málaga',
+    'Murcia', 'Palma', 'Las Palmas', 'Bilbao', 'Alicante', 'Córdoba',
+    'Valladolid', 'Granada', 'A Coruña', 'Tarragona', 'Girona', 'Lleida'
+];
+
+// England Cities/Regions
+const COUNTIES_ENGLAND = [
+    'London', 'Manchester', 'Birmingham', 'Leeds', 'Liverpool', 'Bristol',
+    'Sheffield', 'Newcastle', 'Nottingham', 'Leicester', 'Brighton', 'Southampton',
+    'Oxford', 'Cambridge', 'York', 'Bath', 'Plymouth', 'Norwich',
+    'Coventry', 'Derby', 'Reading', 'Milton Keynes', 'Exeter', 'Canterbury',
+    'Chester', 'Winchester'
+];
+
+const getCountiesForTenant = (tenant: string) => {
+    if (tenant === 'england') return COUNTIES_ENGLAND;
+    if (tenant === 'spain') return COUNTIES_SPAIN;
+    return COUNTIES_IRELAND;
+};
 
 const ROUTING_KEYS: Record<string, string> = {
     'Carlow': 'R93', 'Cavan': 'H12', 'Clare': 'V95', 'Cork': 'T12', 'Donegal': 'F92',
@@ -88,6 +118,38 @@ const COMMERCIAL_FLOOR_AREAS_IMPERIAL = [
     'Over 107,639 sq.ft'
 ];
 
+// --- Technical Assessment options (tenant-specific) ---
+const TECHNICAL_ASSESSMENT_TYPES: Record<string, string[]> = {
+    ireland: ['Heat Pump Survey', 'New Build Compliance (Part L / NZEB)', 'Energy Audit', 'Retrofit Assessment', 'Air Tightness Test', 'Thermal Imaging', 'Ventilation Assessment', 'SEAI Grant Assessment'],
+    spain: ['Auditoría Energética', 'Certificación Edificio Nuevo (CTE)', 'Evaluación Bomba de Calor', 'Evaluación de Rehabilitación', 'Test de Hermeticidad', 'Termografía Infrarroja', 'Evaluación de Ventilación', 'Evaluación para Subvenciones'],
+    england: ['Heat Pump Assessment', 'SAP Calculation (New Build)', 'Energy Audit', 'PAS 2035 Retrofit Assessment', 'Air Tightness Test', 'Thermal Imaging Survey', 'Ventilation Assessment', 'ECO4 / Grant Assessment'],
+};
+const TECHNICAL_PROPERTY_TYPES: Record<string, string[]> = {
+    ireland: ['Detached House', 'Semi-Detached', 'Terraced', 'Bungalow', 'Apartment', 'New Build (Under Construction)', 'Commercial Property'],
+    spain: ['Casa Individual', 'Adosado', 'Piso / Apartamento', 'Chalet', 'Dúplex', 'Obra Nueva (En Construcción)', 'Local Comercial'],
+    england: ['Detached House', 'Semi-Detached', 'Terraced', 'Bungalow', 'Flat / Maisonette', 'New Build (Under Construction)', 'Commercial Property'],
+};
+const YEAR_BUILT_OPTIONS: Record<string, string[]> = {
+    ireland: ['Pre-1940', '1940–1970', '1970–2000', '2000–2010', '2010–2020', '2020+ / New Build'],
+    spain: ['Anterior a 1940', '1940–1970', '1970–2000', '2000–2010', '2010–2020', '2020+ / Obra Nueva'],
+    england: ['Pre-1940', '1940–1970', '1970–2000', '2000–2010', '2010–2020', '2020+ / New Build'],
+};
+const CURRENT_HEATING_OPTIONS: Record<string, string[]> = {
+    ireland: ['Gas Boiler', 'Oil Boiler', 'Electric Storage Heaters', 'Heat Pump (Existing)', 'Solid Fuel / Stove', 'LPG', 'None / Under Construction'],
+    spain: ['Caldera de Gas', 'Caldera de Gasóleo', 'Calefacción Eléctrica', 'Bomba de Calor (Existente)', 'Biomasa / Pellets', 'Sin Calefacción / En Construcción'],
+    england: ['Gas Boiler', 'Oil Boiler', 'Electric Storage Heaters', 'Heat Pump (Existing)', 'Solid Fuel / Log Burner', 'LPG', 'District Heating', 'None / Under Construction'],
+};
+const INSULATION_STATUS_OPTIONS: Record<string, string[]> = {
+    ireland: ['Fully Insulated (Walls, Attic, Floor)', 'Partially Insulated', 'Minimal / No Insulation', 'Unknown'],
+    spain: ['Totalmente Aislada (Paredes, Techo, Suelo)', 'Parcialmente Aislada', 'Sin Aislamiento / Mínimo', 'Desconocido'],
+    england: ['Fully Insulated (Walls, Loft, Floor)', 'Partially Insulated', 'Minimal / No Insulation', 'Unknown'],
+};
+const TECHNICAL_PURPOSES: Record<string, string[]> = {
+    ireland: ['SEAI Grant Application', 'Heat Pump Installation', 'Building Regulations (Part L)', 'Pre-Purchase Survey', 'Energy Upgrade Planning', 'Compliance Certificate', 'Other'],
+    spain: ['Solicitud de Subvención', 'Instalación de Bomba de Calor', 'Cumplimiento Normativo (CTE)', 'Evaluación Pre-Compra', 'Planificación de Mejora Energética', 'Certificado de Cumplimiento', 'Otro'],
+    england: ['ECO4 / Grant Application', 'Heat Pump Installation', 'Building Regulations (Part L)', 'Pre-Purchase Survey', 'Energy Upgrade Planning', 'EPC Improvement', 'PAS 2035 Compliance', 'Other'],
+};
+
 interface FormData {
     // Shared
     jobType: 'domestic' | 'commercial' | 'technical' | '';
@@ -114,6 +176,13 @@ interface FormData {
     existingDocs: string[];
     assessmentPurpose: string;
     heatingCoolingSystems: string[];
+    // Technical-specific
+    technicalAssessmentType: string;
+    technicalPropertyType: string;
+    yearBuilt: string;
+    currentHeating: string;
+    insulationStatus: string;
+    technicalPurpose: string;
 }
 
 interface QuoteFormModuleProps {
@@ -122,7 +191,8 @@ interface QuoteFormModuleProps {
 
 const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
     const { user } = useAuth();
-    const { t, o, isSpanish } = useTranslation();
+    const { t, o, isSpanish, tenant } = useTranslation();
+    const certName = isSpanish ? 'CEE' : (tenant === 'england' ? 'EPC' : 'BER');
     const [currentStep, setCurrentStep] = useState(0); // Start at step 0 (Job Type)
     const [sizeUnit, setSizeUnit] = useState<'ft' | 'm'>('m'); // Default to m²
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -154,6 +224,13 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
         existingDocs: [],
         assessmentPurpose: '',
         heatingCoolingSystems: [],
+        // Technical
+        technicalAssessmentType: '',
+        technicalPropertyType: '',
+        yearBuilt: '',
+        currentHeating: '',
+        insulationStatus: '',
+        technicalPurpose: '',
     });
 
     const isDomestic = formData.jobType === 'domestic';
@@ -258,7 +335,9 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                     const cleanEircode = formData.eircode.replace(/\s/g, '');
                     const eircodeValid = isSpanish
                         ? cleanEircode.length >= 5
-                        : cleanEircode.length >= 7 && (!key || cleanEircode.startsWith(key));
+                        : tenant === 'england'
+                            ? cleanEircode.length >= 5
+                            : cleanEircode.length >= 7 && (!key || cleanEircode.startsWith(key));
                     return !!formData.fullName && !!formData.email && !!formData.phone && eircodeValid;
                 }
                 case 12: return true;
@@ -267,7 +346,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
             }
         }
 
-        if (isCommercial || isTechnical) {
+        if (isCommercial) {
             switch (currentStep) {
                 case 1: return !!formData.preferredDate;
                 case 2: return !!formData.preferredTime;
@@ -284,7 +363,37 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                     const cleanEircode = formData.eircode.replace(/\s/g, '');
                     const eircodeValid = isSpanish
                         ? cleanEircode.length >= 5
-                        : cleanEircode.length >= 7 && (!key || cleanEircode.startsWith(key));
+                        : tenant === 'england'
+                            ? cleanEircode.length >= 5
+                            : cleanEircode.length >= 7 && (!key || cleanEircode.startsWith(key));
+                    return !!formData.fullName && !!formData.email && !!formData.phone && eircodeValid;
+                }
+                case 12: return true;
+                case 13: return true;
+                default: return false;
+            }
+        }
+
+        if (isTechnical) {
+            switch (currentStep) {
+                case 1: return !!formData.technicalAssessmentType;
+                case 2: return !!formData.technicalPropertyType;
+                case 3: return !!formData.yearBuilt;
+                case 4: return !!formData.currentHeating;
+                case 5: return !!formData.insulationStatus;
+                case 6: return !!formData.propertySize;
+                case 7: return !!formData.technicalPurpose;
+                case 8: return !!formData.preferredDate;
+                case 9: return !!formData.county;
+                case 10: return !!formData.town;
+                case 11: {
+                    const key = ROUTING_KEYS[formData.county];
+                    const cleanEircode = formData.eircode.replace(/\s/g, '');
+                    const eircodeValid = isSpanish
+                        ? cleanEircode.length >= 5
+                        : tenant === 'england'
+                            ? cleanEircode.length >= 5
+                            : cleanEircode.length >= 7 && (!key || cleanEircode.startsWith(key));
                     return !!formData.fullName && !!formData.email && !!formData.phone && eircodeValid;
                 }
                 case 12: return true;
@@ -379,6 +488,14 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                     additional_features: formData.additionalFeatures,
                     heat_pump: formData.heatPump,
                     ber_purpose: formData.berPurpose,
+                };
+            } else if (isTechnical) {
+                insertPayload = {
+                    ...basePayload,
+                    property_type: formData.technicalPropertyType,
+                    property_size: formData.propertySize,
+                    assessment_purpose: formData.technicalPurpose,
+                    notes: `Assessment Type: ${formData.technicalAssessmentType}\nYear Built: ${formData.yearBuilt}\nCurrent Heating: ${formData.currentHeating}\nInsulation: ${formData.insulationStatus}${formData.notes ? '\n\nAdditional Notes: ' + formData.notes : ''}`,
                 };
             } else {
                 insertPayload = {
@@ -518,11 +635,14 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
         </div>
     );
 
+    const locationLabel = isSpanish ? 'Provincia' : (tenant === 'england' ? 'Location' : 'County');
+    const COUNTIES = getCountiesForTenant(tenant);
+
     const renderCountyStep = () => (
         <div className="space-y-6">
-            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('county')}?</h2>
+            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{locationLabel}?</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-w-4xl mx-auto max-h-[60vh] overflow-y-auto p-2 custom-scrollbar">
-                {COUNTIES.map((county) => (
+                {COUNTIES.map((county: string) => (
                     <button
                         key={county}
                         onClick={() => { updateField('county', county); updateField('town', ''); setCurrentStep(prev => prev + 1); }}
@@ -532,15 +652,17 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                     </button>
                 ))}
             </div>
-            <p className="text-center text-gray-400 text-sm mt-4">{t('scroll_counties', 'Scroll to see more counties')}</p>
+            <p className="text-center text-gray-400 text-sm mt-4">{t('scroll_counties', isSpanish ? 'Desplaza para ver más' : (tenant === 'england' ? 'Scroll to see more locations' : 'Scroll to see more counties'))}</p>
         </div>
     );
 
+    const postcodeLabel = isSpanish ? 'Código Postal' : (tenant === 'england' ? 'Postcode' : 'Eircode');
+
     const renderTownStep = () => (
         <div className="space-y-6">
-            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('town')} / {t('eircode')}?</h2>
+            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{isSpanish ? 'Municipio' : (tenant === 'england' ? 'Area / Town' : 'Town')} / {postcodeLabel}?</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-w-4xl mx-auto max-h-[60vh] overflow-y-auto p-2 custom-scrollbar">
-                {(TOWNS_BY_COUNTY[formData.county] || []).map((town) => (
+                {(getTownsForTenant(tenant)[formData.county] || []).map((town) => (
                     <button
                         key={town}
                         onClick={() => updateFieldAndAdvance('town', town)}
@@ -563,13 +685,13 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 <div className="grid grid-cols-2 gap-4">
                     <div className="flex">
                         <span className="flex items-center px-3 border-2 border-r-0 border-gray-200 rounded-l-xl text-sm font-bold text-gray-500 bg-gray-50 whitespace-nowrap">
-                            {isSpanish ? '+34' : '+353'}
+                            {isSpanish ? '+34' : (tenant === 'england' ? '+44' : '+353')}
                         </span>
                         <input type="tel" value={formData.phone} onChange={(e) => updateField('phone', e.target.value)} placeholder={`${t('phone_number')}*`} className="flex-1 p-4 border-2 border-l-0 border-gray-200 rounded-r-xl focus:border-green-500 focus:outline-none" />
                     </div>
                     <div className="space-y-1">
-                        <input type="text" value={formData.eircode} onChange={(e) => updateField('eircode', e.target.value.toUpperCase())} placeholder={`${t('eircode')}*`} className={`w-full p-4 border-2 rounded-xl focus:border-green-500 ${!isSpanish && formData.eircode && formData.eircode.replace(/\s/g, '').length >= 7 && ROUTING_KEYS[formData.county] && !formData.eircode.replace(/\s/g, '').startsWith(ROUTING_KEYS[formData.county]) ? 'border-red-300 bg-red-50' : 'border-gray-200'}`} />
-                        {!isSpanish && formData.county && ROUTING_KEYS[formData.county] && (
+                        <input type="text" value={formData.eircode} onChange={(e) => updateField('eircode', e.target.value.toUpperCase())} placeholder={`${postcodeLabel}*`} className={`w-full p-4 border-2 rounded-xl focus:border-green-500 ${tenant === 'ireland' && formData.eircode && formData.eircode.replace(/\s/g, '').length >= 7 && ROUTING_KEYS[formData.county] && !formData.eircode.replace(/\s/g, '').startsWith(ROUTING_KEYS[formData.county]) ? 'border-red-300 bg-red-50' : 'border-gray-200'}`} />
+                        {tenant === 'ireland' && formData.county && ROUTING_KEYS[formData.county] && (
                             <p className={`text-[10px] font-bold px-1 uppercase tracking-wide ${formData.eircode.replace(/\s/g, '').startsWith(ROUTING_KEYS[formData.county]) ? 'text-green-600' : 'text-amber-600'}`}>
                                 Required: Must start with {ROUTING_KEYS[formData.county]}
                             </p>
@@ -606,7 +728,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                             className={`p-8 rounded-2xl border-2 transition-all text-center group hover:shadow-lg ${formData.jobType === 'domestic' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                         >
                             <div className="text-4xl mb-4"></div>
-                            <h3 className={`text-xl font-bold mb-2 ${formData.jobType === 'domestic' ? 'text-green-700' : 'text-gray-800'}`}>{t('domestic')} (BER)</h3>
+                            <h3 className={`text-xl font-bold mb-2 ${formData.jobType === 'domestic' ? 'text-green-700' : 'text-gray-800'}`}>{t('domestic')} ({certName})</h3>
                             <p className="text-sm text-gray-500">{t('domestic_desc', 'Houses, apartments, duplexes & other residential properties')}</p>
                         </button>
                         <button
@@ -614,7 +736,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                             className={`p-8 rounded-2xl border-2 transition-all text-center group hover:shadow-lg ${formData.jobType === 'commercial' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                         >
                             <div className="text-4xl mb-4"></div>
-                            <h3 className={`text-xl font-bold mb-2 ${formData.jobType === 'commercial' ? 'text-green-700' : 'text-gray-800'}`}>{t('commercial')} (BER)</h3>
+                            <h3 className={`text-xl font-bold mb-2 ${formData.jobType === 'commercial' ? 'text-green-700' : 'text-gray-800'}`}>{t('commercial')} ({certName})</h3>
                             <p className="text-sm text-gray-500">{t('commercial_desc', 'Offices, retail, warehouses & other commercial properties')}</p>
                         </button>
                         <button
@@ -622,8 +744,8 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                             className={`p-8 rounded-2xl border-2 transition-all text-center group hover:shadow-lg ${formData.jobType === 'technical' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                         >
                             <div className="text-4xl mb-4"></div>
-                            <h3 className={`text-xl font-bold mb-2 ${formData.jobType === 'technical' ? 'text-green-700' : 'text-gray-800'}`}>Technical Assessment</h3>
-                            <p className="text-sm text-gray-500">Heat pumps, new builds & energy audits</p>
+                            <h3 className={`text-xl font-bold mb-2 ${formData.jobType === 'technical' ? 'text-green-700' : 'text-gray-800'}`}>{t('technical_assessment', 'Technical Assessment')}</h3>
+                            <p className="text-sm text-gray-500">{t('technical_desc', 'Heat pumps, new builds & energy audits')}</p>
                         </button>
                     </div>
                 </div>
@@ -919,6 +1041,166 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
             }
         }
 
+        // ---------- TECHNICAL FLOW ----------
+        if (isTechnical) {
+            const tenant = getTenantFromDomain();
+            const techTypes = TECHNICAL_ASSESSMENT_TYPES[tenant] || TECHNICAL_ASSESSMENT_TYPES.ireland;
+            const techPropertyTypes = TECHNICAL_PROPERTY_TYPES[tenant] || TECHNICAL_PROPERTY_TYPES.ireland;
+            const yearOptions = YEAR_BUILT_OPTIONS[tenant] || YEAR_BUILT_OPTIONS.ireland;
+            const heatingOptions = CURRENT_HEATING_OPTIONS[tenant] || CURRENT_HEATING_OPTIONS.ireland;
+            const insulationOptions = INSULATION_STATUS_OPTIONS[tenant] || INSULATION_STATUS_OPTIONS.ireland;
+            const purposeOptions = TECHNICAL_PURPOSES[tenant] || TECHNICAL_PURPOSES.ireland;
+
+            switch (currentStep) {
+                case 1:
+                    return (
+                        <div className="space-y-6">
+                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('technical_type_prompt', 'What type of assessment do you need?')}</h2>
+                            <p className="text-gray-500 text-center text-sm -mt-4">{t('technical_type_desc', 'Select the technical service you require')}</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
+                                {techTypes.map((type) => (
+                                    <button key={type} onClick={() => updateFieldAndAdvance('technicalAssessmentType', type)}
+                                        className={`p-5 rounded-xl border-2 transition-all text-center ${formData.technicalAssessmentType === type ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
+                                    >{type}</button>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                case 2:
+                    return (
+                        <div className="space-y-6">
+                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('technical_property_type_prompt', 'Property type?')}</h2>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
+                                {techPropertyTypes.map((type) => (
+                                    <button key={type} onClick={() => updateFieldAndAdvance('technicalPropertyType', type)}
+                                        className={`p-5 rounded-xl border-2 transition-all text-center ${formData.technicalPropertyType === type ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
+                                    >{type}</button>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                case 3:
+                    return (
+                        <div className="space-y-6">
+                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('year_built_prompt', 'When was the property built?')}</h2>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                                {yearOptions.map((year) => (
+                                    <button key={year} onClick={() => updateFieldAndAdvance('yearBuilt', year)}
+                                        className={`p-5 rounded-xl border-2 transition-all text-center ${formData.yearBuilt === year ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
+                                    >{year}</button>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                case 4:
+                    return (
+                        <div className="space-y-6">
+                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('current_heating_prompt', 'Current heating system?')}</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                                {heatingOptions.map((option) => (
+                                    <button key={option} onClick={() => updateFieldAndAdvance('currentHeating', option)}
+                                        className={`p-5 rounded-xl border-2 transition-all text-center ${formData.currentHeating === option ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
+                                    >{option}</button>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                case 5:
+                    return (
+                        <div className="space-y-6">
+                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('insulation_prompt', 'Insulation status?')}</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                                {insulationOptions.map((option) => (
+                                    <button key={option} onClick={() => updateFieldAndAdvance('insulationStatus', option)}
+                                        className={`p-5 rounded-xl border-2 transition-all text-center ${formData.insulationStatus === option ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
+                                    >{option}</button>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                case 6:
+                    return (
+                        <div className="space-y-6">
+                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('property_size')}?</h2>
+                            <div className="flex justify-center mb-6">
+                                <div className="inline-flex p-1 bg-gray-100 rounded-xl">
+                                    <button
+                                        onClick={() => setSizeUnit('m')}
+                                        className={`px-6 py-2 rounded-lg font-bold transition-all ${sizeUnit === 'm' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                    >{o('Sq. Meters')}</button>
+                                    <button
+                                        onClick={() => setSizeUnit('ft')}
+                                        className={`px-6 py-2 rounded-lg font-bold transition-all ${sizeUnit === 'ft' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                    >{o('Sq. Feet')}</button>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-2xl mx-auto">
+                                {(sizeUnit === 'ft' ? PROPERTY_SIZES : PROPERTY_SIZES_METRIC).map((size) => (
+                                    <button key={size} onClick={() => updateFieldAndAdvance('propertySize', size)}
+                                        className={`p-4 rounded-lg border-2 transition-all text-center ${formData.propertySize === size ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
+                                    >{size}</button>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                case 7:
+                    return (
+                        <div className="space-y-6">
+                            <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('technical_purpose_prompt', 'Purpose of this assessment?')}</h2>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                                {purposeOptions.map((purpose) => (
+                                    <button key={purpose} onClick={() => updateFieldAndAdvance('technicalPurpose', purpose)}
+                                        className={`p-4 rounded-lg border-2 transition-all text-center ${formData.technicalPurpose === purpose ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
+                                    >{purpose}</button>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                case 8: return renderDateStep();
+                case 9: return renderCountyStep();
+                case 10: return renderTownStep();
+                case 11: return renderContactStep();
+                case 12:
+                    return (
+                        <EmailVerification
+                            email={formData.email}
+                            assessmentId={assessmentId}
+                            onVerified={handleEmailVerified}
+                            onBack={() => setCurrentStep(11)}
+                        />
+                    );
+                case 13:
+                    return (
+                        <IdentityAuth
+                            email={formData.email}
+                            fullName={formData.fullName}
+                            phone={formData.phone}
+                            isExternalSubmitting={isSubmitting}
+                            onAuthenticated={handleAuthenticated}
+                            onBack={() => setCurrentStep(11)}
+                        />
+                    );
+                case 14:
+                    return (
+                        <div className="pt-8">
+                            <JobConfirmation
+                                customerName={formData.fullName}
+                                county={formData.county}
+                                email={formData.email}
+                                emailError={emailError}
+                                hideNavigation={!!onClose}
+                            />
+                            {onClose && (
+                                <button onClick={onClose} className="mt-8 w-full bg-gray-900 text-white font-bold py-4 rounded-xl">
+                                    Close & Go to Dashboard
+                                </button>
+                            )}
+                        </div>
+                    );
+                default: return null;
+            }
+        }
+
         return null;
     };
 
@@ -930,8 +1212,11 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
         if (isDomestic) {
             return currentStep === 6 || currentStep === 11; // features (multi-select) & contact
         }
-        if (isCommercial || isTechnical) {
+        if (isCommercial) {
             return currentStep === 6 || currentStep === 8 || currentStep === 11; // docs, heating/cooling (multi-select) & contact
+        }
+        if (isTechnical) {
+            return currentStep === 11; // contact step only (all other steps auto-advance)
         }
         return false;
     };
@@ -965,7 +1250,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                     {formData.jobType && currentStep > 0 && currentStep < 12 && (
                         <div className="mt-3 flex justify-center">
                             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isDomestic ? 'bg-blue-50 text-blue-600 border border-blue-100' : isTechnical ? 'bg-orange-50 text-orange-600 border border-orange-100' : 'bg-purple-50 text-purple-600 border border-purple-100'}`}>
-                                {isDomestic ? t('domestic_ber_tag', 'Domestic BER') : isTechnical ? 'Technical Assessor' : t('commercial_ber_tag', 'Commercial BER')}
+                                {isDomestic ? t('domestic_ber_tag', `Domestic ${certName}`) : isTechnical ? 'Technical Assessor' : t('commercial_ber_tag', `Commercial ${certName}`)}
                             </span>
                         </div>
                     )}

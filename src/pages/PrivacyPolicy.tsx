@@ -5,9 +5,10 @@ import { getTenantFromDomain, getTenantEmail, getTenantDomain } from '../lib/ten
 const PrivacyPolicy = () => {
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
+    const isEngland = tenant === 'england';
     const tenantEmail = getTenantEmail(tenant);
     const tenantDomain = getTenantDomain(tenant);
-    const brand = isSpanish ? 'Certificado Energético' : 'The Berman';
+    const brand = isSpanish ? 'Certificado Energético' : (isEngland ? 'EPC Cert' : 'The Berman');
     const lastUpdated = isSpanish ? '2 de febrero de 2026' : 'February 2, 2026';
 
     const tr = isSpanish ? {
@@ -49,6 +50,45 @@ const PrivacyPolicy = () => {
         emailLabel: 'Correo',
         addressLabel: 'Dirección',
         address: 'Madrid, España',
+    } : isEngland ? {
+        seoTitle: 'Privacy Policy',
+        seoDesc: 'Privacy Policy for EPC Cert. We are committed to protecting your personal data in accordance with UK law and GDPR.',
+        badge: 'Legal',
+        title1: 'Privacy',
+        title2: 'Policy.',
+        lastUpdatedLabel: 'Last Updated',
+        hero: "Your privacy is critical to us. We've designed our policy to be transparent and compliant with GDPR.",
+        introH: 'Introduction',
+        introP: `Welcome to ${brand} ("we," "our," or "us"). We are committed to protecting your personal data and your right to privacy. This Privacy Policy explains how we collect, use, and share information when you use our website (${tenantDomain}) and our services in England.`,
+        collectH: 'Information We Collect',
+        collectIntro: 'When you request an EPC quote or use our platform, we collect information that identifies you, such as:',
+        collectItems: [
+            'Contact details (Name, email address, phone number).',
+            'Property details (Postcode, address, property type).',
+            'Account information (if you register as a user or assessor).',
+            'Technical data (IP address, browser type, usage patterns).',
+        ],
+        useH: 'How We Use Data',
+        useIntro: 'We process your information for purposes based on legitimate business interests, the fulfillment of our contract with you, and compliance with our legal obligations.',
+        useItems: [
+            'To facilitate quote generation and booking with assessors.',
+            'To communicate with you regarding your assessment.',
+            'To improve our website functionality and user experience.',
+            'To comply with UK EPC regulations and building laws.',
+        ],
+        rightsH: 'Your Rights',
+        rightsIntro: 'Under GDPR and the UK Data Protection Act 2018, you have rights including:',
+        rightsItems: [
+            'The right to access the personal data we hold about you.',
+            'The right to request correction of inaccurate data.',
+            'The right to request deletion of your data (right to be forgotten).',
+            'The right to object to processing or request restriction of processing.',
+        ],
+        contactH: 'Contact Us',
+        contactIntro: 'If you have any questions or concerns about this Privacy Policy or our data practices, please contact our Data Protection Officer at:',
+        emailLabel: 'Email',
+        addressLabel: 'Address',
+        address: 'London, England',
     } : {
         seoTitle: 'Privacy Policy',
         seoDesc: "Privacy Policy for The Berman. We are committed to protecting your personal data in accordance with Irish law and GDPR.",

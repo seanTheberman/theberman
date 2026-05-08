@@ -104,6 +104,7 @@ const Admin = () => {
     const TENANTS = [
         { id: 'ireland', label: 'Ireland', domain: 'theberman.eu' },
         { id: 'spain', label: 'Spain', domain: 'certificadoenergético.eu' },
+        { id: 'england', label: 'England', domain: 'epccert.com' },
     ];
 
     // Selected items
@@ -2002,6 +2003,7 @@ const Admin = () => {
                             blogArticles={blogArticles} loading={loading}
                             fetchBlogArticles={fetchBlogArticles}
                             handleDeleteBlogArticle={handleDeleteBlogArticle}
+                            selectedTenant={selectedTenant}
                         />
                     ) : view === 'faq-management' ? (
                         <FaqView
