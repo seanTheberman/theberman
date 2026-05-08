@@ -18,7 +18,6 @@ interface Props {
     onCancelSubscription: (userId: string) => void;
     onOpenCatalogue: (user: Profile, listing?: any) => void;
     onUpdateRegistrationStatus: (userId: string, status: 'active' | 'rejected') => void;
-    getFallbackPhone: (profile: Profile) => string;
 }
 
 const decodePayment = (pid?: string) => {
@@ -51,7 +50,7 @@ export const UserDetailsModal = ({
     user, editForm, setEditForm, customMonths, setCustomMonths,
     listings, isUpdating, onClose, onUpdate, onSuspend,
     onManualRenewal, onSendRenewalReminder, onCancelSubscription, onOpenCatalogue,
-    onUpdateRegistrationStatus, getFallbackPhone,
+    onUpdateRegistrationStatus,
 }: Props) => {
     const listing = listings.find(l => l.user_id === user.id || l.owner_id === user.id);
     const accountState = getAccountState(user);

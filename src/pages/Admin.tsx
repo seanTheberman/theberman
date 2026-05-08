@@ -886,9 +886,9 @@ const Admin = () => {
             if (error) throw error;
 
             const updates = {
-                full_name: editForm.full_name,
-                email: editForm.email,
-                phone: editForm.phone,
+                full_name: editForm.full_name || undefined,
+                email: editForm.email || undefined,
+                phone: editForm.phone || undefined,
                 subscription_status: editForm.subscription_status,
                 subscription_start_date: editForm.subscription_start_date,
                 subscription_end_date: editForm.subscription_end_date,
@@ -897,7 +897,7 @@ const Admin = () => {
                 role: editForm.role as any,
                 assessor_type: editForm.assessor_type || undefined
             };
-            setUsersList(prev => prev.map(u => u.id === selectedUser.id ? { ...u, ...updates } : u));
+            setUsersList(prev => prev.map(u => u.id === selectedUser.id ? { ...u, ...Object.fromEntries(Object.entries(updates).filter(([_, v]) => v !== undefined)) } : u));
             setSelectedUser(null);
             toast.success('Profile updated successfully');
         } catch (error: any) {
@@ -2152,7 +2152,6 @@ const Admin = () => {
                     onCancelSubscription={handleCancelSubscription}
                     onOpenCatalogue={(u, listing) => { handleOpenCatalogueView(u, listing); setSelectedUser(null); }}
                     onUpdateRegistrationStatus={updateRegistrationStatus}
-                    getFallbackPhone={getFallbackPhone}
                 />
             )}
 

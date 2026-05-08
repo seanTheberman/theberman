@@ -9,8 +9,8 @@ const DOMAIN_TO_TENANT: Record<string, string> = {
   'certificadoenergético.eu': 'spain',
   'www.certificadoenergético.eu': 'spain',
   // Spain - Punycode versions (Vercel/DNS internal format)
-  'xn--certificadoenergtico-9ec.eu': 'spain',
-  'www.xn--certificadoenergtico-9ec.eu': 'spain',
+  'xn--certificadoenergtico-q2b.eu': 'spain',
+  'www.xn--certificadoenergtico-q2b.eu': 'spain',
   // Spain - Other domains
   'certificadosenergetico.com': 'spain',
   'www.certificadosenergetico.com': 'spain',
