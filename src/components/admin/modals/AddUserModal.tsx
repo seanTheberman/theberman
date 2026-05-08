@@ -1,5 +1,6 @@
 import { X, AlertTriangle, CheckCircle2, Loader2, CreditCard } from 'lucide-react';
 import { TOWNS_BY_COUNTY } from '../../../data/irishTowns';
+import { getTenantFromDomain } from '../../../lib/tenant';
 
 const IRISH_COUNTIES = [
     'Carlow', 'Cavan', 'Clare', 'Cork', 'Donegal', 'Dublin', 'Galway',
@@ -37,7 +38,12 @@ interface Props {
     onSubmit: (e: React.FormEvent) => void;
 }
 
-export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData, isUpdating, onClose, onSubmit }: Props) => (
+export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData, isUpdating, onClose, onSubmit }: Props) => {
+    const tenant = getTenantFromDomain();
+    const registrationLabel = tenant === 'spain' ? 'CEE/CAT Registration #' : (tenant === 'england' ? 'DEA/EPC Registration #' : 'SEAI Registration #');
+    const registrationPlaceholder = tenant === 'spain' ? 'e.g. CAT12345' : (tenant === 'england' ? 'e.g. DEA12345' : 'e.g. 10XXX');
+
+    return (
     <div
         className="fixed inset-0 z-[10001] flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
         onClick={onClose}
@@ -130,11 +136,10 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
                             <h4 className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest mb-4">Assessor Details</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">SEAI Registration # *</label>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{registrationLabel} <span className="text-gray-300">(optional)</span></label>
                                     <input
                                         type="text"
-                                        required
-                                        placeholder="e.g. 10XXX"
+                                        placeholder={registrationPlaceholder}
                                         value={newUserFormData.seaiNumber}
                                         onChange={(e) => setNewUserFormData({ ...newUserFormData, seaiNumber: e.target.value })}
                                         className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"
@@ -335,4 +340,5 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
             </form>
         </div>
     </div>
-);
+    );
+};
