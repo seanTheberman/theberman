@@ -872,6 +872,9 @@ const Admin = () => {
                 : (editForm.stripe_payment_id || undefined);
 
             const { error } = await supabase.from('profiles').update({
+                full_name: editForm.full_name || undefined,
+                email: editForm.email || undefined,
+                phone: editForm.phone || undefined,
                 subscription_status: editForm.subscription_status,
                 subscription_start_date: editForm.subscription_start_date,
                 subscription_end_date: editForm.subscription_end_date,
@@ -883,6 +886,9 @@ const Admin = () => {
             if (error) throw error;
 
             const updates = {
+                full_name: editForm.full_name,
+                email: editForm.email,
+                phone: editForm.phone,
                 subscription_status: editForm.subscription_status,
                 subscription_start_date: editForm.subscription_start_date,
                 subscription_end_date: editForm.subscription_end_date,

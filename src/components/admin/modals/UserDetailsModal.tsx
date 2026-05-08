@@ -140,11 +140,37 @@ export const UserDetailsModal = ({
                         </div>
                     )}
 
-                    {/* Profile Details */}
+                    {/* Editable Profile Details */}
                     <div>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Profile Details</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Profile Details <span className="text-green-600">(Editable)</span></p>
                         <div className="grid grid-cols-2 gap-2.5">
-                            <InfoCard label="Phone" value={getFallbackPhone(user)} icon={<Phone size={11} />} />
+                            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Full Name</p>
+                                <input
+                                    type="text"
+                                    value={editForm.full_name || ''}
+                                    onChange={e => setEditForm({ ...editForm, full_name: e.target.value })}
+                                    className="w-full text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] outline-none"
+                                />
+                            </div>
+                            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Email</p>
+                                <input
+                                    type="email"
+                                    value={editForm.email || ''}
+                                    onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+                                    className="w-full text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] outline-none"
+                                />
+                            </div>
+                            <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-1"><Phone size={11} /><span>Phone</span></p>
+                                <input
+                                    type="tel"
+                                    value={editForm.phone || ''}
+                                    onChange={e => setEditForm({ ...editForm, phone: e.target.value })}
+                                    className="w-full text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] outline-none"
+                                />
+                            </div>
                             <InfoCard
                                 label="Location"
                                 value={(user.home_county || user.county) ? `Co. ${user.home_county || user.county}` : undefined}
@@ -334,7 +360,10 @@ export const UserDetailsModal = ({
                                 <option value="Domestic Assessor">Domestic Assessor</option>
                                 <option value="Commercial Assessor">Commercial Assessor</option>
                                 <option value="Technical Assessor">Technical Assessor</option>
-                                <option value="Both">Both (Domestic &amp; Commercial)</option>
+                                <option value="Domestic & Commercial">Domestic & Commercial</option>
+                                <option value="Domestic & Technical">Domestic & Technical</option>
+                                <option value="Commercial & Technical">Commercial & Technical</option>
+                                <option value="All Types">All Types (Domestic, Commercial & Technical)</option>
                             </select>
                         </div>
                     )}
