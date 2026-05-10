@@ -2003,6 +2003,7 @@ const Admin = () => {
                             newsArticles={newsArticles} loading={loading}
                             fetchNewsArticles={fetchNewsArticles}
                             handleDeleteNewsArticle={handleDeleteNewsArticle}
+                            selectedTenant={selectedTenant}
                         />
                     ) : view === 'blog' ? (
                         <BlogView
@@ -2171,6 +2172,7 @@ const Admin = () => {
                     isUpdating={isUpdating}
                     onClose={() => { setShowAddUserModal(false); setNewUserFormData({ fullName: '', email: '', phone: '', county: '', town: '', seaiNumber: '', assessorType: 'Domestic Assessor', companyName: '', businessAddress: '', website: '', description: '', companyNumber: '', vatNumber: '', registrationAmount: 0, preferredCounties: [], preferredTowns: [] }); }}
                     onSubmit={handleAddUser}
+                    selectedTenant={selectedTenant}
                 />
             )}
         </div>

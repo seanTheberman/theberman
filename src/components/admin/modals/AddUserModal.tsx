@@ -1,6 +1,7 @@
 import { X, AlertTriangle, CheckCircle2, Loader2, CreditCard } from 'lucide-react';
 import { TOWNS_BY_COUNTY } from '../../../data/irishTowns';
-import { getTenantFromDomain } from '../../../lib/tenant';
+import { TOWNS_BY_COUNTY_ENGLAND } from '../../../data/englandTowns';
+import { TOWNS_BY_COUNTY_SPAIN } from '../../../data/spainTowns';
 
 const IRISH_COUNTIES = [
     'Carlow', 'Cavan', 'Clare', 'Cork', 'Donegal', 'Dublin', 'Galway',
@@ -36,12 +37,20 @@ interface Props {
     isUpdating: boolean;
     onClose: () => void;
     onSubmit: (e: React.FormEvent) => void;
+    selectedTenant?: string;
 }
 
-export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData, isUpdating, onClose, onSubmit }: Props) => {
-    const tenant = getTenantFromDomain();
+export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData, isUpdating, onClose, onSubmit, selectedTenant }: Props) => {
+    const tenant = selectedTenant || 'ireland';
     const registrationLabel = tenant === 'spain' ? 'CEE/CAT Registration #' : (tenant === 'england' ? 'DEA/EPC Registration #' : 'SEAI Registration #');
     const registrationPlaceholder = tenant === 'spain' ? 'e.g. CAT12345' : (tenant === 'england' ? 'e.g. DEA12345' : 'e.g. 10XXX');
+
+    const COUNTIES = tenant === 'spain'
+        ? Object.keys(TOWNS_BY_COUNTY_SPAIN)
+        : tenant === 'england'
+            ? Object.keys(TOWNS_BY_COUNTY_ENGLAND)
+            : IRISH_COUNTIES;
+    const countyLabel = tenant === 'spain' ? 'Provinces' : (tenant === 'england' ? 'Regions/Cities' : 'Counties');
 
     return (
     <div
@@ -175,10 +184,10 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
                             </div>
 
                             <div className="mt-6">
-                                <label className="block text-[10px] font-black text-red-600 uppercase tracking-widest mb-3">Service Areas (Counties) *</label>
-                                <p className="text-xs text-gray-500 mb-3">Select at least one county where this assessor can work</p>
+                                <label className="block text-[10px] font-black text-red-600 uppercase tracking-widest mb-3">Service Areas ({countyLabel}) *</label>
+                                <p className="text-xs text-gray-500 mb-3">Select at least one {countyLabel.toLowerCase().slice(0, -1)} where this assessor can work</p>
                                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-40 overflow-y-auto p-2 border border-gray-200 rounded-xl bg-gray-50">
-                                    {IRISH_COUNTIES.map(county => (
+                                    {COUNTIES.map(county => (
                                         <button
                                             key={county}
                                             type="button"
@@ -199,7 +208,7 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
                                         </button>
                                     ))}
                                 </div>
-                                <p className="text-xs text-gray-500 mt-2">{newUserFormData.preferredCounties?.length || 0} counties selected</p>
+                                <p className="text-xs text-gray-500 mt-2">{newUserFormData.preferredCounties?.length || 0} {countyLabel.toLowerCase()} selected</p>
                             </div>
                         </div>
                     )}

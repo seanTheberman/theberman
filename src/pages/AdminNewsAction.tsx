@@ -109,7 +109,9 @@ const AdminNewsAction = () => {
         }
 
         const formData = new FormData(e.target as HTMLFormElement);
-        const tenant = getTenantFromDomain();
+        // Use tenant from URL query param (passed from admin) or fall back to domain detection
+        const urlParams = new URLSearchParams(window.location.search);
+        const tenant = urlParams.get('tenant') || getTenantFromDomain();
         const updates = {
             title: formData.get('title') as string,
             excerpt: formData.get('excerpt') as string,
