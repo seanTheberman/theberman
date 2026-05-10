@@ -1995,6 +1995,7 @@ const Admin = () => {
                             handleGalleryUpload={handleGalleryUpload}
                             toggleCatalogueCategory={toggleCatalogueCategory}
                             setView={setView}
+                            selectedTenant={selectedTenant}
                         />
                     ) : view === 'payments' ? (
                         <PaymentsView payments={payments} handleExportPayments={handleExportPayments} />

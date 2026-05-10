@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { X, Briefcase, MapPin, ImageIcon, Globe, Facebook, Instagram, Linkedin, Twitter, Plus, Star, Check, CheckCircle2, Loader2, UploadCloud, Youtube, MessageCircle, ChevronRight } from 'lucide-react';
 import type { Profile, CatalogueFormData, AdminView } from '../../../types/admin';
+import { TOWNS_BY_COUNTY_ENGLAND } from '../../../data/englandTowns';
+import { TOWNS_BY_COUNTY_SPAIN } from '../../../data/spainTowns';
 
 const IRISH_COUNTIES = [
     'Carlow', 'Cavan', 'Clare', 'Cork', 'Donegal', 'Dublin', 'Galway',
@@ -26,6 +28,7 @@ interface Props {
     handleGalleryUpload: (index: number, e: React.ChangeEvent<HTMLInputElement>) => void;
     toggleCatalogueCategory: (categoryId: string) => void;
     setView: (v: AdminView) => void;
+    selectedTenant?: string;
 }
 
 type Tab = 'info' | 'media' | 'social' | 'settings';
@@ -35,9 +38,14 @@ export const AddToCatalogueView = ({
     selectedBusinessForCatalogue, selectedListingForEdit,
     isSavingCatalogue, isUploadingLogo, isUpdatingBanner, isUploadingGallery,
     handleSaveCatalogueEntry, handleLogoUpload, handleBannerUpload, handleGalleryUpload,
-    toggleCatalogueCategory, setView,
+    toggleCatalogueCategory, setView, selectedTenant,
 }: Props) => {
     const [activeTab, setActiveTab] = useState<Tab>('info');
+    const COUNTIES = selectedTenant === 'spain'
+        ? Object.keys(TOWNS_BY_COUNTY_SPAIN)
+        : selectedTenant === 'england'
+            ? Object.keys(TOWNS_BY_COUNTY_ENGLAND)
+            : IRISH_COUNTIES;
     const inp = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] transition-all outline-none";
     const lbl = "text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block";
 
@@ -93,7 +101,7 @@ export const AddToCatalogueView = ({
                                     <div><label className={lbl}>County</label>
                                         <select value={catalogueFormData.county} onChange={(e) => setCatalogueFormData({ ...catalogueFormData, county: e.target.value })} className={inp + " bg-white"}>
                                             <option value="">Select County</option>
-                                            {IRISH_COUNTIES.map((c, index) => (
+                                            {COUNTIES.map((c, index) => (
                                                 <option key={index} value={c}>{c}</option>
                                             ))}
                                         </select>
@@ -108,7 +116,7 @@ export const AddToCatalogueView = ({
                                 <div className="pt-4 border-t border-gray-100">
                                     <div className="flex items-center gap-2 mb-3"><MapPin size={14} className="text-orange-500" /><span className="text-xs font-bold text-gray-700">Preference locations</span></div>
                                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-1.5">
-                                        {IRISH_COUNTIES.map(county => {
+                                        {COUNTIES.map(county => {
                                             const isSelected = catalogueFormData.additionalAddresses.includes(county);
                                             return (
                                                 <button key={county} type="button"
