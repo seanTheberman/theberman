@@ -81,28 +81,22 @@ const IRELAND_LOCATIONS: Province[] = [
 
 const SPAIN_LOCATIONS: Province[] = [
     {
-        id: 'central',
-        name: 'Centro',
-        slug: 'centro',
-        counties: [
-            { id: 'madrid', name: 'Madrid', slug: 'madrid' },
-            { id: 'toledo', name: 'Toledo', slug: 'toledo' },
-            { id: 'guadalajara', name: 'Guadalajara', slug: 'guadalajara' },
-            { id: 'ciudad-real', name: 'Ciudad Real', slug: 'ciudad-real' },
-            { id: 'cuenca', name: 'Cuenca', slug: 'cuenca' },
-            { id: 'albacete', name: 'Albacete', slug: 'albacete' }
-        ]
+        id: 'comunidad-madrid',
+        name: 'Comunidad de Madrid',
+        slug: 'comunidad-madrid',
+        counties: [{ id: 'madrid', name: 'Madrid', slug: 'madrid' }]
     },
     {
         id: 'cataluna',
         name: 'Cataluña',
         slug: 'cataluna',
-        counties: [
-            { id: 'barcelona', name: 'Barcelona', slug: 'barcelona' },
-            { id: 'tarragona', name: 'Tarragona', slug: 'tarragona' },
-            { id: 'girona', name: 'Girona', slug: 'girona' },
-            { id: 'lleida', name: 'Lleida', slug: 'lleida' }
-        ]
+        counties: [{ id: 'barcelona', name: 'Barcelona', slug: 'barcelona' }]
+    },
+    {
+        id: 'comunidad-valenciana',
+        name: 'Comunidad Valenciana',
+        slug: 'comunidad-valenciana',
+        counties: [{ id: 'valencia', name: 'Valencia', slug: 'valencia' }]
     },
     {
         id: 'andalucia',
@@ -110,61 +104,90 @@ const SPAIN_LOCATIONS: Province[] = [
         slug: 'andalucia',
         counties: [
             { id: 'sevilla', name: 'Sevilla', slug: 'sevilla' },
-            { id: 'malaga', name: 'Málaga', slug: 'malaga' },
-            { id: 'granada', name: 'Granada', slug: 'granada' },
-            { id: 'cordoba', name: 'Córdoba', slug: 'cordoba' },
-            { id: 'cadiz', name: 'Cádiz', slug: 'cadiz' },
-            { id: 'jaen', name: 'Jaén', slug: 'jaen' }
+            { id: 'malaga', name: 'Málaga', slug: 'malaga' }
         ]
     },
     {
-        id: 'valencia',
-        name: 'Valencia',
-        slug: 'valencia',
-        counties: [
-            { id: 'valencia-city', name: 'Valencia', slug: 'valencia' },
-            { id: 'alicante', name: 'Alicante', slug: 'alicante' },
-            { id: 'castellon', name: 'Castellón', slug: 'castellon' }
-        ]
+        id: 'pais-vasco',
+        name: 'País Vasco',
+        slug: 'pais-vasco',
+        counties: [{ id: 'bilbao', name: 'Bilbao', slug: 'bilbao' }]
+    },
+    {
+        id: 'islas-baleares',
+        name: 'Islas Baleares',
+        slug: 'islas-baleares',
+        counties: [{ id: 'palma', name: 'Palma', slug: 'palma' }]
+    },
+    {
+        id: 'islas-canarias',
+        name: 'Islas Canarias',
+        slug: 'islas-canarias',
+        counties: [{ id: 'las-palmas', name: 'Las Palmas', slug: 'las-palmas' }]
+    },
+    {
+        id: 'aragon',
+        name: 'Aragón',
+        slug: 'aragon',
+        counties: [{ id: 'zaragoza', name: 'Zaragoza', slug: 'zaragoza' }]
+    },
+    {
+        id: 'murcia',
+        name: 'Murcia',
+        slug: 'murcia',
+        counties: [{ id: 'murcia-city', name: 'Murcia', slug: 'murcia' }]
     }
 ];
 
 const ENGLAND_LOCATIONS: Province[] = [
     {
-        id: 'london',
-        name: 'London & South East',
-        slug: 'london-south-east',
+        id: 'greater-london',
+        name: 'Greater London',
+        slug: 'greater-london',
+        counties: [{ id: 'london', name: 'London', slug: 'london' }]
+    },
+    {
+        id: 'south-east',
+        name: 'South East',
+        slug: 'south-east',
         counties: [
-            { id: 'london', name: 'London', slug: 'london' },
-            { id: 'kent', name: 'Kent', slug: 'kent' },
-            { id: 'surrey', name: 'Surrey', slug: 'surrey' },
-            { id: 'sussex', name: 'Sussex', slug: 'sussex' },
-            { id: 'essex', name: 'Essex', slug: 'essex' },
-            { id: 'hertfordshire', name: 'Hertfordshire', slug: 'hertfordshire' }
+            { id: 'brighton', name: 'Brighton', slug: 'brighton' },
+            { id: 'southampton', name: 'Southampton', slug: 'southampton' }
         ]
     },
     {
-        id: 'midlands',
-        name: 'Midlands',
-        slug: 'midlands',
+        id: 'west-midlands',
+        name: 'West Midlands',
+        slug: 'west-midlands',
         counties: [
             { id: 'birmingham', name: 'Birmingham', slug: 'birmingham' },
-            { id: 'nottingham', name: 'Nottingham', slug: 'nottingham' },
-            { id: 'leicester', name: 'Leicester', slug: 'leicester' },
-            { id: 'coventry', name: 'Coventry', slug: 'coventry' },
-            { id: 'derby', name: 'Derby', slug: 'derby' },
-            { id: 'stoke', name: 'Stoke-on-Trent', slug: 'stoke-on-trent' }
+            { id: 'coventry', name: 'Coventry', slug: 'coventry' }
         ]
     },
     {
-        id: 'north',
-        name: 'North',
-        slug: 'north',
+        id: 'east-midlands',
+        name: 'East Midlands',
+        slug: 'east-midlands',
+        counties: [
+            { id: 'nottingham', name: 'Nottingham', slug: 'nottingham' },
+            { id: 'leicester', name: 'Leicester', slug: 'leicester' }
+        ]
+    },
+    {
+        id: 'north-west',
+        name: 'North West',
+        slug: 'north-west',
         counties: [
             { id: 'manchester', name: 'Manchester', slug: 'manchester' },
             { id: 'liverpool', name: 'Liverpool', slug: 'liverpool' },
-            { id: 'leeds', name: 'Leeds', slug: 'leeds' },
-            { id: 'sheffield', name: 'Sheffield', slug: 'sheffield' },
+            { id: 'leeds', name: 'Leeds', slug: 'leeds' }
+        ]
+    },
+    {
+        id: 'north-east',
+        name: 'North East',
+        slug: 'north-east',
+        counties: [
             { id: 'newcastle', name: 'Newcastle', slug: 'newcastle' },
             { id: 'york', name: 'York', slug: 'york' }
         ]
@@ -218,18 +241,17 @@ export default function LocationsMenu({ open }: { open: boolean }) {
                 {activeProvince && (
                     <div className="w-72 bg-white py-4 max-h-[80vh] overflow-y-auto shadow-inner">
                         <div className="px-6 mb-3 flex justify-between items-center">
-                            <Link
-                                to={`/region?province=${activeProvince.slug}`}
-                                className="text-xs font-black text-[#007F00] uppercase tracking-widest hover:underline cursor-pointer"
+                            <span
+                                className="text-xs font-black text-[#007F00] uppercase tracking-widest cursor-default"
                             >
                                 {activeProvince.name} {regionLabel}
-                            </Link>
+                            </span>
                         </div>
                         <div className="space-y-0.5">
                             {activeProvince.counties.map((county) => (
                                 <Link
                                     key={county.id}
-                                    to={`/region?county=${county.slug}`}
+                                    to={`/${county.slug}`}
                                     className="block px-6 py-2.5 text-gray-700 hover:bg-[#007F00]/10 hover:text-[#007F00] transition-colors font-medium border-l-2 border-transparent hover:border-[#007F00]"
                                 >
                                     {county.name}

@@ -29,17 +29,26 @@ const PROVINCES_IRELAND: Record<string, string[]> = {
 };
 
 const PROVINCES_SPAIN: Record<string, string[]> = {
-    Centro: ['Madrid', 'Toledo', 'Guadalajara', 'Ciudad Real', 'Cuenca', 'Albacete'],
-    'Cataluña': ['Barcelona', 'Tarragona', 'Girona', 'Lleida'],
-    'Andalucía': ['Sevilla', 'Málaga', 'Granada', 'Córdoba', 'Cádiz', 'Jaén'],
-    Valencia: ['Valencia', 'Alicante', 'Castellón'],
+    'Comunidad de Madrid': ['Madrid'],
+    'Cataluña': ['Barcelona'],
+    'Comunidad Valenciana': ['Valencia'],
+    Andalucía: ['Sevilla', 'Málaga'],
+    'País Vasco': ['Bilbao'],
+    'Islas Baleares': ['Palma'],
+    'Islas Canarias': ['Las Palmas'],
+    Aragón: ['Zaragoza'],
+    Murcia: ['Murcia'],
 };
 
 const PROVINCES_ENGLAND: Record<string, string[]> = {
-    'London & South East': ['London', 'Kent', 'Surrey', 'Sussex', 'Essex', 'Hertfordshire'],
-    Midlands: ['Birmingham', 'Nottingham', 'Leicester', 'Coventry', 'Derby', 'Stoke-on-Trent'],
-    North: ['Manchester', 'Liverpool', 'Leeds', 'Sheffield', 'Newcastle', 'York'],
-    'South West': ['Bristol', 'Bath', 'Exeter', 'Plymouth', 'Southampton', 'Brighton'],
+    'Greater London': ['London'],
+    'South East': ['Brighton', 'Southampton'],
+    'West Midlands': ['Birmingham', 'Coventry'],
+    'East Midlands': ['Nottingham', 'Leicester'],
+    'North West': ['Manchester', 'Liverpool', 'Leeds'],
+    'North East': ['Newcastle', 'York'],
+    'South West': ['Bristol', 'Exeter'],
+    Scotland: ['Glasgow', 'Edinburgh'],
 };
 
 const Layout = () => {
@@ -204,7 +213,7 @@ const Layout = () => {
                                                         {locations.filter(loc => PROVINCES[province]?.includes(loc.name)).map(location => (
                                                             <Link
                                                                 key={location.id}
-                                                                to={`/region?county=${location.slug}`}
+                                                                to={`/${location.slug}`}
                                                                 className="block px-4 py-2 text-xs text-gray-600 hover:text-[#007EA7] hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0"
                                                             >
                                                                 {location.name}
@@ -288,7 +297,7 @@ const Layout = () => {
                                                                         {locations.filter(loc => PROVINCES[province]?.includes(loc.name)).map(location => (
                                                                             <Link
                                                                                 key={location.id}
-                                                                                to={`/region?county=${location.slug}`}
+                                                                                to={`/${location.slug}`}
                                                                                 onClick={closeMenu}
                                                                                 className="block pl-12 pr-5 py-2 text-xs text-gray-500 hover:text-[#007EA7] hover:bg-gray-50 transition-colors"
                                                                             >
