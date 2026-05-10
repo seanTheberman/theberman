@@ -99,7 +99,20 @@ const Admin = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [locationFilter, setLocationFilter] = useState('');
     const [customMonths, setCustomMonths] = useState<number>(1);
-    const [selectedTenant, setSelectedTenant] = useState<string>(getTenantFromDomain());
+    const [selectedTenant, setSelectedTenantState] = useState<string>(() => {
+        // Priority: URL param > localStorage > domain detection
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlTenant = urlParams.get('tenant');
+        if (urlTenant) return urlTenant;
+        const saved = localStorage.getItem('admin_selected_tenant');
+        if (saved) return saved;
+        return getTenantFromDomain();
+    });
+
+    const setSelectedTenant = (tenant: string) => {
+        setSelectedTenantState(tenant);
+        localStorage.setItem('admin_selected_tenant', tenant);
+    };
 
     const TENANTS = [
         { id: 'ireland', label: 'Ireland', domain: 'theberman.eu' },
