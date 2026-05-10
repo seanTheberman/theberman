@@ -104,9 +104,11 @@ const UserDashboard = () => {
     const [paymentQuote, setPaymentQuote] = useState<{ assessmentId: string, quoteId: string, amount: number, balance?: number } | null>(null);
     const [deletingAssessmentId, setDeletingAssessmentId] = useState<string | null>(null);
     const [submittingAssessmentId, setSubmittingAssessmentId] = useState<string | null>(null);
+    const [bookingDepositAmount, setBookingDepositAmount] = useState<number>(40);
 
     useEffect(() => {
         fetchAssessments();
+        fetchAppSettings();
 
         // Real-time subscription
         if (!user) return;
@@ -131,6 +133,21 @@ const UserDashboard = () => {
             supabase.removeChannel(channel);
         };
     }, [user]);
+
+    const fetchAppSettings = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('app_settings')
+                .select('booking_deposit_amount')
+                .single();
+            if (error) throw error;
+            if (data?.booking_deposit_amount) {
+                setBookingDepositAmount(parseFloat(data.booking_deposit_amount));
+            }
+        } catch (error) {
+            console.error('Error fetching app settings:', error);
+        }
+    };
 
     const fetchAssessments = async () => {
         if (!user) return;
@@ -270,8 +287,8 @@ const UserDashboard = () => {
 
                 if (fetchError) throw fetchError;
 
-                // Open Payment Modal with appropriate deposit (fixed €40 or €10 if loyalty) and calculate balance
-                const depositAmount = quote.is_loyalty_payout ? 10 : 40;
+                // Open Payment Modal with appropriate deposit (fixed deposit amount or €10 if loyalty) and calculate balance
+                const depositAmount = quote.is_loyalty_payout ? 10 : bookingDepositAmount;
                 const balance = (quote.price + 10) - depositAmount;
                 setPaymentQuote({ assessmentId, quoteId, amount: depositAmount, balance });
                 setPaymentModalOpen(true);
@@ -1015,7 +1032,7 @@ const UserDashboard = () => {
                         userId: user?.id
                     }}
                     title="Secure Booking Deposit"
-                    description={`Pay €40.00 deposit to book your assessment. The remaining balance of €${paymentQuote.balance?.toFixed(2)} will be payable directly to the assessor.`}
+                    description={`Pay €${bookingDepositAmount.toFixed(2)} deposit to book your assessment. The remaining balance of €${paymentQuote.balance?.toFixed(2)} will be payable directly to the assessor.`}
                 />
             )}
 

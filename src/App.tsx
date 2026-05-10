@@ -43,6 +43,7 @@ import News from './pages/News';
 import NewsDetail from './pages/NewsDetail';
 import HireAgent from './pages/HireAgent';
 import MembershipPayment from './pages/MembershipPayment';
+import LocationPage from './pages/LocationPage';
 import ReferralTracker from './components/ReferralTracker';
 
 
@@ -79,6 +80,8 @@ function App() {
                         <Route path="catalogue/:slug" element={<ListingDetail />} />
                         <Route path="locations" element={<Locations />} />
                         <Route path="region" element={<RegionPage />} />
+                        <Route path=":county" element={<LocationPage />} />
+                        <Route path=":county/:town" element={<LocationPage />} />
                         <Route path="privacy" element={<PrivacyPolicy />} />
                         <Route path="terms" element={<TermsOfService />} />
                         <Route path="cookie-policy" element={<CookiePolicy />} />
