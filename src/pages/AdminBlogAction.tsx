@@ -22,6 +22,7 @@ interface BlogArticle {
     read_time: string;
     content: string;
     slug: string;
+    tenant?: string;
 }
 
 const BLOG_CATEGORIES = [
@@ -114,9 +115,9 @@ const AdminBlogAction = () => {
 
         const formData = new FormData(e.target as HTMLFormElement);
         const title = formData.get('title') as string;
-        // Use tenant from URL query param (passed from admin) or fall back to domain detection
+        // For existing articles, preserve their tenant. For new articles, use URL param or domain detection.
         const urlParams = new URLSearchParams(window.location.search);
-        const tenant = urlParams.get('tenant') || getTenantFromDomain();
+        const tenant = article.tenant || urlParams.get('tenant') || getTenantFromDomain();
         const updates = {
             title,
             subtitle: formData.get('subtitle') as string || null,

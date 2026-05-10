@@ -20,6 +20,7 @@ interface NewsArticle {
     show_badge: boolean;
     read_time: string;
     content: string;
+    tenant?: string;
 }
 
 const AdminNewsAction = () => {
@@ -109,9 +110,9 @@ const AdminNewsAction = () => {
         }
 
         const formData = new FormData(e.target as HTMLFormElement);
-        // Use tenant from URL query param (passed from admin) or fall back to domain detection
+        // For existing articles, preserve their tenant. For new articles, use URL param or domain detection.
         const urlParams = new URLSearchParams(window.location.search);
-        const tenant = urlParams.get('tenant') || getTenantFromDomain();
+        const tenant = article.tenant || urlParams.get('tenant') || getTenantFromDomain();
         const updates = {
             title: formData.get('title') as string,
             excerpt: formData.get('excerpt') as string,
