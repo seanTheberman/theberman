@@ -485,7 +485,7 @@ const Admin = () => {
                 .from('faq_items')
                 .select('*')
                 .eq('tenant', selectedTenant)
-                .order('order_index', { ascending: true });
+                .order('sort_order', { ascending: true });
             if (error) throw error;
             setFaqItems(data || []);
         } catch (error) {
