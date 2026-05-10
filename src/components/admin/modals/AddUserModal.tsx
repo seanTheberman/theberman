@@ -119,8 +119,8 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
                                         onChange={(e) => setNewUserFormData({ ...newUserFormData, county: e.target.value, town: '' })}
                                         className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white transition-all outline-none"
                                     >
-                                        <option value="">Select County</option>
-                                        {IRISH_COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                        <option value="">Select {countyLabel.slice(0, -1)}</option>
+                                        {COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
                                     </select>
                                 </div>
                                 {newUserRole === 'contractor' && newUserFormData.county && (
@@ -132,7 +132,7 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
                                             className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white transition-all outline-none"
                                         >
                                             <option value="">Select Town</option>
-                                            {(TOWNS_BY_COUNTY[newUserFormData.county] || []).map((t: string) => <option key={t} value={t}>{t}</option>)}
+                                            {(tenant === 'spain' ? TOWNS_BY_COUNTY_SPAIN[newUserFormData.county] : tenant === 'england' ? TOWNS_BY_COUNTY_ENGLAND[newUserFormData.county] : TOWNS_BY_COUNTY[newUserFormData.county] || []).map((t: string) => <option key={t} value={t}>{t}</option>)}
                                         </select>
                                     </div>
                                 )}
