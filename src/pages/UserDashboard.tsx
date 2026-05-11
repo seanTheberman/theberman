@@ -104,7 +104,7 @@ const UserDashboard = () => {
     const [paymentQuote, setPaymentQuote] = useState<{ assessmentId: string, quoteId: string, amount: number, balance?: number } | null>(null);
     const [deletingAssessmentId, setDeletingAssessmentId] = useState<string | null>(null);
     const [submittingAssessmentId, setSubmittingAssessmentId] = useState<string | null>(null);
-    const [bookingDepositAmount, setBookingDepositAmount] = useState<number>(40);
+    const [bookingDepositAmount, setBookingDepositAmount] = useState<number>(35);
 
     useEffect(() => {
         fetchAssessments();
@@ -138,11 +138,13 @@ const UserDashboard = () => {
         try {
             const { data, error } = await supabase
                 .from('app_settings')
-                .select('booking_deposit_amount')
+                .select('platform_fee_amount, hidden_fee_amount')
                 .single();
             if (error) throw error;
-            if (data?.booking_deposit_amount) {
-                setBookingDepositAmount(parseFloat(data.booking_deposit_amount));
+            if (data) {
+                const platform = parseFloat(data.platform_fee_amount) || 25;
+                const hidden = parseFloat(data.hidden_fee_amount) || 10;
+                setBookingDepositAmount(platform + hidden);
             }
         } catch (error) {
             console.error('Error fetching app settings:', error);
@@ -287,9 +289,9 @@ const UserDashboard = () => {
 
                 if (fetchError) throw fetchError;
 
-                // Open Payment Modal with appropriate deposit (fixed deposit amount or €10 if loyalty) and calculate balance
-                const depositAmount = quote.is_loyalty_payout ? 10 : bookingDepositAmount;
-                const balance = (quote.price + 10) - depositAmount;
+                // Open Payment Modal with booking deposit (platform_fee + hidden_fee)
+                const depositAmount = bookingDepositAmount;
+                const balance = quote.price; // Balance = assessor's price, paid directly to them
                 setPaymentQuote({ assessmentId, quoteId, amount: depositAmount, balance });
                 setPaymentModalOpen(true);
                 return;
@@ -813,9 +815,9 @@ const UserDashboard = () => {
                                                                     </td>
                                                                     <td className="py-4 px-6">
                                                                         <div className="flex flex-col">
-                                                                            <div className="text-lg font-black text-gray-900">€{quote.price + 10}</div>
+                                                                            <div className="text-lg font-black text-gray-900">€{quote.price + bookingDepositAmount}</div>
                                                                             <div className="text-[10px] text-gray-500 font-medium">
-                                                                                {isSpanish ? 'Depósito: €' : 'Deposit: €'}{quote.is_loyalty_payout ? '10' : '40'}{isSpanish ? ' | Saldo: €' : ' | Balance: €'}{quote.price + 10 - (quote.is_loyalty_payout ? 10 : 40)}
+                                                                                {isSpanish ? 'Depósito: €' : 'Deposit: €'}{bookingDepositAmount}{isSpanish ? ' | Saldo: €' : ' | Balance: €'}{quote.price}
                                                                             </div>
                                                                         </div>
                                                                     </td>
@@ -922,9 +924,9 @@ const UserDashboard = () => {
                                                                 </p>
                                                             </div>
                                                             <div className="text-right">
-                                                                <p className="text-xl font-black text-gray-900">€{quote.price + 10}</p>
+                                                                <p className="text-xl font-black text-gray-900">€{quote.price + bookingDepositAmount}</p>
                                                                 <div className="text-[9px] text-gray-500 font-medium mt-0.5">
-                                                                    {isSpanish ? 'Depósito: €40 / Saldo: €' : 'Deposit: €40 / Balance: €'}{quote.price + 10 - 40}
+                                                                    {isSpanish ? `Depósito: €${bookingDepositAmount} / Saldo: €` : `Deposit: €${bookingDepositAmount} / Balance: €`}{quote.price}
                                                                 </div>
                                                                 <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter border ${quote.status === 'accepted' ? 'bg-green-50 text-green-700 border-green-100' :
                                                                     quote.status === 'rejected' ? 'bg-red-50 text-red-700 border-red-100' :
@@ -1166,7 +1168,7 @@ const UserDashboard = () => {
                         <div className="space-y-6">
                             <div className="flex justify-between items-center group">
                                 <span className="text-gray-500 font-medium text-sm">Quote</span>
-                                <span className="text-gray-900 font-black text-lg">€{selectedDetailsQuote.price + 10}</span>
+                                <span className="text-gray-900 font-black text-lg">€{selectedDetailsQuote.price + bookingDepositAmount}</span>
                             </div>
 
                             <div className="flex justify-between items-center">
@@ -1212,7 +1214,7 @@ const UserDashboard = () => {
                                 }}
                                 className="flex-[1.5] py-3 bg-[#007F00] text-white rounded-lg font-black text-sm hover:bg-[#006600]  transition-all shadow-sm active:scale-95"
                             >
-                                Accept €{selectedDetailsQuote.price + 10} Quote
+                                Accept €{selectedDetailsQuote.price + bookingDepositAmount} Quote
                             </button>
                         </div>
                     </div>

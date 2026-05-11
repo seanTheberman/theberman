@@ -152,6 +152,8 @@ export interface AppSettings {
     business_registration_price: number;
     business_subscription_amount: number;
     booking_deposit_amount: number;
+    platform_fee_amount: number;
+    hidden_fee_amount: number;
     tenant?: string;
 }
 

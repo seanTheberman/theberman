@@ -373,6 +373,64 @@ export const SettingsView = ({
             </form>
         </div>
 
+        {/* Platform Fees */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <CreditCard size={20} className="text-green-600" />
+                Homeowner Deposit Fees
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+                When a homeowner accepts a quote, they pay a deposit = Platform Fee + Hidden Fee. The assessor receives their quoted price. The platform keeps the deposit.
+            </p>
+            <form
+                onSubmit={async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.target as HTMLFormElement);
+                    try {
+                        const platformFee = parseFloat(formData.get('platform_fee_amount') as string);
+                        const hiddenFee = parseFloat(formData.get('hidden_fee_amount') as string);
+                        const { error } = await supabase.from('app_settings').update({
+                            platform_fee_amount: platformFee,
+                            hidden_fee_amount: hiddenFee,
+                            booking_deposit_amount: platformFee + hiddenFee
+                        }).eq('id', appSettings?.id);
+                        if (error) throw error;
+                        toast.success('Platform fees updated!');
+                        fetchAppSettings();
+                    } catch (err: any) {
+                        toast.error(err.message);
+                    }
+                }}
+                className="space-y-4"
+            >
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Platform Fee (€)</label>
+                        <input name="platform_fee_amount" type="number" step="1" defaultValue={appSettings?.platform_fee_amount ?? 25} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                        <p className="text-xs text-gray-400 mt-1">Added to assessor quote (visible in total)</p>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Hidden Fee (€)</label>
+                        <input name="hidden_fee_amount" type="number" step="1" defaultValue={appSettings?.hidden_fee_amount ?? 10} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                        <p className="text-xs text-gray-400 mt-1">Added to total (homeowner doesn't see breakdown)</p>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Total Deposit (€)</label>
+                        <input type="number" disabled value={(appSettings?.platform_fee_amount ?? 25) + (appSettings?.hidden_fee_amount ?? 10)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-600" />
+                        <p className="text-xs text-gray-400 mt-1">Auto-calculated (Platform + Hidden)</p>
+                    </div>
+                </div>
+                <div className="flex justify-end">
+                    <button
+                        type="submit"
+                        className="bg-green-600 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-md hover:bg-green-700"
+                    >
+                        Update Fees
+                    </button>
+                </div>
+            </form>
+        </div>
+
         {/* Promo Settings */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Homepage Promo Banner</h3>

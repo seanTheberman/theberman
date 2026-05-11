@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronRight, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { useTranslation } from '../hooks/useTranslation';
 import { getTenantFromDomain } from '../lib/tenant';
+import { useTranslation } from '../hooks/useTranslation';
 import EmailVerification from './EmailVerification';
 import IdentityAuth from './IdentityAuth';
 import JobConfirmation from './JobConfirmation';
@@ -198,6 +198,24 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
     const [sizeUnit, setSizeUnit] = useState<'ft' | 'm'>('m'); // Default to m²
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [assessmentId, setAssessmentId] = useState<string | null>(null);
+    const [platformFeeAmount, setPlatformFeeAmount] = useState(25);
+    const [hiddenFeeAmount, setHiddenFeeAmount] = useState(10);
+
+    useEffect(() => {
+        const fetchFees = async () => {
+            const currentTenant = getTenantFromDomain();
+            const { data } = await supabase
+                .from('app_settings')
+                .select('platform_fee_amount, hidden_fee_amount')
+                .eq('tenant', currentTenant)
+                .single();
+            if (data) {
+                if (data.platform_fee_amount != null) setPlatformFeeAmount(parseFloat(data.platform_fee_amount));
+                if (data.hidden_fee_amount != null) setHiddenFeeAmount(parseFloat(data.hidden_fee_amount));
+            }
+        };
+        fetchFees();
+    }, []);
     const [emailError, _setEmailError] = useState<string | null>(null);
 
     const [formData, setFormData] = useState<FormData>({
@@ -473,9 +491,8 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                 user_id: currentUserId,
                 referred_by_listing_id: referredByListingId,
                 job_type: formData.jobType,
-                seai_fee: 25,
-                platform_fee: 45, // €25 visible to customer + €20 hidden margin
-                contractor_payout: 60, // What contractor receives
+                platform_fee: platformFeeAmount,
+                hidden_fee: hiddenFeeAmount,
             };
 
             let insertPayload;
