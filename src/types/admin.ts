@@ -151,6 +151,7 @@ export interface AppSettings {
     bundle_assessor_price: number;
     business_registration_price: number;
     business_subscription_amount: number;
+    booking_deposit_amount: number;
     tenant?: string;
 }
 
