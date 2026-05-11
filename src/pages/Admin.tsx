@@ -1082,6 +1082,42 @@ const Admin = () => {
                 }
             }
 
+            // For assessors: auto-create catalogue listing if one doesn't exist yet
+            if (status === 'active' && isAssessor && targetUser) {
+                const { data: existingListing } = await supabase
+                    .from('catalogue_listings')
+                    .select('id')
+                    .eq('owner_id', userId)
+                    .maybeSingle();
+
+                if (!existingListing) {
+                    const slugBase = (targetUser.company_name || targetUser.full_name || 'assessor')
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-|-$/g, '');
+                    const slug = `${slugBase}-${userId.slice(0, 6)}`;
+
+                    const { error: createErr } = await supabase.from('catalogue_listings').insert({
+                        name: targetUser.company_name || targetUser.full_name,
+                        slug,
+                        description: targetUser.assessor_type || 'BER Assessor',
+                        email: targetUser.email,
+                        company_name: targetUser.company_name || null,
+                        owner_id: userId,
+                        tenant: targetUser.tenant || selectedTenant,
+                        is_active: true,
+                        featured: false,
+                        social_media: {},
+                        features: [],
+                        additional_addresses: [],
+                    });
+
+                    if (createErr) {
+                        console.error('Failed to create assessor catalogue listing:', createErr);
+                    }
+                }
+            }
+
             setUsersList(prev => prev.map(u => u.id === userId ? { ...u, ...updateData } : u));
             toast.success(`${isAssessor ? 'Assessor' : 'Business'} account ${status === 'active' ? 'approved & activated' : 'rejected'} successfully`);
 
@@ -1106,8 +1142,8 @@ const Admin = () => {
             }
 
             fetchUsers();
-            if (status === 'active' && !isAssessor) {
-                fetchListings(); // Refresh listings to show the newly activated catalogue
+            if (status === 'active') {
+                fetchListings(); // Refresh listings to show newly activated/created catalogue entry
             }
         } catch (error: any) {
             toast.error(error.message || 'Failed to update registration status');
