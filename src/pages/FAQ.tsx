@@ -32,7 +32,7 @@ const FAQ = () => {
         getQuote: 'Pedir Presupuesto',
         sidebarLabel: 'FAQ Energético',
         consultantsH: 'Consultoría Energética Líder en España',
-        consultantsP: 'Confían en nosotros más de 10.000 propietarios en todo el país.',
+        consultantsP: 'Más de 10000 clientes satisfechos.',
         emailLine: `Correo: ${tenantEmail}`,
     } : {
         loading: 'Loading FAQ...',

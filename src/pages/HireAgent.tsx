@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
+import { TOWNS_BY_COUNTY_SPAIN } from '../data/spainTowns';
 import SEOHead from '../components/SEOHead';
 import { getTenantFromDomain, getTenantEmail, getTenantDomain } from '../lib/tenant';
 
@@ -42,6 +43,7 @@ const HireAgent = () => {
     const selectedCounty = watch('county');
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
+    const townsByCounty = isSpanish ? TOWNS_BY_COUNTY_SPAIN : TOWNS_BY_COUNTY;
     const tenantEmail = getTenantEmail(tenant);
     const tenantDomain = getTenantDomain(tenant);
     const tr = isSpanish ? {
@@ -77,11 +79,11 @@ const HireAgent = () => {
         phonePh: 'número de teléfono',
         email: 'Correo Electrónico',
         emailPh: 'correo electrónico',
-        county: 'Provincia',
-        selectCounty: 'Seleccionar Provincia',
+        county: 'Comunidad Autónoma',
+        selectCounty: 'Seleccionar Comunidad Autónoma',
         town: 'Ciudad / Localidad',
         selectTown: 'Seleccionar Ciudad',
-        selectCountyFirst: 'Selecciona Provincia Primero',
+        selectCountyFirst: 'Selecciona Comunidad Autónoma Primero',
         propertyType: 'Tipo de Propiedad',
         selectType: 'Seleccionar Tipo',
         apartment: 'Apartamento',
@@ -336,7 +338,7 @@ const HireAgent = () => {
                                             className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer ${errors.county ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'}`}
                                         >
                                             <option value="">{tr.selectCounty}</option>
-                                            {Object.keys(TOWNS_BY_COUNTY).sort().map((county) => (
+                                            {Object.keys(townsByCounty).sort().map((county) => (
                                                 <option key={county} value={county}>{county}</option>
                                             ))}
                                         </select>
@@ -353,7 +355,7 @@ const HireAgent = () => {
                                             className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer ${errors.town ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'} ${!selectedCounty ? 'bg-gray-50 opacity-50 cursor-not-allowed' : ''}`}
                                         >
                                             <option value="">{selectedCounty ? tr.selectTown : tr.selectCountyFirst}</option>
-                                            {selectedCounty && TOWNS_BY_COUNTY[selectedCounty]?.map((town) => (
+                                            {selectedCounty && townsByCounty[selectedCounty]?.map((town) => (
                                                 <option key={town} value={town}>{town}</option>
                                             ))}
                                         </select>

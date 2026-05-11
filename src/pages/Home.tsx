@@ -58,7 +58,7 @@ const HomePage = () => {
                         url: tenant === 'england' ? 'https://epccert.com' : (isSpanish ? 'https://certificadoenergético.eu' : 'https://theberman.eu'),
                         logo: tenant === 'england' ? 'https://epccert.com/logo.png' : (isSpanish ? 'https://certificadoenergético.eu/logo.png' : 'https://theberman.eu/logo.png'),
                         sameAs: tenant === 'england' ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert'] : (isSpanish ? ['https://www.facebook.com/certificadoenergetico', 'https://www.instagram.com/certificadoenergetico'] : ['https://www.facebook.com/theberman', 'https://www.instagram.com/theberman']),
-                        contactPoint: { '@type': 'ContactPoint', email: tenant === 'england' ? 'hello@epccert.com' : (isSpanish ? 'hola@certificadoenergético.eu' : 'info@theberman.eu'), contactType: 'customer service', areaServed: tenant === 'england' ? 'GB' : (isSpanish ? 'ES' : 'IE') }
+                        contactPoint: { '@type': 'ContactPoint', email: tenant === 'england' ? 'hello@epccert.com' : (isSpanish ? 'info@certificadoenergético.eu' : 'info@theberman.eu'), contactType: 'customer service', areaServed: tenant === 'england' ? 'GB' : (isSpanish ? 'ES' : 'IE') }
                     },
                     {
                         '@context': 'https://schema.org',
@@ -92,7 +92,7 @@ const HomePage = () => {
 
                         <p className={`text-gray-600 max-w-2xl mx-auto leading-relaxed font-medium ${isSpanish ? 'text-base md:text-lg mb-6 md:mb-8' : 'text-lg md:text-2xl mb-10 md:mb-12'}`}>
                             {c('hero', 'subheading', isSpanish
-                                ? 'La forma más rápida y fiable de obtener tu Certificado Energético. Los mejores precios garantizados de más de 100 certificadores en toda España.'
+                                ? 'La forma más rápida y fiable de obtener tu Certificado Energético. Los mejores precios garantizados de más de 1000 certificadores en toda España.'
                                 : (tenant === 'england' ? 'The fastest, most reliable way to get your Energy Performance Certificate. Guaranteed lowest prices from 100+ accredited assessors across England.' : 'The fastest, most reliable way to get your Building Energy Rating. Guaranteed lowest prices from 100+ assessors nationwide.'))}
                         </p>
 
@@ -114,7 +114,7 @@ const HomePage = () => {
                         {/* Fast Benefits Row */}
                         <div className="flex flex-wrap justify-center gap-x-12 gap-y-6">
                             {[
-                                { icon: <Users size={20} />, text: c('hero', 'benefit_1', isSpanish ? '100+ Certificadores en Toda España' : (tenant === 'england' ? '100+ Assessors Across England' : '100+ Assessors Nationwide')) },
+                                { icon: <Users size={20} />, text: c('hero', 'benefit_1', isSpanish ? '1000+ Certificadores en Toda España' : (tenant === 'england' ? '100+ Assessors Across England' : '100+ Assessors Nationwide')) },
                                 { icon: <ShieldCheck size={20} />, text: c('hero', 'benefit_2', isSpanish ? 'SOLO CERTIFICADORES ACREDITADOS' : (tenant === 'england' ? 'FULLY ACCREDITED DEAs ONLY' : 'SEAI REGISTERED ASSESSORS ONLY')) },
                                 { icon: <Clock size={20} />, text: c('hero', 'benefit_3', isSpanish ? 'Elige tu Fecha y Hora' : 'Choose Your Date & Time') }
                             ].map((item, i) => (
@@ -145,7 +145,7 @@ const HomePage = () => {
                                 step: "01",
                                 icon: <Clock size={32} />,
                                 title: c('how_it_works', 'step1_title', isSpanish ? "Elige Fecha" : "Select Date"),
-                                desc: c('how_it_works', 'step1_desc', isSpanish ? "Indícanos tu fecha y hora preferida para la certificación." : "Tell us your preferred date & time for assessment.")
+                                desc: c('how_it_works', 'step1_desc', isSpanish ? "Indícanos tu fecha y hora preferida para la visita al inmueble." : "Tell us your preferred date & time for assessment.")
                             },
                             {
                                 step: "02",
@@ -188,8 +188,8 @@ const HomePage = () => {
                         <div className="flex-1">
                             <span className="text-[#007F00] font-bold uppercase tracking-widest text-sm mb-4 block">{c('benefits', 'tag', isSpanish ? 'La Ventaja' : 'The Advantage')}</span>
                             <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-8 leading-tight">
-                                {c('benefits', 'heading', isSpanish ? '¿Por qué Confían en Nosotros' : 'Why Homeowners Trust')} <br />
-                                <span className="text-[#007F00]">{c('benefits', 'heading_highlight', isSpanish ? 'los Propietarios?' : (tenant === 'england' ? 'EPC Cert' : 'The BER Man'))}</span>
+                                {c('benefits', 'heading', isSpanish ? 'Razones para' : 'Why Homeowners Trust')} <br />
+                                <span className="text-[#007F00]">{c('benefits', 'heading_highlight', isSpanish ? 'confiar en nosotros' : (tenant === 'england' ? 'EPC Cert' : 'The BER Man'))}</span>
                             </h2>
                             <div className="space-y-6">
                                 {[
@@ -218,7 +218,7 @@ const HomePage = () => {
                                         <div className="text-sm font-bold text-gray-500 uppercase">{c('benefits', 'stat1_label', isSpanish ? 'Usuarios Atendidos' : (tenant === 'england' ? 'Homeowners Served' : 'Users Served'))}</div>
                                     </div>
                                     <div className="bg-green-50 p-8 rounded-3xl border border-green-100">
-                                        <div className="text-4xl font-black text-[#007F00] mb-2">{c('benefits', 'stat2_value', isSpanish ? '100+' : '100+')}</div>
+                                        <div className="text-4xl font-black text-[#007F00] mb-2">{c('benefits', 'stat2_value', isSpanish ? '1000+' : '100+')}</div>
                                         <div className="text-sm font-bold text-gray-500 uppercase">{c('benefits', 'stat2_label', isSpanish ? 'Certificadores' : (tenant === 'england' ? 'DEA Assessors' : 'Assessors'))}</div>
                                     </div>
                                 </div>
@@ -399,7 +399,7 @@ const HomePage = () => {
                                             </div>
                                             <div>
                                                 <h4 className="text-lg font-black text-gray-900 leading-none">{isSpanish ? 'Búsqueda Inteligente' : 'Smart Search'}</h4>
-                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">{isSpanish ? 'Por Provincia y Tipo de Servicio' : 'By County & Service Type'}</p>
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">{isSpanish ? 'Por Comunidad Autónoma y Tipo de Servicio' : 'By County & Service Type'}</p>
                                             </div>
                                         </div>
                                         <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -444,7 +444,7 @@ const HomePage = () => {
                         <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white/5 blur-3xl"></div>
                         <h3 className="text-3xl font-black mb-6">{c('faq', 'cta_heading', isSpanish ? '¿Listo para tu Certificado Energético?' : (tenant === 'england' ? 'Ready to get your EPC?' : 'Ready to get your BER Certificate?'))}</h3>
                         <p className="text-gray-400 mb-10 text-lg leading-relaxed">
-                            {c('faq', 'cta_description', isSpanish ? 'Únete a más de 1.000 propietarios satisfechos. Obtén presupuestos competitivos de certificadores locales de confianza en segundos.' : 'Join over 1,000 satisfied homeowners. Get competitive quotes from trusted local assessors in seconds.')}
+                            {c('faq', 'cta_description', isSpanish ? 'Únete a más de 10000 clientes satisfechos. Obtén presupuestos competitivos de certificadores locales de confianza en segundos.' : 'Join over 1,000 satisfied homeowners. Get competitive quotes from trusted local assessors in seconds.')}
                         </p>
                         <div className="space-y-6 mb-12">
 
@@ -509,15 +509,14 @@ const HomePage = () => {
             <section className="py-20 bg-gray-50 border-t border-gray-100">
                 <div className="container mx-auto px-6">
                     <h2 className="text-3xl md:text-4xl font-black text-center text-[#007F00] mb-12">
-                        {isSpanish ? 'Cubrimos Todas las Provincias' : (tenant === 'england' ? 'We Cover All of England' : 'We Cover All Counties')}
+                        {isSpanish ? 'Selecciona tu Comunidad Autónoma' : (tenant === 'england' ? 'We Cover All of England' : 'We Cover All Counties')}
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-16 gap-y-3 max-w-4xl mx-auto">
                         {(isSpanish ? [
-                            'Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Zaragoza', 'Málaga',
-                            'Murcia', 'Palma', 'Las Palmas', 'Bilbao', 'Alicante', 'Córdoba',
-                            'Valladolid', 'Vigo', 'Gijón', 'Granada', 'A Coruña', 'Vitoria',
-                            'Elche', 'Oviedo', 'Santa Cruz de Tenerife', 'Badalona', 'Cartagena', 'Terrassa',
-                            'Jerez de la Frontera', 'Sabadell'
+                            'Andalucía', 'Aragón', 'Principado de Asturias', 'Islas Baleares', 'Canarias',
+                            'Cantabria', 'Castilla-La Mancha', 'Castilla y León', 'Cataluña',
+                            'Comunidad de Madrid', 'Comunidad Foral de Navarra', 'Comunidad Valenciana',
+                            'Extremadura', 'Galicia', 'La Rioja', 'País Vasco', 'Región de Murcia'
                         ] : (tenant === 'england' ? [
                             'London', 'Manchester', 'Birmingham', 'Leeds', 'Liverpool', 'Bristol',
                             'Sheffield', 'Newcastle', 'Nottingham', 'Leicester', 'Brighton', 'Southampton',

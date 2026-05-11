@@ -26,11 +26,12 @@ const COUNTIES_IRELAND = [
     'Waterford', 'Westmeath', 'Wexford', 'Wicklow'
 ];
 
-// Spain Provinces
+// Spain Comunidades Autónomas
 const COUNTIES_SPAIN = [
-    'Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Zaragoza', 'Málaga',
-    'Murcia', 'Palma', 'Las Palmas', 'Bilbao', 'Alicante', 'Córdoba',
-    'Valladolid', 'Granada', 'A Coruña', 'Tarragona', 'Girona', 'Lleida'
+    'Andalucía', 'Aragón', 'Principado de Asturias', 'Islas Baleares', 'Canarias',
+    'Cantabria', 'Castilla-La Mancha', 'Castilla y León', 'Cataluña',
+    'Comunidad de Madrid', 'Comunidad Foral de Navarra', 'Comunidad Valenciana',
+    'Extremadura', 'Galicia', 'La Rioja', 'País Vasco', 'Región de Murcia'
 ];
 
 // England Cities/Regions
@@ -635,7 +636,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
         </div>
     );
 
-    const locationLabel = isSpanish ? 'Provincia' : (tenant === 'england' ? 'Location' : 'County');
+    const locationLabel = isSpanish ? 'Comunidad Autónoma' : (tenant === 'england' ? 'Location' : 'County');
     const COUNTIES = getCountiesForTenant(tenant);
 
     const renderCountyStep = () => (

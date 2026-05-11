@@ -20,9 +20,9 @@ const Locations = () => {
     const isSpanish = tenant === 'spain';
     const tr = isSpanish ? {
         seoTitle: 'Certificadores Energéticos por Ubicación',
-        seoDesc: 'Encuentra certificadores energéticos y profesionales de eficiencia en tu zona por toda España. Busca por provincia o región.',
-        heading: 'Explorar por Ubicación',
-        subtitle: 'Encuentra profesionales y proveedores mejor valorados en tu zona. Selecciona una región para ver los listados disponibles.',
+        seoDesc: 'Encuentra certificadores energéticos y profesionales de eficiencia en tu zona por toda España. Busca por comunidad autónoma.',
+        heading: 'Selecciona tu Comunidad Autónoma',
+        subtitle: 'Encuentra profesionales y proveedores mejor valorados en tu zona. Selecciona una comunidad autónoma para ver los listados disponibles.',
         descFallback: (name: string) => `Consulta los listados disponibles en ${name}.`,
         viewListings: 'Ver Listados',
         noLocationsH: 'No se Encontraron Ubicaciones',

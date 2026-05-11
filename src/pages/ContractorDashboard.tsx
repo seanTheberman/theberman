@@ -1207,7 +1207,7 @@ const ContractorDashboard = () => {
                                                     <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Fecha Aceptado' : 'Date Accepted'}</th>
                                                     <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Trabajo' : 'Job'}</th>
                                                     <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Ciudad' : 'Town'}</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Provincia' : 'County'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'C. Autónoma' : 'County'}</th>
                                                     <th className="text-left py-3 px-3 text-xs font-bold text-blue-600 uppercase tracking-wider">{isSpanish ? 'Código Postal' : 'Eircode'}</th>
                                                     <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Tipo' : 'Type'}</th>
                                                     <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'm²' : 'Sq. Mt.'}</th>
@@ -1503,7 +1503,7 @@ const ContractorDashboard = () => {
                                                         let newCounties;
                                                         if (current.includes(county)) {
                                                             if (current.length === 1) {
-                                                                toast.error(isSpanish ? 'Debes seleccionar al menos una Área de Servicio / Provincia' : 'You must select at least one Service Area / County');
+                                                                toast.error(isSpanish ? 'Debes seleccionar al menos una Área de Servicio / Comunidad Autónoma' : 'You must select at least one Service Area / County');
                                                                 return;
                                                             }
                                                             newCounties = current.filter((c: string) => c !== county);
@@ -1718,7 +1718,7 @@ const ContractorDashboard = () => {
                                             <button
                                                 onClick={async () => {
                                                     if (!profile?.preferred_counties || profile.preferred_counties.length === 0) {
-                                                        toast.error(isSpanish ? 'Por favor, selecciona al menos una Área de Servicio / Provincia' : 'Please select at least one Service Area / County');
+                                                        toast.error(isSpanish ? 'Por favor, selecciona al menos una Área de Servicio / Comunidad Autónoma' : 'Please select at least one Service Area / County');
                                                         return;
                                                     }
                                                     setIsSubmitting(true);

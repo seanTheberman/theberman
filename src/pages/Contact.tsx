@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
+import { TOWNS_BY_COUNTY_SPAIN } from '../data/spainTowns';
 import SEOHead from '../components/SEOHead';
 import { getTenantFromDomain, getTenantEmail, getTenantDomain } from '../lib/tenant';
 
@@ -40,6 +41,7 @@ const Contact = () => {
     const selectedCounty = watch('county');
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
+    const townsByCounty = isSpanish ? TOWNS_BY_COUNTY_SPAIN : TOWNS_BY_COUNTY;
     const tenantEmail = getTenantEmail(tenant);
     const tenantDomain = getTenantDomain(tenant);
     const tr = {
@@ -59,11 +61,11 @@ const Contact = () => {
         phonePlaceholder: isSpanish ? 'número de teléfono' : 'phone number',
         emailAddress: isSpanish ? 'Correo Electrónico' : 'Email Address',
         emailPlaceholder: isSpanish ? 'correo electrónico' : 'email',
-        county: isSpanish ? 'Provincia' : 'County',
-        selectCounty: isSpanish ? 'Seleccionar Provincia' : 'Select County',
+        county: isSpanish ? 'Comunidad Autónoma' : 'County',
+        selectCounty: isSpanish ? 'Seleccionar Comunidad Autónoma' : 'Select County',
         town: isSpanish ? 'Ciudad / Localidad' : 'Town / City',
         selectTown: isSpanish ? 'Seleccionar Ciudad' : 'Select Town',
-        selectCountyFirst: isSpanish ? 'Selecciona Provincia Primero' : 'Select County First',
+        selectCountyFirst: isSpanish ? 'Selecciona Comunidad Autónoma Primero' : 'Select County First',
         propertyType: isSpanish ? 'Tipo de Propiedad' : 'Property Type',
         selectType: isSpanish ? 'Seleccionar Tipo' : 'Select Type',
         apartment: isSpanish ? 'Apartamento' : 'Apartment',
@@ -228,7 +230,7 @@ const Contact = () => {
                                             className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer ${errors.county ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'}`}
                                         >
                                             <option value="">{tr.selectCounty}</option>
-                                            {Object.keys(TOWNS_BY_COUNTY).sort().map((county) => (
+                                            {Object.keys(townsByCounty).sort().map((county) => (
                                                 <option key={county} value={county}>{county}</option>
                                             ))}
                                         </select>
@@ -245,7 +247,7 @@ const Contact = () => {
                                             className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer ${errors.town ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'} ${!selectedCounty ? 'bg-gray-50 opacity-50 cursor-not-allowed' : ''}`}
                                         >
                                             <option value="">{selectedCounty ? tr.selectTown : tr.selectCountyFirst}</option>
-                                            {selectedCounty && TOWNS_BY_COUNTY[selectedCounty]?.map((town) => (
+                                            {selectedCounty && townsByCounty[selectedCounty]?.map((town) => (
                                                 <option key={town} value={town}>{town}</option>
                                             ))}
                                         </select>

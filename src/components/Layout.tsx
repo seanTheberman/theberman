@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Mail, Facebook, Instagram, Linkedin, ChevronRight, Globe } from 'lucide-react';
+import { Menu, X, Mail, Facebook, Instagram, Linkedin, ChevronRight, Globe, MapPin } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
 import { getTenantDisplayName, getTenantWebsiteUrl, getTenantEmail, getTenantDomain } from '../lib/tenant';
@@ -163,8 +163,8 @@ const Layout = () => {
                     {/* Logo */}
                     <Link to="/" onClick={closeMenu}>
                         {isSpanish ? (
-                            <span style={{ fontFamily: "'Brush Script MT', 'Lucida Calligraphy', 'Snell Roundhand', cursive", fontSize: '1.75rem', color: 'white', letterSpacing: '0.5px', lineHeight: 1.2 }}>
-                                Certificado Energético
+                            <span style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '1.75rem', color: 'white', letterSpacing: '0.5px', lineHeight: 1.2, fontWeight: 700, fontStyle: 'italic' }}>
+                                Certificado Energético<span style={{ fontSize: '0.7em', fontStyle: 'normal', opacity: 0.8 }}>.EU</span>
                             </span>
                         ) : tenant === 'england' ? (
                             <span style={{ fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif", fontSize: '1.75rem', color: 'white', letterSpacing: '1px', lineHeight: 1.2, fontWeight: 900 }}>
@@ -401,8 +401,8 @@ const Layout = () => {
                         <div className="col-span-1">
                             <div className="flex items-center gap-2 mb-6">
                                 {isSpanish ? (
-                                    <span style={{ fontFamily: "'Brush Script MT', 'Lucida Calligraphy', 'Snell Roundhand', cursive", fontSize: '1.6rem', color: 'white', letterSpacing: '0.5px', lineHeight: 1.2 }}>
-                                        Certificado Energético
+                                    <span style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '1.6rem', color: 'white', letterSpacing: '0.5px', lineHeight: 1.2, fontWeight: 700, fontStyle: 'italic' }}>
+                                        Certificado Energético<span style={{ fontSize: '0.7em', fontStyle: 'normal', opacity: 0.8 }}>.EU</span>
                                     </span>
                                 ) : tenant === 'england' ? (
                                     <span style={{ fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif", fontSize: '1.6rem', color: 'white', letterSpacing: '1px', lineHeight: 1.2, fontWeight: 900 }}>
@@ -516,6 +516,12 @@ const Layout = () => {
                                     <Globe className="text-[#9ACD32] mt-0.5" size={16} />
                                     <a href={tenantWebsiteUrl} target="_blank" className="hover:text-white transition">{tenantDomain}</a>
                                 </li>
+                                {isSpanish && (
+                                    <li className="flex items-start gap-3 text-gray-400 text-sm">
+                                        <MapPin className="text-[#9ACD32] mt-0.5" size={16} />
+                                        <span>Madrid, España</span>
+                                    </li>
+                                )}
                             </ul>
                         </div>
                     </div>

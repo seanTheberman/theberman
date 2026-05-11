@@ -25,7 +25,7 @@ const About = () => {
         ],
         stats: [
             { n: '10k+', l1: 'Certificaciones', l2: 'Energéticas Emitidas' },
-            { n: '100+', l1: 'Red Nacional de', l2: 'Certificadores' },
+            { n: '1000+', l1: 'Red Nacional de', l2: 'Certificadores' },
             { n: 'CEE', l1: 'Certificadores', l2: 'Acreditados' },
         ],
         howH: 'Cómo Trabajamos',
