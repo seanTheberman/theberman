@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Mail, ArrowRight, RefreshCw, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
+import { getTenantFromDomain } from '../lib/tenant';
 
 interface EmailVerificationProps {
     email: string;
@@ -39,9 +40,10 @@ const EmailVerification = ({ email, assessmentId, onVerified, onBack }: EmailVer
 
     const sendOtp = async () => {
         try {
-            // Updated to use 'email' in the body
+            // Include tenant parameter to ensure correct SMTP configuration
+            const tenant = getTenantFromDomain();
             const { data, error } = await supabase.functions.invoke('send-otp', {
-                body: { email, assessmentId }
+                body: { email, assessmentId, tenant }
             });
 
             if (error) {
@@ -108,8 +110,9 @@ const EmailVerification = ({ email, assessmentId, onVerified, onBack }: EmailVer
 
         setIsVerifying(true);
         try {
+            const tenant = getTenantFromDomain();
             const { data, error } = await supabase.functions.invoke('verify-otp', {
-                body: { email, code: fullCode, assessmentId }
+                body: { email, code: fullCode, assessmentId, tenant }
             });
 
             if (error) {
