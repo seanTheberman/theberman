@@ -163,9 +163,12 @@ const Layout = () => {
                     {/* Logo */}
                     <Link to="/" onClick={closeMenu}>
                         {isSpanish ? (
-                            <span style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '1.75rem', color: 'white', letterSpacing: '0.5px', lineHeight: 1.2, fontWeight: 700, fontStyle: 'italic' }}>
-                                Certificado Energético<span style={{ fontSize: '0.7em', fontStyle: 'normal', opacity: 0.8 }}>.EU</span>
-                            </span>
+                            <div className="flex flex-col">
+                                <span style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '1.75rem', color: 'white', letterSpacing: '0.5px', lineHeight: 1.2, fontWeight: 700, fontStyle: 'italic' }}>
+                                    🇪🇸 Certificado Energético<span style={{ fontSize: '0.7em', fontStyle: 'normal', opacity: 0.8 }}>.EU</span>
+                                </span>
+                                <span className="text-[10px] text-white/50 tracking-wider mt-0.5">Powered by The Berman</span>
+                            </div>
                         ) : tenant === 'england' ? (
                             <span style={{ fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif", fontSize: '1.75rem', color: 'white', letterSpacing: '1px', lineHeight: 1.2, fontWeight: 900 }}>
                                 EPC Cert

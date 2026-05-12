@@ -780,7 +780,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                         <div className="space-y-6">
                             <h2 className="text-3xl md:text-4xl font-light text-gray-800 text-center">{t('property_type')}?</h2>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
-                                {PROPERTY_TYPES.map((type) => (
+                                {PROPERTY_TYPES.filter(t => tenant === 'spain' || t !== 'Piso').map((type) => (
                                     <button key={type} onClick={() => updateFieldAndAdvance('propertyType', type)}
                                         className={`p-4 rounded-lg border-2 transition-all text-center ${formData.propertyType === type ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
                                     >{o(type)}</button>
