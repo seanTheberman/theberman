@@ -1,6 +1,7 @@
 import { useEffect, useState, Fragment } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
+import { getTenantEmail, getTenantFromDomain } from '../lib/tenant';
 import { supabase } from '../lib/supabase';
 import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, AlertCircle, Settings, MessageCircle, User, Menu, Plus, Search } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -640,8 +641,8 @@ const ContractorDashboard = () => {
                             </div>
                             <p className="text-xs text-gray-400 mb-6">
                                 Questions? Contact us at{' '}
-                                <a href="mailto:hello@theberman.eu" className={`font-semibold hover:underline ${suspended ? 'text-red-500' : 'text-[#007F00]'}`}>
-                                    hello@theberman.eu
+                                <a href={`mailto:${getTenantEmail(contractorTenant)}`} className={`font-semibold hover:underline ${suspended ? 'text-red-500' : 'text-[#007F00]'}`}>
+                                    {getTenantEmail(contractorTenant)}
                                 </a>
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3">

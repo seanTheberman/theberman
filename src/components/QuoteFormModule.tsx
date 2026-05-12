@@ -59,7 +59,7 @@ const ROUTING_KEYS: Record<string, string> = {
 };
 
 // --- Domestic options ---
-const PROPERTY_TYPES = ['Semi-Detached', 'Mid-Terrace', 'End-Terrace', 'Apartment', 'Duplex', 'Detached', 'Bungalow', 'Multi-Unit', 'Other'];
+const PROPERTY_TYPES = ['Semi-Detached', 'Mid-Terrace', 'End-Terrace', 'Apartment', 'Piso', 'Duplex', 'Detached', 'Bungalow', 'Multi-Unit', 'Other'];
 const PROPERTY_SIZES = [
     'Under 750 sq.ft',
     '750 - 1000 sq.ft',

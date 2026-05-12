@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from '../hooks/useTranslation';
+import { getTenantEmail, getTenantFromDomain } from '../lib/tenant';
 import toast from 'react-hot-toast';
 import { geocodeAddress } from '../lib/geocoding';
 import ReferralProgram from '../components/business/ReferralProgram';
@@ -457,8 +458,8 @@ const BusinessDashboard = () => {
                             </div>
                             <p className="text-xs text-gray-400 mb-6">
                                 {isSpanish ? '¿Preguntas? Contáctanos en' : 'Questions? Contact us at'}{' '}
-                                <a href="mailto:hello@theberman.eu" className={`font-semibold hover:underline ${suspended ? 'text-red-500' : 'text-[#007F00]'}`}>
-                                    hello@theberman.eu
+                                <a href={`mailto:${getTenantEmail(getTenantFromDomain())}`} className={`font-semibold hover:underline ${suspended ? 'text-red-500' : 'text-[#007F00]'}`}>
+                                    {getTenantEmail(getTenantFromDomain())}
                                 </a>
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3">

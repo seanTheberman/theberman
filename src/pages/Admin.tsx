@@ -1607,7 +1607,8 @@ const Admin = () => {
     const handleSaveCatalogueEntry = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         if (!catalogueFormData.companyName.trim() || !catalogueFormData.email.trim()) { toast.error('Company name and email are required'); return; }
-        if (catalogueFormData.selectedCategories.length === 0) { toast.error('Please select at least one category'); return; }
+        const isAssessorProfile = selectedBusinessForCatalogue?.role === 'contractor';
+        if (catalogueFormData.selectedCategories.length === 0 && !isAssessorProfile) { toast.error('Please select at least one category'); return; }
 
         setIsSavingCatalogue(true);
         try {
