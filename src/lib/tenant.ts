@@ -93,12 +93,7 @@ export function getTenantWebsiteUrl(tenant: string): string {
 
 export function getTenantEmail(tenant: string): string {
   if (tenant === 'spain') {
-    const host = getCurrentHostname();
-    if (host && host.includes('certificado')) {
-      const domain = host.replace(/^www\./, '');
-      return `info@${domain}`;
-    }
-    return 'info@certificadoenergético.eu';
+    return 'hello@certificadosenergetico.es';
   }
   if (tenant === 'england') {
     return 'hello@epccert.com';

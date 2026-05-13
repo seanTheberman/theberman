@@ -515,6 +515,12 @@ const Layout = () => {
                                     <Mail className="text-[#9ACD32] mt-0.5" size={16} />
                                     <a href={`mailto:${tenantEmail}`} className="hover:text-white transition">{tenantEmail}</a>
                                 </li>
+                                {isSpanish && (
+                                    <li className="flex items-start gap-3 text-gray-400 text-sm">
+                                        <Mail className="text-[#9ACD32] mt-0.5" size={16} />
+                                        <a href="mailto:info@certificadosenergetico.es" className="hover:text-white transition">info@certificadosenergetico.es</a>
+                                    </li>
+                                )}
                                 <li className="flex items-start gap-3 text-gray-400 text-sm">
                                     <Globe className="text-[#9ACD32] mt-0.5" size={16} />
                                     <a href={tenantWebsiteUrl} target="_blank" className="hover:text-white transition">{tenantDomain}</a>
