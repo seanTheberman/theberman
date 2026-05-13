@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { getTenantFromDomain } from '../lib/tenant';
 
 const TRANSLATIONS: Record<string, Record<string, string>> = {
@@ -315,7 +314,7 @@ const OPTION_LABELS: Record<string, Record<string, string>> = {
 };
 
 export function useTranslation() {
-  const tenant = useMemo(() => getTenantFromDomain(), []);
+  const tenant = getTenantFromDomain();
   const lang = tenant === 'spain' ? 'es' : 'en';
   const dict = TRANSLATIONS[lang];
   const optDict = OPTION_LABELS[lang] || {};
