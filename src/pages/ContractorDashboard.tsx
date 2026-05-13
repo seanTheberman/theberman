@@ -641,8 +641,8 @@ const ContractorDashboard = () => {
                             </div>
                             <p className="text-xs text-gray-400 mb-6">
                                 Questions? Contact us at{' '}
-                                <a href={`mailto:${getTenantEmail(contractorTenant)}`} className={`font-semibold hover:underline ${suspended ? 'text-red-500' : 'text-[#007F00]'}`}>
-                                    {getTenantEmail(contractorTenant)}
+                                <a href={`mailto:${getTenantEmail(getTenantFromDomain())}`} className={`font-semibold hover:underline ${suspended ? 'text-red-500' : 'text-[#007F00]'}`}>
+                                    {getTenantEmail(getTenantFromDomain())}
                                 </a>
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3">
