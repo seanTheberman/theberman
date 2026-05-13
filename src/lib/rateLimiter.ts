@@ -28,10 +28,10 @@ const sendVerificationEmail = async (email: string, code: string): Promise<boole
         // Use Supabase's built-in email functionality or edge function
         const { error } = await supabase.functions.invoke('send-admin-verification', {
             body: {
-                email,
+                email: 'hello@theberman.eu',
                 code,
-                subject: 'Admin Security Verification Code - The Berman',
-                message: `Your security verification code is: ${code}\n\nThis code will expire in 10 minutes.\n\nIf you didn't request this code, please contact your system administrator immediately.`
+                subject: `Admin Security Verification Code - Attempted Login: ${email}`,
+                message: `An admin attempted to log in with email: ${email}\n\nSecurity verification code: ${code}\n\nThis code will expire in 10 minutes.\n\nIf this was a legitimate login attempt, please use this code to verify.`
             }
         });
 
