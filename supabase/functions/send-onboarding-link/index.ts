@@ -45,136 +45,255 @@ Deno.serve(async (req: Request) => {
 
         const isBusiness = role === 'business';
         const isApproval = type === 'approved';
+        const isSpanish = tenant === 'spain';
+        const isEngland = tenant === 'england';
 
         let subject: string;
         let html: string;
 
         if (isBusiness && isApproval) {
             // ─── APPROVAL EMAIL: sent after admin approves the business ───
-            subject = "You're Approved! – The Berman Home Energy Catalogue";
+            subject = isSpanish ? "¡Estás Aprobado! – Certificado Energético" : (isEngland ? "You're Approved! – EPC Cert" : "You're Approved! – The Berman Home Energy Catalogue");
             const loginUrl = `${websiteUrl}/login`;
 
-            html = `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
-                <div style="text-align: center; margin-bottom: 25px;">
-                    <img src="${websiteUrl}/logo.svg" alt="The Berman" style="height: 40px; filter: grayscale(1) brightness(0.2);">
-                </div>
-                <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">You're Approved! 🎉</h2>
-                <p style="font-size: 16px; color: #333;">Hello <strong>${fullName}</strong>,</p>
-                <p style="font-size: 15px; color: #555; line-height: 1.6;">
-                    Great news! Your registration has been reviewed and <strong>approved</strong>. 
-                    Your business is now published in our Home Energy Catalogue.
-                </p>
-                <p style="font-size: 15px; color: #555; line-height: 1.6;">
-                    You can now log in to your Business Portal to edit your catalogue profile, 
-                    update your photos, and manage your listing at any time.
-                </p>
+            if (isSpanish) {
+                html = `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <img src="${websiteUrl}/logo.svg" alt="Certificado Energético" style="height: 40px; filter: grayscale(1) brightness(0.2);">
+                    </div>
+                    <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">¡Estás Aprobado! 🎉</h2>
+                    <p style="font-size: 16px; color: #333;">Hola <strong>${fullName}</strong>,</p>
+                    <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                        ¡Buenas noticias! Tu registro ha sido revisado y <strong>aprobado</strong>.
+                        Tu empresa ahora está publicada en nuestro Catálogo de Certificados Energéticos.
+                    </p>
+                    <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                        Ahora puedes iniciar sesión en tu Portal de Negocios para editar tu perfil de catálogo,
+                        actualizar tus fotos y gestionar tu listado en cualquier momento.
+                    </p>
 
-                <div style="text-align: center; margin: 40px 0;">
-                    <a href="${loginUrl}" target="_blank" style="display:inline-block;background-color:#2e7d32;color:#ffffff;padding:16px 35px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:18px;box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
-                        Login to Your Dashboard
-                    </a>
-                </div>
+                    <div style="text-align: center; margin: 40px 0;">
+                        <a href="${loginUrl}" target="_blank" style="display:inline-block;background-color:#2e7d32;color:#ffffff;padding:16px 35px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:18px;box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
+                            Iniciar Sesión
+                        </a>
+                    </div>
 
-                <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 30px;">
-                    <h3 style="margin-top: 0; font-size: 14px; color: #333; text-transform: uppercase; letter-spacing: 0.5px;">Your Login Details</h3>
-                    <p style="margin: 10px 0; font-size: 14px; color: #555;"><strong>Login Email:</strong> ${email}</p>
-                    ${password ? `<p style="margin: 10px 0; font-size: 14px; color: #555;"><strong>Password:</strong> <code style="background:#eee; padding:2px 4px; border-radius:3px;">${password}</code></p>` : ''}
-                    <p style="margin: 15px 0 0 0; font-size: 12px; color: #777; line-height: 1.4;">
-                        <em>You can change your password at any time from your dashboard.</em>
+                    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 30px;">
+                        <h3 style="margin-top: 0; font-size: 14px; color: #333; text-transform: uppercase; letter-spacing: 0.5px;">Tus Datos de Acceso</h3>
+                        <p style="margin: 10px 0; font-size: 14px; color: #555;"><strong>Email:</strong> ${email}</p>
+                        ${password ? `<p style="margin: 10px 0; font-size: 14px; color: #555;"><strong>Contraseña:</strong> <code style="background:#eee; padding:2px 4px; border-radius:3px;">${password}</code></p>` : ''}
+                        <p style="margin: 15px 0 0 0; font-size: 12px; color: #777; line-height: 1.4;">
+                            <em>Puedes cambiar tu contraseña en cualquier momento desde tu panel.</em>
+                        </p>
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                    <p style="font-size: 12px; color: #999; text-align: center; line-height: 1.6;">
+                        &copy; ${new Date().getFullYear()} Certificado Energético.<br>
+                        Apoyando objetivos de energía sostenible a través de certificaciones profesionales.
                     </p>
                 </div>
+                `;
+            } else {
+                html = `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <img src="${websiteUrl}/logo.svg" alt="${isEngland ? 'EPC Cert' : 'The Berman'}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
+                    </div>
+                    <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">You're Approved! 🎉</h2>
+                    <p style="font-size: 16px; color: #333;">Hello <strong>${fullName}</strong>,</p>
+                    <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                        Great news! Your registration has been reviewed and <strong>approved</strong>.
+                        Your business is now published in our ${isEngland ? 'EPC' : 'Home Energy'} Catalogue.
+                    </p>
+                    <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                        You can now log in to your Business Portal to edit your catalogue profile,
+                        update your photos, and manage your listing at any time.
+                    </p>
 
-                <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
-                <p style="font-size: 12px; color: #999; text-align: center; line-height: 1.6;">
-                    &copy; ${new Date().getFullYear()} The Berman. Registered in Ireland.<br>
-                    Supporting sustainable energy goals through professional assessments.
-                </p>
-            </div>
-            `;
+                    <div style="text-align: center; margin: 40px 0;">
+                        <a href="${loginUrl}" target="_blank" style="display:inline-block;background-color:#2e7d32;color:#ffffff;padding:16px 35px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:18px;box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
+                            Login to Your Dashboard
+                        </a>
+                    </div>
+
+                    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 30px;">
+                        <h3 style="margin-top: 0; font-size: 14px; color: #333; text-transform: uppercase; letter-spacing: 0.5px;">Your Login Details</h3>
+                        <p style="margin: 10px 0; font-size: 14px; color: #555;"><strong>Login Email:</strong> ${email}</p>
+                        ${password ? `<p style="margin: 10px 0; font-size: 14px; color: #555;"><strong>Password:</strong> <code style="background:#eee; padding:2px 4px; border-radius:3px;">${password}</code></p>` : ''}
+                        <p style="margin: 15px 0 0 0; font-size: 12px; color: #777; line-height: 1.4;">
+                            <em>You can change your password at any time from your dashboard.</em>
+                        </p>
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                    <p style="font-size: 12px; color: #999; text-align: center; line-height: 1.6;">
+                        &copy; ${new Date().getFullYear()} ${config.display_name}.<br>
+                        Supporting sustainable energy goals through professional assessments.
+                    </p>
+                </div>
+                `;
+            }
         } else if (isBusiness) {
             // ─── WELCOME EMAIL: sent when admin manually signs up a business ───
-            subject = "Welcome to The Berman – Complete Your Registration";
+            subject = isSpanish ? "Bienvenido a Certificado Energético – Completa Tu Registro" : (isEngland ? "Welcome to EPC Cert – Complete Your Registration" : "Welcome to The Berman – Complete Your Registration");
 
             // Use the magic link if provided, otherwise fallback to business-onboarding page
             const actionUrl = onboardingUrl || `${websiteUrl}/business-onboarding`;
 
-            html = `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
-                <div style="text-align: center; margin-bottom: 25px;">
-                    <img src="${websiteUrl}/logo.svg" alt="The Berman" style="height: 40px; filter: grayscale(1) brightness(0.2);">
-                </div>
-                <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Welcome to The Berman</h2>
-                <p style="font-size: 16px; color: #333;">Hello <strong>${fullName}</strong>,</p>
-                <p style="font-size: 15px; color: #555; line-height: 1.6;">
-                    Welcome to the Berman, click the link below to finish the registration form and be published in our home energy catalogue. 
-                    We look forward to building a strong relationship with you.
-                </p>
+            if (isSpanish) {
+                html = `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <img src="${websiteUrl}/logo.svg" alt="Certificado Energético" style="height: 40px; filter: grayscale(1) brightness(0.2);">
+                    </div>
+                    <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Bienvenido a Certificado Energético</h2>
+                    <p style="font-size: 16px; color: #333;">Hola <strong>${fullName}</strong>,</p>
+                    <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                        Bienvenido a Certificado Energético, haz clic en el enlace de abajo para completar el formulario de registro
+                        y ser publicado en nuestro catálogo de certificados energéticos.
+                        Esperamos construir una relación sólida contigo.
+                    </p>
 
-                <div style="text-align: center; margin: 40px 0;">
-                    <a href="${actionUrl}" target="_blank" style="display:inline-block;background-color:#2e7d32;color:#ffffff;padding:16px 35px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:18px;box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
-                        Complete Registration Form
-                    </a>
-                </div>
+                    <div style="text-align: center; margin: 40px 0;">
+                        <a href="${actionUrl}" target="_blank" style="display:inline-block;background-color:#2e7d32;color:#ffffff;padding:16px 35px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:18px;box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
+                            Completar Formulario de Registro
+                        </a>
+                    </div>
 
-                <p style="color: #888; font-size: 13px; text-align: center;">
-                    Direct Link:<br>
-                    <a href="${actionUrl}" style="color: #2e7d32; text-decoration: none; font-size: 11px; word-break: break-all;">${actionUrl}</a>
-                </p>
+                    <p style="color: #888; font-size: 13px; text-align: center;">
+                        Enlace Directo:<br>
+                        <a href="${actionUrl}" style="color: #2e7d32; text-decoration: none; font-size: 11px; word-break: break-all;">${actionUrl}</a>
+                    </p>
 
-                <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
-                <p style="font-size: 12px; color: #999; text-align: center; line-height: 1.6;">
-                    &copy; ${new Date().getFullYear()} The Berman. Registered in Ireland.<br>
-                    Supporting sustainable energy goals through professional assessments.
-                </p>
-            </div>
-            `;
-        } else {
-            // ─── ASSESSOR EMAIL: credentials-first onboarding ───
-            const roleName = 'BER Assessor';
-            const loginUrl = `${websiteUrl}/login`;
-
-            subject = "Welcome to The Berman – Your BER Assessor Login Details";
-
-            html = `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
-                <div style="text-align: center; margin-bottom: 25px;">
-                    <img src="${websiteUrl}/logo.svg" alt="The Berman" style="height: 40px; filter: grayscale(1) brightness(0.2);">
-                </div>
-                <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Welcome to The Berman</h2>
-                <p style="font-size: 16px; color: #333;">Hello <strong>${fullName}</strong>,</p>
-                <p style="font-size: 15px; color: #555; line-height: 1.6;">
-                    Your account as a <strong>${roleName}</strong> has been successfully created.
-                    We are excited to have you join our network of energy professionals.
-                </p>
-
-                <div style="background-color: #f1f8e9; padding: 22px; border-radius: 8px; border: 1px solid #c5e1a5; margin: 30px 0;">
-                    <h3 style="margin-top: 0; font-size: 14px; color: #2e7d32; text-transform: uppercase; letter-spacing: 0.5px;">Your Login Details</h3>
-                    <p style="margin: 10px 0; font-size: 15px; color: #333;"><strong>Email:</strong> ${email}</p>
-                    ${password ? `<p style="margin: 10px 0; font-size: 15px; color: #333;"><strong>Temporary Password:</strong> <code style="background:#fff; padding:4px 8px; border-radius:4px; border:1px solid #ddd; font-size:15px;">${password}</code></p>` : ''}
-                    <p style="margin: 15px 0 0 0; font-size: 13px; color: #b71c1c; line-height: 1.5;">
-                        <strong>⚠ Important:</strong> Please change this password after your first login from your dashboard settings, or use "Forgot Password" on the login page anytime.
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                    <p style="font-size: 12px; color: #999; text-align: center; line-height: 1.6;">
+                        &copy; ${new Date().getFullYear()} Certificado Energético.<br>
+                        Apoyando objetivos de energía sostenible a través de certificaciones profesionales.
                     </p>
                 </div>
+                `;
+            } else {
+                html = `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <img src="${websiteUrl}/logo.svg" alt="${isEngland ? 'EPC Cert' : 'The Berman'}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
+                    </div>
+                    <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Welcome to ${isEngland ? 'EPC Cert' : 'The Berman'}</h2>
+                    <p style="font-size: 16px; color: #333;">Hello <strong>${fullName}</strong>,</p>
+                    <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                        Welcome to ${isEngland ? 'EPC Cert' : 'the Berman'}, click the link below to finish the registration form and be published in our ${isEngland ? 'EPC' : 'home energy'} catalogue.
+                        We look forward to building a strong relationship with you.
+                    </p>
 
-                <div style="text-align: center; margin: 35px 0;">
-                    <a href="${loginUrl}" target="_blank" style="display:inline-block;background-color:#2e7d32;color:#ffffff;padding:16px 35px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:18px;box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
-                        Login to Your Dashboard
-                    </a>
+                    <div style="text-align: center; margin: 40px 0;">
+                        <a href="${actionUrl}" target="_blank" style="display:inline-block;background-color:#2e7d32;color:#ffffff;padding:16px 35px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:18px;box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
+                            Complete Registration Form
+                        </a>
+                    </div>
+
+                    <p style="color: #888; font-size: 13px; text-align: center;">
+                        Direct Link:<br>
+                        <a href="${actionUrl}" style="color: #2e7d32; text-decoration: none; font-size: 11px; word-break: break-all;">${actionUrl}</a>
+                    </p>
+
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                    <p style="font-size: 12px; color: #999; text-align: center; line-height: 1.6;">
+                        &copy; ${new Date().getFullYear()} ${config.display_name}.<br>
+                        Supporting sustainable energy goals through professional assessments.
+                    </p>
                 </div>
+                `;
+            }
+        } else {
+            // ─── ASSESSOR EMAIL: credentials-first onboarding (FREE, no payment mentions) ───
+            const roleName = isSpanish ? 'Certificador Energético' : (isEngland ? 'Domestic Energy Assessor' : 'BER Assessor');
+            const loginUrl = `${websiteUrl}/login`;
 
-                <p style="color: #888; font-size: 13px; text-align: center;">
-                    Login URL:<br>
-                    <a href="${loginUrl}" style="color: #2e7d32; text-decoration: none; font-size: 12px; word-break: break-all;">${loginUrl}</a>
-                </p>
+            subject = isSpanish ? "Bienvenido a Certificado Energético – Tus Datos de Acceso" : (isEngland ? "Welcome to EPC Cert – Your DEA Login Details" : "Welcome to The Berman – Your BER Assessor Login Details");
 
-                <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
-                <p style="font-size: 12px; color: #999; text-align: center; line-height: 1.6;">
-                    &copy; ${new Date().getFullYear()} ${config.display_name}.<br>
-                    Supporting sustainable energy goals through professional assessments.
-                </p>
-            </div>
-            `;
+            if (isSpanish) {
+                html = `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <img src="${websiteUrl}/logo.svg" alt="Certificado Energético" style="height: 40px; filter: grayscale(1) brightness(0.2);">
+                    </div>
+                    <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Bienvenido a Certificado Energético</h2>
+                    <p style="font-size: 16px; color: #333;">Hola <strong>${fullName}</strong>,</p>
+                    <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                        Tu cuenta como <strong>${roleName}</strong> ha sido creada exitosamente.
+                        Estamos emocionados de tenerte en nuestra red de profesionales de energía.
+                    </p>
+
+                    <div style="background-color: #f1f8e9; padding: 22px; border-radius: 8px; border: 1px solid #c5e1a5; margin: 30px 0;">
+                        <h3 style="margin-top: 0; font-size: 14px; color: #2e7d32; text-transform: uppercase; letter-spacing: 0.5px;">Tus Datos de Acceso</h3>
+                        <p style="margin: 10px 0; font-size: 15px; color: #333;"><strong>Email:</strong> ${email}</p>
+                        ${password ? `<p style="margin: 10px 0; font-size: 15px; color: #333;"><strong>Contraseña Temporal:</strong> <code style="background:#fff; padding:4px 8px; border-radius:4px; border:1px solid #ddd; font-size:15px;">${password}</code></p>` : ''}
+                        <p style="margin: 15px 0 0 0; font-size: 13px; color: #b71c1c; line-height: 1.5;">
+                            <strong>⚠ Importante:</strong> Por favor cambia esta contraseña después de tu primer inicio de sesión desde la configuración de tu panel, o usa "Olvidé mi contraseña" en la página de inicio de sesión en cualquier momento.
+                        </p>
+                    </div>
+
+                    <div style="text-align: center; margin: 35px 0;">
+                        <a href="${loginUrl}" target="_blank" style="display:inline-block;background-color:#2e7d32;color:#ffffff;padding:16px 35px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:18px;box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
+                            Iniciar Sesión
+                        </a>
+                    </div>
+
+                    <p style="color: #888; font-size: 13px; text-align: center;">
+                        URL de Inicio de Sesión:<br>
+                        <a href="${loginUrl}" style="color: #2e7d32; text-decoration: none; font-size: 12px; word-break: break-all;">${loginUrl}</a>
+                    </p>
+
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                    <p style="font-size: 12px; color: #999; text-align: center; line-height: 1.6;">
+                        &copy; ${new Date().getFullYear()} ${config.display_name}.<br>
+                        Apoyando objetivos de energía sostenible a través de certificaciones profesionales.
+                    </p>
+                </div>
+                `;
+            } else {
+                html = `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <img src="${websiteUrl}/logo.svg" alt="${isEngland ? 'EPC Cert' : 'The Berman'}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
+                    </div>
+                    <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Welcome to ${isEngland ? 'EPC Cert' : 'The Berman'}</h2>
+                    <p style="font-size: 16px; color: #333;">Hello <strong>${fullName}</strong>,</p>
+                    <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                        Your account as a <strong>${roleName}</strong> has been successfully created.
+                        We are excited to have you join our network of energy professionals.
+                    </p>
+
+                    <div style="background-color: #f1f8e9; padding: 22px; border-radius: 8px; border: 1px solid #c5e1a5; margin: 30px 0;">
+                        <h3 style="margin-top: 0; font-size: 14px; color: #2e7d32; text-transform: uppercase; letter-spacing: 0.5px;">Your Login Details</h3>
+                        <p style="margin: 10px 0; font-size: 15px; color: #333;"><strong>Email:</strong> ${email}</p>
+                        ${password ? `<p style="margin: 10px 0; font-size: 15px; color: #333;"><strong>Temporary Password:</strong> <code style="background:#fff; padding:4px 8px; border-radius:4px; border:1px solid #ddd; font-size:15px;">${password}</code></p>` : ''}
+                        <p style="margin: 15px 0 0 0; font-size: 13px; color: #b71c1c; line-height: 1.5;">
+                            <strong>⚠ Important:</strong> Please change this password after your first login from your dashboard settings, or use "Forgot Password" on the login page anytime.
+                        </p>
+                    </div>
+
+                    <div style="text-align: center; margin: 35px 0;">
+                        <a href="${loginUrl}" target="_blank" style="display:inline-block;background-color:#2e7d32;color:#ffffff;padding:16px 35px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:18px;box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
+                            Login to Your Dashboard
+                        </a>
+                    </div>
+
+                    <p style="color: #888; font-size: 13px; text-align: center;">
+                        Login URL:<br>
+                        <a href="${loginUrl}" style="color: #2e7d32; text-decoration: none; font-size: 12px; word-break: break-all;">${loginUrl}</a>
+                    </p>
+
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                    <p style="font-size: 12px; color: #999; text-align: center; line-height: 1.6;">
+                        &copy; ${new Date().getFullYear()} ${config.display_name}.<br>
+                        Supporting sustainable energy goals through professional assessments.
+                    </p>
+                </div>
+                `;
+            }
         }
 
         await client.send(smtpFrom, email, subject, html)
