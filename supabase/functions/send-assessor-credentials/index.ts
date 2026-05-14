@@ -36,6 +36,8 @@ Deno.serve(async (req: Request) => {
         const smtpPassword = config.smtp_password;
         const smtpFrom = config.smtp_from;
         const resolvedLoginUrl = loginUrl || `${config.website_url}/login`;
+        const isSpanish = tenant === 'spain';
+        const isEngland = tenant === 'england';
 
         if (!smtpHostname || !smtpUsername || !smtpPassword) {
             throw new Error(`SMTP configuration missing for tenant ${tenant}`);
@@ -45,8 +47,8 @@ Deno.serve(async (req: Request) => {
         await client.connect(smtpHostname, smtpPort)
         await client.authenticate(smtpUsername, smtpPassword)
 
-        const html = generateCredentialsHtml(fullName, email, password, resolvedLoginUrl)
-        await client.send(smtpFrom!, email, `Your BER Assessor Login Credentials - ${config.display_name}`, html)
+        const html = generateCredentialsHtml(fullName, email, password, resolvedLoginUrl, tenant)
+        await client.send(smtpFrom!, email, isSpanish ? `Tus Credenciales de Acceso - ${config.display_name}` : (isEngland ? `Your DEA Login Credentials - ${config.display_name}` : `Your BER Assessor Login Credentials - ${config.display_name}`), html)
 
         await client.close()
         console.log(`[send-assessor-credentials] SUCCESS: Credentials email sent to ${email}`);

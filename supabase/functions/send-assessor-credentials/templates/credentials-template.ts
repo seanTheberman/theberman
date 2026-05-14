@@ -1,4 +1,111 @@
-export const generateCredentialsHtml = (fullName: string, email: string, password: string, loginUrl: string) => {
+export const generateCredentialsHtml = (fullName: string, email: string, password: string, loginUrl: string, tenant: string = 'ireland') => {
+    const isSpanish = tenant === 'spain';
+    const isEngland = tenant === 'england';
+    
+    if (isSpanish) {
+        return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+            .container { max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; }
+            .header { background-color: #007F00; padding: 40px 20px; text-align: center; }
+            .header h1 { color: white; margin: 0; font-size: 28px; font-weight: 500; }
+            .header p { color: rgba(255,255,255,0.85); margin: 8px 0 0; font-size: 14px; }
+            .content { padding: 40px 30px; background-color: white; }
+            .greeting { font-size: 18px; margin-bottom: 20px; color: #444; }
+            .body-text { font-size: 16px; margin-bottom: 20px; color: #555; }
+            .credentials-box { background-color: #f4f7f4; padding: 24px; border-radius: 8px; margin: 30px 0; border: 1px solid #d4e8d4; }
+            .credentials-box h3 { margin: 0 0 16px 0; color: #333; font-size: 16px; }
+            .credential-row { display: flex; margin-bottom: 12px; }
+            .credential-label { font-weight: bold; color: #555; min-width: 80px; font-size: 14px; }
+            .credential-value { color: #007F00; font-weight: bold; font-size: 14px; font-family: monospace; background: white; padding: 4px 10px; border-radius: 4px; border: 1px solid #e0e0e0; }
+            .steps-box { background-color: #fff8e1; padding: 24px; border-radius: 8px; margin: 30px 0; border: 1px solid #ffe082; }
+            .steps-box h3 { margin: 0 0 16px 0; color: #333; font-size: 16px; }
+            .steps-box ol { margin: 0; padding-left: 20px; }
+            .steps-box li { margin-bottom: 8px; color: #555; font-size: 14px; }
+            .button-container { text-align: center; margin: 40px 0; }
+            .button { 
+                background-color: #007F00; 
+                color: white !important; 
+                padding: 15px 40px; 
+                text-decoration: none; 
+                border-radius: 4px; 
+                font-weight: bold; 
+                font-size: 16px; 
+                display: inline-block;
+            }
+            .warning { font-size: 13px; color: #888; margin-top: 20px; font-style: italic; }
+            .footer { padding: 30px; background-color: #f9f9f9; text-align: center; font-size: 14px; color: #888; border-top: 1px solid #eee; }
+            .footer p { margin: 10px 0; }
+            .footer-links { margin-top: 20px; }
+            .footer-links a { color: #007F00; text-decoration: none; margin: 0 10px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>Bienvenido a Certificado Energético</h1>
+                <p>Registro de Certificador Energético</p>
+            </div>
+            <div class="content">
+                <p class="greeting">Hola ${fullName.split(' ')[0]},</p>
+                
+                <p class="body-text">
+                    Has sido registrado como <strong>Certificador Energético</strong> en la plataforma
+                    <strong>Certificado Energético</strong>. A continuación están tus credenciales de acceso para comenzar.
+                </p>
+
+                <div class="credentials-box">
+                    <h3>🔐 Tus Credenciales de Acceso</h3>
+                    <table style="width:100%; border-collapse:collapse;">
+                        <tr>
+                            <td style="padding:8px 0; font-weight:bold; color:#555; font-size:14px; width:80px;">Email:</td>
+                            <td style="padding:8px 0;"><span class="credential-value">${email}</span></td>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px 0; font-weight:bold; color:#555; font-size:14px;">Contraseña:</td>
+                            <td style="padding:8px 0;"><span class="credential-value">${password}</span></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="steps-box">
+                    <h3>📋 Próximos Pasos</h3>
+                    <ol>
+                        <li><strong>Inicia sesión</strong> usando las credenciales de arriba</li>
+                        <li><strong>Completa tu registro</strong> llenando tus detalles de certificador</li>
+                        <li>¡Comienza a recibir trabajos de certificación energética!</li>
+                    </ol>
+                </div>
+
+                <div class="button-container">
+                    <a href="${loginUrl}" class="button">Iniciar Sesión Ahora</a>
+                </div>
+
+                <p class="warning">
+                    Por favor cambia tu contraseña después de tu primer inicio de sesión por seguridad.
+                </p>
+
+                <p class="body-text">
+                    Saludos cordiales,<br>
+                    <strong>El Equipo de Certificado Energético</strong>
+                </p>
+            </div>
+            <div class="footer">
+                <p>&copy; ${new Date().getFullYear()} Certificado Energético. Todos los derechos reservados.</p>
+                <div class="footer-links">
+                    <a href="https://certificadosenergetico.es">Visitar Sitio Web</a>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+    }
+    
     return `
     <!DOCTYPE html>
     <html>
@@ -73,7 +180,6 @@ export const generateCredentialsHtml = (fullName: string, email: string, passwor
                     <ol>
                         <li><strong>Log in</strong> using the credentials above</li>
                         <li><strong>Complete your registration</strong> by filling in your assessor details</li>
-                        <li><strong>Make the registration payment</strong> to activate your account</li>
                         <li>Start receiving BER assessment jobs!</li>
                     </ol>
                 </div>
