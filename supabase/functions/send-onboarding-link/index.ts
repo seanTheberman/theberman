@@ -223,7 +223,7 @@ Deno.serve(async (req: Request) => {
                     <p style="font-size: 16px; color: #333;">Hola <strong>${fullName}</strong>,</p>
                     <p style="font-size: 15px; color: #555; line-height: 1.6;">
                         Tu cuenta como <strong>${roleName}</strong> ha sido creada exitosamente.
-                        Estamos emocionados de tenerte en nuestra red de profesionales de energía.
+                        Estamos encantados de tenerte en nuestra red de profesionales de energía.
                     </p>
 
                     <div style="background-color: #f1f8e9; padding: 22px; border-radius: 8px; border: 1px solid #c5e1a5; margin: 30px 0;">
