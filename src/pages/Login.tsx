@@ -226,7 +226,7 @@ const Login = () => {
                             : 'border-transparent text-gray-400 hover:text-gray-600'
                             }`}
                     >
-                        {isSpanish ? 'Propietario' : 'Homeowner'}
+                        {isSpanish ? 'Zona Cliente' : 'Homeowner'}
                     </button>
                     <button
                         type="button"

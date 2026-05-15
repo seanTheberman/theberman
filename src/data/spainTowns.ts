@@ -72,4 +72,10 @@ export const TOWNS_BY_COUNTY_SPAIN: Record<string, string[]> = {
         'Murcia', 'Cartagena', 'Lorca', 'Molina de Segura', 'Alcantarilla',
         'Cieza', 'Torre-Pacheco', 'San Javier', 'Yecla', 'Jumilla'
     ],
+    'Ceuta': [
+        'Ceuta'
+    ],
+    'Melilla': [
+        'Melilla'
+    ],
 };

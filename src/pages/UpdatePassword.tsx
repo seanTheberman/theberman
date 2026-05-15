@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import { useNavigate, Link } from 'react-router-dom';
 import { Loader2, ArrowLeft, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getTenantFromDomain } from '../lib/tenant';
 
 const updatePasswordSchema = z.object({
     password: z.string().min(6, 'Password must be at least 6 characters'),
@@ -24,6 +25,7 @@ const UpdatePassword = () => {
     const navigate = useNavigate();
     const [redirecting, setRedirecting] = useState(false);
     const [authWait, setAuthWait] = useState(true);
+    const isSpanish = getTenantFromDomain() === 'spain';
 
     // Give Supabase a moment to process the hash if user is not immediately available
     useEffect(() => {
@@ -93,7 +95,7 @@ const UpdatePassword = () => {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
                 <Loader2 className="animate-spin text-[#007F00] mb-4" size={40} />
-                <p className="text-gray-600 font-medium">Verifying your secure link...</p>
+                <p className="text-gray-600 font-medium">{isSpanish ? 'Verificando tu enlace seguro...' : 'Verifying your secure link...'}</p>
             </div>
         );
     }
@@ -115,10 +117,10 @@ const UpdatePassword = () => {
                     <div className="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
                         <X size={32} />
                     </div>
-                    <h2 className="text-2xl font-serif font-bold text-gray-900 mb-2">Invalid Session</h2>
-                    <p className="text-gray-500 mb-8">This link is invalid or has expired. Please use the "Forgot Password" link on the login page or contact support.</p>
+                    <h2 className="text-2xl font-serif font-bold text-gray-900 mb-2">{isSpanish ? 'Sesión no válida' : 'Invalid Session'}</h2>
+                    <p className="text-gray-500 mb-8">{isSpanish ? 'Este enlace no es válido o ha caducado. Por favor, utiliza el enlace "Olvidaste tu contraseña" en la página de inicio de sesión o contacta con soporte.' : 'This link is invalid or has expired. Please use the "Forgot Password" link on the login page or contact support.'}</p>
                     <Link to="/login" className="inline-flex items-center gap-2 text-white bg-[#007F00] px-8 py-3 rounded-xl font-bold hover:bg-green-800 transition-all">
-                        Go to Login
+                        {isSpanish ? 'Ir al inicio de sesión' : 'Go to Login'}
                     </Link>
                 </div>
             </div>
@@ -160,7 +162,7 @@ const UpdatePassword = () => {
             const role = profile?.role;
             const regStatus = profile?.registration_status;
 
-            toast.success('Password updated! Completing your profile next.');
+            toast.success(isSpanish ? '¡Contraseña actualizada! Completando tu perfil a continuación.' : 'Password updated! Completing your profile next.');
 
             // If onboarding not done yet → go to onboarding page (pre-filled)
             if (regStatus === 'pending') {
@@ -202,11 +204,11 @@ const UpdatePassword = () => {
 
                     <div className="mt-20">
                         <h1 className="text-5xl font-serif font-bold text-white leading-tight mb-6">
-                            New Password, <br />
-                            <span className="text-[#9ACD32]">New Start.</span>
+                            {isSpanish ? 'Nueva Contraseña,' : 'New Password,'} <br />
+                            <span className="text-[#9ACD32]">{isSpanish ? 'Nuevo Comienzo.' : 'New Start.'}</span>
                         </h1>
                         <p className="text-green-100 text-lg max-w-md leading-relaxed">
-                            Create a strong password to keep your account secure.
+                            {isSpanish ? 'Crea una contraseña segura para proteger tu cuenta.' : 'Create a strong password to keep your account secure.'}
                         </p>
                     </div>
                 </div>
@@ -221,17 +223,17 @@ const UpdatePassword = () => {
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-12 relative">
                 <div className="max-w-md w-full">
                     <Link to="/" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#007F00] transition-colors mb-8 font-medium">
-                        <ArrowLeft size={16} /> Back to Home
+                        <ArrowLeft size={16} /> {isSpanish ? 'Volver al inicio' : 'Back to Home'}
                     </Link>
 
                     <div className="mb-10">
-                        <h2 className="text-3xl font-serif font-bold text-gray-900 mb-3">Update Password</h2>
-                        <p className="text-gray-500">Please enter your new password.</p>
+                        <h2 className="text-3xl font-serif font-bold text-gray-900 mb-3">{isSpanish ? 'Actualizar Contraseña' : 'Update Password'}</h2>
+                        <p className="text-gray-500">{isSpanish ? 'Por favor, introduce tu nueva contraseña.' : 'Please enter your new password.'}</p>
                     </div>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                         <div className="space-y-1">
-                            <label className="text-sm font-bold text-gray-700">New Password</label>
+                            <label className="text-sm font-bold text-gray-700">{isSpanish ? 'Nueva Contraseña' : 'New Password'}</label>
                             <input
                                 {...register('password')}
                                 type="password"
@@ -242,7 +244,7 @@ const UpdatePassword = () => {
                         </div>
 
                         <div className="space-y-1">
-                            <label className="text-sm font-bold text-gray-700">Confirm Password</label>
+                            <label className="text-sm font-bold text-gray-700">{isSpanish ? 'Confirmar Contraseña' : 'Confirm Password'}</label>
                             <input
                                 {...register('confirmPassword')}
                                 type="password"
@@ -260,10 +262,10 @@ const UpdatePassword = () => {
                             {isSubmitting ? (
                                 <>
                                     <Loader2 className="animate-spin" size={20} />
-                                    Updating...
+                                    {isSpanish ? 'Actualizando...' : 'Updating...'}
                                 </>
                             ) : (
-                                'Update Password'
+                                isSpanish ? 'Actualizar Contraseña' : 'Update Password'
                             )}
                         </button>
                     </form>

@@ -1308,7 +1308,7 @@ const Admin = () => {
         if (!selectedAssessment || !messageContent.trim()) return;
         setIsUpdating(true);
         try {
-            const clientEmail = selectedAssessment.user?.email;
+            const clientEmail = selectedAssessment.user?.email || selectedAssessment.contact_email;
             if (!clientEmail) { toast.error('Client email not found'); return; }
             const subject = encodeURIComponent(`Update regarding your BER Assessment - ${selectedAssessment.property_address} `);
             const body = encodeURIComponent(messageContent);

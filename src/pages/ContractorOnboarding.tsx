@@ -5,10 +5,12 @@ import { Check, Plus, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
+import { TOWNS_BY_COUNTY_SPAIN } from '../data/spainTowns';
 import { geocodeAddress } from '../lib/geocoding';
 import { getTenantFromDomain } from '../lib/tenant';
 
-const COUNTIES = Object.keys(TOWNS_BY_COUNTY).sort();
+const IRISH_COUNTIES = Object.keys(TOWNS_BY_COUNTY).sort();
+const SPANISH_REGIONS = Object.keys(TOWNS_BY_COUNTY_SPAIN).sort();
 
 // Tenant-specific registration number labels
 const REGISTRATION_NUMBER_LABELS: Record<string, { label: string; placeholder: string; sinceLabel: string }> = {
@@ -56,8 +58,12 @@ const ContractorOnboarding = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const tenant = getTenantFromDomain();
+    const isSpanish = tenant === 'spain';
     const regLabels = REGISTRATION_NUMBER_LABELS[tenant] || REGISTRATION_NUMBER_LABELS.ireland;
     const tenantLabels = TENANT_LABELS[tenant] || TENANT_LABELS.ireland;
+    const COUNTIES = isSpanish ? SPANISH_REGIONS : IRISH_COUNTIES;
+    const TOWNS_DATA = isSpanish ? TOWNS_BY_COUNTY_SPAIN : TOWNS_BY_COUNTY;
+    const areaPrefix = isSpanish ? '' : 'Co. ';
 
     // Form State
     const [formData, setFormData] = useState({
@@ -280,7 +286,7 @@ const ContractorOnboarding = () => {
                             </div>
 
                             <div>
-                                <label htmlFor="homeCounty" className="block text-sm font-bold text-gray-700 mb-1">Home County</label>
+                                <label htmlFor="homeCounty" className="block text-sm font-bold text-gray-700 mb-1">{isSpanish ? 'Comunidad Autónoma' : 'Home County'}</label>
                                 <select
                                     id="homeCounty"
                                     name="homeCounty"
@@ -289,13 +295,13 @@ const ContractorOnboarding = () => {
                                     value={formData.homeCounty}
                                     onChange={(e) => setFormData({ ...formData, homeCounty: e.target.value, homeTown: '' })}
                                 >
-                                    <option value="">Select County</option>
+                                    <option value="">{isSpanish ? 'Seleccionar Comunidad' : 'Select County'}</option>
                                     {COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                             </div>
 
                             <div>
-                                <label htmlFor="homeTown" className="block text-sm font-bold text-gray-700 mb-1">Home Town</label>
+                                <label htmlFor="homeTown" className="block text-sm font-bold text-gray-700 mb-1">{isSpanish ? 'Ciudad' : 'Home Town'}</label>
                                 <select
                                     id="homeTown"
                                     name="homeTown"
@@ -305,8 +311,8 @@ const ContractorOnboarding = () => {
                                     value={formData.homeTown}
                                     onChange={(e) => setFormData({ ...formData, homeTown: e.target.value })}
                                 >
-                                    <option value="">{formData.homeCounty ? 'Select Town' : 'Select County First'}</option>
-                                    {formData.homeCounty && TOWNS_BY_COUNTY[formData.homeCounty]?.map(town => (
+                                    <option value="">{formData.homeCounty ? (isSpanish ? 'Seleccionar Ciudad' : 'Select Town') : (isSpanish ? 'Seleccionar Comunidad Primero' : 'Select County First')}</option>
+                                    {formData.homeCounty && TOWNS_DATA[formData.homeCounty]?.map(town => (
                                         <option key={town} value={town}>{town}</option>
                                     ))}
                                 </select>
@@ -546,9 +552,9 @@ const ContractorOnboarding = () => {
                         {/* Service Areas */}
                         <div className="pt-8">
                             <label className="block text-lg font-bold text-gray-900 mb-4">
-                                Service Areas / Counties <span className="text-red-500">*</span>
+                                {isSpanish ? 'Zonas de Servicio / Comunidades' : 'Service Areas / Counties'} <span className="text-red-500">*</span>
                             </label>
-                            <p className="text-sm text-gray-500 mb-4">Select your Preference location to receive jobs in. You must select at least one.</p>
+                            <p className="text-sm text-gray-500 mb-4">{isSpanish ? 'Selecciona tu ubicación preferida para recibir trabajos. Debes seleccionar al menos una.' : 'Select your Preference location to receive jobs in. You must select at least one.'}</p>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                                 {COUNTIES.map(county => (
                                     <div
@@ -561,12 +567,12 @@ const ContractorOnboarding = () => {
                                                 : 'bg-white border-gray-200 hover:border-green-300 text-gray-600'}
                                             `}
                                     >
-                                        <span className="font-medium text-sm">Co. {county}</span>
+                                        <span className="font-medium text-sm">{areaPrefix}{county}</span>
                                         {formData.serviceAreas.includes(county) && <Check size={16} className="text-[#007F00]" />}
                                     </div>
                                 ))}
                             </div>
-                            <p className="text-xs text-gray-500 mt-2 text-right">{formData.serviceAreas.length} counties selected</p>
+                            <p className="text-xs text-gray-500 mt-2 text-right">{formData.serviceAreas.length} {isSpanish ? 'comunidades seleccionadas' : 'counties selected'}</p>
                         </div>
 
                         <div className="pt-8">
