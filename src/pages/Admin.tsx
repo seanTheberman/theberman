@@ -1310,19 +1310,32 @@ const Admin = () => {
         try {
             const clientEmail = selectedAssessment.user?.email || selectedAssessment.contact_email;
             if (!clientEmail) { toast.error('Client email not found'); return; }
-            const subject = encodeURIComponent(`Update regarding your BER Assessment - ${selectedAssessment.property_address} `);
-            const body = encodeURIComponent(messageContent);
-            window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${clientEmail}&su=${subject}&body=${body}`, '_blank');
-            toast.success('Opening Gmail...');
+            const subject = `Update regarding your ${selectedTenant === 'spain' ? 'Certificado Energético' : (selectedTenant === 'england' ? 'EPC' : 'BER')} Assessment - ${selectedAssessment.property_address}`;
+
+            const { data, error } = await supabase.functions.invoke('send-admin-message', {
+                body: {
+                    to: clientEmail,
+                    subject,
+                    body: messageContent,
+                    tenant: selectedTenant,
+                    assessmentId: selectedAssessment.id,
+                }
+            });
+
+            if (error || !data?.success) {
+                throw new Error(data?.error || error?.message || 'Failed to send message');
+            }
+
+            toast.success('Message sent successfully!');
             setShowMessageModal(false);
             setMessageContent('');
-            await logAudit('open_gmail_compose', 'assessment', selectedAssessment.id, { recipient: clientEmail });
+            await logAudit('send_client_message', 'assessment', selectedAssessment.id, { recipient: clientEmail, tenant: selectedTenant });
         } catch (error: any) {
-            toast.error('Failed to open Gmail');
+            toast.error(error.message || 'Failed to send message');
         } finally {
             setIsUpdating(false);
         }
-    }, [selectedAssessment, messageContent, logAudit]);
+    }, [selectedAssessment, messageContent, logAudit, selectedTenant]);
 
     const handleSaveSponsor = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
