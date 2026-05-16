@@ -164,8 +164,9 @@ const Layout = () => {
                     <Link to="/" onClick={closeMenu}>
                         {isSpanish ? (
                             <div className="flex flex-col">
-                                <span style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '1.75rem', color: 'white', letterSpacing: '0.5px', lineHeight: 1.2, fontWeight: 700, fontStyle: 'italic' }}>
-                                    🇪🇸 Certificado Energético<span style={{ fontSize: '0.7em', fontStyle: 'normal', opacity: 0.8 }}>.EU</span>
+                                <span className="flex items-center gap-2" style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '1.75rem', color: 'white', letterSpacing: '0.5px', lineHeight: 1.2, fontWeight: 700, fontStyle: 'italic' }}>
+                                    <img src="/es-flag.svg" alt="ES" className="inline-block rounded-sm shadow-sm" style={{ width: '28px', height: '18px', verticalAlign: 'middle' }} />
+                                    Certificado Energético<span style={{ fontSize: '0.7em', fontStyle: 'normal', opacity: 0.8 }}>.EU</span>
                                 </span>
                                 <span className="text-[10px] text-white/50 tracking-wider mt-0.5">Powered by The Berman</span>
                             </div>
@@ -404,7 +405,8 @@ const Layout = () => {
                         <div className="col-span-1">
                             <div className="flex items-center gap-2 mb-6">
                                 {isSpanish ? (
-                                    <span style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '1.6rem', color: 'white', letterSpacing: '0.5px', lineHeight: 1.2, fontWeight: 700, fontStyle: 'italic' }}>
+                                    <span className="flex items-center gap-2" style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontSize: '1.6rem', color: 'white', letterSpacing: '0.5px', lineHeight: 1.2, fontWeight: 700, fontStyle: 'italic' }}>
+                                        <img src="/es-flag.svg" alt="ES" className="inline-block rounded-sm shadow-sm" style={{ width: '24px', height: '16px', verticalAlign: 'middle' }} />
                                         Certificado Energético<span style={{ fontSize: '0.7em', fontStyle: 'normal', opacity: 0.8 }}>.EU</span>
                                     </span>
                                 ) : tenant === 'england' ? (
@@ -518,7 +520,7 @@ const Layout = () => {
                                 {isSpanish && (
                                     <li className="flex items-start gap-3 text-gray-400 text-sm">
                                         <Mail className="text-[#9ACD32] mt-0.5" size={16} />
-                                        <a href="mailto:info@certificadosenergetico.es" className="hover:text-white transition">info@certificadosenergetico.es</a>
+                                        <a href="mailto:hello@certificadosenergetico.es" className="hover:text-white transition">hello@certificadosenergetico.es</a>
                                     </li>
                                 )}
                                 <li className="flex items-start gap-3 text-gray-400 text-sm">
