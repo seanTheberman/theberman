@@ -97,12 +97,29 @@ const About = () => {
         cta: 'Get My Quote',
     };
 
+    const baseUrl = tenant === 'england' ? 'https://epccert.com' : (isSpanish ? 'https://certificadoenerg\u00e9tico.eu' : 'https://theberman.eu');
+
+    const orgSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: brand,
+        url: baseUrl,
+        logo: `${baseUrl}/logo.png`,
+        description: tr.seoDesc,
+        sameAs: tenant === 'england'
+            ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
+            : (isSpanish
+                ? ['https://www.facebook.com/certificadoenergetico', 'https://www.instagram.com/certificadoenergetico']
+                : ['https://www.facebook.com/theberman', 'https://www.instagram.com/theberman']),
+    };
+
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen">
             <SEOHead
                 title={tr.seoTitle}
                 description={tr.seoDesc}
                 canonical="/about"
+                jsonLd={orgSchema}
             />
 
             {/* 1. SIMPLE CENTERED HERO */}

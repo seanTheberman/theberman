@@ -1,6 +1,12 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { TOWNS_BY_COUNTY } from '../src/data/irishTowns';
 import { TOWNS_BY_COUNTY_SPAIN } from '../src/data/spainTowns';
 import { TOWNS_BY_COUNTY_ENGLAND } from '../src/data/englandTowns';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 interface SitemapUrl {
     loc: string;
@@ -75,7 +81,7 @@ ${urls.map(url => `  <url>
     return xml;
 };
 
-// Generate sitemaps for all domains
+// Generate sitemaps for all domains and write to public/
 const domains = [
     { domain: 'theberman.eu', tenant: 'ireland' },
     { domain: 'certificadoenergético.eu', tenant: 'spain' },
@@ -85,20 +91,18 @@ const domains = [
 domains.forEach(({ domain, tenant }) => {
     const sitemap = generateSitemap(domain, tenant);
     console.log(`\n=== Sitemap for ${domain} (${tenant}) ===`);
-    console.log(sitemap);
-    console.log(`\nTotal URLs: ${sitemap.match(/<url>/g)?.length || 0}`);
-    
-    // Write to file (if running in Node.js environment)
-    if (typeof require !== 'undefined') {
-        const fs = require('fs');
-        const path = require('path');
-        const filename = domain.replace(/[^a-z0-9]/gi, '-');
-        fs.writeFileSync(
-            path.join(__dirname, `public/sitemap-${filename}.xml`),
-            sitemap
-        );
-        console.log(`Saved to: public/sitemap-${filename}.xml`);
-    }
+    console.log(`Total URLs: ${(sitemap.match(/<url>/g) || []).length}`);
+
+    const publicDir = path.join(__dirname, '..', 'public');
+    const filename = domain.replace(/[^a-z0-9]/gi, '-');
+    const outPath = path.join(publicDir, `sitemap-${filename}.xml`);
+    fs.writeFileSync(outPath, sitemap);
+    console.log(`Saved to: ${outPath}`);
 });
+
+// Also update the main sitemap.xml for the default (Irish) domain
+const irishSitemap = generateSitemap('theberman.eu', 'ireland');
+fs.writeFileSync(path.join(__dirname, '..', 'public', 'sitemap.xml'), irishSitemap);
+console.log('\nUpdated public/sitemap.xml (Ireland default)');
 
 export { generateSitemap };

@@ -53,6 +53,17 @@ const HomePage = () => {
                 jsonLd={[
                     {
                         '@context': 'https://schema.org',
+                        '@type': 'WebSite',
+                        name: brandName,
+                        url: tenant === 'england' ? 'https://epccert.com' : (isSpanish ? 'https://certificadoenergético.eu' : 'https://theberman.eu'),
+                        potentialAction: {
+                            '@type': 'SearchAction',
+                            target: tenant === 'england' ? 'https://epccert.com/catalogue?q={search_term_string}' : (isSpanish ? 'https://certificadoenergético.eu/catalogue?q={search_term_string}' : 'https://theberman.eu/catalogue?q={search_term_string}'),
+                            'query-input': 'required name=search_term_string',
+                        },
+                    },
+                    {
+                        '@context': 'https://schema.org',
                         '@type': 'Organization',
                         name: brandName,
                         url: tenant === 'england' ? 'https://epccert.com' : (isSpanish ? 'https://certificadoenergético.eu' : 'https://theberman.eu'),

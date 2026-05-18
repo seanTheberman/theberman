@@ -2,14 +2,48 @@
 import { Truck, BarChart3, Cpu, Globe2, AlertTriangle, ArrowRight, Zap, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEOHead from '../components/SEOHead';
+import { getTenantFromDomain } from '../lib/tenant';
 
 const Services = () => {
+    const tenant = getTenantFromDomain();
+    const isSpanish = tenant === 'spain';
+    const isEngland = tenant === 'england';
+    const brand = isSpanish ? 'Certificado Energ\u00e9tico' : (isEngland ? 'EPC Cert' : 'The Berman');
+    const serviceName = isSpanish ? 'Certificado Energ\u00e9tico' : (isEngland ? 'EPC Certificate' : 'BER Certificate');
+    const baseUrl = isEngland ? 'https://epccert.com' : (isSpanish ? 'https://certificadoenerg\u00e9tico.eu' : 'https://theberman.eu');
+    const locale = isEngland ? 'London' : (isSpanish ? 'Madrid' : 'Dublin');
+    const country = isEngland ? 'GB' : (isSpanish ? 'ES' : 'IE');
+
+    const title = isSpanish ? 'Nuestros Servicios - Certificados Energ\u00e9ticos Expertos' : (isEngland ? 'Our Services - Expert EPC Certificates' : 'Our Services - Expert BER Assessments');
+    const description = isSpanish
+        ? 'Servicios integrales de certificaci\u00f3n energ\u00e9tica incluyendo certificados CEE, calificaciones provisionales y auditor\u00edas energ\u00e9ticas.'
+        : (isEngland
+            ? 'Comprehensive EPC services including energy performance certificates, SAP assessments, and energy audits for residential and commercial properties.'
+            : 'Comprehensive energy rating services including BER certificates, provisional ratings, and energy audits.');
+
+    const serviceSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'Service',
+        name: `${brand} - ${serviceName} Services`,
+        description,
+        provider: {
+            '@type': 'LocalBusiness',
+            name: brand,
+            url: baseUrl,
+            address: { '@type': 'PostalAddress', addressCountry: country, addressLocality: locale },
+        },
+        areaServed: { '@type': 'Country', name: isEngland ? 'United Kingdom' : (isSpanish ? 'Spain' : 'Ireland') },
+        serviceType: serviceName,
+        url: `${baseUrl}/services`,
+    };
+
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen">
             <SEOHead
-                title="Our Services - Expert BER Assessments"
-                description="Comprehensive energy rating services including BER certificates, provisional ratings, and energy audits."
+                title={title}
+                description={description}
                 canonical="/services"
+                jsonLd={serviceSchema}
             />
 
             {/* 1. COMPACT HERO SECTION */}

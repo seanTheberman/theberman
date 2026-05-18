@@ -1,0 +1,71 @@
+# The Berman Group — Energy Rating Platform
+
+> The Berman Group operates three multi-tenant energy certification platforms across Europe: The Berman (Ireland), EPC Cert (England), and Certificado Energético (Spain). Each platform connects homeowners and businesses with registered energy assessors for fast, reliable energy rating certificates.
+
+## Overview
+
+- **Ireland**: The Berman — Building Energy Rating (BER) certificates and SEAI-registered assessors.
+- **England**: EPC Cert — Energy Performance Certificates (EPC) and accredited assessors nationwide.
+- **Spain**: Certificado Energético — Certificados de Eficiencia Energética (CEE) and certificadores acreditados.
+
+## Platform Structure
+
+### Public Pages
+- `/` — Homepage with hero, search, and assessor directory
+- `/about` — Company story, mission, and team
+- `/services` — Energy rating services offered
+- `/pricing` — Transparent pricing information
+- `/contact-us` — Contact form and support
+- `/catalogue` — Business and assessor directory
+- `/locations` — County and town landing pages
+- `/faq` — Frequently asked questions
+- `/news` — Industry news and updates
+- `/blog` — Educational articles on energy efficiency
+- `/hire-agent` — Book an assessor directly
+- `/get-quote` — Request a quote for assessment
+
+### User Pages
+- `/login` — Account login
+- `/signup` — User registration
+- `/dashboard/user` — Homeowner dashboard
+- `/dashboard/ber-assessor` — Assessor dashboard
+- `/dashboard/business` — Business partner dashboard
+- `/forgot-password` — Password recovery
+- `/update-password` — Password reset
+
+### Admin Pages
+- `/login/admin` — Admin login
+- `/admin` — Admin dashboard (users, leads, assessments, payments)
+- `/admin/news/new` — Create news article
+- `/admin/news/edit/:id` — Edit news article
+- `/admin/blog/new` — Create blog post
+- `/admin/blog/edit/:id` — Edit blog post
+
+## Technical Stack
+
+- **Frontend**: React 19, Vite, Tailwind CSS, TypeScript
+- **Backend**: Supabase (Postgres, Auth, Edge Functions)
+- **Payments**: Stripe
+- **Maps**: Leaflet with OpenStreetMap
+- **SEO**: react-helmet-async, prerendered static HTML, JSON-LD schema
+- **Hosting**: Vercel with SPA routing and static file serving
+- **Domains**:
+  - `theberman.eu` (Ireland)
+  - `epccert.com` (England)
+  - `certificadoenergético.eu` (Spain)
+
+## Key Features
+
+- Multi-tenant architecture with domain-based tenant detection
+- Automated quote matching between homeowners and assessors
+- Subscription-based assessor and business memberships
+- Job board with SMS and email notifications
+- Payment processing via Stripe
+- Contact form with SMTP email delivery per tenant
+- Google Analytics and Tag Manager integration
+
+## Contact
+
+- **Ireland**: hello@theberman.eu
+- **England**: hello@epccert.com
+- **Spain**: hello@certificadosenergetico.es

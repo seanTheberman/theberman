@@ -1,8 +1,10 @@
 User-agent: *
 Allow: /
 
-# Sitemap
+# Sitemaps — one per tenant domain
 Sitemap: https://www.theberman.eu/sitemap.xml
+Sitemap: https://epccert.com/sitemap.xml
+Sitemap: https://certificadoenergético.eu/sitemap.xml
 
 # Block common non-content paths
 Disallow: /dashboard/
