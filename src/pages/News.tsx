@@ -35,6 +35,10 @@ const NewsPage = () => {
         heading: 'Noticias y Actualizaciones',
         subheading: 'Lo último de Certificado Energético sobre energía, subvenciones y comunidad',
         noArticles: 'No hay artículos en esta categoría.',
+        viewAllNews: 'Ver Todas las Noticias',
+        activeOffersH: 'Ofertas de Rehabilitación Activas',
+        activeOffersP: 'Andalucía, Cataluña, Madrid - Consulta las últimas subvenciones y ofertas flash.',
+        viewOffers: 'Ver Ofertas',
         newsletterH: 'Mantente Informado',
         newsletterP: 'Suscríbete para recibir todas las novedades, subvenciones energéticas, ofertas flash y guías técnicas.',
         emailPlaceholder: 'CORREO ELECTRÓNICO',
@@ -53,6 +57,10 @@ const NewsPage = () => {
         heading: 'News & Updates',
         subheading: 'Latest from The Berman on Energy, Grants and community',
         noArticles: 'No articles found in this category.',
+        viewAllNews: 'View All News',
+        activeOffersH: 'Active Retrofit Offers',
+        activeOffersP: 'Munster, Leinster, Connacht - View latest grant updates and flash sales.',
+        viewOffers: 'View Offers',
         newsletterH: 'Stay Informed',
         newsletterP: 'Subscribe to all the new updates including energy grants, flash sales, and technical guides.',
         emailPlaceholder: 'EMAIL ADDRESS',
@@ -218,7 +226,7 @@ const NewsPage = () => {
                             onClick={() => setSelectedCategory('All')}
                             className="mt-4 text-[#007F00] font-bold text-xs uppercase tracking-widest hover:underline cursor-pointer"
                         >
-                            View All News
+                            {tr.viewAllNews}
                         </button>
                     </div>
                 </section>
@@ -256,11 +264,11 @@ const NewsPage = () => {
                 <div className="container mx-auto px-6">
                     <div className="bg-[#f9f9f9] border-l-4 border-[#007F00] p-8 flex flex-col md:flex-row items-center justify-between gap-8">
                         <div>
-                            <h4 className="text-gray-900 text-xl font-bold mb-2">Active Retrofit Offers</h4>
-                            <p className="text-gray-600 text-sm">Munster, Leinster, Connacht - View latest grant updates and flash sales.</p>
+                            <h4 className="text-gray-900 text-xl font-bold mb-2">{tr.activeOffersH}</h4>
+                            <p className="text-gray-600 text-sm">{tr.activeOffersP}</p>
                         </div>
                         <Link to="/catalogue" className="bg-white border border-gray-200 text-gray-900 px-8 py-3 font-bold text-xs uppercase tracking-widest hover:bg-gray-50 transition-all shadow-sm">
-                            View Offers
+                            {tr.viewOffers}
                         </Link>
                     </div>
                 </div>
