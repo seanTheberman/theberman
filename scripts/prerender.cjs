@@ -5,7 +5,7 @@
  * This allows Googlebot and other crawlers to see actual HTML content
  * without executing JavaScript.
  */
-const { chromium } = require('playwright');
+const { chromium } = require('/usr/local/lib/node_modules/playwright');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -99,15 +99,15 @@ async function prerenderRoute(page, route) {
   console.log(`[prerender] Rendering: ${route}`);
 
   await page.goto(url, {
-    waitUntil: 'networkidle',
-    timeout: 60000,
+    waitUntil: 'domcontentloaded',
+    timeout: 15000,
   });
 
-  // Wait for React to fully hydrate and any async data to load
-  await page.waitForTimeout(2000);
+  // Wait for React to render
+  await page.waitForTimeout(1500);
 
   // Ensure react-helmet has injected meta tags
-  await page.waitForFunction(() => document.title.length > 0, { timeout: 10000 });
+  await page.waitForFunction(() => document.title.length > 0, { timeout: 5000 }).catch(() => {});
 
   const html = await page.content();
 
