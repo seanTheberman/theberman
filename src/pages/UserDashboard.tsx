@@ -48,6 +48,7 @@ interface Assessment {
     property_size?: string;
     bedrooms?: number;
     heat_pump?: string;
+    isExpired?: boolean;
     ber_purpose?: string;
     additional_features?: string[];
     job_type?: string;
@@ -62,11 +63,12 @@ interface Assessment {
 
 const UserDashboard = () => {
     const { t, isSpanish } = useTranslation();
-    const { user, signOut } = useAuth();
+    const { user, signOut, profile } = useAuth();
     const navigate = useNavigate();
     const [assessments, setAssessments] = useState<Assessment[]>([]);
 
-    const getStatusLabel = (status: string) => {
+    const getStatusLabel = (status: string, isExpired?: boolean) => {
+        if (isExpired) return isSpanish ? 'Caducado' : 'Expired';
         if (!isSpanish) return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         const map: Record<string, string> = {
             draft: 'Borrador',
@@ -177,18 +179,17 @@ const UserDashboard = () => {
 
             if (error) throw error;
 
-            // Filter out jobs older than 5 days that haven't had a quote accepted
-            const filteredData = (data || []).filter(assessment => {
-                const createdAt = new Date(assessment.created_at);
-                const now = new Date();
-                const diffInDays = (now.getTime() - createdAt.getTime()) / (1000 * 3600 * 24);
+            // Smart expiration: jobs expire only if homeowner hasn't been active in 5+ days
+            const lastLogin = profile?.last_login ? new Date(profile.last_login as string).getTime() : 0;
+            const isUserRecentlyActive = (Date.now() - lastLogin) / (1000 * 3600 * 24) <= 5;
 
-                // Keep if new (< 5 days) OR if it's already progressed beyond pending quotes
-                const isExpired = diffInDays > 5 && !['quote_accepted', 'scheduled', 'completed'].includes(assessment.status);
-                return !isExpired;
+            const jobsWithExpired = (data || []).map((assessment: Assessment) => {
+                const jobAgeDays = (Date.now() - new Date(assessment.created_at).getTime()) / (1000 * 3600 * 24);
+                const isExpired = !isUserRecentlyActive && jobAgeDays > 5;
+                return { ...assessment, isExpired };
             });
 
-            setAssessments(filteredData);
+            setAssessments(jobsWithExpired);
         } catch (error: any) {
             console.error('Error fetching assessments:', error);
             toast.error(isSpanish ? 'Error al cargar certificaciones' : 'Failed to load assessments');
@@ -378,7 +379,8 @@ const UserDashboard = () => {
         navigate('/login');
     };
 
-    const getStatusStyles = (status: string) => {
+    const getStatusStyles = (status: string, isExpired?: boolean) => {
+        if (isExpired) return 'bg-red-50 text-red-700 border-red-100';
         switch (status) {
             case 'completed': return 'bg-green-50 text-green-700 border-green-100';
             case 'scheduled': return 'bg-purple-50 text-purple-700 border-purple-100';
@@ -721,8 +723,8 @@ const UserDashboard = () => {
                                                                     <h4 className="font-bold text-gray-900">{assessment.property_address}</h4>
                                                                     <p className="text-xs text-gray-500">{assessment.town}, {assessment.county}</p>
                                                                 </div>
-                                                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusStyles(assessment.status)}`}>
-                                                                    {getStatusLabel(assessment.status)}
+                                                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusStyles(assessment.status, assessment.isExpired)}`}>
+                                                                    {getStatusLabel(assessment.status, assessment.isExpired)}
                                                                 </span>
                                                             </div>
 
