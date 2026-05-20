@@ -5,7 +5,7 @@
  * This allows Googlebot and other crawlers to see actual HTML content
  * without executing JavaScript.
  */
-const { chromium } = require('/usr/local/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
