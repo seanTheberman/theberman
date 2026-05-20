@@ -73,8 +73,8 @@ const DashboardLayout = ({
                 <div className="h-14 flex items-center justify-between px-4 border-b border-white/10 flex-shrink-0">
                     <Link to="/" className={`block ${desktopExpanded ? 'md:block' : 'md:hidden'} lg:block`}>
                         {isSpanish ? (
-                            <span style={{ fontFamily: "'Brush Script MT', 'Lucida Calligraphy', 'Snell Roundhand', cursive", fontSize: '1.2rem', color: 'white', letterSpacing: '0.5px', lineHeight: 1.2 }}>
-                                Certificado Energético
+                            <span className="text-sm md:text-[1.2rem] italic font-bold text-white" style={{ fontFamily: "'Georgia', 'Times New Roman', serif", letterSpacing: '0.5px', lineHeight: 1.2 }}>
+                                Certificado Energético.EU
                             </span>
                         ) : (
                             <img src="/logo.svg" alt="The Berman" className="h-7 w-auto" />
@@ -82,8 +82,8 @@ const DashboardLayout = ({
                     </Link>
                     <div className={`flex items-center justify-center ${desktopExpanded ? 'md:hidden' : 'md:flex'} lg:hidden`}>
                         {isSpanish ? (
-                            <span style={{ fontFamily: "'Brush Script MT', 'Lucida Calligraphy', 'Snell Roundhand', cursive", fontSize: '1rem', color: 'white', letterSpacing: '0.5px', lineHeight: 1.2 }}>
-                                Certificado Energético
+                            <span className="text-xs md:text-[1rem] italic font-bold text-white" style={{ fontFamily: "'Georgia', 'Times New Roman', serif", letterSpacing: '0.5px', lineHeight: 1.2 }}>
+                                Certificado Energético.EU
                             </span>
                         ) : (
                             <img src="/logo.svg" alt="The Berman" className="h-7 w-auto" />
