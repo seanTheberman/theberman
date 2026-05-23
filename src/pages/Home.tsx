@@ -69,7 +69,7 @@ const HomePage = () => {
                         url: tenant === 'england' ? 'https://epccert.com' : (isSpanish ? 'https://certificadoenergético.eu' : 'https://theberman.eu'),
                         logo: tenant === 'england' ? 'https://epccert.com/logo.png' : (isSpanish ? 'https://certificadoenergético.eu/logo.png' : 'https://theberman.eu/logo.png'),
                         sameAs: tenant === 'england' ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert'] : (isSpanish ? ['https://www.facebook.com/certificadoenergetico', 'https://www.instagram.com/certificadoenergetico'] : ['https://www.facebook.com/theberman', 'https://www.instagram.com/theberman']),
-                        contactPoint: { '@type': 'ContactPoint', email: tenant === 'england' ? 'hello@epccert.com' : (isSpanish ? 'hello@certificadosenergetico.es' : 'hello@theberman.eu'), contactType: 'customer service', areaServed: tenant === 'england' ? 'GB' : (isSpanish ? 'ES' : 'IE') }
+                        contactPoint: { '@type': 'ContactPoint', email: tenant === 'england' ? 'hello@epccert.com' : (isSpanish ? 'info@certificadosenergeticos.eu' : 'hello@theberman.eu'), contactType: 'customer service', areaServed: tenant === 'england' ? 'GB' : (isSpanish ? 'ES' : 'IE') }
                     },
                     {
                         '@context': 'https://schema.org',
