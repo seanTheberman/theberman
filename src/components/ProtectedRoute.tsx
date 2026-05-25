@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabase';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -11,6 +12,14 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     const { user, role, profile, loading } = useAuth();
     const location = useLocation();
+
+    // If user has an active session but requires_password_change is stuck,
+    // clear it automatically. They proved identity by having a valid session.
+    useEffect(() => {
+        if (user?.user_metadata?.requires_password_change) {
+            supabase.auth.updateUser({ data: { requires_password_change: false } });
+        }
+    }, [user]);
 
     if (loading) {
         return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -28,10 +37,6 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         if (role === 'contractor') return <Navigate to="/dashboard/ber-assessor" replace />;
         if (role === 'business') return <Navigate to="/dashboard/business" replace />;
         return <Navigate to="/dashboard/user" replace />;
-    }
-
-    if (user?.user_metadata?.requires_password_change && location.pathname !== '/update-password') {
-        return <Navigate to="/update-password" replace />;
     }
 
     // Stage 1 Gating: Redirect pending businesses to membership payment if they haven't paid

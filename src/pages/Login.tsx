@@ -40,13 +40,11 @@ const Login = () => {
         if (signingIn.current) return;
 
         if (!loading && user && role && profile) {
-            // If user needs to change their password, go directly to update-password.
-            // This prevents the race condition where useEffect navigates to a
-            // dashboard route, ProtectedRoute catches requires_password_change and
-            // redirects to /update-password — all BEFORE onSubmit's role-check runs.
+            // If the flag is still set but user has an active session (they already
+            // proved their identity), clear it silently. This prevents infinite redirect loops
+            // when the original invite link expired and user reset via Forgot Password.
             if (user.user_metadata?.requires_password_change) {
-                navigate('/update-password', { replace: true });
-                return;
+                supabase.auth.updateUser({ data: { requires_password_change: false } });
             }
 
             // Handle Blocked / Expired users (Exclude admins)
@@ -164,10 +162,12 @@ const Login = () => {
                     }
                 }
 
-                // First-time password change — only redirect AFTER role is confirmed correct
+                // If requires_password_change is still set but the user just logged in
+                // successfully (proving they know their password), clear the flag.
+                // This handles the case where the original invite link expired and
+                // the user reset their password via Forgot Password instead.
                 if (authData.user.user_metadata?.requires_password_change) {
-                    navigate('/update-password', { replace: true });
-                    return;
+                    await supabase.auth.updateUser({ data: { requires_password_change: false } });
                 }
 
                 // Handle Blocked / Expired users (Redirect them to payment/pricing)
