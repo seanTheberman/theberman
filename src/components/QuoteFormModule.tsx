@@ -34,14 +34,8 @@ const COUNTIES_SPAIN = [
     'Extremadura', 'Galicia', 'La Rioja', 'País Vasco', 'Región de Murcia'
 ];
 
-// England Cities/Regions
-const COUNTIES_ENGLAND = [
-    'London', 'Manchester', 'Birmingham', 'Leeds', 'Liverpool', 'Bristol',
-    'Sheffield', 'Newcastle', 'Nottingham', 'Leicester', 'Brighton', 'Southampton',
-    'Oxford', 'Cambridge', 'York', 'Bath', 'Plymouth', 'Norwich',
-    'Coventry', 'Derby', 'Reading', 'Milton Keynes', 'Exeter', 'Canterbury',
-    'Chester', 'Winchester'
-];
+// England Ceremonial Counties
+const COUNTIES_ENGLAND = Object.keys(TOWNS_BY_COUNTY_ENGLAND).sort();
 
 const getCountiesForTenant = (tenant: string) => {
     if (tenant === 'england') return COUNTIES_ENGLAND;

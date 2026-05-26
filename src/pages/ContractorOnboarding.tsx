@@ -6,11 +6,13 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
 import { TOWNS_BY_COUNTY_SPAIN } from '../data/spainTowns';
+import { TOWNS_BY_COUNTY_ENGLAND } from '../data/englandTowns';
 import { geocodeAddress } from '../lib/geocoding';
 import { getTenantFromDomain } from '../lib/tenant';
 
 const IRISH_COUNTIES = Object.keys(TOWNS_BY_COUNTY).sort();
 const SPANISH_REGIONS = Object.keys(TOWNS_BY_COUNTY_SPAIN).sort();
+const ENGLISH_COUNTIES = Object.keys(TOWNS_BY_COUNTY_ENGLAND).sort();
 
 // Tenant-specific registration number labels
 const REGISTRATION_NUMBER_LABELS: Record<string, { label: string; placeholder: string; sinceLabel: string }> = {
@@ -61,8 +63,9 @@ const ContractorOnboarding = () => {
     const isSpanish = tenant === 'spain';
     const regLabels = REGISTRATION_NUMBER_LABELS[tenant] || REGISTRATION_NUMBER_LABELS.ireland;
     const tenantLabels = TENANT_LABELS[tenant] || TENANT_LABELS.ireland;
-    const COUNTIES = isSpanish ? SPANISH_REGIONS : IRISH_COUNTIES;
-    const TOWNS_DATA = isSpanish ? TOWNS_BY_COUNTY_SPAIN : TOWNS_BY_COUNTY;
+    const isEngland = tenant === 'england';
+    const COUNTIES = isSpanish ? SPANISH_REGIONS : isEngland ? ENGLISH_COUNTIES : IRISH_COUNTIES;
+    const TOWNS_DATA = isSpanish ? TOWNS_BY_COUNTY_SPAIN : isEngland ? TOWNS_BY_COUNTY_ENGLAND : TOWNS_BY_COUNTY;
     const areaPrefix = isSpanish ? '' : 'Co. ';
 
     // Form State

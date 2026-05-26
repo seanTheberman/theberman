@@ -1,106 +1,195 @@
 export const TOWNS_BY_COUNTY_ENGLAND: Record<string, string[]> = {
-    'London': [
-        'Central London', 'North London', 'South London', 'East London', 'West London',
-        'Croydon', 'Bromley', 'Barnet', 'Enfield', 'Hounslow', 'Richmond', 'Kingston'
+    'Bedfordshire': [
+        'Bedford', 'Luton', 'Dunstable', 'Leighton Buzzard', 'Biggleswade',
+        'Sandy', 'Ampthill', 'Flitwick', 'Houghton Regis', 'Shefford'
     ],
-    'Manchester': [
-        'Manchester City Centre', 'Salford', 'Stockport', 'Trafford', 'Bolton',
-        'Bury', 'Oldham', 'Rochdale', 'Tameside', 'Wigan', 'Altrincham'
-    ],
-    'Birmingham': [
-        'Birmingham City Centre', 'Solihull', 'Sutton Coldfield', 'Edgbaston', 'Moseley',
-        'Erdington', 'Handsworth', 'Kings Heath', 'Harborne', 'Selly Oak'
-    ],
-    'Leeds': [
-        'Leeds City Centre', 'Headingley', 'Roundhay', 'Horsforth', 'Morley',
-        'Pudsey', 'Otley', 'Wetherby', 'Garforth', 'Rothwell'
-    ],
-    'Liverpool': [
-        'Liverpool City Centre', 'Aigburth', 'Allerton', 'Anfield', 'Childwall',
-        'Crosby', 'Formby', 'Maghull', 'Walton', 'Woolton'
+    'Berkshire': [
+        'Reading', 'Slough', 'Windsor', 'Maidenhead', 'Wokingham',
+        'Bracknell', 'Newbury', 'Thatcham', 'Sandhurst', 'Hungerford'
     ],
     'Bristol': [
         'Bristol City Centre', 'Clifton', 'Redland', 'Fishponds', 'Henleaze',
         'Bishopston', 'Bedminster', 'Filton', 'Bradley Stoke', 'Kingswood'
     ],
-    'Sheffield': [
-        'Sheffield City Centre', 'Ecclesall', 'Crookes', 'Hillsborough', 'Dore',
-        'Totley', 'Woodseats', 'Meersbrook', 'Broomhill', 'Fulwood'
+    'Buckinghamshire': [
+        'Aylesbury', 'High Wycombe', 'Milton Keynes', 'Buckingham', 'Chesham',
+        'Amersham', 'Marlow', 'Beaconsfield', 'Princes Risborough', 'Wendover'
     ],
-    'Newcastle': [
-        'Newcastle City Centre', 'Jesmond', 'Gosforth', 'Heaton', 'Fenham',
-        'Gateshead', 'Whitley Bay', 'North Shields', 'Tynemouth', 'Wallsend'
+    'Cambridgeshire': [
+        'Cambridge', 'Peterborough', 'Ely', 'Huntingdon', 'St Neots',
+        'Wisbech', 'March', 'St Ives', 'Chatteris', 'Whittlesey'
     ],
-    'Nottingham': [
-        'Nottingham City Centre', 'West Bridgford', 'Beeston', 'Arnold', 'Carlton',
-        'Hucknall', 'Long Eaton', 'Stapleford', 'Mapperley', 'Sherwood'
+    'Cheshire': [
+        'Chester', 'Crewe', 'Warrington', 'Macclesfield', 'Northwich',
+        'Ellesmere Port', 'Congleton', 'Nantwich', 'Wilmslow', 'Knutsford'
     ],
-    'Leicester': [
-        'Leicester City Centre', 'Oadby', 'Wigston', 'Birstall', 'Glenfield',
-        'Braunstone', 'Evington', 'Knighton', 'Stoneygate', 'Belgrave'
+    'City of London': [
+        'City of London'
     ],
-    'Brighton': [
-        'Brighton City Centre', 'Hove', 'Portslade', 'Rottingdean', 'Saltdean',
-        'Peacehaven', 'Lewes', 'Newhaven', 'Shoreham-by-Sea', 'Worthing'
+    'Cornwall': [
+        'Truro', 'Falmouth', 'Penzance', 'Newquay', 'St Austell',
+        'Bodmin', 'Camborne', 'Redruth', 'Helston', 'Bude'
     ],
-    'Southampton': [
-        'Southampton City Centre', 'Shirley', 'Portswood', 'Bitterne', 'Woolston',
-        'Hedge End', 'Eastleigh', 'Totton', 'Chandlers Ford', 'Romsey'
+    'Cumbria': [
+        'Carlisle', 'Barrow-in-Furness', 'Kendal', 'Workington', 'Whitehaven',
+        'Penrith', 'Cockermouth', 'Windermere', 'Keswick', 'Ulverston'
     ],
-    'Oxford': [
-        'Oxford City Centre', 'Headington', 'Cowley', 'Summertown', 'Jericho',
-        'Botley', 'Abingdon', 'Witney', 'Bicester', 'Kidlington'
+    'Derbyshire': [
+        'Derby', 'Chesterfield', 'Buxton', 'Glossop', 'Ilkeston',
+        'Long Eaton', 'Swadlincote', 'Belper', 'Ripley', 'Matlock'
     ],
-    'Cambridge': [
-        'Cambridge City Centre', 'Chesterton', 'Cherry Hinton', 'Trumpington', 'Girton',
-        'Histon', 'Ely', 'Newmarket', 'St Neots', 'Huntingdon'
+    'Devon': [
+        'Exeter', 'Plymouth', 'Torquay', 'Barnstaple', 'Paignton',
+        'Exmouth', 'Newton Abbot', 'Tiverton', 'Sidmouth', 'Tavistock'
     ],
-    'York': [
-        'York City Centre', 'Acomb', 'Clifton', 'Haxby', 'Bishopthorpe',
-        'Strensall', 'Fulford', 'Copmanthorpe', 'Dringhouses', 'Heworth'
+    'Dorset': [
+        'Bournemouth', 'Poole', 'Dorchester', 'Weymouth', 'Christchurch',
+        'Ferndown', 'Bridport', 'Blandford Forum', 'Sherborne', 'Wimborne Minster'
     ],
-    'Bath': [
-        'Bath City Centre', 'Bathwick', 'Lansdown', 'Widcombe', 'Oldfield Park',
-        'Weston', 'Twerton', 'Combe Down', 'Odd Down', 'Larkhall'
+    'County Durham': [
+        'Durham', 'Darlington', 'Hartlepool', 'Stockton-on-Tees', 'Bishop Auckland',
+        'Chester-le-Street', 'Consett', 'Seaham', 'Newton Aycliffe', 'Spennymoor'
     ],
-    'Plymouth': [
-        'Plymouth City Centre', 'Plympton', 'Plymstock', 'Devonport', 'Mutley',
-        'Crownhill', 'Mannamead', 'Saltash', 'Ivybridge', 'Tavistock'
+    'East Riding of Yorkshire': [
+        'Hull', 'Beverley', 'Bridlington', 'Goole', 'Driffield',
+        'Hornsea', 'Withernsea', 'Hessle', 'Cottingham', 'Pocklington'
     ],
-    'Norwich': [
-        'Norwich City Centre', 'Eaton', 'Thorpe St Andrew', 'Hellesdon', 'Sprowston',
-        'Drayton', 'Taverham', 'Wymondham', 'Attleborough', 'Dereham'
+    'East Sussex': [
+        'Brighton', 'Eastbourne', 'Hastings', 'Lewes', 'Hove',
+        'Bexhill-on-Sea', 'Crowborough', 'Uckfield', 'Seaford', 'Peacehaven'
     ],
-    'Coventry': [
-        'Coventry City Centre', 'Earlsdon', 'Canley', 'Tile Hill', 'Kenilworth',
-        'Binley', 'Walsgrave', 'Allesley', 'Finham', 'Styvechale'
+    'Essex': [
+        'Chelmsford', 'Southend-on-Sea', 'Colchester', 'Basildon', 'Harlow',
+        'Brentwood', 'Braintree', 'Clacton-on-Sea', 'Grays', 'Witham'
     ],
-    'Derby': [
-        'Derby City Centre', 'Allestree', 'Littleover', 'Mickleover', 'Chaddesden',
-        'Spondon', 'Chellaston', 'Oakwood', 'Duffield', 'Belper'
+    'Gloucestershire': [
+        'Gloucester', 'Cheltenham', 'Stroud', 'Cirencester', 'Tewkesbury',
+        'Dursley', 'Lydney', 'Coleford', 'Stow-on-the-Wold', 'Moreton-in-Marsh'
     ],
-    'Reading': [
-        'Reading Town Centre', 'Caversham', 'Tilehurst', 'Earley', 'Woodley',
-        'Wokingham', 'Bracknell', 'Henley-on-Thames', 'Twyford', 'Pangbourne'
+    'Greater London': [
+        'Central London', 'North London', 'South London', 'East London', 'West London',
+        'Croydon', 'Bromley', 'Barnet', 'Enfield', 'Hounslow',
+        'Richmond', 'Kingston', 'Ealing', 'Harrow', 'Ilford',
+        'Romford', 'Sutton', 'Lewisham', 'Greenwich', 'Woolwich'
     ],
-    'Milton Keynes': [
-        'Central Milton Keynes', 'Bletchley', 'Wolverton', 'Newport Pagnell', 'Stony Stratford',
-        'Olney', 'Woburn Sands', 'Buckingham', 'Leighton Buzzard', 'Dunstable'
+    'Greater Manchester': [
+        'Manchester', 'Salford', 'Stockport', 'Bolton', 'Wigan',
+        'Oldham', 'Rochdale', 'Bury', 'Tameside', 'Trafford', 'Altrincham'
     ],
-    'Exeter': [
-        'Exeter City Centre', 'Heavitree', 'St Thomas', 'Alphington', 'Pinhoe',
-        'Topsham', 'Exmouth', 'Crediton', 'Tiverton', 'Dawlish'
+    'Hampshire': [
+        'Southampton', 'Portsmouth', 'Winchester', 'Basingstoke', 'Andover',
+        'Eastleigh', 'Fareham', 'Gosport', 'Aldershot', 'Farnborough'
     ],
-    'Canterbury': [
-        'Canterbury City Centre', 'Whitstable', 'Herne Bay', 'Sturry', 'Bridge',
-        'Wingham', 'Littlebourne', 'Chartham', 'Fordwich', 'Blean'
+    'Herefordshire': [
+        'Hereford', 'Ross-on-Wye', 'Leominster', 'Ledbury', 'Bromyard',
+        'Kington', 'Hay-on-Wye'
     ],
-    'Chester': [
-        'Chester City Centre', 'Hoole', 'Boughton', 'Handbridge', 'Upton',
-        'Great Boughton', 'Vicars Cross', 'Ellesmere Port', 'Neston', 'Malpas'
+    'Hertfordshire': [
+        'St Albans', 'Watford', 'Hemel Hempstead', 'Stevenage', 'Welwyn Garden City',
+        'Hatfield', 'Hitchin', 'Letchworth', 'Hertford', 'Bishops Stortford'
     ],
-    'Winchester': [
-        'Winchester City Centre', 'Stanmore', 'Badger Farm', 'Olivers Battery', 'Weeke',
-        'Kings Worthy', 'Alresford', 'Bishops Waltham', 'Wickham', 'Denmead'
+    'Isle of Wight': [
+        'Newport', 'Ryde', 'Cowes', 'Sandown', 'Shanklin',
+        'Ventnor', 'Freshwater', 'Yarmouth', 'Bembridge', 'Brading'
+    ],
+    'Kent': [
+        'Maidstone', 'Canterbury', 'Dover', 'Folkestone', 'Ashford',
+        'Tunbridge Wells', 'Margate', 'Dartford', 'Gravesend', 'Sevenoaks'
+    ],
+    'Lancashire': [
+        'Lancaster', 'Preston', 'Blackburn', 'Burnley', 'Blackpool',
+        'Accrington', 'Chorley', 'Leyland', 'Morecambe', 'Clitheroe'
+    ],
+    'Leicestershire': [
+        'Leicester', 'Loughborough', 'Hinckley', 'Melton Mowbray', 'Coalville',
+        'Market Harborough', 'Wigston', 'Oadby', 'Lutterworth', 'Ashby-de-la-Zouch'
+    ],
+    'Lincolnshire': [
+        'Lincoln', 'Grimsby', 'Scunthorpe', 'Boston', 'Grantham',
+        'Stamford', 'Skegness', 'Spalding', 'Sleaford', 'Gainsborough'
+    ],
+    'Merseyside': [
+        'Liverpool', 'Birkenhead', 'St Helens', 'Southport', 'Bootle',
+        'Crosby', 'Wallasey', 'Kirkby', 'Prescot', 'Formby'
+    ],
+    'Norfolk': [
+        'Norwich', 'Great Yarmouth', 'Kings Lynn', 'Thetford', 'Dereham',
+        'Wymondham', 'Attleborough', 'Cromer', 'Fakenham', 'Swaffham'
+    ],
+    'North Yorkshire': [
+        'York', 'Harrogate', 'Scarborough', 'Middlesbrough', 'Redcar',
+        'Northallerton', 'Ripon', 'Selby', 'Skipton', 'Knaresborough'
+    ],
+    'Northamptonshire': [
+        'Northampton', 'Kettering', 'Corby', 'Wellingborough', 'Rushden',
+        'Daventry', 'Brackley', 'Towcester', 'Desborough', 'Rothwell'
+    ],
+    'Northumberland': [
+        'Alnwick', 'Berwick-upon-Tweed', 'Hexham', 'Morpeth', 'Blyth',
+        'Ashington', 'Cramlington', 'Prudhoe', 'Ponteland', 'Amble'
+    ],
+    'Nottinghamshire': [
+        'Nottingham', 'Mansfield', 'Newark-on-Trent', 'Worksop', 'Retford',
+        'West Bridgford', 'Beeston', 'Arnold', 'Carlton', 'Hucknall'
+    ],
+    'Oxfordshire': [
+        'Oxford', 'Banbury', 'Bicester', 'Witney', 'Didcot',
+        'Abingdon', 'Henley-on-Thames', 'Thame', 'Wantage', 'Kidlington'
+    ],
+    'Rutland': [
+        'Oakham', 'Uppingham', 'Cottesmore', 'Edith Weston', 'Empingham',
+        'Langham', 'Market Overton', 'Ryhall'
+    ],
+    'Shropshire': [
+        'Shrewsbury', 'Telford', 'Oswestry', 'Bridgnorth', 'Ludlow',
+        'Market Drayton', 'Whitchurch', 'Newport', 'Wem', 'Church Stretton'
+    ],
+    'Somerset': [
+        'Bath', 'Taunton', 'Yeovil', 'Weston-super-Mare', 'Bridgwater',
+        'Frome', 'Glastonbury', 'Wells', 'Chard', 'Minehead'
+    ],
+    'South Yorkshire': [
+        'Sheffield', 'Doncaster', 'Rotherham', 'Barnsley', 'Wath upon Dearne',
+        'Mexborough', 'Wombwell', 'Penistone', 'Conisbrough', 'Maltby'
+    ],
+    'Staffordshire': [
+        'Stoke-on-Trent', 'Stafford', 'Burton upon Trent', 'Tamworth', 'Lichfield',
+        'Newcastle-under-Lyme', 'Cannock', 'Rugeley', 'Leek', 'Uttoxeter'
+    ],
+    'Suffolk': [
+        'Ipswich', 'Bury St Edmunds', 'Lowestoft', 'Felixstowe', 'Haverhill',
+        'Sudbury', 'Stowmarket', 'Newmarket', 'Woodbridge', 'Aldeburgh'
+    ],
+    'Surrey': [
+        'Guildford', 'Woking', 'Epsom', 'Redhill', 'Reigate',
+        'Dorking', 'Farnham', 'Camberley', 'Leatherhead', 'Esher'
+    ],
+    'Tyne and Wear': [
+        'Newcastle upon Tyne', 'Sunderland', 'Gateshead', 'South Shields', 'North Shields',
+        'Whitley Bay', 'Tynemouth', 'Wallsend', 'Washington', 'Jarrow'
+    ],
+    'Warwickshire': [
+        'Warwick', 'Leamington Spa', 'Stratford-upon-Avon', 'Nuneaton', 'Rugby',
+        'Kenilworth', 'Bedworth', 'Atherstone', 'Alcester', 'Shipston-on-Stour'
+    ],
+    'West Midlands': [
+        'Birmingham', 'Coventry', 'Wolverhampton', 'Dudley', 'Walsall',
+        'Solihull', 'West Bromwich', 'Sutton Coldfield', 'Halesowen', 'Stourbridge'
+    ],
+    'West Sussex': [
+        'Chichester', 'Crawley', 'Worthing', 'Horsham', 'Bognor Regis',
+        'Littlehampton', 'Haywards Heath', 'Burgess Hill', 'East Grinstead', 'Shoreham-by-Sea'
+    ],
+    'West Yorkshire': [
+        'Leeds', 'Bradford', 'Huddersfield', 'Wakefield', 'Halifax',
+        'Dewsbury', 'Batley', 'Keighley', 'Pontefract', 'Castleford'
+    ],
+    'Wiltshire': [
+        'Salisbury', 'Swindon', 'Trowbridge', 'Chippenham', 'Devizes',
+        'Warminster', 'Melksham', 'Corsham', 'Calne', 'Marlborough'
+    ],
+    'Worcestershire': [
+        'Worcester', 'Redditch', 'Kidderminster', 'Bromsgrove', 'Droitwich',
+        'Evesham', 'Malvern', 'Pershore', 'Bewdley', 'Stourport-on-Severn'
     ],
 };

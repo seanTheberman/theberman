@@ -50,7 +50,7 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
         : tenant === 'england'
             ? Object.keys(TOWNS_BY_COUNTY_ENGLAND)
             : IRISH_COUNTIES;
-    const countyLabel = tenant === 'spain' ? 'Comunidades Autónomas' : (tenant === 'england' ? 'Regions/Cities' : 'Counties');
+    const countyLabel = tenant === 'spain' ? 'Comunidades Autónomas' : 'Counties';
 
     return (
     <div
