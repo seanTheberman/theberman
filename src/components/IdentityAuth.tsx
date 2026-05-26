@@ -3,6 +3,7 @@ import { Lock, ArrowRight, RefreshCw, UserPlus, LogIn } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface IdentityAuthProps {
     email: string;
@@ -19,6 +20,7 @@ const IdentityAuth = ({ email, fullName, phone, isExternalSubmitting = false, on
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { signIn, signUp } = useAuth();
+    const { isSpanish } = useTranslation();
 
     useEffect(() => {
         const checkUserExists = async () => {
@@ -87,9 +89,13 @@ const IdentityAuth = ({ email, fullName, phone, isExternalSubmitting = false, on
                         <div className="w-20 h-20 border-4 border-green-500 border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
                     </div>
                     <p className="mt-6 text-xl font-semibold text-gray-800">
-                        {isExternalSubmitting ? 'Submitting your quote...' : (isExistingUser ? 'Signing you in...' : 'Creating your account...')}
+                        {isExternalSubmitting
+                            ? (isSpanish ? 'Enviando tu presupuesto...' : 'Submitting your quote...')
+                            : (isExistingUser
+                                ? (isSpanish ? 'Iniciando sesión...' : 'Signing you in...')
+                                : (isSpanish ? 'Creando tu cuenta...' : 'Creating your account...'))}
                     </p>
-                    <p className="mt-2 text-gray-500">Please wait a moment</p>
+                    <p className="mt-2 text-gray-500">{isSpanish ? 'Por favor, espera un momento' : 'Please wait a moment'}</p>
                 </div>
             )}
 
@@ -98,12 +104,14 @@ const IdentityAuth = ({ email, fullName, phone, isExternalSubmitting = false, on
                     {isExistingUser ? <LogIn size={36} /> : <UserPlus size={36} />}
                 </div>
                 <h2 className="text-3xl md:text-4xl font-light text-gray-800 mb-3">
-                    {isExistingUser ? 'Welcome Back!' : 'Create Your Account'}
+                    {isExistingUser
+                        ? (isSpanish ? '¡Bienvenido otra vez!' : 'Welcome Back!')
+                        : (isSpanish ? 'Crea tu Cuenta' : 'Create Your Account')}
                 </h2>
                 <p className="text-gray-500 max-w-md mx-auto">
                     {isExistingUser
-                        ? 'We found an existing account. Please enter your password to continue.'
-                        : 'Almost there! Create a password to save your progress and access your dashboard.'}
+                        ? (isSpanish ? 'Hemos encontrado una cuenta existente. Introduce tu contraseña para continuar.' : 'We found an existing account. Please enter your password to continue.')
+                        : (isSpanish ? '¡Ya casi! Crea una contraseña para guardar tu progreso y acceder a tu panel.' : 'Almost there! Create a password to save your progress and access your dashboard.')}
                 </p>
                 <div className="mt-2 inline-block px-4 py-1 bg-gray-100 rounded-full text-sm text-gray-600 font-medium">
                     {email}
@@ -113,7 +121,9 @@ const IdentityAuth = ({ email, fullName, phone, isExternalSubmitting = false, on
             <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-6">
                 <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700 ml-1">
-                        {isExistingUser ? 'Password' : 'Choose a Password'}
+                        {isExistingUser
+                            ? (isSpanish ? 'Contraseña' : 'Password')
+                            : (isSpanish ? 'Elige una Contraseña' : 'Choose a Password')}
                     </label>
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
@@ -144,11 +154,17 @@ const IdentityAuth = ({ email, fullName, phone, isExternalSubmitting = false, on
                         {isSubmitting || isExternalSubmitting ? (
                             <>
                                 <RefreshCw size={20} className="animate-spin" />
-                                {isExternalSubmitting ? 'Submitting Quote...' : (isExistingUser ? 'Signing in...' : 'Creating Account...')}
+                                {isExternalSubmitting
+                                    ? (isSpanish ? 'Enviando Presupuesto...' : 'Submitting Quote...')
+                                    : (isExistingUser
+                                        ? (isSpanish ? 'Iniciando sesión...' : 'Signing in...')
+                                        : (isSpanish ? 'Creando Cuenta...' : 'Creating Account...'))}
                             </>
                         ) : (
                             <>
-                                {isExistingUser ? 'Sign In & Submit Quote' : 'Create Account & Submit'}
+                                {isExistingUser
+                                    ? (isSpanish ? 'Iniciar Sesión y Enviar' : 'Sign In & Submit Quote')
+                                    : (isSpanish ? 'Crear Cuenta y Enviar' : 'Create Account & Submit')}
                                 <ArrowRight size={20} />
                             </>
                         )}
@@ -161,7 +177,7 @@ const IdentityAuth = ({ email, fullName, phone, isExternalSubmitting = false, on
                     onClick={onBack}
                     className="text-gray-500 hover:text-gray-700 text-sm underline"
                 >
-                    ← Not your email? Change it
+                    {isSpanish ? '← ¿No es tu correo? Cámbialo' : '← Not your email? Change it'}
                 </button>
             </div>
         </div>

@@ -191,7 +191,7 @@ export const CMS_PAGES: PageDefinition[] = [
                     },
                     spain: {
                         tag: 'La Ventaja', heading: 'Razones para', heading_highlight: 'confiar en nosotros',
-                        benefit1_title: 'Mejor Precio Garantizado', benefit1_desc: 'Recibe múltiples presupuestos y elige la mejor opción para ti.',
+                        benefit1_title: 'Visita Presencial Profesional', benefit1_desc: 'No realizamos visitas virtuales, solo hacemos certificaciones tras una visita exhaustiva y profesional. Además nuestros colaboradores les asesoran y les darán los mejores consejos para mejorar la Eficiencia Energética de su propiedad.',
                         benefit2_title: 'Solo Certificadores Acreditados', benefit2_desc: 'Todos los certificadores están plenamente acreditados y verificados.',
                         benefit3_title: 'Garantía de Devolución', benefit3_desc: 'Te aseguramos un servicio profesional o te devolvemos tu dinero.',
                         benefit4_title: 'Reserva Online Instantánea', benefit4_desc: 'Sin llamadas de teléfono de ida y vuelta. Reserva todo en tiempo real.',
@@ -290,8 +290,8 @@ export const CMS_PAGES: PageDefinition[] = [
                         image_url: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=800',
                     },
                     spain: {
-                        tag: 'Explora Nuestra Red', heading: 'Encuentra los Mejores', heading_highlight: 'Socios de Eficiencia Energética.',
-                        description: 'Accede a nuestro catálogo seleccionado de empresas certificadas de eficiencia energética. Desde instaladores de paneles solares hasta especialistas en aislamiento, encuentra el socio adecuado para el camino de tu hogar hacia la eficiencia.',
+                        tag: 'Explora Nuestra Red', heading: 'Encuentra los Mejores', heading_highlight: 'Colaboradores de Eficiencia Energética.',
+                        description: 'Accede a nuestro catálogo seleccionado de empresas certificadas de eficiencia energética. Desde instaladores de paneles solares hasta especialistas en aislamiento, encuentra el colaborador adecuado para el camino de tu hogar hacia la eficiencia.',
                         cta1_text: 'Explorar Catálogo', cta2_text: 'Registra tu Negocio', cta3_text: 'Habla con un Asesor',
                         image_url: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=800',
                     },
@@ -335,9 +335,9 @@ export const CMS_PAGES: PageDefinition[] = [
                     },
                     spain: {
                         tag: 'Base de Conocimiento', heading: 'Preguntas Frecuentes',
-                        faq1_q: '¿Qué es un Certificado Energético?', faq1_a: 'El Certificado de Eficiencia Energética indica el nivel de eficiencia energética de tu vivienda, calificada de la A (más eficiente) a la G (menos eficiente).',
-                        faq2_q: '¿Por qué necesito un Certificado Energético?', faq2_a: 'Es obligatorio por ley para vender o alquilar una vivienda. También es necesario para acceder a subvenciones de rehabilitación energética.',
-                        faq3_q: '¿Cuánto cuesta?', faq3_a: 'El precio depende del tamaño de la propiedad. Nuestra plataforma te garantiza los presupuestos más competitivos de certificadores locales.',
+                        faq1_q: '¿Qué es un Certificado Energético?', faq1_a: 'El Certificado de Eficiencia Energética indica el nivel de eficiencia energética de tu propiedad, calificada de la A (más eficiente) a la G (menos eficiente).',
+                        faq2_q: '¿Por qué necesito un Certificado Energético?', faq2_a: 'Es obligatorio por ley para vender o alquilar una propiedad. También es necesario para acceder a subvenciones de rehabilitación energética.',
+                        faq3_q: '¿Cuánto cuesta?', faq3_a: 'Cada presupuesto es personalizado acorde a las necesidades de nuestros clientes y el tipo de propiedad.',
                         faq4_q: '¿Cuánto tiempo es válido?', faq4_a: 'Un Certificado Energético tiene una validez de hasta 10 años, salvo que se realicen cambios importantes que alteren el rendimiento energético de la propiedad.',
                         cta_heading: '¿Listo para tu Certificado Energético?', cta_description: 'Únete a más de 10000 clientes satisfechos. Obtén presupuestos competitivos de certificadores locales de confianza en segundos.',
                         cta_button: 'Pide Presupuesto Online',

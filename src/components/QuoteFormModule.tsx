@@ -29,9 +29,9 @@ const COUNTIES_IRELAND = [
 // Spain Comunidades Autónomas
 const COUNTIES_SPAIN = [
     'Andalucía', 'Aragón', 'Principado de Asturias', 'Islas Baleares', 'Canarias',
-    'Cantabria', 'Castilla-La Mancha', 'Castilla y León', 'Cataluña',
+    'Cantabria', 'Castilla-La Mancha', 'Castilla y León', 'Cataluña', 'Ceuta',
     'Comunidad de Madrid', 'Comunidad Foral de Navarra', 'Comunidad Valenciana',
-    'Extremadura', 'Galicia', 'La Rioja', 'País Vasco', 'Región de Murcia'
+    'Extremadura', 'Galicia', 'La Rioja', 'Melilla', 'País Vasco', 'Región de Murcia'
 ];
 
 // England Ceremonial Counties
@@ -598,6 +598,11 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
 
     const formatDate = (date: Date) => date.toISOString().split('T')[0];
     const formatDateDisplay = (date: Date) => {
+        if (isSpanish) {
+            const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            return `${days[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]}`;
+        }
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const day = date.getDate();
@@ -641,7 +646,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                         key={time}
                         onClick={() => updateFieldAndAdvance('preferredTime', time)}
                         className={`p-4 rounded-lg border-2 transition-all text-center ${formData.preferredTime === time ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-300 bg-white'}`}
-                    >{time}</button>
+                    >{o(time)}</button>
                 ))}
             </div>
         </div>
