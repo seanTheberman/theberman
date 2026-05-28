@@ -143,6 +143,10 @@ const NewCatalogue = () => {
         resetSearch: isSpanish ? 'Restablecer Búsqueda' : 'Reset Search',
         hireAgent: isSpanish ? 'Contrata un Asesor Energético Gratis' : 'Hire An Energy Agent For Free',
         defaultLocation: isSpanish ? 'España' : 'Ireland',
+        seoTitle: isSpanish ? 'Catálogo de Negocios' : 'Business Catalogue',
+        seoDescription: isSpanish ? 'Explora el catálogo de negocios de eficiencia energética verificados. Encuentra aislamiento, bombas de calor, energía solar y más.' : "Browse The Berman's catalogue of verified home energy businesses. Find insulation, heat pumps, solar, and more.",
+        consideringSolar: isSpanish ? '¿Interesado en Paneles Solares?' : 'Considering Solar?',
+        viewAll: isSpanish ? 'Ver Todo' : 'View All',
     };
     const sortLabels: Record<string, string> = isSpanish
         ? { 'Default Order': 'Orden Predeterminado', 'Highest Rated': 'Mejor Valorados', 'Newest Listings': 'Más Recientes', 'Oldest Listings': 'Más Antiguos', 'Alphabetically': 'Alfabéticamente', 'Featured': 'Destacados' }
@@ -266,8 +270,8 @@ const NewCatalogue = () => {
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen pt-28 md:pt-24 pb-12">
             <SEOHead
-                title="Business Catalogue"
-                description="Browse The Berman's catalogue of verified home energy businesses. Find insulation, heat pumps, solar, and more."
+                title={t.seoTitle}
+                description={t.seoDescription}
                 canonical="/catalogue"
             />
 
@@ -387,7 +391,7 @@ const NewCatalogue = () => {
                                 {/* Desktop only spotlight badge */}
                                 <div className="hidden md:flex items-center gap-2 bg-yellow-400/15 backdrop-blur-sm border border-yellow-400/30 px-4 py-1.5 rounded-full shrink-0">
                                     <Sparkles size={14} className="text-yellow-400" />
-                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-300">Today's Spotlight</span>
+                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-300">{t.todaysSpotlight}</span>
                                 </div>
 
                                 <div className="flex-1 text-center md:text-left w-full md:min-w-0">
