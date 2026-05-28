@@ -41,6 +41,7 @@ const QuickQuotePage = () => {
     const phoneFromUrl = searchParams.get('phone') || '';
     
     const [assessment, setAssessment] = useState<Assessment | null>(null);
+    const [isExpired, setIsExpired] = useState(false);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [currentStep, setCurrentStep] = useState(1); // 1: Quote form, 2: Email/Phone (skipped if phone in URL), 3: Results
@@ -79,6 +80,18 @@ const QuickQuotePage = () => {
 
             if (error) throw error;
             setAssessment(data);
+
+            // Compute expiry: 7 days since last activity
+            if (data) {
+                const notOpenStatus = !['live', 'submitted', 'pending_quote'].includes(data.status);
+                let lastActivity = new Date(data.created_at).getTime();
+                if (data.scheduled_date) {
+                    const sd = new Date(data.scheduled_date).getTime();
+                    if (sd > lastActivity) lastActivity = sd;
+                }
+                const daysSince = (Date.now() - lastActivity) / (1000 * 60 * 60 * 24);
+                if (notOpenStatus || daysSince >= 7) setIsExpired(true);
+            }
         } catch (error: any) {
             toast.error('Failed to load job details');
             console.error('Error fetching assessment:', error);
@@ -161,6 +174,14 @@ const QuickQuotePage = () => {
                     });
                     return;
                 }
+                if (msg.includes('assessment_expired')) {
+                    setIsExpired(true);
+                    setSearchResult({
+                        found: false,
+                        message: 'This job has expired and is no longer accepting quotes.'
+                    });
+                    return;
+                }
                 throw error;
             }
 
@@ -219,6 +240,26 @@ const QuickQuotePage = () => {
                     >
                         Go Home
                     </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (isExpired) {
+        return (
+            <div className="min-h-screen bg-gray-50">
+                <div className="bg-white shadow-sm border-b">
+                    <div className="max-w-4xl mx-auto px-4 py-4">
+                        <button onClick={() => navigate('/')} className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
+                            <ArrowLeft size={20} /> Back to Home
+                        </button>
+                    </div>
+                </div>
+                <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+                    <AlertCircle className="mx-auto text-amber-500 mb-4" size={64} />
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">This Job Has Expired</h2>
+                    <p className="text-gray-600 mb-2">This job is no longer accepting new quotes.</p>
+                    <p className="text-sm text-gray-400">Jobs expire after 7 days of inactivity.</p>
                 </div>
             </div>
         );

@@ -446,6 +446,21 @@ const ContractorDashboard = () => {
 
         try {
             setIsSubmitting(true);
+
+            // Expiry check: 7 days since last activity
+            const notOpenStatus = !['live', 'submitted', 'pending_quote'].includes(selectedJob.status || '');
+            let lastActivity = new Date(selectedJob.created_at).getTime();
+            if (selectedJob.scheduled_date) {
+                const sd = new Date(selectedJob.scheduled_date).getTime();
+                if (sd > lastActivity) lastActivity = sd;
+            }
+            const daysSince = (Date.now() - lastActivity) / (1000 * 60 * 60 * 24);
+            if (notOpenStatus || daysSince >= 7) {
+                toast.error(isSpanish ? 'Este trabajo ha expirado y ya no acepta presupuestos.' : 'This job has expired and is no longer accepting quotes.');
+                setQuoteModalOpen(false);
+                return;
+            }
+
             const existingQuote = myQuotes.find(q => q.assessment_id === selectedJob.id);
 
             let error;
