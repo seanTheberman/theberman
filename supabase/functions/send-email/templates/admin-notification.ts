@@ -31,6 +31,18 @@ export const generateAdminEmail = (record: any, sponsors: any[], promoHtml: stri
                           <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold;">Type:</td>
                           <td style="padding: 10px; border-bottom: 1px solid #eee;">${record.property_type} (${record.purpose})</td>
                         </tr>
+                        ${record.bedrooms ? `
+                        <tr>
+                          <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold;">Bedrooms:</td>
+                          <td style="padding: 10px; border-bottom: 1px solid #eee;">${record.bedrooms}</td>
+                        </tr>
+                        ` : ''}
+                        ${record.property_size ? `
+                        <tr>
+                          <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold;">Property Size:</td>
+                          <td style="padding: 10px; border-bottom: 1px solid #eee;">${record.property_size}</td>
+                        </tr>
+                        ` : ''}
                         <tr>
                           <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; vertical-align: top;">Message:</td>
                           <td style="padding: 10px; border-bottom: 1px solid #eee; line-height: 1.5;">${record.message}</td>

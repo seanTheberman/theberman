@@ -331,7 +331,7 @@ Deno.serve(async (req: Request) => {
             // Get assessment details for Eircode
             const { data: assessmentDetails } = await supabase
                 .from('assessments')
-                .select('eircode, property_address')
+                .select('eircode, property_address, property_size, bedrooms')
                 .eq('id', assessmentId)
                 .eq('tenant', tenant)
                 .single();
@@ -354,7 +354,9 @@ Deno.serve(async (req: Request) => {
                             assessmentDetails?.eircode,
                             assessmentDetails?.property_address,
                             assessmentId,
-                            contractor.phone
+                            contractor.phone,
+                            assessmentDetails?.property_size,
+                            assessmentDetails?.bedrooms
                         );
                         await client.send(smtpFrom, contractor.email, `New ${jobType === 'commercial' ? 'Commercial' : 'Domestic'} BER Job in ${jobLocation}`, contractorHtml);
                         contractorEmailSentCount++;

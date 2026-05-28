@@ -37,6 +37,18 @@ export const generateCustomerEmail = (record: any, promoHtml: string) => {
                         <td style="padding: 5px 0; font-size: 14px; color: #777;"><strong>Purpose:</strong></td>
                         <td style="padding: 5px 0; font-size: 14px; color: #333;">${record.purpose}</td>
                     </tr>
+                    ${record.bedrooms ? `
+                    <tr>
+                        <td style="padding: 5px 0; font-size: 14px; color: #777;"><strong>Bedrooms:</strong></td>
+                        <td style="padding: 5px 0; font-size: 14px; color: #333;">${record.bedrooms}</td>
+                    </tr>
+                    ` : ''}
+                    ${record.property_size ? `
+                    <tr>
+                        <td style="padding: 5px 0; font-size: 14px; color: #777;"><strong>Property Size:</strong></td>
+                        <td style="padding: 5px 0; font-size: 14px; color: #333;">${record.property_size}</td>
+                    </tr>
+                    ` : ''}
                 </table>
             </div>
 
