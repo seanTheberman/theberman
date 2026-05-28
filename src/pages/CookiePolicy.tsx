@@ -6,6 +6,8 @@ import { getTenantFromDomain } from '../lib/tenant';
 const CookiePolicy = () => {
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
+    const isFrance = tenant === 'france';
+    const isPortugal = tenant === 'portugal';
 
     const tr = isSpanish ? {
         seoTitle: 'Política de Cookies',
@@ -28,6 +30,50 @@ const CookiePolicy = () => {
         optH: 'Rechazar',
         optP1: 'Si no aceptas nuestro uso de cookies, por favor abandona este sitio web',
         optP2: 'haciendo clic aquí',
+        optP3: '.',
+    } : isFrance ? {
+        seoTitle: 'Politique de Cookies',
+        seoDesc: 'Politique de cookies pour DPE France. Informez-vous sur l\'utilisation des cookies sur notre site.',
+        badge: 'Légal',
+        title1: 'Politique de',
+        title2: 'Cookies.',
+        hero: 'Nous utilisons des cookies pour améliorer ce site web. En continuant à l\'utiliser, vous acceptez notre utilisation des cookies.',
+        whatH: 'Qu\'est-ce qu\'un Cookie ?',
+        whatP: "Un cookie est un petit fichier de données envoyé par un site web et stocké sur votre ordinateur via votre navigateur pendant que vous naviguez. Les cookies ont été conçus comme un mécanisme fiable pour que les sites se souviennent d'informations ou enregistrent l'activité de l'utilisateur.",
+        useH: 'Cookies Utilisés',
+        useIntro: 'Nous pouvons utiliser les cookies suivants sur notre site web :',
+        useItems: [
+            { b: 'tawkuuid', t: 'application de chat support' },
+            { b: 'utma / utmz', t: 'Google Analytics' },
+            { b: 'cfclient cookies', t: 'cookies client/session/serveur ColdFusion' },
+            { b: 'adNetwork', t: 'suivi publicitaire' },
+            { b: 'Cookies publicitaires et remarketing', t: '' },
+        ],
+        optH: 'Refuser',
+        optP1: "Si vous n'acceptez pas notre utilisation des cookies, veuillez quitter ce site web",
+        optP2: 'en cliquant ici',
+        optP3: '.',
+    } : isPortugal ? {
+        seoTitle: 'Política de Cookies',
+        seoDesc: 'Política de cookies para Certificado Energético. Saiba mais sobre como usamos cookies no nosso site.',
+        badge: 'Legal',
+        title1: 'Política de',
+        title2: 'Cookies.',
+        hero: 'Utilizamos cookies para melhorar este site. Ao continuar a utilizá-lo, concorda com a nossa utilização de cookies.',
+        whatH: 'O que é um Cookie?',
+        whatP: 'Um cookie é um pequeno ficheiro de dados enviado por um site e armazenado no seu computador através do navegador enquanto navega. Os cookies foram concebidos como um mecanismo fiável para que os sites se lembrem de informações ou registem a atividade do utilizador.',
+        useH: 'Cookies que Utilizamos',
+        useIntro: 'Podemos utilizar os seguintes cookies no nosso site:',
+        useItems: [
+            { b: 'tawkuuid', t: 'aplicação de chat de suporte' },
+            { b: 'utma / utmz', t: 'Google Analytics' },
+            { b: 'cfclient cookies', t: 'cookies de cliente/sessão/servidor ColdFusion' },
+            { b: 'adNetwork', t: 'rastreamento publicitário' },
+            { b: 'Cookies publicitários e remarketing', t: '' },
+        ],
+        optH: 'Recusar',
+        optP1: 'Se não concordar com a nossa utilização de cookies, por favor abandone este site',
+        optP2: 'clicando aqui',
         optP3: '.',
     } : {
         seoTitle: 'Cookie Policy',

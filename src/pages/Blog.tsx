@@ -54,6 +54,8 @@ const BlogPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
+    const isFrance = tenant === 'france';
+    const isPortugal = tenant === 'portugal';
     const tr = isSpanish ? {
         seoTitle: 'Blog',
         seoDesc: 'Guías de expertos sobre certificados energéticos, subvenciones, mejoras del hogar y más de Certificado Energético.',
@@ -70,6 +72,38 @@ const BlogPage = () => {
         viewAllPosts: 'Ver todas las entradas',
         newBadge: 'Nuevo',
         locale: 'es-ES' as const,
+    } : isFrance ? {
+        seoTitle: 'Blog',
+        seoDesc: 'Guides experts sur le DPE, les subventions énergétiques, les rénovations et plus encore.',
+        loading: 'Chargement...',
+        latest: 'Derniers Articles',
+        showing: (n: number, t: number) => `Affichage de ${n} sur ${t} articles`,
+        searchPlaceholder: 'Rechercher des articles...',
+        categories: 'Catégories',
+        quickQuote: 'Devis Rapide',
+        quickQuoteP: 'Obtenez des devis DPE pendant votre lecture.',
+        getQuotes: 'Obtenir des Devis',
+        noArticlesSearch: (q: string) => `Aucun article trouvé pour "${q}"`,
+        noArticlesCategory: 'Aucun article dans cette catégorie.',
+        viewAllPosts: 'Voir Tous les Articles',
+        newBadge: 'Nouveau',
+        locale: 'fr-FR' as const,
+    } : isPortugal ? {
+        seoTitle: 'Blog',
+        seoDesc: 'Guias de especialistas sobre certificação energética, subsídios, melhorias e mais.',
+        loading: 'A carregar...',
+        latest: 'Artigos Recentes',
+        showing: (n: number, t: number) => `A mostrar ${n} de ${t} artigos`,
+        searchPlaceholder: 'Pesquisar artigos...',
+        categories: 'Categorias',
+        quickQuote: 'Orçamento Rápido',
+        quickQuoteP: 'Peça orçamentos enquanto lê.',
+        getQuotes: 'Pedir Orçamentos',
+        noArticlesSearch: (q: string) => `Nenhum artigo encontrado para "${q}"`,
+        noArticlesCategory: 'Nenhum artigo nesta categoria.',
+        viewAllPosts: 'Ver Todos os Artigos',
+        newBadge: 'Novo',
+        locale: 'pt-PT' as const,
     } : {
         seoTitle: 'Blog',
         seoDesc: 'Expert guides on BER certificates, energy grants, home upgrades, and more from The Berman.',

@@ -9,9 +9,7 @@ import {
     Mail, Globe
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { TOWNS_BY_COUNTY } from '../data/irishTowns';
-import { TOWNS_BY_COUNTY_SPAIN } from '../data/spainTowns';
-import { TOWNS_BY_COUNTY_ENGLAND } from '../data/englandTowns';
+import { getTownsForTenant } from '../lib/tenantData';
 import SEOHead from '../components/SEOHead';
 import { getTenantFromDomain, getTenantEmail, getTenantDomain } from '../lib/tenant';
 
@@ -44,8 +42,7 @@ const HireAgent = () => {
     const selectedCounty = watch('county');
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
-    const isEngland = tenant === 'england';
-    const townsByCounty = isSpanish ? TOWNS_BY_COUNTY_SPAIN : isEngland ? TOWNS_BY_COUNTY_ENGLAND : TOWNS_BY_COUNTY;
+    const townsByCounty = getTownsForTenant(tenant);
     const tenantEmail = getTenantEmail(tenant);
     const tenantDomain = getTenantDomain(tenant);
     const tr = isSpanish ? {

@@ -18,6 +18,8 @@ const Locations = () => {
     const [loading, setLoading] = useState(true);
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
+    const isFrance = tenant === 'france';
+    const isPortugal = tenant === 'portugal';
     const tr = isSpanish ? {
         seoTitle: 'Certificadores Energéticos por Ubicación',
         seoDesc: 'Encuentra certificadores energéticos y profesionales de eficiencia en tu zona por toda España. Busca por comunidad autónoma.',
@@ -27,6 +29,24 @@ const Locations = () => {
         viewListings: 'Ver Listados',
         noLocationsH: 'No se Encontraron Ubicaciones',
         noLocationsP: 'Actualmente no hay ubicaciones activas.',
+    } : isFrance ? {
+        seoTitle: 'Diagnostiqueurs par Localisation',
+        seoDesc: 'Trouvez des diagnostiqueurs certifiés près de chez vous en France. Parcourez par région.',
+        heading: 'Parcourir par Localisation',
+        subtitle: 'Trouvez des professionnels certifiés dans votre région. Sélectionnez une région pour voir les listes disponibles.',
+        descFallback: (name: string) => `Consultez les listes disponibles à ${name}.`,
+        viewListings: 'Voir les Listes',
+        noLocationsH: 'Aucune Localisation Trouvée',
+        noLocationsP: "Nous n'avons trouvé aucune localisation active pour le moment.",
+    } : isPortugal ? {
+        seoTitle: 'Peritos por Localização',
+        seoDesc: 'Encontre peritos certificados na sua zona em Portugal. Navegue por região.',
+        heading: 'Navegar por Localização',
+        subtitle: 'Encontre profissionais certificados na sua área. Selecione uma região para ver os listados disponíveis.',
+        descFallback: (name: string) => `Consulte os listados disponíveis em ${name}.`,
+        viewListings: 'Ver Listados',
+        noLocationsH: 'Nenhuma Localização Encontrada',
+        noLocationsP: 'Não encontrámos nenhuma localização ativa de momento.',
     } : {
         seoTitle: 'BER Assessors by Location',
         seoDesc: 'Find BER assessors and energy upgrade professionals in your area across Ireland. Browse by county and region.',

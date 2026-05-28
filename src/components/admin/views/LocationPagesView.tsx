@@ -2,9 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase';
 import toast from 'react-hot-toast';
 import { MapPin, Edit2, Save, X, Plus, Loader2, Search, Globe, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
-import { TOWNS_BY_COUNTY } from '../../../data/irishTowns';
-import { TOWNS_BY_COUNTY_SPAIN } from '../../../data/spainTowns';
-import { TOWNS_BY_COUNTY_ENGLAND } from '../../../data/englandTowns';
+import { getTownsForTenant, getCountiesForTenant } from '../../../lib/tenantData';
 
 interface LocationPage {
     id?: string;
@@ -25,18 +23,11 @@ interface Props {
 }
 
 const TENANT_LOCATIONS: Record<string, { regions: string[]; towns: Record<string, string[]> }> = {
-    ireland: {
-        regions: Object.keys(TOWNS_BY_COUNTY).sort(),
-        towns: TOWNS_BY_COUNTY,
-    },
-    spain: {
-        regions: Object.keys(TOWNS_BY_COUNTY_SPAIN).sort(),
-        towns: TOWNS_BY_COUNTY_SPAIN,
-    },
-    england: {
-        regions: Object.keys(TOWNS_BY_COUNTY_ENGLAND).sort(),
-        towns: TOWNS_BY_COUNTY_ENGLAND,
-    },
+    ireland: { regions: getCountiesForTenant('ireland'), towns: getTownsForTenant('ireland') },
+    spain: { regions: getCountiesForTenant('spain'), towns: getTownsForTenant('spain') },
+    england: { regions: getCountiesForTenant('england'), towns: getTownsForTenant('england') },
+    france: { regions: getCountiesForTenant('france'), towns: getTownsForTenant('france') },
+    portugal: { regions: getCountiesForTenant('portugal'), towns: getTownsForTenant('portugal') },
 };
 
 const makeSlug = (name: string) =>

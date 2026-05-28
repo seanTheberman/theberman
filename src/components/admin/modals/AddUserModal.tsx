@@ -1,15 +1,5 @@
 import { X, AlertTriangle, CheckCircle2, Loader2, CreditCard } from 'lucide-react';
-import { TOWNS_BY_COUNTY } from '../../../data/irishTowns';
-import { TOWNS_BY_COUNTY_ENGLAND } from '../../../data/englandTowns';
-import { TOWNS_BY_COUNTY_SPAIN } from '../../../data/spainTowns';
-
-const IRISH_COUNTIES = [
-    'Carlow', 'Cavan', 'Clare', 'Cork', 'Donegal', 'Dublin', 'Galway',
-    'Kerry', 'Kildare', 'Kilkenny', 'Laois', 'Leitrim', 'Limerick',
-    'Longford', 'Louth', 'Mayo', 'Meath', 'Monaghan', 'Offaly',
-    'Roscommon', 'Sligo', 'Tipperary', 'Waterford', 'Westmeath',
-    'Wexford', 'Wicklow'
-];
+import { getCountiesForTenant, getTownsForTenant } from '../../../lib/tenantData';
 
 interface NewUserFormData {
     fullName: string;
@@ -42,15 +32,18 @@ interface Props {
 
 export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData, isUpdating, onClose, onSubmit, selectedTenant }: Props) => {
     const tenant = selectedTenant || 'ireland';
-    const registrationLabel = tenant === 'spain' ? 'CEE/CAT Registration #' : (tenant === 'england' ? 'DEA/EPC Registration #' : 'SEAI Registration #');
-    const registrationPlaceholder = tenant === 'spain' ? 'e.g. CAT12345' : (tenant === 'england' ? 'e.g. DEA12345' : 'e.g. 10XXX');
+    const regLabels: Record<string, { label: string; placeholder: string }> = {
+        ireland: { label: 'SEAI Registration #', placeholder: 'e.g. 10XXX' },
+        spain: { label: 'CEE/CAT Registration #', placeholder: 'e.g. CAT12345' },
+        england: { label: 'DEA/EPC Registration #', placeholder: 'e.g. DEA12345' },
+        france: { label: 'DPE Diagnostiqueur #', placeholder: 'e.g. 12345' },
+        portugal: { label: 'ADENE Registration #', placeholder: 'e.g. 12345' },
+    };
+    const registrationLabel = regLabels[tenant]?.label || regLabels.ireland.label;
+    const registrationPlaceholder = regLabels[tenant]?.placeholder || regLabels.ireland.placeholder;
 
-    const COUNTIES = tenant === 'spain'
-        ? Object.keys(TOWNS_BY_COUNTY_SPAIN)
-        : tenant === 'england'
-            ? Object.keys(TOWNS_BY_COUNTY_ENGLAND)
-            : IRISH_COUNTIES;
-    const countyLabel = tenant === 'spain' ? 'Comunidades Autónomas' : 'Counties';
+    const COUNTIES = getCountiesForTenant(tenant);
+    const countyLabel = tenant === 'spain' ? 'Comunidades Autónomas' : tenant === 'france' ? 'Régions' : tenant === 'portugal' ? 'Regiões' : 'Counties';
 
     return (
     <div
@@ -132,7 +125,7 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
                                             className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white transition-all outline-none"
                                         >
                                             <option value="">Select Town</option>
-                                            {(tenant === 'spain' ? TOWNS_BY_COUNTY_SPAIN[newUserFormData.county] : tenant === 'england' ? TOWNS_BY_COUNTY_ENGLAND[newUserFormData.county] : TOWNS_BY_COUNTY[newUserFormData.county] || []).map((t: string) => <option key={t} value={t}>{t}</option>)}
+                                            {(getTownsForTenant(tenant)[newUserFormData.county] || []).map((t: string) => <option key={t} value={t}>{t}</option>)}
                                         </select>
                                     </div>
                                 )}

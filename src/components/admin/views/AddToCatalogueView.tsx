@@ -1,16 +1,7 @@
 import { useState } from 'react';
 import { X, Briefcase, MapPin, ImageIcon, Globe, Facebook, Instagram, Linkedin, Twitter, Plus, Star, Check, CheckCircle2, Loader2, UploadCloud, Youtube, MessageCircle, ChevronRight } from 'lucide-react';
 import type { Profile, CatalogueFormData, AdminView } from '../../../types/admin';
-import { TOWNS_BY_COUNTY_ENGLAND } from '../../../data/englandTowns';
-import { TOWNS_BY_COUNTY_SPAIN } from '../../../data/spainTowns';
-
-const IRISH_COUNTIES = [
-    'Carlow', 'Cavan', 'Clare', 'Cork', 'Donegal', 'Dublin', 'Galway',
-    'Kerry', 'Kildare', 'Kilkenny', 'Laois', 'Leitrim', 'Limerick',
-    'Longford', 'Louth', 'Mayo', 'Meath', 'Monaghan', 'Offaly',
-    'Roscommon', 'Sligo', 'Tipperary', 'Waterford', 'Westmeath',
-    'Wexford', 'Wicklow'
-];
+import { getCountiesForTenant } from '../../../lib/tenantData';
 
 interface Props {
     catalogueFormData: CatalogueFormData;
@@ -41,11 +32,7 @@ export const AddToCatalogueView = ({
     toggleCatalogueCategory, setView, selectedTenant,
 }: Props) => {
     const [activeTab, setActiveTab] = useState<Tab>('info');
-    const COUNTIES = selectedTenant === 'spain'
-        ? Object.keys(TOWNS_BY_COUNTY_SPAIN)
-        : selectedTenant === 'england'
-            ? Object.keys(TOWNS_BY_COUNTY_ENGLAND)
-            : IRISH_COUNTIES;
+    const COUNTIES = getCountiesForTenant(selectedTenant || 'ireland');
     const inp = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] transition-all outline-none";
     const lbl = "text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block";
 
@@ -92,12 +79,12 @@ export const AddToCatalogueView = ({
                             <div className="space-y-5">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div><label className={lbl}>Company Name *</label><input type="text" required value={catalogueFormData.companyName} onChange={e => setCatalogueFormData({ ...catalogueFormData, companyName: e.target.value })} className={inp} placeholder="Acme Retrofitting Ltd" /></div>
-                                    <div><label className={lbl}>Email *</label><input type="email" required value={catalogueFormData.email} onChange={e => setCatalogueFormData({ ...catalogueFormData, email: e.target.value })} className={inp} placeholder={selectedTenant === 'spain' ? 'info@empresa.es' : selectedTenant === 'england' ? 'info@business.co.uk' : 'info@business.ie'} /></div>
-                                    <div><label className={lbl}>Phone</label><input type="tel" value={catalogueFormData.phone} onChange={e => setCatalogueFormData({ ...catalogueFormData, phone: e.target.value })} className={inp} placeholder={selectedTenant === 'spain' ? '+34 612 345 678' : selectedTenant === 'england' ? '+44 20 7946 0958' : '+353 1 234 5678'} /></div>
-                                    <div><label className={lbl}>Website</label><input type="url" value={catalogueFormData.website} onChange={e => setCatalogueFormData({ ...catalogueFormData, website: e.target.value })} className={inp} placeholder={selectedTenant === 'spain' ? 'https://www.empresa.es' : selectedTenant === 'england' ? 'https://www.business.co.uk' : 'https://www.business.ie'} /></div>
-                                    <div><label className={lbl}>Company Number</label><input type="text" value={catalogueFormData.companyNumber} onChange={e => setCatalogueFormData({ ...catalogueFormData, companyNumber: e.target.value })} className={inp} placeholder={selectedTenant === 'england' ? 'e.g. 12345678' : 'e.g. 123456'} /></div>
-                                    <div><label className={lbl}>BER Assessor Registration</label><input type="text" value={catalogueFormData.registrationNo} onChange={e => setCatalogueFormData({ ...catalogueFormData, registrationNo: e.target.value })} className={inp} placeholder={selectedTenant === 'spain' ? 'e.g. CE-12345' : selectedTenant === 'england' ? 'e.g. EPC-12345' : 'e.g. BER-12345'} /></div>
-                                    <div><label className={lbl}>VAT Number</label><input type="text" value={catalogueFormData.vatNumber} onChange={e => setCatalogueFormData({ ...catalogueFormData, vatNumber: e.target.value })} className={inp} placeholder={selectedTenant === 'spain' ? 'e.g. ES12345678A' : selectedTenant === 'england' ? 'e.g. GB123456789' : 'e.g. IE1234567T'} /></div>
+                                    <div><label className={lbl}>Email *</label><input type="email" required value={catalogueFormData.email} onChange={e => setCatalogueFormData({ ...catalogueFormData, email: e.target.value })} className={inp} placeholder={selectedTenant === 'spain' ? 'info@empresa.es' : selectedTenant === 'england' ? 'info@business.co.uk' : selectedTenant === 'france' ? 'info@entreprise.fr' : selectedTenant === 'portugal' ? 'info@empresa.pt' : 'info@business.ie'} /></div>
+                                    <div><label className={lbl}>Phone</label><input type="tel" value={catalogueFormData.phone} onChange={e => setCatalogueFormData({ ...catalogueFormData, phone: e.target.value })} className={inp} placeholder={selectedTenant === 'spain' ? '+34 612 345 678' : selectedTenant === 'england' ? '+44 20 7946 0958' : selectedTenant === 'france' ? '+33 1 23 45 67 89' : selectedTenant === 'portugal' ? '+351 912 345 678' : '+353 1 234 5678'} /></div>
+                                    <div><label className={lbl}>Website</label><input type="url" value={catalogueFormData.website} onChange={e => setCatalogueFormData({ ...catalogueFormData, website: e.target.value })} className={inp} placeholder={selectedTenant === 'spain' ? 'https://www.empresa.es' : selectedTenant === 'england' ? 'https://www.business.co.uk' : selectedTenant === 'france' ? 'https://www.entreprise.fr' : selectedTenant === 'portugal' ? 'https://www.empresa.pt' : 'https://www.business.ie'} /></div>
+                                    <div><label className={lbl}>Company Number</label><input type="text" value={catalogueFormData.companyNumber} onChange={e => setCatalogueFormData({ ...catalogueFormData, companyNumber: e.target.value })} className={inp} placeholder={selectedTenant === 'england' ? 'e.g. 12345678' : selectedTenant === 'france' ? 'e.g. 123 456 789' : selectedTenant === 'portugal' ? 'e.g. 123456' : 'e.g. 123456'} /></div>
+                                    <div><label className={lbl}>BER Assessor Registration</label><input type="text" value={catalogueFormData.registrationNo} onChange={e => setCatalogueFormData({ ...catalogueFormData, registrationNo: e.target.value })} className={inp} placeholder={selectedTenant === 'spain' ? 'e.g. CE-12345' : selectedTenant === 'england' ? 'e.g. EPC-12345' : selectedTenant === 'france' ? 'e.g. DPE-12345' : selectedTenant === 'portugal' ? 'e.g. SCE-12345' : 'e.g. BER-12345'} /></div>
+                                    <div><label className={lbl}>VAT Number</label><input type="text" value={catalogueFormData.vatNumber} onChange={e => setCatalogueFormData({ ...catalogueFormData, vatNumber: e.target.value })} className={inp} placeholder={selectedTenant === 'spain' ? 'e.g. ES12345678A' : selectedTenant === 'england' ? 'e.g. GB123456789' : selectedTenant === 'france' ? 'e.g. FR12345678901' : selectedTenant === 'portugal' ? 'e.g. PT123456789' : 'e.g. IE1234567T'} /></div>
                                     <div><label className={lbl}>County</label>
                                         <select value={catalogueFormData.county} onChange={(e) => setCatalogueFormData({ ...catalogueFormData, county: e.target.value })} className={inp + " bg-white"}>
                                             <option value="">Select County</option>
@@ -106,7 +93,7 @@ export const AddToCatalogueView = ({
                                             ))}
                                         </select>
                                     </div>
-                                    <div className="md:col-span-2"><label className={lbl}>Primary Address</label><input type="text" value={catalogueFormData.address} onChange={e => setCatalogueFormData({ ...catalogueFormData, address: e.target.value })} className={inp} placeholder={selectedTenant === 'spain' ? 'Calle Gran Vía 42, Madrid' : selectedTenant === 'england' ? '123 High Street, London SW1A 1AA' : '123 Industrial Estate, Dublin 12'} /></div>
+                                    <div className="md:col-span-2"><label className={lbl}>Primary Address</label><input type="text" value={catalogueFormData.address} onChange={e => setCatalogueFormData({ ...catalogueFormData, address: e.target.value })} className={inp} placeholder={selectedTenant === 'spain' ? 'Calle Gran Vía 42, Madrid' : selectedTenant === 'england' ? '123 High Street, London SW1A 1AA' : selectedTenant === 'france' ? '42 Rue de Rivoli, 75004 Paris' : selectedTenant === 'portugal' ? 'Av. da Liberdade 42, 1250-145 Lisboa' : '123 Industrial Estate, Dublin 12'} /></div>
                                     <div className="md:col-span-2"><label className={lbl}>Company Description</label>
                                         <textarea value={catalogueFormData.description} onChange={e => setCatalogueFormData({ ...catalogueFormData, description: e.target.value })} rows={3} className={inp + " resize-none"} placeholder="Describe the services and expertise..." />
                                     </div>

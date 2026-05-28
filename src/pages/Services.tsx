@@ -8,18 +8,24 @@ const Services = () => {
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
     const isEngland = tenant === 'england';
-    const brand = isSpanish ? 'Certificado Energ\u00e9tico' : (isEngland ? 'EPC Cert' : 'The Berman');
-    const serviceName = isSpanish ? 'Certificado Energ\u00e9tico' : (isEngland ? 'EPC Certificate' : 'BER Certificate');
-    const baseUrl = isEngland ? 'https://epccert.com' : (isSpanish ? 'https://certificadoenerg\u00e9tico.eu' : 'https://theberman.eu');
-    const locale = isEngland ? 'London' : (isSpanish ? 'Madrid' : 'Dublin');
-    const country = isEngland ? 'GB' : (isSpanish ? 'ES' : 'IE');
+    const isFrance = tenant === 'france';
+    const isPortugal = tenant === 'portugal';
+    const brand = isSpanish ? 'Certificado Energ\u00e9tico' : isEngland ? 'EPC Cert' : isFrance ? 'DPE France' : isPortugal ? 'Certificado Energético' : 'The Berman';
+    const serviceName = isSpanish ? 'Certificado Energ\u00e9tico' : isEngland ? 'EPC Certificate' : isFrance ? 'DPE' : isPortugal ? 'Certificado Energético' : 'BER Certificate';
+    const baseUrl = isEngland ? 'https://epccert.com' : isSpanish ? 'https://certificadoenerg\u00e9tico.eu' : isFrance ? 'https://dpefrance.eu' : isPortugal ? 'https://certificadopt.eu' : 'https://theberman.eu';
+    const locale = isEngland ? 'London' : isSpanish ? 'Madrid' : isFrance ? 'Paris' : isPortugal ? 'Lisboa' : 'Dublin';
+    const country = isEngland ? 'GB' : isSpanish ? 'ES' : isFrance ? 'FR' : isPortugal ? 'PT' : 'IE';
 
-    const title = isSpanish ? 'Nuestros Servicios - Certificados Energ\u00e9ticos Expertos' : (isEngland ? 'Our Services - Expert EPC Certificates' : 'Our Services - Expert BER Assessments');
+    const title = isSpanish ? 'Nuestros Servicios - Certificados Energ\u00e9ticos Expertos' : isEngland ? 'Our Services - Expert EPC Certificates' : isFrance ? 'Nos Services - DPE Experts' : isPortugal ? 'Os nossos Serviços - Certificados Energéticos' : 'Our Services - Expert BER Assessments';
     const description = isSpanish
         ? 'Servicios integrales de certificaci\u00f3n energ\u00e9tica incluyendo certificados CEE, calificaciones provisionales y auditor\u00edas energ\u00e9ticas.'
-        : (isEngland
+        : isEngland
             ? 'Comprehensive EPC services including energy performance certificates, SAP assessments, and energy audits for residential and commercial properties.'
-            : 'Comprehensive energy rating services including BER certificates, provisional ratings, and energy audits.');
+            : isFrance
+                ? 'Services complets de diagnostic de performance énergétique incluant DPE, audits énergétiques et certifications pour logements et bâtiments commerciaux.'
+                : isPortugal
+                    ? 'Serviços completos de certificação energética incluindo certificados, avaliações e auditorias para propriedades residenciais e comerciais.'
+                    : 'Comprehensive energy rating services including BER certificates, provisional ratings, and energy audits.';
 
     const serviceSchema = {
         '@context': 'https://schema.org',
@@ -32,7 +38,7 @@ const Services = () => {
             url: baseUrl,
             address: { '@type': 'PostalAddress', addressCountry: country, addressLocality: locale },
         },
-        areaServed: { '@type': 'Country', name: isEngland ? 'United Kingdom' : (isSpanish ? 'Spain' : 'Ireland') },
+        areaServed: { '@type': 'Country', name: isEngland ? 'United Kingdom' : isSpanish ? 'Spain' : isFrance ? 'France' : isPortugal ? 'Portugal' : 'Ireland' },
         serviceType: serviceName,
         url: `${baseUrl}/services`,
     };

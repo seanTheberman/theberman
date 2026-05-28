@@ -1,33 +1,33 @@
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, CheckCircle2, Star, Users, ArrowRight } from 'lucide-react';
 import { getTenantFromDomain } from '../lib/tenant';
-import { TOWNS_BY_COUNTY } from '../data/irishTowns';
-import { TOWNS_BY_COUNTY_SPAIN } from '../data/spainTowns';
-import { TOWNS_BY_COUNTY_ENGLAND } from '../data/englandTowns';
+import { getTownsForTenant } from '../lib/tenantData';
 
 const LocationPage = () => {
     const { county, town } = useParams<{ county: string; town: string }>();
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
     const isEngland = tenant === 'england';
+    const isFrance = tenant === 'france';
+    const isPortugal = tenant === 'portugal';
 
     // Get the correct location data based on tenant
-    const locationData = isSpanish ? TOWNS_BY_COUNTY_SPAIN : isEngland ? TOWNS_BY_COUNTY_ENGLAND : TOWNS_BY_COUNTY;
+    const locationData = getTownsForTenant(tenant);
     const countyName = county ? county.replace(/-/g, ' ') : '';
     const townName = town ? town.replace(/-/g, ' ') : '';
     const townsInCounty = countyName ? (locationData[countyName] || []) : [];
 
     // Tenant-specific labels
     const labels = {
-        assessor: isSpanish ? 'Técnicos Certificados' : isEngland ? 'DEA/EPC Assessors' : 'BER Assessors',
-        certificate: isSpanish ? 'Certificado de Eficiencia Energética' : isEngland ? 'EPC Certificate' : 'BER Certificate',
-        in: isSpanish ? 'en' : 'in',
-        find: isSpanish ? 'Encuentra' : 'Find',
-        topRated: isSpanish ? 'Mejor valorados' : 'Top Rated',
-        available: isSpanish ? 'Disponibles' : 'Available',
-        getQuote: isSpanish ? 'Obtener cotización' : 'Get Quote',
-        viewAll: isSpanish ? 'Ver todos' : 'View All',
-        townsIn: isSpanish ? 'Pueblos en' : 'Towns in',
+        assessor: isSpanish ? 'Técnicos Certificados' : isEngland ? 'DEA/EPC Assessors' : isFrance ? 'Diagnostiqueurs Certifiés' : isPortugal ? 'Peritos Certificados' : 'BER Assessors',
+        certificate: isSpanish ? 'Certificado de Eficiencia Energética' : isEngland ? 'EPC Certificate' : isFrance ? 'DPE' : isPortugal ? 'Certificado Energético' : 'BER Certificate',
+        in: isSpanish ? 'en' : isFrance ? 'à' : isPortugal ? 'em' : 'in',
+        find: isSpanish ? 'Encuentra' : isFrance ? 'Trouvez' : isPortugal ? 'Encontre' : 'Find',
+        topRated: isSpanish ? 'Mejor valorados' : isFrance ? 'Mieux notés' : isPortugal ? 'Mais bem avaliados' : 'Top Rated',
+        available: isSpanish ? 'Disponibles' : isFrance ? 'Disponibles' : isPortugal ? 'Disponíveis' : 'Available',
+        getQuote: isSpanish ? 'Obtener cotización' : isFrance ? 'Obtenir un devis' : isPortugal ? 'Pedir orçamento' : 'Get Quote',
+        viewAll: isSpanish ? 'Ver todos' : isFrance ? 'Voir tout' : isPortugal ? 'Ver todos' : 'View All',
+        townsIn: isSpanish ? 'Pueblos en' : isFrance ? 'Communes de' : isPortugal ? 'Localidades em' : 'Towns in',
         serviceAreas: isSpanish ? 'Áreas de servicio' : 'Service Areas',
     };
 

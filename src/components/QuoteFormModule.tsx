@@ -8,40 +8,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import EmailVerification from './EmailVerification';
 import IdentityAuth from './IdentityAuth';
 import JobConfirmation from './JobConfirmation';
-import { TOWNS_BY_COUNTY } from '../data/irishTowns';
-import { TOWNS_BY_COUNTY_ENGLAND } from '../data/englandTowns';
-import { TOWNS_BY_COUNTY_SPAIN } from '../data/spainTowns';
-
-const getTownsForTenant = (tenant: string): Record<string, string[]> => {
-    if (tenant === 'england') return TOWNS_BY_COUNTY_ENGLAND;
-    if (tenant === 'spain') return TOWNS_BY_COUNTY_SPAIN;
-    return TOWNS_BY_COUNTY;
-};
-
-// Irish Counties
-const COUNTIES_IRELAND = [
-    'Carlow', 'Cavan', 'Clare', 'Cork', 'Donegal', 'Dublin', 'Galway', 'Kerry',
-    'Kildare', 'Kilkenny', 'Laois', 'Leitrim', 'Limerick', 'Longford', 'Louth',
-    'Mayo', 'Meath', 'Monaghan', 'Offaly', 'Roscommon', 'Sligo', 'Tipperary',
-    'Waterford', 'Westmeath', 'Wexford', 'Wicklow'
-];
-
-// Spain Comunidades Autónomas
-const COUNTIES_SPAIN = [
-    'Andalucía', 'Aragón', 'Principado de Asturias', 'Islas Baleares', 'Canarias',
-    'Cantabria', 'Castilla-La Mancha', 'Castilla y León', 'Cataluña', 'Ceuta',
-    'Comunidad de Madrid', 'Comunidad Foral de Navarra', 'Comunidad Valenciana',
-    'Extremadura', 'Galicia', 'La Rioja', 'Melilla', 'País Vasco', 'Región de Murcia'
-];
-
-// England Ceremonial Counties
-const COUNTIES_ENGLAND = Object.keys(TOWNS_BY_COUNTY_ENGLAND).sort();
-
-const getCountiesForTenant = (tenant: string) => {
-    if (tenant === 'england') return COUNTIES_ENGLAND;
-    if (tenant === 'spain') return COUNTIES_SPAIN;
-    return COUNTIES_IRELAND;
-};
+import { getTownsForTenant, getCountiesForTenant } from '../lib/tenantData';
 
 const ROUTING_KEYS: Record<string, string> = {
     'Carlow': 'R93', 'Cavan': 'H12', 'Clare': 'V95', 'Cork': 'T12', 'Donegal': 'F92',
@@ -118,31 +85,43 @@ const TECHNICAL_ASSESSMENT_TYPES: Record<string, string[]> = {
     ireland: ['Heat Pump Survey', 'New Build Compliance (Part L / NZEB)', 'Energy Audit', 'Retrofit Assessment', 'Air Tightness Test', 'Thermal Imaging', 'Ventilation Assessment', 'SEAI Grant Assessment'],
     spain: ['Auditoría Energética', 'Certificación Edificio Nuevo (CTE)', 'Evaluación Bomba de Calor', 'Evaluación de Rehabilitación', 'Test de Hermeticidad', 'Termografía Infrarroja', 'Evaluación de Ventilación', 'Evaluación para Subvenciones'],
     england: ['Heat Pump Assessment', 'SAP Calculation (New Build)', 'Energy Audit', 'PAS 2035 Retrofit Assessment', 'Air Tightness Test', 'Thermal Imaging Survey', 'Ventilation Assessment', 'ECO4 / Grant Assessment'],
+    france: ['Audit Énergétique', 'DPE Neuf (RT2012/RE2020)', 'Évaluation Pompe à Chaleur', 'Évaluation Rénovation Énergétique', 'Test d\'Étanchéité à l\'Air', 'Thermographie Infrarouge', 'Évaluation Ventilation', 'Évaluation pour Subventions'],
+    portugal: ['Auditoria Energética', 'Certificação Edifício Novo (RCCTE/REH)', 'Avaliação Bomba de Calor', 'Avaliação de Reabilitação', 'Teste de Estanqueidade', 'Termografia Infravermelha', 'Avaliação de Ventilação', 'Avaliação para Subsídios'],
 };
 const TECHNICAL_PROPERTY_TYPES: Record<string, string[]> = {
     ireland: ['Detached House', 'Semi-Detached', 'Terraced', 'Bungalow', 'Apartment', 'New Build (Under Construction)', 'Commercial Property'],
     spain: ['Casa Individual', 'Adosado', 'Piso / Apartamento', 'Chalet', 'Dúplex', 'Obra Nueva (En Construcción)', 'Local Comercial'],
     england: ['Detached House', 'Semi-Detached', 'Terraced', 'Bungalow', 'Flat / Maisonette', 'New Build (Under Construction)', 'Commercial Property'],
+    france: ['Maison Individuelle', 'Jumelée', 'Mitoyenne', 'Pavillon', 'Appartement', 'Construction Neuve', 'Local Commercial'],
+    portugal: ['Moradia Isolada', 'Geminada', 'Banda', 'Vivenda', 'Apartamento', 'Construção Nova', 'Imóvel Comercial'],
 };
 const YEAR_BUILT_OPTIONS: Record<string, string[]> = {
     ireland: ['Pre-1940', '1940–1970', '1970–2000', '2000–2010', '2010–2020', '2020+ / New Build'],
     spain: ['Anterior a 1940', '1940–1970', '1970–2000', '2000–2010', '2010–2020', '2020+ / Obra Nueva'],
     england: ['Pre-1940', '1940–1970', '1970–2000', '2000–2010', '2010–2020', '2020+ / New Build'],
+    france: ['Avant 1940', '1940–1970', '1970–2000', '2000–2010', '2010–2020', '2020+ / Construction Neuve'],
+    portugal: ['Antes de 1940', '1940–1970', '1970–2000', '2000–2010', '2010–2020', '2020+ / Construção Nova'],
 };
 const CURRENT_HEATING_OPTIONS: Record<string, string[]> = {
     ireland: ['Gas Boiler', 'Oil Boiler', 'Electric Storage Heaters', 'Heat Pump (Existing)', 'Solid Fuel / Stove', 'LPG', 'None / Under Construction'],
     spain: ['Caldera de Gas', 'Caldera de Gasóleo', 'Calefacción Eléctrica', 'Bomba de Calor (Existente)', 'Biomasa / Pellets', 'Sin Calefacción / En Construcción'],
     england: ['Gas Boiler', 'Oil Boiler', 'Electric Storage Heaters', 'Heat Pump (Existing)', 'Solid Fuel / Log Burner', 'LPG', 'District Heating', 'None / Under Construction'],
+    france: ['Chaudière Gaz', 'Chaudière Fioul', 'Chauffage Électrique', 'Pompe à Chaleur (Existante)', 'Biomasse / Granulés', 'Sans Chauffage / En Construction'],
+    portugal: ['Caldeira a Gás', 'Caldeira a Gasóleo', 'Aquecimento Elétrico', 'Bomba de Calor (Existente)', 'Biomassa / Pellets', 'Sem Aquecimento / Em Construção'],
 };
 const INSULATION_STATUS_OPTIONS: Record<string, string[]> = {
     ireland: ['Fully Insulated (Walls, Attic, Floor)', 'Partially Insulated', 'Minimal / No Insulation', 'Unknown'],
     spain: ['Totalmente Aislada (Paredes, Techo, Suelo)', 'Parcialmente Aislada', 'Sin Aislamiento / Mínimo', 'Desconocido'],
     england: ['Fully Insulated (Walls, Loft, Floor)', 'Partially Insulated', 'Minimal / No Insulation', 'Unknown'],
+    france: ['Entièrement Isolé (Murs, Toit, Sol)', 'Partiellement Isolé', 'Minimal / Non Isolé', 'Inconnu'],
+    portugal: ['Totalmente Isolada (Paredes, Sótão, Pavimento)', 'Parcialmente Isolada', 'Sem Isolamento / Mínimo', 'Desconhecido'],
 };
 const TECHNICAL_PURPOSES: Record<string, string[]> = {
     ireland: ['SEAI Grant Application', 'Heat Pump Installation', 'Building Regulations (Part L)', 'Pre-Purchase Survey', 'Energy Upgrade Planning', 'Compliance Certificate', 'Other'],
     spain: ['Solicitud de Subvención', 'Instalación de Bomba de Calor', 'Cumplimiento Normativo (CTE)', 'Evaluación Pre-Compra', 'Planificación de Mejora Energética', 'Certificado de Cumplimiento', 'Otro'],
     england: ['ECO4 / Grant Application', 'Heat Pump Installation', 'Building Regulations (Part L)', 'Pre-Purchase Survey', 'Energy Upgrade Planning', 'EPC Improvement', 'PAS 2035 Compliance', 'Other'],
+    france: ['Demande de Subvention', 'Installation Pompe à Chaleur', 'Réglementation Thermique (RT2012/RE2020)', 'Évaluation Pré-Achat', 'Planification Rénovation Énergétique', 'Certification de Conformité', 'Autre'],
+    portugal: ['Pedido de Subsídio', 'Instalação de Bomba de Calor', 'Cumprimento Regulamentar (RCCTE/REH)', 'Avaliação Pré-Compra', 'Planeamento de Melhoria Energética', 'Certificado de Conformidade', 'Outro'],
 };
 
 interface FormData {

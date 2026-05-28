@@ -51,6 +51,32 @@ const PROVINCES_ENGLAND: Record<string, string[]> = {
     Scotland: ['Glasgow', 'Edinburgh'],
 };
 
+const PROVINCES_FRANCE: Record<string, string[]> = {
+    'Île-de-France': ['Paris'],
+    'Provence-Alpes-Côte d\'Azur': ['Marseille', 'Nice'],
+    'Auvergne-Rhône-Alpes': ['Lyon', 'Grenoble'],
+    'Occitanie': ['Toulouse', 'Montpellier'],
+    'Nouvelle-Aquitaine': ['Bordeaux', 'La Rochelle'],
+    'Grand Est': ['Strasbourg', 'Reims'],
+    'Hauts-de-France': ['Lille', 'Amiens'],
+    'Pays de la Loire': ['Nantes', 'Angers'],
+    'Bretagne': ['Rennes', 'Brest'],
+    'Normandie': ['Rouen', 'Caen'],
+    'Centre-Val de Loire': ['Tours', 'Orléans'],
+    'Bourgogne-Franche-Comté': ['Dijon', 'Besançon'],
+    'Corse': ['Ajaccio', 'Bastia'],
+};
+
+const PROVINCES_PORTUGAL: Record<string, string[]> = {
+    'Lisboa': ['Lisboa', 'Sintra', 'Cascais'],
+    'Norte': ['Porto', 'Braga', 'Guimarães'],
+    'Centro': ['Coimbra', 'Aveiro', 'Leiria'],
+    'Algarve': ['Faro', 'Portimão', 'Albufeira'],
+    'Alentejo': ['Évora', 'Beja'],
+    'Açores': ['Ponta Delgada', 'Angra do Heroísmo'],
+    'Madeira': ['Funchal'],
+};
+
 const Layout = () => {
     const { t, isSpanish, tenant } = useTranslation();
     const tenantDisplayName = getTenantDisplayName(tenant);
@@ -73,6 +99,36 @@ const Layout = () => {
             };
             return map[label] || label;
         }
+        if (tenant === 'france') {
+            const map: Record<string, string> = {
+                'Home': 'Accueil',
+                'About': 'À Propos',
+                'Home Energy Upgrade Catalogue': 'Catalogue de Rénovation Énergétique',
+                'Speak to an Energy Advisor': 'Parlez à un Conseiller Énergétique',
+                'Book Ber Assessors': 'Réserver un Diagnostiqueur DPE',
+                'Our News': 'Actualités',
+                'Blog': 'Blog',
+                'FAQ': 'FAQ',
+                'Location': 'Localisations',
+                'Contact': 'Contact',
+            };
+            return map[label] || label;
+        }
+        if (tenant === 'portugal') {
+            const map: Record<string, string> = {
+                'Home': 'Início',
+                'About': 'Sobre Nós',
+                'Home Energy Upgrade Catalogue': 'Catálogo de Melhoria Energética',
+                'Speak to an Energy Advisor': 'Fale com um Consultor Energético',
+                'Book Ber Assessors': 'Agendar Perito Certificador',
+                'Our News': 'Notícias',
+                'Blog': 'Blog',
+                'FAQ': 'FAQ',
+                'Location': 'Localizações',
+                'Contact': 'Contacto',
+            };
+            return map[label] || label;
+        }
         if (tenant === 'england') {
             const map: Record<string, string> = {
                 'Book Ber Assessors': 'Book EPC Assessors',
@@ -81,7 +137,12 @@ const Layout = () => {
         }
         return label;
     };
-    const PROVINCES = tenant === 'england' ? PROVINCES_ENGLAND : (tenant === 'spain' ? PROVINCES_SPAIN : PROVINCES_IRELAND);
+    const PROVINCES =
+        tenant === 'england' ? PROVINCES_ENGLAND :
+        tenant === 'spain' ? PROVINCES_SPAIN :
+        tenant === 'france' ? PROVINCES_FRANCE :
+        tenant === 'portugal' ? PROVINCES_PORTUGAL :
+        PROVINCES_IRELAND;
     const [locations, setLocations] = useState<any[]>([]);
     const [isLocationsOpen, setIsLocationsOpen] = useState(false);
     const [expandedProvince, setExpandedProvince] = useState<string | null>(null);

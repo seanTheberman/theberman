@@ -23,6 +23,16 @@ const DOMAIN_TO_TENANT: Record<string, string> = {
   'www.epccert.com': 'england',
   'epccert.be': 'england',
   'www.epccert.be': 'england',
+  // France
+  'dpefrance.eu': 'france',
+  'www.dpefrance.eu': 'france',
+  'diagnostic-france.eu': 'france',
+  'www.diagnostic-france.eu': 'france',
+  // Portugal
+  'certificado-pt.eu': 'portugal',
+  'www.certificado-pt.eu': 'portugal',
+  'certificadopt.eu': 'portugal',
+  'www.certificadopt.eu': 'portugal',
   // Local dev
   'localhost': 'ireland',
 };
@@ -59,6 +69,8 @@ export function getTenantDisplayName(tenant: string): string {
     'ireland': 'The Berman',
     'spain': 'Certificado Energético',
     'england': 'EPC Cert',
+    'france': 'DPE France',
+    'portugal': 'Certificado Energético',
   };
   return map[tenant] || tenant;
 }
@@ -68,6 +80,8 @@ export function getTenantCurrency(tenant: string): string {
     'ireland': 'EUR',
     'spain': 'EUR',
     'england': 'GBP',
+    'france': 'EUR',
+    'portugal': 'EUR',
   };
   return map[tenant] || 'EUR';
 }
@@ -88,6 +102,16 @@ export function getTenantWebsiteUrl(tenant: string): string {
     if (host && host.includes('epccert')) return `https://${host}`;
     return 'https://epccert.com';
   }
+  if (tenant === 'france') {
+    const host = getCurrentHostname();
+    if (host && host.includes('france')) return `https://${host}`;
+    return 'https://dpefrance.eu';
+  }
+  if (tenant === 'portugal') {
+    const host = getCurrentHostname();
+    if (host && host.includes('pt')) return `https://${host}`;
+    return 'https://certificadopt.eu';
+  }
   return 'https://theberman.eu';
 }
 
@@ -97,6 +121,12 @@ export function getTenantEmail(tenant: string): string {
   }
   if (tenant === 'england') {
     return 'hello@epccert.com';
+  }
+  if (tenant === 'france') {
+    return 'contact@dpefrance.eu';
+  }
+  if (tenant === 'portugal') {
+    return 'contact@certificadopt.eu';
   }
   return 'hello@theberman.eu';
 }
@@ -111,6 +141,16 @@ export function getTenantDomain(tenant: string): string {
     const host = getCurrentHostname();
     if (host && host.includes('epccert')) return host.replace(/^www\./, '');
     return 'epccert.com';
+  }
+  if (tenant === 'france') {
+    const host = getCurrentHostname();
+    if (host && host.includes('france')) return host.replace(/^www\./, '');
+    return 'dpefrance.eu';
+  }
+  if (tenant === 'portugal') {
+    const host = getCurrentHostname();
+    if (host && host.includes('pt')) return host.replace(/^www\./, '');
+    return 'certificadopt.eu';
   }
   return 'theberman.eu';
 }

@@ -119,6 +119,8 @@ const Admin = () => {
         { id: 'ireland', label: 'Ireland', domain: 'theberman.eu' },
         { id: 'spain', label: 'Spain', domain: 'certificadoenergético.eu' },
         { id: 'england', label: 'England', domain: 'epccert.com' },
+        { id: 'france', label: 'France', domain: 'dpefrance.eu' },
+        { id: 'portugal', label: 'Portugal', domain: 'certificadopt.eu' },
     ];
 
     // Selected items
@@ -1311,7 +1313,8 @@ const Admin = () => {
         try {
             const clientEmail = selectedAssessment.user?.email || selectedAssessment.contact_email;
             if (!clientEmail) { toast.error('Client email not found'); return; }
-            const subject = `Update regarding your ${selectedTenant === 'spain' ? 'Certificado Energético' : (selectedTenant === 'england' ? 'EPC' : 'BER')} Assessment - ${selectedAssessment.property_address}`;
+            const assessmentLabel = selectedTenant === 'spain' ? 'Certificado Energético' : selectedTenant === 'england' ? 'EPC' : selectedTenant === 'france' ? 'DPE' : selectedTenant === 'portugal' ? 'Certificado Energético' : 'BER';
+            const subject = `Update regarding your ${assessmentLabel} Assessment - ${selectedAssessment.property_address}`;
 
             const { data, error } = await supabase.functions.invoke('send-admin-message', {
                 body: {

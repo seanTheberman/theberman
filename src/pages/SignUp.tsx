@@ -15,7 +15,9 @@ import { getTenantFromDomain } from '../lib/tenant';
 const REGISTRATION_NUMBER_LABELS: Record<string, { label: string; placeholder: string }> = {
     ireland: { label: 'SEAI Registration #', placeholder: 'e.g. 10XXX' },
     spain: { label: 'CEE Registration #', placeholder: 'e.g. 123456' },
-    england: { label: 'Accreditation #', placeholder: 'e.g. ELH123456' }
+    england: { label: 'Accreditation #', placeholder: 'e.g. ELH123456' },
+    france: { label: 'DPE Diagnostiqueur #', placeholder: 'e.g. 12345' },
+    portugal: { label: 'ADENE Registration #', placeholder: 'e.g. 12345' }
 };
 
 const signupSchema = z.object({

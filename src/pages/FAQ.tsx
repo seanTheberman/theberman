@@ -20,6 +20,8 @@ const FAQ = () => {
     const [activeId, setActiveId] = useState('');
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
+    const isFrance = tenant === 'france';
+    const isPortugal = tenant === 'portugal';
     const tenantEmail = getTenantEmail(tenant);
     const tr = isSpanish ? {
         loading: 'Cargando FAQ...',
@@ -34,6 +36,32 @@ const FAQ = () => {
         consultantsH: 'Consultoría Energética Líder en España',
         consultantsP: 'Más de 10000 clientes satisfechos.',
         emailLine: `Correo: ${tenantEmail}`,
+    } : isFrance ? {
+        loading: 'Chargement FAQ...',
+        comingSoonH: 'FAQ Bientôt Disponible',
+        comingSoonP: "Nous préparons actuellement nos questions fréquentes. Revenez bientôt.",
+        seoTitle: 'Questions Fréquentes',
+        seoDesc: 'Trouvez les réponses aux questions courantes sur le DPE, les diagnostics énergétiques, les coûts et les rénovations en France.',
+        needHelp: 'Besoin d\'aide immédiate ?',
+        emailUs: `Email: ${tenantEmail}`,
+        getQuote: 'Obtenir un Devis',
+        sidebarLabel: 'FAQ DPE',
+        consultantsH: 'Experts en Diagnostic Énergétique en France',
+        consultantsP: 'Plus de 10 000 clients satisfaits.',
+        emailLine: `Email: ${tenantEmail}`,
+    } : isPortugal ? {
+        loading: 'A carregar FAQ...',
+        comingSoonH: 'FAQ em Breve',
+        comingSoonP: 'Estamos a preparar as nossas perguntas frequentes. Volte em breve.',
+        seoTitle: 'Perguntas Frequentes',
+        seoDesc: 'Encontre respostas às perguntas mais comuns sobre certificação energética, custos e melhorias em Portugal.',
+        needHelp: 'Precisa de ajuda imediata?',
+        emailUs: `Email: ${tenantEmail}`,
+        getQuote: 'Pedir Orçamento',
+        sidebarLabel: 'FAQ Energética',
+        consultantsH: 'Especialistas em Certificação Energética em Portugal',
+        consultantsP: 'Mais de 10 000 clientes satisfeitos.',
+        emailLine: `Email: ${tenantEmail}`,
     } : {
         loading: 'Loading FAQ...',
         comingSoonH: 'FAQ Coming Soon',

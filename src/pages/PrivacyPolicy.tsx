@@ -6,9 +6,11 @@ const PrivacyPolicy = () => {
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
     const isEngland = tenant === 'england';
+    const isFrance = tenant === 'france';
+    const isPortugal = tenant === 'portugal';
     const tenantEmail = getTenantEmail(tenant);
     const tenantDomain = getTenantDomain(tenant);
-    const brand = isSpanish ? 'Certificado Energético' : (isEngland ? 'EPC Cert' : 'The Berman');
+    const brand = isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Cert' : isFrance ? 'DPE France' : isPortugal ? 'Certificado Energético' : 'The Berman';
     const lastUpdated = isSpanish ? '2 de febrero de 2026' : 'February 2, 2026';
 
     const tr = isSpanish ? {

@@ -7,7 +7,9 @@ import { getTenantFromDomain } from '../lib/tenant';
 const About = () => {
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
-    const brand = isSpanish ? 'Certificado Energético' : 'The Berman';
+    const isFrance = tenant === 'france';
+    const isPortugal = tenant === 'portugal';
+    const brand = isSpanish ? 'Certificado Energético' : isFrance ? 'DPE France' : isPortugal ? 'Certificado Energético' : 'The Berman';
 
     const tr = isSpanish ? {
         seoTitle: 'Sobre Nosotros - Certificadores Energéticos Expertos',
@@ -97,7 +99,7 @@ const About = () => {
         cta: 'Get My Quote',
     };
 
-    const baseUrl = tenant === 'england' ? 'https://epccert.com' : (isSpanish ? 'https://certificadoenerg\u00e9tico.eu' : 'https://theberman.eu');
+    const baseUrl = tenant === 'england' ? 'https://epccert.com' : isSpanish ? 'https://certificadoenerg\u00e9tico.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://theberman.eu';
 
     const orgSchema = {
         '@context': 'https://schema.org',
@@ -108,9 +110,13 @@ const About = () => {
         description: tr.seoDesc,
         sameAs: tenant === 'england'
             ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
-            : (isSpanish
+            : isSpanish
                 ? ['https://www.facebook.com/certificadoenergetico', 'https://www.instagram.com/certificadoenergetico']
-                : ['https://www.facebook.com/theberman', 'https://www.instagram.com/theberman']),
+                : tenant === 'france'
+                    ? ['https://www.facebook.com/dpefrance', 'https://www.instagram.com/dpefrance']
+                    : tenant === 'portugal'
+                        ? ['https://www.facebook.com/certificadoenergeticopt', 'https://www.instagram.com/certificadoenergeticopt']
+                        : ['https://www.facebook.com/theberman', 'https://www.instagram.com/theberman'],
     };
 
     return (
