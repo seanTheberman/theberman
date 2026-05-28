@@ -6,6 +6,8 @@ import { supabase } from '../lib/supabase';
 import { getTenantFromDomain } from '../lib/tenant';
 import SEOHead from '../components/SEOHead';
 import { TOWNS_BY_COUNTY } from '../data/irishTowns';
+import { TOWNS_BY_COUNTY_SPAIN } from '../data/spainTowns';
+import { TOWNS_BY_COUNTY_ENGLAND } from '../data/englandTowns';
 
 type CatalogueViewType = 'businesses' | 'assessors';
 
@@ -16,6 +18,8 @@ const HERO_SLIDES = [
 ];
 
 const IRELAND_COUNTIES = Object.keys(TOWNS_BY_COUNTY).sort();
+const SPAIN_REGIONS = Object.keys(TOWNS_BY_COUNTY_SPAIN).sort();
+const ENGLAND_COUNTIES = Object.keys(TOWNS_BY_COUNTY_ENGLAND).sort();
 
 interface Category {
     id: string;
@@ -323,7 +327,7 @@ const NewCatalogue = () => {
                                         className="w-full bg-transparent border-none focus:ring-0 font-black text-sm md:text-base text-gray-800 appearance-none cursor-pointer pr-10 pt-2"
                                     >
                                         <option value="">{t.allLocations}</option>
-                                        {IRELAND_COUNTIES.map(county => (
+                                        {(tenant === 'spain' ? SPAIN_REGIONS : tenant === 'england' ? ENGLAND_COUNTIES : IRELAND_COUNTIES).map(county => (
                                             <option key={county} value={county}>{county}</option>
                                         ))}
                                     </select>
