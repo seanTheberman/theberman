@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { Search, Plus, Briefcase, AlertTriangle, Edit2, Trash2, ExternalLink, Star, Filter, Building2, HardHat } from 'lucide-react';
+import { Search, Plus, Briefcase, AlertTriangle, Edit2, Trash2, ExternalLink, Star, Filter, Building2, HardHat, Tag, X, Loader2 } from 'lucide-react';
+import { supabase } from '../../../lib/supabase';
+import toast from 'react-hot-toast';
 import type { Profile, CatalogueListing } from '../../../types/admin';
 
-type CatalogueViewType = 'businesses' | 'assessors';
+type CatalogueViewType = 'businesses' | 'assessors' | 'categories';
 
 interface Props {
     listings: CatalogueListing[];
@@ -15,14 +17,54 @@ interface Props {
     toggleCatalogueStatus: (id: string, currentStatus: boolean) => void;
     toggleCatalogueFeatured: (id: string, currentFeatured: boolean) => void;
     handleDeleteListing: (id: string) => void;
+    selectedTenant?: string;
+    catalogueCategories: { id: string; name: string }[];
+    onCategoriesChanged: () => void;
 }
 
 export const CatalogueView = React.memo(({
     listings, users_list, searchTerm, setSearchTerm, locationFilter, setLocationFilter,
     handleOpenCatalogueView, toggleCatalogueStatus, toggleCatalogueFeatured, handleDeleteListing,
+    selectedTenant, catalogueCategories, onCategoriesChanged,
 }: Props) => {
-    // State for toggling between Businesses and BER Assessors
     const [activeView, setActiveView] = useState<CatalogueViewType>('businesses');
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [savingCategory, setSavingCategory] = useState(false);
+
+    const handleAddCategory = async () => {
+        const name = newCategoryName.trim();
+        if (!name) return;
+        setSavingCategory(true);
+        try {
+            const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            const { error } = await supabase.from('catalogue_categories').insert({
+                name,
+                slug: `${slug}-${Date.now().toString(36)}`,
+                tenant: selectedTenant || 'ireland',
+            });
+            if (error) throw error;
+            setNewCategoryName('');
+            toast.success('Category added');
+            onCategoriesChanged();
+        } catch (err: any) {
+            toast.error(err.message || 'Failed to add category');
+        } finally {
+            setSavingCategory(false);
+        }
+    };
+
+    const handleDeleteCategory = async (id: string, name: string) => {
+        if (!confirm(`Delete category "${name}"? This will remove it from all listings.`)) return;
+        try {
+            await supabase.from('catalogue_listing_categories').delete().eq('category_id', id);
+            const { error } = await supabase.from('catalogue_categories').delete().eq('id', id);
+            if (error) throw error;
+            toast.success('Category deleted');
+            onCategoriesChanged();
+        } catch (err: any) {
+            toast.error(err.message || 'Failed to delete category');
+        }
+    };
 
     // Helper function to get owner role for a listing
     const getOwnerRole = (listing: CatalogueListing): string | null => {
@@ -97,35 +139,70 @@ export const CatalogueView = React.memo(({
 
     return (
         <div className="space-y-4">
-            {/* View Toggle Buttons - Businesses vs BER Assessors */}
+            {/* View Toggle Buttons */}
             <div className="bg-white p-2 rounded-xl shadow-sm border border-gray-100">
                 <div className="flex gap-2">
-                    <button
-                        onClick={() => setActiveView('businesses')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${
-                            activeView === 'businesses'
-                                ? 'bg-[#007F00] text-white shadow-md'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
-                    >
-                        <Building2 size={18} />
-                        Businesses
+                    <button onClick={() => setActiveView('businesses')} className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeView === 'businesses' ? 'bg-[#007F00] text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                        <Building2 size={18} />Businesses
                     </button>
-                    <button
-                        onClick={() => setActiveView('assessors')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${
-                            activeView === 'assessors'
-                                ? 'bg-[#007F00] text-white shadow-md'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
-                    >
-                        <HardHat size={18} />
-                        BER Assessors
+                    <button onClick={() => setActiveView('assessors')} className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeView === 'assessors' ? 'bg-[#007F00] text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                        <HardHat size={18} />BER Assessors
+                    </button>
+                    <button onClick={() => setActiveView('categories')} className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeView === 'categories' ? 'bg-[#007F00] text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                        <Tag size={18} />Categories ({catalogueCategories.length})
                     </button>
                 </div>
             </div>
 
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 gap-4">
+            {/* Categories Management Panel */}
+            {activeView === 'categories' && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 className="text-base font-black text-gray-900 mb-1">Manage Categories</h3>
+                    <p className="text-xs text-gray-400 mb-5">Categories for <span className="font-bold capitalize">{selectedTenant || 'ireland'}</span> tenant</p>
+
+                    {/* Add new category */}
+                    <div className="flex gap-2 mb-6">
+                        <input
+                            type="text"
+                            value={newCategoryName}
+                            onChange={e => setNewCategoryName(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && handleAddCategory()}
+                            placeholder="New category name..."
+                            className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] outline-none"
+                        />
+                        <button
+                            onClick={handleAddCategory}
+                            disabled={savingCategory || !newCategoryName.trim()}
+                            className="flex items-center gap-2 bg-[#007F00] text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-[#006400] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {savingCategory ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                            Add
+                        </button>
+                    </div>
+
+                    {/* Category list */}
+                    {catalogueCategories.length === 0 ? (
+                        <p className="text-sm text-gray-400 italic text-center py-8">No categories yet. Add one above.</p>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {catalogueCategories.map(cat => (
+                                <div key={cat.id} className="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-xl border border-gray-100 group">
+                                    <span className="text-sm font-bold text-gray-800">{cat.name}</span>
+                                    <button
+                                        onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                                        className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                                        title="Delete category"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {activeView !== 'categories' && <><div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 gap-4">
                 <div className="flex flex-col md:flex-row gap-2 flex-1 max-w-xl">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -268,7 +345,7 @@ export const CatalogueView = React.memo(({
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </div></> }
         </div>
     );
 });

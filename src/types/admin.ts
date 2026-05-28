@@ -260,6 +260,7 @@ export type AdminView =
     | 'visual-editor'
     | 'add-to-catalogue'
     | 'catalogue'
+    | 'location-pages'
     | 'recently-deleted';
 
 export interface DeletedItem {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, RefreshCw, BarChart2, Building2, BookOpen, ClipboardList, HardHat, Home, Inbox, DollarSign, Newspaper, Settings as SettingsIcon, Users, Layers, Menu, X, ChevronLeft, ChevronRight, Trash2, Briefcase, HelpCircle, PaintBucket } from 'lucide-react';
+import { LogOut, RefreshCw, BarChart2, Building2, BookOpen, ClipboardList, HardHat, Home, Inbox, DollarSign, Newspaper, Settings as SettingsIcon, Users, Layers, Menu, X, ChevronLeft, ChevronRight, Trash2, Briefcase, HelpCircle, PaintBucket, MapPin } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { geocodeAddress, COUNTY_COORDINATES } from '../lib/geocoding';
@@ -26,6 +26,7 @@ import { FaqView } from '../components/admin/views/FaqView';
 import { SettingsView } from '../components/admin/views/SettingsView';
 import { RecentlyDeletedView } from '../components/admin/views/RecentlyDeletedView';
 import { VisualEditorView } from '../components/admin/views/VisualEditorView';
+import { LocationPagesView } from '../components/admin/views/LocationPagesView';
 
 // Modals
 import { LeadDetailsModal } from '../components/admin/modals/LeadDetailsModal';
@@ -1755,7 +1756,8 @@ const Admin = () => {
             stats: 'System Overview', leads: 'Leads & Inquiries', assessments: 'BER Assessments',
             jobs: 'Jobs Management', businesses: 'Business Directory', catalogue: 'Business Catalogue', assessors: 'BER Assessors',
             homeowners: 'Homeowners', payments: 'Financials', news: 'News & Updates', settings: 'Settings',
-            'recently-deleted': 'Recently Deleted',
+            'recently-deleted': 'Recently Deleted', 'location-pages': 'Location Pages',
+            'visual-editor': 'Visual Editor',
         };
         return titles[view] || 'Admin';
     }, [view]);
@@ -1768,6 +1770,9 @@ const Admin = () => {
             homeowners: 'Manage homeowners.', payments: 'View and export payment records.',
             settings: 'Configure global platform settings.',
             'recently-deleted': 'Restore items or permanently delete them from the database.',
+            'location-pages': 'Edit SEO content and descriptions for all location pages, per tenant.',
+            'visual-editor': 'Edit page content visually with live preview.',
+
         };
         return subs[view] || '';
     }, [view]);
@@ -1792,6 +1797,7 @@ const Admin = () => {
         { id: 'blog', label: 'Blog', icon: Layers, badge: 0 },
         { id: 'faq-management', label: 'FAQ', icon: HelpCircle, badge: 0 },
         { id: 'visual-editor', label: 'Visual Editor', icon: PaintBucket, badge: 0 },
+        { id: 'location-pages', label: 'Location Pages', icon: MapPin, badge: 0 },
         { type: 'divider', group: '' },
         { id: 'recently-deleted', label: 'Recently Deleted', icon: Trash2, badge: deletedItems.length },
         { id: 'settings', label: 'Settings', icon: SettingsIcon, badge: 0 },
@@ -2043,6 +2049,9 @@ const Admin = () => {
                             toggleCatalogueStatus={toggleCatalogueStatus}
                             toggleCatalogueFeatured={toggleCatalogueFeatured}
                             handleDeleteListing={handleDeleteListing}
+                            selectedTenant={selectedTenant}
+                            catalogueCategories={catalogueCategories}
+                            onCategoriesChanged={fetchCatalogueCategories}
                         />
                     ) : view === 'add-to-catalogue' ? (
                         <AddToCatalogueView
@@ -2083,6 +2092,8 @@ const Admin = () => {
                         />
                     ) : view === 'visual-editor' ? (
                         <VisualEditorView selectedTenant={selectedTenant} />
+                    ) : view === 'location-pages' ? (
+                        <LocationPagesView selectedTenant={selectedTenant} />
                     ) : view === 'settings' ? (
                         <SettingsView
                             appSettings={appSettings}
