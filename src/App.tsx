@@ -44,6 +44,7 @@ import NewsDetail from './pages/NewsDetail';
 import HireAgent from './pages/HireAgent';
 import MembershipPayment from './pages/MembershipPayment';
 import LocationPage from './pages/LocationPage';
+import ThankYou from './pages/ThankYou';
 import ReferralTracker from './components/ReferralTracker';
 
 
@@ -104,6 +105,7 @@ function App() {
                     <Route path="/membership-payment" element={<MembershipPayment />} />
                     <Route path="/get-quote" element={<QuoteForm />} />
                     <Route path="/quote/:id" element={<QuickQuotePage />} />
+                    <Route path="/thank-you" element={<ThankYou />} />
 
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/update-password" element={<UpdatePassword />} />

@@ -1,5 +1,6 @@
 
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '../lib/supabase';
@@ -26,6 +27,7 @@ const contactSchema = z.object({
 type ContactFormData = z.infer<typeof contactSchema>;
 
 const Contact = () => {
+    const navigate = useNavigate();
     const {
         register,
         handleSubmit,
@@ -118,6 +120,7 @@ const Contact = () => {
 
             toast.success(tr.toastSuccess);
             reset();
+            navigate('/thank-you');
         } catch (error) {
             console.error('Error:', error);
             toast.error(tr.toastError);

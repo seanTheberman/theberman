@@ -3,29 +3,33 @@ import { getTenantFromDomain } from '../lib/tenant';
 import { Lock, Unlock, ArrowRight } from 'lucide-react';
 
 const CORRECT_PASSWORD = 'Anup228';
-const STORAGE_KEY = 'england_coming_soon_unlocked';
 
 export function ComingSoonGate({ children }: { children: React.ReactNode }) {
     const tenant = getTenantFromDomain();
     const isEngland = tenant === 'england';
+    const isFrance = tenant === 'france';
+    const isPortuguese = tenant === 'portugal';
+    const isProtected = isEngland || isFrance || isPortuguese;
+
+    const storageKey = `${tenant}_coming_soon_unlocked`;
 
     const [password, setPassword] = useState('');
     const [error, setError] = useState(false);
     const [unlocked, setUnlocked] = useState(() => {
         if (typeof sessionStorage !== 'undefined') {
-            return sessionStorage.getItem(STORAGE_KEY) === 'true';
+            return sessionStorage.getItem(storageKey) === 'true';
         }
         return false;
     });
 
-    if (!isEngland || unlocked) {
+    if (!isProtected || unlocked) {
         return <>{children}</>;
     }
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (password === CORRECT_PASSWORD) {
-            sessionStorage.setItem(STORAGE_KEY, 'true');
+            sessionStorage.setItem(storageKey, 'true');
             setUnlocked(true);
         } else {
             setError(true);
@@ -42,7 +46,7 @@ export function ComingSoonGate({ children }: { children: React.ReactNode }) {
                     </div>
                     <h1 className="text-4xl font-serif font-bold text-white mb-3">Coming Soon</h1>
                     <p className="text-gray-400 text-lg leading-relaxed">
-                        EPC Cert is launching soon in England.
+                        {isEngland ? 'EPC Cert is launching soon in England.' : isFrance ? 'DPE France is launching soon in France.' : 'Certificado Energético is launching soon in Portugal.'}
                         <br />
                         <span className="text-[#9ACD32]">Stay tuned for updates.</span>
                     </p>
@@ -76,7 +80,7 @@ export function ComingSoonGate({ children }: { children: React.ReactNode }) {
                 </form>
 
                 <p className="mt-8 text-gray-600 text-sm">
-                    Contact us at <a href="mailto:hello@epccert.com" className="text-[#9ACD32] hover:text-white transition">hello@epccert.com</a> for early access.
+                    Contact us at <a href={`mailto:${isFrance ? 'contact@dpefrance.eu' : isPortuguese ? 'contact@certificadopt.eu' : 'hello@epccert.com'}`} className="text-[#9ACD32] hover:text-white transition">{isFrance ? 'contact@dpefrance.eu' : isPortuguese ? 'contact@certificadopt.eu' : 'hello@epccert.com'}</a> for early access.
                 </p>
             </div>
         </div>
