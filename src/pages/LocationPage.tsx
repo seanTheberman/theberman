@@ -27,7 +27,9 @@ const LocationPage = () => {
     // Get the correct location data based on tenant
     const locationData = getTownsForTenant(tenant);
     const rawCountyName = county ? county.replace(/-/g, ' ') : '';
-    const townName = town ? town.replace(/-/g, ' ') : '';
+    const townName = town
+        ? town.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+        : '';
 
     // Case-insensitive county matching
     const countyKey = rawCountyName
