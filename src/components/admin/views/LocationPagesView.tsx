@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../lib/supabase';
 import toast from 'react-hot-toast';
-import { MapPin, Edit2, Save, X, Plus, Loader2, Search, Globe, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
+import { MapPin, Edit2, Save, X, Plus, Loader2, Search, Globe, ChevronDown, ChevronRight, Trash2, Monitor, Smartphone, ExternalLink } from 'lucide-react';
 import { getTownsForTenant, getCountiesForTenant } from '../../../lib/tenantData';
 
 interface LocationPage {
@@ -53,9 +53,22 @@ export const LocationPagesView = ({ selectedTenant }: Props) => {
     const [editingPage, setEditingPage] = useState<LocationPage | null>(null);
     const [saving, setSaving] = useState(false);
     const [expandedRegion, setExpandedRegion] = useState<string | null>(null);
+    const [deviceMode, setDeviceMode] = useState<'desktop' | 'mobile'>('desktop');
+    const [previewKey, setPreviewKey] = useState(0);
+    const iframeRef = useRef<HTMLIFrameElement>(null);
 
     const tenant = selectedTenant || 'ireland';
     const tenantData = TENANT_LOCATIONS[tenant] || TENANT_LOCATIONS.ireland;
+
+    const getPreviewUrl = (locationName: string) => {
+        const hostname = window.location.hostname;
+        const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
+        const base = isLocal
+            ? `${window.location.protocol}//${hostname}:${window.location.port}`
+            : `${window.location.protocol}//${window.location.host}`;
+        const slug = makeSlug(locationName);
+        return `${base}/${slug}?tenant=${tenant}`;
+    };
 
     const fetchPages = useCallback(async () => {
         setLoading(true);
@@ -122,7 +135,7 @@ export const LocationPagesView = ({ selectedTenant }: Props) => {
                 if (error) throw error;
             }
             toast.success('Location page saved');
-            setEditingPage(null);
+            setPreviewKey(k => k + 1);
             await fetchPages();
         } catch (err: any) {
             toast.error(err.message || 'Failed to save');
@@ -160,11 +173,11 @@ export const LocationPagesView = ({ selectedTenant }: Props) => {
     const totalLocations = allLocations.length;
 
     return (
-        <div className="flex gap-6 h-[calc(100vh-10rem)]">
+        <div className="flex gap-4 h-[calc(100vh-8rem)] -m-6 -mt-2 pt-2 px-6">
             {/* Left: Location Tree */}
-            <div className="w-80 flex-shrink-0 flex flex-col bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="w-64 flex-shrink-0 flex flex-col bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="px-4 py-3 border-b border-gray-100">
-                    <h3 className="text-sm font-black text-gray-900 mb-0.5">Location Pages</h3>
+                    <h3 className="text-sm font-black text-gray-900 mb-0.5">Locations</h3>
                     <p className="text-[10px] text-gray-400 font-medium capitalize">{tenant} · {configuredCount}/{totalLocations} configured</p>
                     <div className="relative mt-2">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={13} />
@@ -184,7 +197,6 @@ export const LocationPagesView = ({ selectedTenant }: Props) => {
                             <Loader2 className="animate-spin text-gray-300" size={24} />
                         </div>
                     ) : filteredLocations ? (
-                        /* Search results flat list */
                         <div className="py-1">
                             {filteredLocations.length === 0 ? (
                                 <p className="text-xs text-gray-400 text-center py-6">No results</p>
@@ -203,7 +215,7 @@ export const LocationPagesView = ({ selectedTenant }: Props) => {
                                             {loc.isRegion && <span className="text-[9px] text-gray-400 font-bold uppercase bg-gray-100 px-1.5 py-0.5 rounded">Region</span>}
                                         </div>
                                         {pg ? (
-                                            <span className="text-[9px] font-bold text-green-600 bg-green-50 border border-green-200 px-1.5 py-0.5 rounded flex-shrink-0">Saved</span>
+                                            <span className="text-[9px] font-bold text-green-600 bg-green-50 border border-green-200 px-1.5 py-0.5 rounded flex-shrink-0">✓</span>
                                         ) : (
                                             <Plus size={12} className="text-gray-300 flex-shrink-0" />
                                         )}
@@ -212,7 +224,6 @@ export const LocationPagesView = ({ selectedTenant }: Props) => {
                             })}
                         </div>
                     ) : (
-                        /* Region tree */
                         <div className="py-1">
                             {tenantData.regions.map(region => {
                                 const regionPg = getPage(region);
@@ -222,7 +233,6 @@ export const LocationPagesView = ({ selectedTenant }: Props) => {
 
                                 return (
                                     <div key={region} className="border-b border-gray-50">
-                                        {/* Region row */}
                                         <div className="flex items-center">
                                             <button
                                                 onClick={() => setExpandedRegion(isExpanded ? null : region)}
@@ -244,7 +254,6 @@ export const LocationPagesView = ({ selectedTenant }: Props) => {
                                             </button>
                                         </div>
 
-                                        {/* Towns */}
                                         {isExpanded && towns.map(town => {
                                             const townPg = getPage(town);
                                             const isEditing = editingPage?.location_name === town;
@@ -259,7 +268,7 @@ export const LocationPagesView = ({ selectedTenant }: Props) => {
                                                         <span className="text-xs text-gray-600 truncate">{town}</span>
                                                     </div>
                                                     {townPg ? (
-                                                        <span className="text-[9px] font-bold text-green-600 bg-green-50 border border-green-200 px-1.5 py-0.5 rounded flex-shrink-0">Saved</span>
+                                                        <span className="text-[9px] font-bold text-green-600 flex-shrink-0">✓</span>
                                                     ) : (
                                                         <Plus size={11} className="text-gray-200 flex-shrink-0" />
                                                     )}
@@ -274,41 +283,39 @@ export const LocationPagesView = ({ selectedTenant }: Props) => {
                 </div>
             </div>
 
-            {/* Right: Editor */}
-            <div className="flex-1 overflow-y-auto">
+            {/* Middle: Editor */}
+            <div className="w-80 flex-shrink-0 overflow-y-auto">
                 {editingPage ? (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                        {/* Header */}
-                        <div className="flex items-center justify-between mb-6">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                        <div className="flex items-center justify-between mb-4">
                             <div>
-                                <h3 className="text-base font-black text-gray-900 flex items-center gap-2">
-                                    <MapPin size={16} className="text-[#007F00]" />
+                                <h3 className="text-sm font-black text-gray-900 flex items-center gap-2">
+                                    <MapPin size={14} className="text-[#007F00]" />
                                     {editingPage.location_name}
-                                    {editingPage.id && <span className="text-[10px] font-bold text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded">Saved</span>}
+                                    {editingPage.id && <span className="text-[9px] font-bold text-green-600 bg-green-50 border border-green-200 px-1.5 py-0.5 rounded">Saved</span>}
                                 </h3>
-                                <p className="text-xs text-gray-400 mt-0.5">/{editingPage.slug}</p>
+                                <p className="text-[10px] text-gray-400 mt-0.5">/{editingPage.slug}</p>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
                                 {editingPage.id && (
                                     <button
                                         onClick={() => handleDelete(editingPage.id!, editingPage.location_name)}
-                                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                                         title="Delete page"
                                     >
-                                        <Trash2 size={15} />
+                                        <Trash2 size={13} />
                                     </button>
                                 )}
-                                <button onClick={() => setEditingPage(null)} className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all">
-                                    <X size={15} />
+                                <button onClick={() => setEditingPage(null)} className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all">
+                                    <X size={13} />
                                 </button>
                             </div>
                         </div>
 
-                        <div className="space-y-6">
-                            {/* Hero Section */}
+                        <div className="space-y-4">
                             <div>
-                                <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Hero Content</h4>
-                                <div className="space-y-3">
+                                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Hero Content</h4>
+                                <div className="space-y-2">
                                     <div>
                                         <label className={lbl}>Hero Title</label>
                                         <input type="text" value={editingPage.hero_title} onChange={e => setEditingPage({ ...editingPage, hero_title: e.target.value })} className={inp} placeholder={`Energy Assessors in ${editingPage.location_name}`} />
@@ -320,44 +327,39 @@ export const LocationPagesView = ({ selectedTenant }: Props) => {
                                 </div>
                             </div>
 
-                            {/* Intro */}
                             <div>
-                                <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Intro Text</h4>
+                                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Intro Text</h4>
                                 <textarea
                                     value={editingPage.intro_text}
                                     onChange={e => setEditingPage({ ...editingPage, intro_text: e.target.value })}
-                                    rows={4}
+                                    rows={3}
                                     className={inp}
                                     placeholder={`Describe services available in ${editingPage.location_name}...`}
                                 />
                             </div>
 
-                            {/* SEO */}
                             <div>
-                                <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">SEO</h4>
-                                <div className="space-y-3">
+                                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">SEO</h4>
+                                <div className="space-y-2">
                                     <div>
-                                        <label className={lbl}>SEO Title <span className="normal-case text-gray-300 font-normal">(recommended: 50–60 chars)</span></label>
-                                        <input type="text" value={editingPage.seo_title} onChange={e => setEditingPage({ ...editingPage, seo_title: e.target.value })} className={inp} placeholder={`BER Assessors in ${editingPage.location_name} | Platform Name`} />
-                                        <p className="text-[10px] text-gray-400 mt-0.5">{editingPage.seo_title.length} chars</p>
+                                        <label className={lbl}>SEO Title <span className="normal-case text-gray-300 font-normal">({editingPage.seo_title.length}/60)</span></label>
+                                        <input type="text" value={editingPage.seo_title} onChange={e => setEditingPage({ ...editingPage, seo_title: e.target.value })} className={inp} placeholder={`BER Assessors in ${editingPage.location_name} | Platform`} />
                                     </div>
                                     <div>
-                                        <label className={lbl}>SEO Description <span className="normal-case text-gray-300 font-normal">(recommended: 150–160 chars)</span></label>
-                                        <textarea value={editingPage.seo_description} onChange={e => setEditingPage({ ...editingPage, seo_description: e.target.value })} rows={3} className={inp} placeholder={`Find certified BER assessors in ${editingPage.location_name}. Compare quotes and book online.`} />
-                                        <p className="text-[10px] text-gray-400 mt-0.5">{editingPage.seo_description.length} chars</p>
+                                        <label className={lbl}>SEO Description <span className="normal-case text-gray-300 font-normal">({editingPage.seo_description.length}/160)</span></label>
+                                        <textarea value={editingPage.seo_description} onChange={e => setEditingPage({ ...editingPage, seo_description: e.target.value })} rows={2} className={inp} placeholder={`Find certified assessors in ${editingPage.location_name}. Compare quotes and book online.`} />
                                     </div>
                                     <div>
-                                        <label className={lbl}>Meta Keywords <span className="normal-case text-gray-300 font-normal">(comma-separated)</span></label>
-                                        <input type="text" value={editingPage.meta_keywords} onChange={e => setEditingPage({ ...editingPage, meta_keywords: e.target.value })} className={inp} placeholder={`BER assessor ${editingPage.location_name}, energy cert ${editingPage.location_name}`} />
+                                        <label className={lbl}>Meta Keywords</label>
+                                        <input type="text" value={editingPage.meta_keywords} onChange={e => setEditingPage({ ...editingPage, meta_keywords: e.target.value })} className={inp} placeholder={`BER assessor ${editingPage.location_name}`} />
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Active toggle */}
-                            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
                                 <div>
-                                    <p className="text-sm font-bold text-gray-800">Page Active</p>
-                                    <p className="text-xs text-gray-400">Inactive pages won't be indexed or shown publicly</p>
+                                    <p className="text-xs font-bold text-gray-800">Page Active</p>
+                                    <p className="text-[10px] text-gray-400">Inactive pages won't be indexed</p>
                                 </div>
                                 <button
                                     onClick={() => setEditingPage({ ...editingPage, is_active: !editingPage.is_active })}
@@ -368,26 +370,88 @@ export const LocationPagesView = ({ selectedTenant }: Props) => {
                             </div>
                         </div>
 
-                        {/* Save button */}
-                        <div className="mt-6 flex justify-end gap-3">
-                            <button onClick={() => setEditingPage(null)} className="px-5 py-2.5 border border-gray-200 text-gray-600 rounded-lg text-sm font-bold hover:bg-gray-50 transition-all">Cancel</button>
+                        <div className="mt-4 flex justify-end gap-2">
+                            <button onClick={() => setEditingPage(null)} className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-50 transition-all">Cancel</button>
                             <button
                                 onClick={handleSave}
                                 disabled={saving}
-                                className="flex items-center gap-2 px-6 py-2.5 bg-[#007F00] text-white rounded-lg text-sm font-bold hover:bg-[#006400] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                                className="flex items-center gap-1.5 px-5 py-2 bg-[#007F00] text-white rounded-lg text-xs font-bold hover:bg-[#006400] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
                             >
-                                {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
+                                {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
                                 {saving ? 'Saving...' : 'Save Page'}
                             </button>
                         </div>
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center justify-center h-64 text-center">
-                        <MapPin size={40} className="text-gray-200 mb-4" />
-                        <h3 className="text-base font-black text-gray-400">Select a location to edit</h3>
-                        <p className="text-sm text-gray-300 mt-1">Click any location in the list to configure its page content</p>
+                    <div className="flex flex-col items-center justify-center h-64 text-center bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <MapPin size={36} className="text-gray-200 mb-3" />
+                        <h3 className="text-sm font-black text-gray-400">Select a location</h3>
+                        <p className="text-xs text-gray-300 mt-1">Click any location to edit its page content</p>
                     </div>
                 )}
+            </div>
+
+            {/* Right: Live Preview */}
+            <div className="flex-1 flex flex-col bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden min-w-0">
+                {/* Preview toolbar */}
+                <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-gray-500">Live Preview</span>
+                        {editingPage && (
+                            <span className="text-[10px] text-gray-400">— {editingPage.location_name}</span>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                            <button
+                                onClick={() => setDeviceMode('desktop')}
+                                className={`p-1 rounded ${deviceMode === 'desktop' ? 'bg-white shadow-sm text-gray-700' : 'text-gray-400'}`}
+                                title="Desktop"
+                            >
+                                <Monitor size={13} />
+                            </button>
+                            <button
+                                onClick={() => setDeviceMode('mobile')}
+                                className={`p-1 rounded ${deviceMode === 'mobile' ? 'bg-white shadow-sm text-gray-700' : 'text-gray-400'}`}
+                                title="Mobile"
+                            >
+                                <Smartphone size={13} />
+                            </button>
+                        </div>
+                        {editingPage && (
+                            <a
+                                href={getPreviewUrl(editingPage.location_name)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all"
+                                title="Open in new tab"
+                            >
+                                <ExternalLink size={13} />
+                            </a>
+                        )}
+                    </div>
+                </div>
+
+                {/* Iframe */}
+                <div className="flex-1 overflow-hidden bg-gray-100 flex items-start justify-center p-2">
+                    {editingPage ? (
+                        <div className={`h-full transition-all duration-300 ${deviceMode === 'mobile' ? 'w-[390px]' : 'w-full'}`}>
+                            <iframe
+                                key={`${editingPage.location_name}-${previewKey}`}
+                                ref={iframeRef}
+                                src={getPreviewUrl(editingPage.location_name)}
+                                className="w-full h-full border-0 rounded-lg shadow-md"
+                                title={`Preview: ${editingPage.location_name}`}
+                            />
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-full text-center">
+                            <Monitor size={48} className="text-gray-200 mb-4" />
+                            <p className="text-sm font-bold text-gray-300">No location selected</p>
+                            <p className="text-xs text-gray-200 mt-1">Select a location from the left to preview it here</p>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
