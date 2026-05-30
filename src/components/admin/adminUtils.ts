@@ -26,6 +26,7 @@ export const getStatusColor = (status: string): string => {
         case 'pending_quote': return 'bg-yellow-100 text-yellow-800';
         case 'completed': return 'bg-green-100 text-green-800';
         case 'scheduled': return 'bg-purple-100 text-purple-800';
+        case 'expired': return 'bg-gray-200 text-gray-600';
         default: return 'bg-gray-100 text-gray-800';
     }
 };

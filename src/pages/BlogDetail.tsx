@@ -6,7 +6,7 @@ import SEOHead from '../components/SEOHead';
 import ArticleSocialShare from '../components/ArticleSocialShare';
 import ArticleCTABanner from '../components/ArticleCTABanner';
 import ArticleNewsletter from '../components/ArticleNewsletter';
-import { getTenantFromDomain } from '../lib/tenant';
+import { getTenantFromDomain, getTenantDisplayName } from '../lib/tenant';
 
 interface BlogArticle {
     id: string;
@@ -169,6 +169,8 @@ const BlogDetail = () => {
         );
     }
 
+    const tenantName = getTenantDisplayName(getTenantFromDomain());
+
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen pt-32 pb-0">
             {/* Reading Progress Bar */}
@@ -180,7 +182,7 @@ const BlogDetail = () => {
             </div>
 
             <SEOHead
-                title={`${article.title} | The Berman Blog`}
+                title={`${article.title} | ${tenantName} Blog`}
                 description={article.excerpt || article.title}
                 canonical={`/blog/${article.slug || article.id}`}
                 ogType="article"

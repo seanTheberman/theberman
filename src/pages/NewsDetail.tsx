@@ -7,7 +7,7 @@ import SEOHead from '../components/SEOHead';
 import ArticleSocialShare from '../components/ArticleSocialShare';
 import ArticleCTABanner from '../components/ArticleCTABanner';
 import ArticleNewsletter from '../components/ArticleNewsletter';
-import { getTenantFromDomain } from '../lib/tenant';
+import { getTenantFromDomain, getTenantDisplayName } from '../lib/tenant';
 
 interface NewsArticle {
     id: string;
@@ -76,10 +76,12 @@ const NewsDetail = () => {
         );
     }
 
+    const tenantName = getTenantDisplayName(getTenantFromDomain());
+
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen pt-32 pb-20">
             <SEOHead
-                title={`${article.title} | The Berman News`}
+                title={`${article.title} | ${tenantName} News`}
                 description={article.excerpt || article.title}
                 canonical={`/news/${id}`}
                 ogType="article"

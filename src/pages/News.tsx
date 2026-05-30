@@ -192,8 +192,8 @@ const NewsPage = () => {
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen pt-32">
             <SEOHead
-                title="News"
-                description="Stay updated with the latest energy efficiency news, BER tips, and sustainability insights from The Berman."
+                title={tr.seoTitle}
+                description={tr.seoDesc}
                 canonical="/news"
             />
 

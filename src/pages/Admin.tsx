@@ -144,6 +144,8 @@ const Admin = () => {
     const [showSponsorModal, setShowSponsorModal] = useState(false);
     const [showSuspendModal, setShowSuspendModal] = useState(false);
     const [showAddUserModal, setShowAddUserModal] = useState(false);
+    const [itemToExpire, setItemToExpire] = useState<string | null>(null);
+    const [showExpireModal, setShowExpireModal] = useState(false);
 
     // Form state for modals
     const [quoteData, setQuoteData] = useState({ price: '', estimated_date: '', notes: '' });
@@ -668,6 +670,33 @@ const Admin = () => {
         setItemToDelete({ id, type });
         setShowDeleteModal(true);
     }, []);
+
+    const handleExpireClick = useCallback((id: string) => {
+        setItemToExpire(id);
+        setShowExpireModal(true);
+    }, []);
+
+    const confirmExpire = useCallback(async () => {
+        if (!itemToExpire) return;
+        setIsUpdating(true);
+        try {
+            const { error } = await supabase
+                .from('assessments')
+                .update({ status: 'expired' })
+                .eq('id', itemToExpire);
+            if (error) throw error;
+            setAssessments(prev => prev.map(a =>
+                a.id === itemToExpire ? { ...a, status: 'expired' as Assessment['status'] } : a
+            ));
+            toast.success('Job marked as expired');
+            setShowExpireModal(false);
+            setItemToExpire(null);
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to expire job');
+        } finally {
+            setIsUpdating(false);
+        }
+    }, [itemToExpire]);
 
     const confirmDelete = useCallback(async () => {
         if (!itemToDelete) return;
@@ -2010,6 +2039,8 @@ const Admin = () => {
                             searchTerm={searchTerm} setSearchTerm={setSearchTerm}
                             locationFilter={locationFilter} setLocationFilter={setLocationFilter}
                             onAssessmentClick={(a) => { setSelectedAssessment(a); setShowAssessmentDetailModal(true); }}
+                            onExpireJob={handleExpireClick}
+                            onDeleteJob={(id) => handleDeleteClick(id, 'assessment')}
                             loading={loading}
                         />
                     ) : view === 'homeowners' || view === 'assessors' ? (
@@ -2210,6 +2241,32 @@ const Admin = () => {
                     onCancel={() => { setShowDeleteModal(false); setItemToDelete(null); }}
                     onConfirm={confirmDelete}
                 />
+            )}
+
+            {showExpireModal && itemToExpire && (
+                <div className="fixed inset-0 z-[10002] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
+                        <h3 className="text-xl font-black text-gray-900 mb-2">Expire Job?</h3>
+                        <p className="text-sm text-gray-500 mb-6">
+                            This will mark the job as expired. Assessors will no longer be able to quote on it. The job can still be viewed in the Expired tab.
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => { setShowExpireModal(false); setItemToExpire(null); }}
+                                className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-200 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmExpire}
+                                disabled={isUpdating}
+                                className="flex-1 py-3 bg-amber-600 text-white rounded-xl font-bold text-sm hover:bg-amber-700 transition-colors disabled:opacity-50"
+                            >
+                                {isUpdating ? 'Expiring...' : 'Expire Job'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
 
             {selectedUser && (

@@ -68,7 +68,7 @@ export interface Assessment {
     id: string;
     created_at: string;
     property_address: string;
-    status: 'draft' | 'submitted' | 'pending' | 'pending_quote' | 'quote_accepted' | 'scheduled' | 'completed' | 'assigned' | 'live';
+    status: 'draft' | 'submitted' | 'pending' | 'pending_quote' | 'quote_accepted' | 'scheduled' | 'completed' | 'assigned' | 'live' | 'expired';
     scheduled_date: string | null;
     completed_at?: string | null;
     certificate_url: string | null;

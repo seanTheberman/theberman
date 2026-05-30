@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Search, MapPin, Clock, FileText, ChevronDown, ChevronRight, X, Briefcase, AlertTriangle, XCircle, Eye } from 'lucide-react';
+import { Search, MapPin, Clock, FileText, ChevronDown, ChevronRight, X, Briefcase, AlertTriangle, XCircle, Eye, Trash2 } from 'lucide-react';
 import type { Assessment } from '../../../types/admin';
 
 interface Props {
@@ -9,6 +9,8 @@ interface Props {
     locationFilter: string;
     setLocationFilter: (location: string) => void;
     onAssessmentClick: (assessment: Assessment) => void;
+    onExpireJob?: (id: string) => void;
+    onDeleteJob?: (id: string) => void;
     loading?: boolean;
 }
 
@@ -40,6 +42,7 @@ const getStatusBadge = (status: string) => {
         case 'completed': return { bg: 'bg-emerald-100 text-emerald-700', label: 'Completed' };
         case 'assigned': return { bg: 'bg-indigo-100 text-indigo-700', label: 'Assigned' };
         case 'live': return { bg: 'bg-orange-100 text-orange-700', label: 'Live' };
+        case 'expired': return { bg: 'bg-gray-200 text-gray-600', label: 'Expired' };
         default: return { bg: 'bg-gray-100 text-gray-700', label: status };
     }
 };
@@ -89,6 +92,8 @@ export const JobsView: React.FC<Props> = ({
     locationFilter,
     setLocationFilter,
     onAssessmentClick,
+    onExpireJob,
+    onDeleteJob,
     loading = false
 }) => {
     const [activeTab, setActiveTab] = useState<JobTab>('live');
@@ -117,6 +122,7 @@ export const JobsView: React.FC<Props> = ({
 
     const expiredJobs = useMemo(() =>
         assessments.filter(a => {
+            if (a.status === 'expired') return true;
             if (a.status === 'completed') return true;
             // Expired = no activity for 7+ days on a live/submitted/pending_quote job
             if (['live', 'submitted', 'pending_quote'].includes(a.status)) {
@@ -340,7 +346,7 @@ export const JobsView: React.FC<Props> = ({
                                         <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Quotes</th>
                                         <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Last<br/><span className="font-bold text-[10px] text-gray-500">Activity</span></th>
                                         <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Idle<br/><span className="font-bold text-[10px] text-gray-500">Days</span></th>
-                                        <th className="py-3 px-3 font-bold text-gray-800 whitespace-nowrap text-center">Details</th>
+                                        <th className="py-3 px-3 font-bold text-gray-800 whitespace-nowrap text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -412,15 +418,41 @@ export const JobsView: React.FC<Props> = ({
                                                         </span>
                                                     </td>
                                                     <td className="py-3 px-3 text-center">
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                onAssessmentClick(job);
-                                                            }}
-                                                            className="px-3 py-1.5 bg-[#007F00] hover:bg-[#006600] text-white rounded text-xs font-bold transition-colors"
-                                                        >
-                                                            View
-                                                        </button>
+                                                        <div className="flex items-center justify-center gap-1">
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    onAssessmentClick(job);
+                                                                }}
+                                                                className="px-3 py-1.5 bg-[#007F00] hover:bg-[#006600] text-white rounded text-xs font-bold transition-colors"
+                                                            >
+                                                                View
+                                                            </button>
+                                                            {job.status !== 'expired' && onExpireJob && (
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        onExpireJob(job.id);
+                                                                    }}
+                                                                    className="p-1.5 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded transition-colors"
+                                                                    title="Expire Job"
+                                                                >
+                                                                    <Clock size={14} />
+                                                                </button>
+                                                            )}
+                                                            {onDeleteJob && (
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        onDeleteJob(job.id);
+                                                                    }}
+                                                                    className="p-1.5 text-red-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                                                    title="Remove Job"
+                                                                >
+                                                                    <Trash2 size={14} />
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                 </tr>
 
@@ -700,6 +732,26 @@ export const JobsView: React.FC<Props> = ({
                                                     <Eye size={14} />
                                                     Open Full Details
                                                 </button>
+                                                <div className="flex gap-2">
+                                                    {job.status !== 'expired' && onExpireJob && (
+                                                        <button
+                                                            onClick={() => onExpireJob(job.id)}
+                                                            className="flex-1 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1"
+                                                        >
+                                                            <Clock size={14} />
+                                                            Expire Job
+                                                        </button>
+                                                    )}
+                                                    {onDeleteJob && (
+                                                        <button
+                                                            onClick={() => onDeleteJob(job.id)}
+                                                            className="flex-1 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                            Remove
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
                                         )}
                                     </div>

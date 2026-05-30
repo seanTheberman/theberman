@@ -46,9 +46,10 @@ const AdminLogin = () => {
                 navigate('/admin', { replace: true });
             }
         } else if (!loading && user && role !== 'admin') {
-            // Non-admin users shouldn't be here
+            // Non-admin users shouldn't be here — redirect them to the correct login
             signOut();
-            navigate('/login/admin', { replace: true });
+            toast('This is the admin login page. Redirecting you to the correct login...');
+            navigate('/login', { replace: true });
         }
     }, [user, role, loading, navigate, from, signOut]);
 
@@ -145,7 +146,9 @@ const AdminLogin = () => {
 
                 if (profile?.role !== 'admin') {
                     await signOut();
-                    throw new Error('Access denied. This account does not have admin privileges.');
+                    toast('This is the admin login page. Redirecting you to the correct login...');
+                    navigate('/login', { replace: true });
+                    return;
                 }
 
                 // Record successful login (clears rate limit)
