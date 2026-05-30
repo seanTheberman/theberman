@@ -1,90 +1,43 @@
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Loader2, ArrowRight } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { MapPin, ArrowRight } from 'lucide-react';
 import SEOHead from '../components/SEOHead';
 import { getTenantFromDomain } from '../lib/tenant';
+import { getCountiesForTenant } from '../lib/tenantData';
 
-interface Location {
-    id: string;
-    name: string;
-    slug: string;
-    image_url?: string;
-    description?: string;
-}
+const makeSlug = (name: string) =>
+    name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 const Locations = () => {
-    const [locations, setLocations] = useState<Location[]>([]);
-    const [loading, setLoading] = useState(true);
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
+    const counties = getCountiesForTenant(tenant);
     const tr = isSpanish ? {
         seoTitle: 'Certificadores Energéticos por Ubicación',
         seoDesc: 'Encuentra certificadores energéticos y profesionales de eficiencia en tu zona por toda España. Busca por comunidad autónoma.',
         heading: 'Selecciona tu Comunidad Autónoma',
         subtitle: 'Encuentra profesionales y proveedores mejor valorados en tu zona. Selecciona una comunidad autónoma para ver los listados disponibles.',
-        descFallback: (name: string) => `Consulta los listados disponibles en ${name}.`,
         viewListings: 'Ver Listados',
-        noLocationsH: 'No se Encontraron Ubicaciones',
-        noLocationsP: 'Actualmente no hay ubicaciones activas.',
     } : isFrance ? {
         seoTitle: 'Diagnostiqueurs par Localisation',
         seoDesc: 'Trouvez des diagnostiqueurs certifiés près de chez vous en France. Parcourez par région.',
         heading: 'Parcourir par Localisation',
         subtitle: 'Trouvez des professionnels certifiés dans votre région. Sélectionnez une région pour voir les listes disponibles.',
-        descFallback: (name: string) => `Consultez les listes disponibles à ${name}.`,
         viewListings: 'Voir les Listes',
-        noLocationsH: 'Aucune Localisation Trouvée',
-        noLocationsP: "Nous n'avons trouvé aucune localisation active pour le moment.",
     } : isPortugal ? {
         seoTitle: 'Peritos por Localização',
         seoDesc: 'Encontre peritos certificados na sua zona em Portugal. Navegue por região.',
         heading: 'Navegar por Localização',
         subtitle: 'Encontre profissionais certificados na sua área. Selecione uma região para ver os listados disponíveis.',
-        descFallback: (name: string) => `Consulte os listados disponíveis em ${name}.`,
         viewListings: 'Ver Listados',
-        noLocationsH: 'Nenhuma Localização Encontrada',
-        noLocationsP: 'Não encontrámos nenhuma localização ativa de momento.',
     } : {
         seoTitle: 'BER Assessors by Location',
         seoDesc: 'Find BER assessors and energy upgrade professionals in your area across Ireland. Browse by county and region.',
         heading: 'Browse by Location',
         subtitle: 'Find top-rated professionals and suppliers in your area. Select a region to see available listings.',
-        descFallback: (name: string) => `Browse listings available in ${name}.`,
         viewListings: 'View Listings',
-        noLocationsH: 'No Locations Found',
-        noLocationsP: "We couldn't find any active locations at the moment.",
     };
-
-    useEffect(() => {
-        fetchLocations();
-    }, []);
-
-    const fetchLocations = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('catalogue_locations')
-                .select('*')
-                .order('name');
-
-            if (error) throw error;
-            setLocations(data || []);
-        } catch (error) {
-            console.error('Error fetching locations:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="min-h-screen pt-24 flex items-center justify-center bg-white">
-                <Loader2 className="animate-spin text-[#007EA7]" size={48} />
-            </div>
-        );
-    }
 
     return (
         <div className="min-h-screen bg-white pt-24 pb-20 font-sans">
@@ -101,53 +54,26 @@ const Locations = () => {
                 </p>
             </div>
 
-            {/* Locations Grid */}
+            {/* Counties Grid */}
             <div className="container mx-auto px-6 max-w-7xl">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {locations.map((location) => (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {counties.map((county) => (
                         <Link
-                            key={location.id}
-                            to={`/region?county=${location.slug}`}
-                            className="group block bg-gray-50 hover:bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-[#007EA7]/30 hover:shadow-xl transition-all duration-300 relative"
+                            key={county}
+                            to={`/${makeSlug(county)}`}
+                            className="group flex flex-col items-center gap-3 bg-gray-50 hover:bg-white rounded-2xl border border-gray-100 hover:border-[#007F00]/30 hover:shadow-lg transition-all duration-200 p-6 text-center"
                         >
-                            <div className="h-48 bg-gray-200 overflow-hidden relative">
-                                {location.image_url ? (
-                                    <img
-                                        src={location.image_url}
-                                        alt={location.name}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                                        <MapPin size={48} className="text-gray-300 group-hover:text-[#007EA7] transition-colors" />
-                                    </div>
-                                )}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
-                                <div className="absolute bottom-4 left-6">
-                                    <h3 className="text-2xl font-bold text-white group-hover:translate-x-2 transition-transform">{location.name}</h3>
-                                </div>
+                            <div className="w-12 h-12 rounded-full bg-[#007F00]/10 flex items-center justify-center group-hover:bg-[#007F00]/20 transition-colors">
+                                <MapPin size={22} className="text-[#007F00]" />
                             </div>
-
-                            <div className="p-6">
-                                <p className="text-gray-500 text-sm mb-6 line-clamp-2">
-                                    {location.description || tr.descFallback(location.name)}
-                                </p>
-                                <div className="flex items-center text-[#007EA7] font-bold text-sm uppercase tracking-wide group-hover:gap-2 transition-all">
-                                    {tr.viewListings}
-                                    <ArrowRight size={16} className="ml-2 group-hover:ml-0 transition-all" />
-                                </div>
+                            <h3 className="text-sm font-bold text-gray-800 group-hover:text-[#007F00] transition-colors leading-tight">{county}</h3>
+                            <div className="flex items-center gap-1 text-[10px] font-bold text-[#007EA7] uppercase tracking-wide">
+                                {tr.viewListings}
+                                <ArrowRight size={11} />
                             </div>
                         </Link>
                     ))}
                 </div>
-
-                {locations.length === 0 && (
-                    <div className="text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                        <MapPin size={48} className="mx-auto text-gray-300 mb-4" />
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">{tr.noLocationsH}</h3>
-                        <p className="text-gray-500">{tr.noLocationsP}</p>
-                    </div>
-                )}
             </div>
         </div>
     );
