@@ -1,7 +1,19 @@
 import { useParams, Link } from 'react-router-dom';
 import { MapPin, CheckCircle2, Star, Users, ArrowRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { getTenantFromDomain } from '../lib/tenant';
 import { getTownsForTenant } from '../lib/tenantData';
+import { supabase } from '../lib/supabase';
+
+interface LocationPageData {
+    hero_title: string;
+    hero_subtitle: string;
+    intro_text: string;
+    seo_title: string;
+    seo_description: string;
+    meta_keywords: string;
+    is_active: boolean;
+}
 
 const LocationPage = () => {
     const { county, town } = useParams<{ county: string; town: string }>();
@@ -10,12 +22,38 @@ const LocationPage = () => {
     const isEngland = tenant === 'england';
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
+    const [customData, setCustomData] = useState<LocationPageData | null>(null);
 
     // Get the correct location data based on tenant
     const locationData = getTownsForTenant(tenant);
-    const countyName = county ? county.replace(/-/g, ' ') : '';
+    const rawCountyName = county ? county.replace(/-/g, ' ') : '';
     const townName = town ? town.replace(/-/g, ' ') : '';
-    const townsInCounty = countyName ? (locationData[countyName] || []) : [];
+
+    // Case-insensitive county matching
+    const countyKey = rawCountyName
+        ? Object.keys(locationData).find(k => k.toLowerCase() === rawCountyName.toLowerCase())
+        : undefined;
+    const countyName = countyKey || rawCountyName;
+    const townsInCounty = countyKey ? (locationData[countyKey] || []) : [];
+
+    // Load custom location page content from DB
+    useEffect(() => {
+        const fetchLocationPage = async () => {
+            if (!countyName) return;
+            try {
+                const { data } = await supabase
+                    .from('location_pages')
+                    .select('*')
+                    .eq('tenant', tenant)
+                    .eq('location_name', countyName)
+                    .maybeSingle();
+                if (data) setCustomData(data);
+            } catch {
+                // Ignore errors, fallback to generated content
+            }
+        };
+        fetchLocationPage();
+    }, [countyName, tenant]);
 
     // Tenant-specific labels
     const labels = {
@@ -31,18 +69,36 @@ const LocationPage = () => {
         serviceAreas: isSpanish ? 'Áreas de servicio' : 'Service Areas',
     };
 
-    // Generate meta title and description
-    const pageTitle = townName
+    const brandName = isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Cert' : isFrance ? 'DPE France' : isPortugal ? 'Certificado Energético' : 'The Berman';
+
+    // Generate meta title and description (use custom data if available)
+    const defaultPageTitle = townName
         ? `${labels.assessor} ${labels.in} ${townName}, ${countyName} | ${isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Certificates' : 'BER Certificates'}`
         : `${labels.assessor} ${labels.in} ${countyName} | ${isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Certificates' : 'BER Certificates'}`;
 
-    const pageDescription = townName
+    const defaultPageDescription = townName
         ? `Find ${labels.assessor.toLowerCase()} ${labels.in} ${townName}, ${countyName}. ${isSpanish ? 'Obtenga su certificado de eficiencia energética con técnicos certificados locales.' : 'Get your energy certificate with local certified assessors.'}`
         : `Find ${labels.assessor.toLowerCase()} ${labels.in} ${countyName}. ${isSpanish ? 'Obtenga su certificado de eficiencia energética con técnicos certificados locales.' : 'Get your energy certificate with local certified assessors.'}`;
 
+    const pageTitle = customData?.seo_title || defaultPageTitle;
+    const pageDescription = customData?.seo_description || defaultPageDescription;
+
     // Update document title
-    document.title = pageTitle;
-    document.querySelector('meta[name="description"]')?.setAttribute('content', pageDescription);
+    useEffect(() => {
+        document.title = pageTitle;
+        document.querySelector('meta[name="description"]')?.setAttribute('content', pageDescription);
+    }, [pageTitle, pageDescription]);
+
+    const heroTitle = customData?.hero_title || `${labels.assessor} ${labels.in} ${townName || countyName}`;
+    const heroSubtitle = customData?.hero_subtitle || (townName
+        ? `Find ${labels.assessor.toLowerCase()} ${labels.in} ${townName}, ${countyName}. ${isSpanish ? 'Técnicos certificados listos para ayudarle con su certificado de eficiencia energética.' : 'Certified assessors ready to help with your energy certificate.'}`
+        : `Find ${labels.assessor.toLowerCase()} ${labels.in} ${countyName}. ${isSpanish ? 'Técnicos certificados listos para ayudarle con su certificado de eficiencia energética.' : 'Certified assessors ready to help with your energy certificate.'}`
+    );
+
+    const introText = customData?.intro_text || (isSpanish
+        ? `${brandName} conecta propietarios con técnicos certificados en ${townName || countyName}. Nuestros técnicos expertos están listos para proporcionar certificados de eficiencia energética de alta calidad.`
+        : `${brandName} connects homeowners with ${isEngland ? 'certified assessors' : 'BER assessors'} in ${townName || countyName}. Our expert assessors are ready to provide high-quality ${isEngland ? 'Energy Performance Certificates' : 'Building Energy Ratings'}.`
+    );
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
@@ -63,13 +119,10 @@ const LocationPage = () => {
                         )}
                     </nav>
                     <h1 className="text-4xl md:text-5xl font-extrabold mb-4">
-                        {labels.assessor} {labels.in} {townName || countyName}
+                        {heroTitle}
                     </h1>
                     <p className="text-xl opacity-90 max-w-3xl">
-                        {townName
-                            ? `Find ${labels.assessor.toLowerCase()} ${labels.in} ${townName}, ${countyName}. ${isSpanish ? 'Técnicos certificados listos para ayudarle con su certificado de eficiencia energética.' : 'Certified assessors ready to help with your energy certificate.'}`
-                            : `Find ${labels.assessor.toLowerCase()} ${labels.in} ${countyName}. ${isSpanish ? 'Técnicos certificados listos para ayudarle con su certificado de eficiencia energética.' : 'Certified assessors ready to help with your energy certificate.'}`
-                        }
+                        {heroSubtitle}
                     </p>
                 </div>
             </div>
@@ -110,14 +163,7 @@ const LocationPage = () => {
                             {labels.find} {labels.assessor} {labels.in} {townName || countyName}
                         </h2>
                         <div className="prose prose-lg text-gray-700 mb-8">
-                            <p>
-                                {isSpanish
-                                    ? `Certificado Energético conecta propietarios con técnicos certificados en ${townName || countyName}. Nuestros técnicos expertos están listos para proporcionar certificados de eficiencia energética de alta calidad.`
-                                    : isEngland
-                                    ? `The Berman connects homeowners with certified assessors in ${townName || countyName}. Our expert assessors are ready to provide high-quality energy performance certificates.`
-                                    : `The Berman connects homeowners with BER assessors in ${townName || countyName}. Our expert assessors are ready to provide high-quality Building Energy Ratings.`
-                                }
-                            </p>
+                            <p>{introText}</p>
                             <p>
                                 {isSpanish
                                     ? `Todos nuestros técnicos están debidamente certificados y tienen experiencia en la evaluación de eficiencia energética de propiedades en ${countyName}.`

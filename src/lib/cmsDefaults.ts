@@ -651,6 +651,65 @@ export const CMS_PAGES: PageDefinition[] = [
             },
         ],
     },
+    {
+        id: 'location',
+        label: 'Location',
+        path: '/dublin',
+        sections: [
+            {
+                id: 'hero',
+                label: 'Hero Section',
+                description: 'Location page hero content',
+                icon: '📍',
+                fields: [
+                    { key: 'hero_title', label: 'Hero Title', type: 'text', group: 'Content' },
+                    { key: 'hero_subtitle', label: 'Hero Subtitle', type: 'text', group: 'Content' },
+                ],
+                defaults: {
+                    ireland: { hero_title: 'BER Assessors in Dublin', hero_subtitle: 'Find certified assessors in Dublin. Compare quotes and book online.' },
+                    spain: { hero_title: 'Técnicos Certificados en Madrid', hero_subtitle: 'Encuentra técnicos certificados en Madrid. Compara presupuestos y reserva online.' },
+                    england: { hero_title: 'EPC Assessors in London', hero_subtitle: 'Find certified assessors in London. Compare quotes and book online.' },
+                    france: { hero_title: 'Diagnostiqueurs DPE à Paris', hero_subtitle: 'Trouvez des diagnostiqueurs certifiés à Paris. Comparez les devis et réservez en ligne.' },
+                    portugal: { hero_title: 'Peritos Certificados em Lisboa', hero_subtitle: 'Encontre peritos certificados em Lisboa. Compare orçamentos e reserve online.' },
+                },
+            },
+            {
+                id: 'content',
+                label: 'Page Content',
+                description: 'Main body text for the location page',
+                icon: '📝',
+                fields: [
+                    { key: 'intro_text', label: 'Intro Text', type: 'textarea', group: 'Content' },
+                ],
+                defaults: {
+                    ireland: { intro_text: 'The Berman connects homeowners with BER assessors in Dublin. Our expert assessors are ready to provide high-quality Building Energy Ratings.' },
+                    spain: { intro_text: 'Certificado Energético conecta propietarios con técnicos certificados en Madrid. Nuestros técnicos expertos están listos para proporcionar certificados de eficiencia energética de alta calidad.' },
+                    england: { intro_text: 'EPC Cert connects homeowners with certified assessors in London. Our expert assessors are ready to provide high-quality Energy Performance Certificates.' },
+                    france: { intro_text: 'DPE France connecte les propriétaires avec des diagnostiqueurs certifiés à Paris. Nos experts sont prêts à fournir des diagnostics de performance énergétique de haute qualité.' },
+                    portugal: { intro_text: 'Certificado Energético conecta proprietários com peritos certificados em Lisboa. Os nossos peritos estão prontos a fornecer certificados de eficiência energética de alta qualidade.' },
+                },
+            },
+            {
+                id: 'seo',
+                label: 'SEO Settings',
+                description: 'Meta tags for search engines',
+                icon: '🔍',
+                fields: [
+                    { key: 'seo_title', label: 'SEO Title', type: 'text', group: 'SEO' },
+                    { key: 'seo_description', label: 'SEO Description', type: 'textarea', group: 'SEO' },
+                    { key: 'meta_keywords', label: 'Meta Keywords', type: 'text', group: 'SEO' },
+                    { key: 'is_active', label: 'Page Active', type: 'toggle', group: 'SEO' },
+                ],
+                defaults: {
+                    ireland: { seo_title: 'BER Assessors in Dublin | The Berman', seo_description: 'Find certified BER assessors in Dublin. Compare quotes and book online instantly.', meta_keywords: 'BER assessor Dublin, energy cert Dublin', is_active: true },
+                    spain: { seo_title: 'Técnicos Certificados en Madrid | Certificado Energético', seo_description: 'Encuentra técnicos certificados en Madrid. Compara presupuestos y reserva online.', meta_keywords: 'certificado energético Madrid, técnico Madrid', is_active: true },
+                    england: { seo_title: 'EPC Assessors in London | EPC Cert', seo_description: 'Find certified EPC assessors in London. Compare quotes and book online instantly.', meta_keywords: 'EPC assessor London, energy cert London', is_active: true },
+                    france: { seo_title: 'Diagnostiqueurs DPE à Paris | DPE France', seo_description: 'Trouvez des diagnostiqueurs DPE certifiés à Paris. Comparez les devis et réservez en ligne.', meta_keywords: 'DPE Paris, diagnostiqueur Paris', is_active: true },
+                    portugal: { seo_title: 'Peritos Certificados em Lisboa | Certificado Energético', seo_description: 'Encontre peritos certificados em Lisboa. Compare orçamentos e reserve online.', meta_keywords: 'certificado energético Lisboa, perito Lisboa', is_active: true },
+                },
+            },
+        ],
+    },
 ];
 
 export function getDefaultsForTenant(pageId: string, sectionId: string, tenant: string): Record<string, any> {

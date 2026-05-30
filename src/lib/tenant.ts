@@ -46,20 +46,18 @@ export function getTenantFromDomain(): string {
   }
 
   const hostname = window.location.hostname;
-  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
 
-  // Allow query param override for local testing ONLY: ?tenant=spain
-  if (isLocalhost) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const paramTenant = urlParams.get('tenant');
-    if (paramTenant) {
-      sessionStorage.setItem('dev_tenant_override', paramTenant);
-      return paramTenant;
-    }
-    // Persist override across client-side navigation within the same tab only
-    const storedTenant = sessionStorage.getItem('dev_tenant_override');
-    if (storedTenant) return storedTenant;
+  // Allow query param override: ?tenant=spain (used by admin visual editor preview iframe)
+  const urlParams = new URLSearchParams(window.location.search);
+  const paramTenant = urlParams.get('tenant');
+  if (paramTenant) {
+    sessionStorage.setItem('dev_tenant_override', paramTenant);
+    return paramTenant;
   }
+
+  // Persist override across client-side navigation within the same tab only
+  const storedTenant = sessionStorage.getItem('dev_tenant_override');
+  if (storedTenant) return storedTenant;
 
   return DOMAIN_TO_TENANT[hostname] || 'ireland';
 }

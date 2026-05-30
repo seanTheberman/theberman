@@ -29,28 +29,87 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
     const [hasChanges, setHasChanges] = useState(false);
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
+    // Sample location used for visual editor preview per tenant
+    const getSampleLocation = (tenant: string): string => {
+        const map: Record<string, string> = {
+            ireland: 'Dublin',
+            england: 'Greater London',
+            spain: 'Comunidad de Madrid',
+            france: 'Île-de-France',
+            portugal: 'Lisboa',
+        };
+        return map[tenant] || 'Dublin';
+    };
+
+    const getSampleLocationPath = (tenant: string): string => {
+        return '/' + getSampleLocation(tenant).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    };
+
     // Load content from DB for current page + tenant
     const loadPageContent = useCallback(async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('page_content')
-                .select('*')
-                .eq('page', selectedPage.id)
-                .eq('tenant', selectedTenant);
+            if (selectedPage.id === 'location') {
+                // Location pages load from location_pages table
+                const sampleLoc = getSampleLocation(selectedTenant);
+                const { data, error } = await supabase
+                    .from('location_pages')
+                    .select('*')
+                    .eq('tenant', selectedTenant)
+                    .eq('location_name', sampleLoc)
+                    .maybeSingle();
 
-            if (error) throw error;
+                if (error) throw error;
 
-            // Build section data map: merge DB data over defaults
-            const map: PageSectionMap = {};
-            for (const section of selectedPage.sections) {
-                const defaults = getDefaultsForTenant(selectedPage.id, section.id, selectedTenant);
-                const dbRow = data?.find(d => d.section === section.id);
-                map[section.id] = { ...defaults, ...(dbRow?.content || {}) };
+                const map: PageSectionMap = {};
+                for (const section of selectedPage.sections) {
+                    const defaults = getDefaultsForTenant(selectedPage.id, section.id, selectedTenant);
+                    if (section.id === 'hero') {
+                        map[section.id] = {
+                            ...defaults,
+                            hero_title: data?.hero_title || defaults.hero_title,
+                            hero_subtitle: data?.hero_subtitle || defaults.hero_subtitle,
+                        };
+                    } else if (section.id === 'content') {
+                        map[section.id] = {
+                            ...defaults,
+                            intro_text: data?.intro_text || defaults.intro_text,
+                        };
+                    } else if (section.id === 'seo') {
+                        map[section.id] = {
+                            ...defaults,
+                            seo_title: data?.seo_title || defaults.seo_title,
+                            seo_description: data?.seo_description || defaults.seo_description,
+                            meta_keywords: data?.meta_keywords || defaults.meta_keywords,
+                            is_active: data?.is_active ?? defaults.is_active,
+                        };
+                    } else {
+                        map[section.id] = defaults;
+                    }
+                }
+                setSectionData(map);
+                setOriginalData(JSON.parse(JSON.stringify(map)));
+                setHasChanges(false);
+            } else {
+                const { data, error } = await supabase
+                    .from('page_content')
+                    .select('*')
+                    .eq('page', selectedPage.id)
+                    .eq('tenant', selectedTenant);
+
+                if (error) throw error;
+
+                // Build section data map: merge DB data over defaults
+                const map: PageSectionMap = {};
+                for (const section of selectedPage.sections) {
+                    const defaults = getDefaultsForTenant(selectedPage.id, section.id, selectedTenant);
+                    const dbRow = data?.find(d => d.section === section.id);
+                    map[section.id] = { ...defaults, ...(dbRow?.content || {}) };
+                }
+                setSectionData(map);
+                setOriginalData(JSON.parse(JSON.stringify(map)));
+                setHasChanges(false);
             }
-            setSectionData(map);
-            setOriginalData(JSON.parse(JSON.stringify(map)));
-            setHasChanges(false);
         } catch (err: any) {
             console.error('Failed to load page content:', err);
             // Fall back to defaults
@@ -87,41 +146,86 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
     const handleSave = async () => {
         setSaving(true);
         try {
-            for (const section of selectedPage.sections) {
-                const content = sectionData[section.id];
-                if (!content) continue;
+            if (selectedPage.id === 'location') {
+                // Save location page data to location_pages table
+                const sampleLoc = getSampleLocation(selectedTenant);
+                const hero = sectionData['hero'] || {};
+                const content = sectionData['content'] || {};
+                const seo = sectionData['seo'] || {};
+
+                const payload = {
+                    hero_title: hero.hero_title || '',
+                    hero_subtitle: hero.hero_subtitle || '',
+                    intro_text: content.intro_text || '',
+                    seo_title: seo.seo_title || '',
+                    seo_description: seo.seo_description || '',
+                    meta_keywords: seo.meta_keywords || '',
+                    is_active: seo.is_active ?? true,
+                    updated_at: new Date().toISOString(),
+                };
 
                 const { data: existing } = await supabase
-                    .from('page_content')
+                    .from('location_pages')
                     .select('id')
-                    .eq('page', selectedPage.id)
-                    .eq('section', section.id)
                     .eq('tenant', selectedTenant)
+                    .eq('location_name', sampleLoc)
                     .maybeSingle();
 
                 if (existing) {
                     const { error } = await supabase
-                        .from('page_content')
-                        .update({ content, updated_at: new Date().toISOString() })
+                        .from('location_pages')
+                        .update(payload)
                         .eq('id', existing.id);
                     if (error) throw error;
                 } else {
                     const { error } = await supabase
-                        .from('page_content')
+                        .from('location_pages')
                         .insert({
-                            page: selectedPage.id,
-                            section: section.id,
                             tenant: selectedTenant,
-                            content,
-                            sort_order: selectedPage.sections.indexOf(section),
-                            is_active: true,
+                            location_name: sampleLoc,
+                            slug: sampleLoc.toLowerCase().replace(/\s+/g, '-'),
+                            ...payload,
                         });
                     if (error) throw error;
                 }
+                toast.success('Location page saved successfully!');
+            } else {
+                for (const section of selectedPage.sections) {
+                    const content = sectionData[section.id];
+                    if (!content) continue;
+
+                    const { data: existing } = await supabase
+                        .from('page_content')
+                        .select('id')
+                        .eq('page', selectedPage.id)
+                        .eq('section', section.id)
+                        .eq('tenant', selectedTenant)
+                        .maybeSingle();
+
+                    if (existing) {
+                        const { error } = await supabase
+                            .from('page_content')
+                            .update({ content, updated_at: new Date().toISOString() })
+                            .eq('id', existing.id);
+                        if (error) throw error;
+                    } else {
+                        const { error } = await supabase
+                            .from('page_content')
+                            .insert({
+                                page: selectedPage.id,
+                                section: section.id,
+                                tenant: selectedTenant,
+                                content,
+                                sort_order: selectedPage.sections.indexOf(section),
+                                is_active: true,
+                            });
+                        if (error) throw error;
+                    }
+                }
+                toast.success('All changes saved successfully!');
             }
             setOriginalData(JSON.parse(JSON.stringify(sectionData)));
             setHasChanges(false);
-            toast.success('All changes saved successfully!');
             // Refresh iframe
             if (iframeRef.current) {
                 iframeRef.current.src = iframeRef.current.src;
@@ -185,8 +289,11 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
         const base = isLocal
             ? `${window.location.protocol}//${hostname}:${window.location.port}`
             : `${window.location.protocol}//${window.location.host}`;
-        const separator = selectedPage.path.includes('?') ? '&' : '?';
-        return `${base}${selectedPage.path}${separator}tenant=${selectedTenant}`;
+        const path = selectedPage.id === 'location'
+            ? getSampleLocationPath(selectedTenant)
+            : selectedPage.path;
+        const separator = path.includes('?') ? '&' : '?';
+        return `${base}${path}${separator}tenant=${selectedTenant}`;
     };
 
     return (
