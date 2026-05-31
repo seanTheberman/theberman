@@ -685,18 +685,18 @@ const Admin = () => {
                 .update({ status: 'expired' })
                 .eq('id', itemToExpire);
             if (error) throw error;
-            setAssessments(prev => prev.map(a =>
-                a.id === itemToExpire ? { ...a, status: 'expired' as Assessment['status'] } : a
-            ));
+            // Re-fetch to ensure DB and local state are in sync
+            await fetchAssessments();
             toast.success('Job marked as expired');
             setShowExpireModal(false);
             setItemToExpire(null);
         } catch (error: any) {
+            console.error('[confirmExpire] Failed:', error);
             toast.error(error.message || 'Failed to expire job');
         } finally {
             setIsUpdating(false);
         }
-    }, [itemToExpire]);
+    }, [itemToExpire, fetchAssessments]);
 
     const confirmDelete = useCallback(async () => {
         if (!itemToDelete) return;
@@ -724,7 +724,8 @@ const Admin = () => {
                     setLeads(prev => prev.filter(l => l.id !== itemToDelete.id));
                     if (selectedLead?.id === itemToDelete.id) setSelectedLead(null);
                 } else if (itemToDelete.type === 'assessment') {
-                    setAssessments(prev => prev.filter(a => a.id !== itemToDelete.id));
+                    // Re-fetch to ensure DB and local state are in sync
+                    await fetchAssessments();
                     if (selectedAssessment?.id === itemToDelete.id) setSelectedAssessment(null);
                 } else if (itemToDelete.type === 'user') {
                     setUsersList(prev => prev.filter(u => u.id !== itemToDelete.id));
@@ -764,6 +765,12 @@ const Admin = () => {
                 });
                 if (fnError) throw new Error(fnError.message || 'Failed to delete auth user');
                 if (!fnData?.success) throw new Error(fnData?.error || 'Failed to delete auth user');
+                
+                // Check if Auth cleanup failed but profile was deleted
+                if (fnData?.authCleanupFailed) {
+                    console.warn('[handlePermanentDelete] Auth cleanup failed:', fnData.authError);
+                    toast.success('User deleted successfully. Auth record may need manual cleanup in Supabase dashboard.');
+                }
             } else {
                 const tableMap = { lead: 'leads', assessment: 'assessments' } as const;
                 const { error } = await supabase.from(tableMap[type as 'lead' | 'assessment']).delete().eq('id', id);

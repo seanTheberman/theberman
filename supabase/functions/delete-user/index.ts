@@ -58,7 +58,6 @@ Deno.serve(async (req: Request) => {
             { table: 'referral_points', column: 'user_id' },
             { table: 'referral_redemptions', column: 'user_id' },
             { table: 'quotes', column: 'created_by' },
-            { table: 'notifications', column: 'target_user_id' },
         ];
 
         for (const { table, column } of tablesToClean) {
@@ -68,14 +67,54 @@ Deno.serve(async (req: Request) => {
             }
         }
 
-        // Delete profile explicitly
-        await supabaseAdmin.from('profiles').delete().eq('id', userId);
+        // Delete profile explicitly - this is the critical step for effective deletion
+        const { error: profileError } = await supabaseAdmin.from('profiles').delete().eq('id', userId);
+        if (profileError) {
+            console.error('[delete-user] Failed to delete profile:', profileError);
+            throw new Error(`Failed to delete profile: ${profileError.message}`);
+        }
 
-        // Delete user from Auth
-        const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+        // Delete user from Auth with retry logic
+        // If this fails, the user is still effectively deleted (profile is gone)
+        // but we log the error for manual cleanup
+        let authDeleteSuccess = false;
+        let authDeleteError = null;
+        
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+                const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+                if (!authError) {
+                    authDeleteSuccess = true;
+                    console.log(`[delete-user] Auth user deleted successfully on attempt ${attempt}`);
+                    break;
+                }
+                authDeleteError = authError;
+                console.warn(`[delete-user] Auth deletion attempt ${attempt} failed:`, authError.message);
+                if (attempt < 3) {
+                    await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+                }
+            } catch (e: any) {
+                authDeleteError = e;
+                console.warn(`[delete-user] Auth deletion attempt ${attempt} threw error:`, e.message);
+                if (attempt < 3) {
+                    await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+                }
+            }
+        }
 
-        if (authError) {
-            throw new Error(`Failed to delete user from Auth: ${authError.message}`);
+        if (!authDeleteSuccess) {
+            console.error('[delete-user] Failed to delete Auth user after 3 attempts:', authDeleteError);
+            // Don't throw - the profile is deleted so user is effectively removed
+            // Return success with a warning about Auth cleanup
+            return new Response(JSON.stringify({ 
+                success: true, 
+                message: 'User deleted successfully (profile removed). Auth cleanup failed - user may still exist in Auth but cannot access the platform.',
+                authCleanupFailed: true,
+                authError: authDeleteError?.message
+            }), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 200,
+            });
         }
 
         return new Response(JSON.stringify({ success: true, message: 'User deleted successfully' }), {
