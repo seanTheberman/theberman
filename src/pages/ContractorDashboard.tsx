@@ -9,7 +9,6 @@ const isEngland = tenant === 'england';
 const isSpanish = tenant === 'spain';
 const assessmentLabel = isEngland ? 'EPC' : isSpanish ? 'Certificado Energético' : 'BER';
 const assessorLabel = isEngland ? 'Domestic Energy Assessor' : isSpanish ? 'Certificador Energético' : 'BER Assessor';
-const portalLabel = isSpanish ? 'Portal del Certificador' : 'Assessor Portal';
 import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, AlertCircle, Settings, MessageCircle, User, Menu, Plus, Search } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { DatePicker } from '../components/ui/DatePicker';
