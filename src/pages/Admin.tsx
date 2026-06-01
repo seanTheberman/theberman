@@ -307,7 +307,12 @@ const Admin = () => {
     const fetchUsers = useCallback(async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase.from('profiles').select('*').eq('tenant', selectedTenant).order('created_at', { ascending: false });
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('tenant', selectedTenant)
+                .is('deleted_at', null)
+                .order('created_at', { ascending: false });
             if (error) {
                 if (error.message?.includes('column "registration_status" does not exist')) {
                     toast.error('Registration status column missing. Please run the SQL migration.');

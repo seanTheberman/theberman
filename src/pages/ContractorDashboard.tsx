@@ -191,7 +191,13 @@ const ContractorDashboard = () => {
                 .maybeSingle();
 
             if (!profileError && profileData) {
-                setProfile(profileData);
+                setProfile({
+                    ...profileData,
+                    home_county: profileData.home_county || profileData.county || '',
+                    preferred_counties: profileData.preferred_counties?.length
+                        ? profileData.preferred_counties
+                        : (profileData.county ? [profileData.county] : []),
+                });
             }
 
             // 1b. Fetch Catalogue Listing Data
@@ -1760,6 +1766,7 @@ const ContractorDashboard = () => {
                                                                 company_name: profile.company_name,
                                                                 website_url: profile.website_url,
                                                                 home_county: profile.home_county,
+                                                                county: profile.home_county || profile.county,
                                                                 preferred_counties: profile.preferred_counties
                                                             })
                                                             .eq('id', user?.id);
