@@ -830,6 +830,19 @@ const Admin = () => {
         e.preventDefault();
         setIsUpdating(true);
         try {
+            // Check if email already exists (including soft-deleted users)
+            const { data: existingUser } = await supabase
+                .from('profiles')
+                .select('id, email, deleted_at')
+                .eq('email', newUserFormData.email)
+                .maybeSingle();
+            
+            if (existingUser) {
+                toast.error(`User with email ${newUserFormData.email} already exists. Please use a different email or delete the existing user first.`);
+                setIsUpdating(false);
+                return;
+            }
+
             // Create a timeout promise (60 seconds for business creation)
             const timeoutPromise = new Promise((_, reject) => 
                 setTimeout(() => reject(new Error('Request timeout - please try again')), 60000)
