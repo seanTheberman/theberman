@@ -406,8 +406,10 @@ const Admin = () => {
 
             if (error) throw error;
             
+            // Filter out soft-deleted assessments
+            const activeAssessments = (data || []).filter((r: any) => !r.deleted_at);
             // Enrich quotes with contractor details
-            const enrichedAssessments = await enrichQuotesWithContractors(data || []);
+            const enrichedAssessments = await enrichQuotesWithContractors(activeAssessments);
             setAssessments(enrichedAssessments);
         } catch (error: any) {
             console.error('Failed to fetch assessments:', error);
