@@ -402,6 +402,7 @@ const Admin = () => {
                     )
                 `)
                 .eq('tenant', selectedTenant)
+                .is('deleted_at', null)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -715,17 +716,26 @@ const Admin = () => {
                 const tableMap = { lead: 'leads', assessment: 'assessments', user: 'profiles' } as const;
                 const table = tableMap[itemToDelete.type as keyof typeof tableMap];
                 const deletedAt = new Date().toISOString();
-                const { error } = await supabase.from(table).update({ deleted_at: deletedAt }).eq('id', itemToDelete.id);
+                const { data: deletedRow, error } = await supabase
+                    .from(table)
+                    .update({ deleted_at: deletedAt })
+                    .eq('id', itemToDelete.id)
+                    .select('id, deleted_at')
+                    .single();
                 if (error?.code === '42703') {
                     // Column not yet migrated — run the SQL migration in Supabase dashboard first
                     throw new Error('Please run the soft-delete SQL migration in your Supabase dashboard first (supabase/migrations/20260307_add_soft_delete.sql)');
                 }
                 if (error) throw error;
+                if (!deletedRow?.deleted_at) {
+                    throw new Error(`Delete failed: ${itemToDelete.type} was not moved to Recently Deleted. Please refresh and try again.`);
+                }
 
                 if (itemToDelete.type === 'lead') {
                     setLeads(prev => prev.filter(l => l.id !== itemToDelete.id));
                     if (selectedLead?.id === itemToDelete.id) setSelectedLead(null);
                 } else if (itemToDelete.type === 'assessment') {
+                    setAssessments(prev => prev.filter(a => a.id !== itemToDelete.id));
                     // Re-fetch to ensure DB and local state are in sync
                     await fetchAssessments();
                     if (selectedAssessment?.id === itemToDelete.id) setSelectedAssessment(null);
@@ -742,7 +752,7 @@ const Admin = () => {
             setIsDeleting(false);
             setItemToDelete(null);
         }
-    }, [itemToDelete, selectedLead, selectedAssessment, selectedUser]);
+    }, [itemToDelete, selectedLead, selectedAssessment, selectedUser, fetchAssessments]);
 
     const handleRestoreItem = useCallback(async (id: string, type: 'lead' | 'assessment' | 'user') => {
         try {
