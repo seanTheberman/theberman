@@ -107,7 +107,7 @@ const NewCatalogue = () => {
 
     const fetchInitialData = async () => {
         const [catRes] = await Promise.all([
-            supabase.from('catalogue_categories').select('*').order('name')
+            supabase.from('catalogue_categories').select('*').eq('tenant', tenant).order('name')
         ]);
         if (catRes.data) setCategories(catRes.data);
     };
