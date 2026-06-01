@@ -5,7 +5,7 @@ import { LogOut, RefreshCw, BarChart2, Building2, BookOpen, ClipboardList, HardH
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { geocodeAddress, COUNTY_COORDINATES } from '../lib/geocoding';
-import { getTenantFromDomain } from '../lib/tenant';
+import { getTenantFromDomain, getTenantWebsiteUrl } from '../lib/tenant';
 
 // Types
 import type { Lead, Assessment, Profile, Payment, Sponsor, AppSettings, NewsArticle, BlogArticle, FaqItem, CatalogueFormData, AdminView, DeletedItem, CatalogueListing } from '../types/admin';
@@ -874,6 +874,7 @@ const Admin = () => {
                     phone: newUserFormData.phone || null,
                     county: newUserFormData.county || null,
                     town: newUserFormData.town || null,
+                    seaiNumber: newUserFormData.seaiNumber || null,
                     assessorType: newUserFormData.assessorType || null,
                     companyName: newUserFormData.companyName || null,
                     businessAddress: newUserFormData.businessAddress || null,
@@ -1192,16 +1193,17 @@ const Admin = () => {
 
             // Send catalogue form invitation when approving a business
             if (status === 'active' && !isAssessor && targetUser) {
-                const websiteUrl = import.meta.env.VITE_PUBLIC_WEBSITE_URL?.replace(/\/$/, '') || 'https://theberman.eu';
+                const tenantForEmail = targetUser.tenant || selectedTenant;
+                const websiteUrl = getTenantWebsiteUrl(tenantForEmail).replace(/\/$/, '');
                 const catalogueFormUrl = `${websiteUrl}/business-onboarding?userId=${targetUser.id}`;
                 
                 supabase.functions.invoke('send-onboarding-link', {
                     body: {
                         fullName: targetUser.full_name,
                         email: targetUser.email,
-                        catalogueFormUrl: catalogueFormUrl,
-                        companyName: targetUser.company_name || 'Your Business',
-                        role: 'business'
+                        onboardingUrl: catalogueFormUrl,
+                        role: 'business',
+                        tenant: tenantForEmail,
                     }
                 }).then(({ data: emailData }) => {
                     if (emailData?.success) {
@@ -1821,21 +1823,28 @@ const Admin = () => {
 
     // ─── View title helpers ───────────────────────────────────────────────────────
     const getViewTitle = useCallback(() => {
+        const isEngland = selectedTenant === 'england';
+        const isSpanish = selectedTenant === 'spain';
+        const assessmentLabel = isEngland ? 'EPC Assessments' : isSpanish ? 'Certificados Energéticos' : 'BER Assessments';
+        const assessorLabel = isEngland ? 'EPC Assessors' : isSpanish ? 'Certificadores Energéticos' : 'BER Assessors';
         const titles: Record<string, string> = {
-            stats: 'System Overview', leads: 'Leads & Inquiries', assessments: 'BER Assessments',
-            jobs: 'Jobs Management', businesses: 'Business Directory', catalogue: 'Business Catalogue', assessors: 'BER Assessors',
+            stats: 'System Overview', leads: 'Leads & Inquiries', assessments: assessmentLabel,
+            jobs: 'Jobs Management', businesses: 'Business Directory', catalogue: 'Business Catalogue', assessors: assessorLabel,
             homeowners: 'Homeowners', payments: 'Financials', news: 'News & Updates', settings: 'Settings',
             'recently-deleted': 'Recently Deleted', 'location-pages': 'Location Pages',
             'visual-editor': 'Visual Editor',
         };
         return titles[view] || 'Admin';
-    }, [view]);
+    }, [view, selectedTenant]);
 
     const getViewSubtitle = useCallback(() => {
+        const isEngland = selectedTenant === 'england';
+        const isSpanish = selectedTenant === 'spain';
+        const assessorLabel = isEngland ? 'EPC Assessors' : isSpanish ? 'Certificadores Energéticos' : 'BER Assessors';
         const subs: Record<string, string> = {
             stats: 'Key metrics and business performance.', leads: 'Manage your website submissions.',
             assessments: 'Manage homeowner assessment requests.', jobs: 'Manage and track all assessment jobs and quote submissions.', businesses: 'Review business interest and send onboarding links.',
-            catalogue: 'Manage and edit business catalogue listings.', assessors: 'Manage BER Assessors and their jobs.',
+            catalogue: 'Manage and edit business catalogue listings.', assessors: `Manage ${assessorLabel} and their jobs.`,
             homeowners: 'Manage homeowners.', payments: 'View and export payment records.',
             settings: 'Configure global platform settings.',
             'recently-deleted': 'Restore items or permanently delete them from the database.',
@@ -1851,6 +1860,9 @@ const Admin = () => {
     const pendingBusinesses = users_list.filter(u => u.role === 'business' && u.registration_status === 'pending' && !listings.some(l => l.user_id === u.id || l.owner_id === u.id)).length;
     const expiredAccounts = users_list.filter(u => (u.role === 'business' || u.role === 'contractor') && u.subscription_status === 'expired').length;
 
+    const isEngland = selectedTenant === 'england';
+    const isSpanish = selectedTenant === 'spain';
+    const assessorLabel = isEngland ? 'EPC Assessors' : isSpanish ? 'Certificadores Energéticos' : 'BER Assessors';
     const NAV_ITEMS: any[] = [
         { id: 'stats', label: 'Overview', icon: BarChart2, badge: 0 },
         { id: 'leads', label: 'Leads', icon: Inbox, badge: 0 },
@@ -1858,7 +1870,7 @@ const Admin = () => {
         { id: 'jobs', label: 'Jobs', icon: Briefcase, badge: 0 },
         { id: 'homeowners', label: 'Homeowners', icon: Home, badge: 0 },
         { id: 'businesses', label: 'Businesses', icon: Building2, badge: expiredAccounts },
-        { id: 'assessors', label: 'BER Assessors', icon: HardHat, badge: pendingAssessors },
+        { id: 'assessors', label: assessorLabel, icon: HardHat, badge: pendingAssessors },
         { id: 'catalogue', label: 'Catalogue', icon: BookOpen, badge: 0 },
         { id: 'payments', label: 'Payments', icon: DollarSign, badge: 0 },
         { type: 'divider', group: 'CMS' },

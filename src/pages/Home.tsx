@@ -48,7 +48,10 @@ const HomePage = () => {
         <div className="font-sans text-gray-900 overflow-x-hidden">
             <SEOHead
                 title={`Home | ${brandName} ${ratingName} Ratings`}
-                description={`${country}'s largest ${ratingName} website. Fast, reliable, and hassle-free ${ratingName} assessments. Get competitive quotes from local assessors today.`}
+                description={isSpanish 
+                    ? `El sitio web más grande de ${ratingName} en ${country}. Evaluaciones de ${ratingName} rápidas, fiables y sin complicaciones. Obtenga cotizaciones competitivas de certificadores locales hoy.`
+                    : `${country}'s largest ${ratingName} website. Fast, reliable, and hassle-free ${ratingName} assessments. Get competitive quotes from local assessors today.`
+                }
                 canonical="/"
                 jsonLd={[
                     {

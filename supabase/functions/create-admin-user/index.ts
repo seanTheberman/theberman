@@ -42,8 +42,9 @@ Deno.serve(async (req: Request) => {
             if ((!preferredCounties || preferredCounties.length === 0) && (!preferredTowns || preferredTowns.length === 0)) {
                 throw new Error('At least one preferred county or town is required for contractors');
             }
+            const isEngland = tenant === 'england';
             if (!seaiNumber) {
-                throw new Error('SEAI number is required for contractors');
+                throw new Error(isEngland ? 'Accreditation number is required for contractors' : 'SEAI number is required for contractors');
             }
             if (!assessorType) {
                 throw new Error('Assessor type is required for contractors');

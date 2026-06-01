@@ -3,6 +3,13 @@ import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
 import { getTenantEmail, getTenantFromDomain } from '../lib/tenant';
 import { supabase } from '../lib/supabase';
+
+const tenant = getTenantFromDomain();
+const isEngland = tenant === 'england';
+const isSpanish = tenant === 'spain';
+const assessmentLabel = isEngland ? 'EPC' : isSpanish ? 'Certificado Energético' : 'BER';
+const assessorLabel = isEngland ? 'Domestic Energy Assessor' : isSpanish ? 'Certificador Energético' : 'BER Assessor';
+const portalLabel = isSpanish ? 'Portal del Certificador' : 'Assessor Portal';
 import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, AlertCircle, Settings, MessageCircle, User, Menu, Plus, Search } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { DatePicker } from '../components/ui/DatePicker';
@@ -973,7 +980,7 @@ const ContractorDashboard = () => {
                                         <ClipboardList size={40} />
                                     </div>
                                     <h3 className="text-xl font-bold text-gray-900 mb-2">You haven't sent any quotes</h3>
-                                    <p className="text-gray-500 max-w-sm">Tap on "Available Jobs" to find homeowners looking for BER assessments.</p>
+                                    <p className="text-gray-500 max-w-sm">Tap on "Available Jobs" to find homeowners looking for {assessmentLabel} assessments.</p>
                                 </div>
                             ) : (
                                 <div className="space-y-6">
@@ -1584,7 +1591,7 @@ const ContractorDashboard = () => {
                                     <div className="space-y-6 text-left">
                                         <div>
                                             <label className="block text-xs font-medium text-gray-700 mb-1 ml-1">About Me</label>
-                                            <p className="text-[10px] text-gray-500 mb-2 ml-1">The information you submit below is displayed in the 'About' section of your BER assessor profile on the website (max 200 words).</p>
+                                            <p className="text-[10px] text-gray-500 mb-2 ml-1">The information you submit below is displayed in the 'About' section of your {assessorLabel.toLowerCase()} profile on the website (max 200 words).</p>
                                             <textarea
                                                 value={profile?.about_me || ''}
                                                 onChange={(e) => setProfile({ ...profile, about_me: e.target.value })}

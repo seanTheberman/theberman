@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { getTenantFromDomain } from '../lib/tenant';
 import {
     ShieldCheck,
     MapPin,
@@ -16,6 +17,11 @@ import {
     MessageCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+const tenant = getTenantFromDomain();
+const isEngland = tenant === 'england';
+const isSpanish = tenant === 'spain';
+const regNumberLabel = isEngland ? 'Accreditation #' : isSpanish ? 'CEE #' : 'SEAI #';
 
 const PublicAssessorProfile = () => {
     const { id } = useParams();
@@ -174,7 +180,7 @@ const PublicAssessorProfile = () => {
                                             {profile.seai_number && (
                                                 <div className="px-4 py-2 bg-gray-50 text-gray-600 rounded-xl border border-gray-100 text-xs font-bold flex items-center gap-2">
                                                     <Award size={14} className="text-[#007EA7]" />
-                                                    SEAI #{profile.seai_number}
+                                                    {regNumberLabel} {profile.seai_number}
                                                 </div>
                                             )}
                                             {profile.website_url && (
