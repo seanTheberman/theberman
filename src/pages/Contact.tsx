@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import { getTownsForTenant } from '../lib/tenantData';
 import SEOHead from '../components/SEOHead';
 import { getTenantFromDomain, getTenantEmail, getTenantDomain } from '../lib/tenant';
+import { usePageContent, cmsValue } from '../hooks/usePageContent';
 
 const contactSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -45,6 +46,8 @@ const Contact = () => {
     const townsByCounty = getTownsForTenant(tenant);
     const tenantEmail = getTenantEmail(tenant);
     const tenantDomain = getTenantDomain(tenant);
+    const { content: cms } = usePageContent('contact');
+    const c = (section: string, key: string, fallback: string) => cmsValue(cms, section, key, fallback);
     const tr = {
         seoTitle: isSpanish ? 'Contacto' : 'Contact Us',
         seoDesc: isSpanish ? 'Contacta con Certificado Energético para tus certificados energéticos, calificaciones y mejoras en toda España.' : 'Get in touch with The Berman for BER assessments, energy ratings, and home energy upgrades across Ireland.',
@@ -139,13 +142,13 @@ const Contact = () => {
             <section className="pt-32 pb-8 bg-white">
                 <div className="container mx-auto px-6 text-center max-w-4xl">
                     <span className="inline-block mb-4 px-4 py-1.5 rounded-full bg-green-50 text-[#007F00] text-xs font-black tracking-widest uppercase border border-green-100">
-                        {tr.badge}
+                        {c('hero', 'badge', tr.badge)}
                     </span>
                     <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 leading-tight">
-                        {tr.title1} <br className="md:hidden" /> <span className="text-[#007F00]">{tr.title2}</span>
+                        {c('hero', 'heading_line1', tr.title1)} <br className="md:hidden" /> <span className="text-[#007F00]">{c('hero', 'heading_line2', tr.title2)}</span>
                     </h1>
                     <p className="text-base md:text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
-                        {tr.subtitle}
+                        {c('hero', 'subtitle', tr.subtitle)}
                     </p>
                 </div>
             </section>

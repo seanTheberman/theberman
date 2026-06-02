@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import SEOHead from '../components/SEOHead';
 import { getTenantFromDomain } from '../lib/tenant';
+import { usePageContent, cmsValue } from '../hooks/usePageContent';
 
 interface NewsArticle {
     id: string;
@@ -27,6 +28,8 @@ const NewsPage = () => {
     const isSpanish = tenant === 'spain';
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
+    const { content: cms } = usePageContent('news');
+    const c = (section: string, key: string, fallback: string) => cmsValue(cms, section, key, fallback);
     const tr = isSpanish ? {
         seoTitle: 'Noticias',
         seoDesc: 'Mantente al día con las novedades energéticas, subvenciones y actualizaciones del sector de Certificado Energético.',
@@ -204,11 +207,14 @@ const NewsPage = () => {
                 <div className="container mx-auto px-6">
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-gray-100">
                         <div>
+                            <span className="inline-block mb-3 px-3 py-1 rounded-full bg-green-50 text-[#007F00] text-[10px] font-black tracking-widest uppercase border border-green-100">
+                                {c('hero', 'badge', isSpanish ? 'Últimas Noticias' : 'Latest Updates')}
+                            </span>
                             <h1 className="text-4xl md:text-5xl font-black text-gray-900 uppercase tracking-tighter italic mb-2">
-                                {tr.heading}
+                                {c('hero', 'heading', tr.heading)}
                             </h1>
                             <p className="text-gray-500 font-medium tracking-wide text-sm">
-                                {tr.subheading}
+                                {c('hero', 'subtitle', tr.subheading)}
                             </p>
                         </div>
 

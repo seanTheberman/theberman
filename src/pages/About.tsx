@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import FaqItem from '../components/FaqItem';
 import SEOHead from '../components/SEOHead';
 import { getTenantFromDomain } from '../lib/tenant';
+import { usePageContent, cmsValue } from '../hooks/usePageContent';
 
 const About = () => {
     const tenant = getTenantFromDomain();
@@ -10,6 +11,9 @@ const About = () => {
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
     const brand = isSpanish ? 'Certificado Energético' : isFrance ? 'DPE France' : isPortugal ? 'Certificado Energético' : 'The Berman';
+
+    const { content: cms } = usePageContent('about');
+    const c = (section: string, key: string, fallback: string) => cmsValue(cms, section, key, fallback);
 
     const tr = isSpanish ? {
         seoTitle: 'Sobre Nosotros - Certificadores Energéticos Expertos',
@@ -132,14 +136,14 @@ const About = () => {
             <section className="pt-32 pb-16 bg-white">
                 <div className="container mx-auto px-6 text-center max-w-4xl">
                     <span className="inline-block mb-4 px-4 py-1.5 rounded-full bg-green-50 text-[#007F00] text-xs font-black tracking-widest uppercase border border-green-100">
-                        {tr.missionTag}
+                        {c('hero', 'tag', tr.missionTag)}
                     </span>
                     <h1 className="text-4xl md:text-6xl font-black text-gray-900 mb-6 leading-tight">
-                        {tr.title1} <br className="hidden md:block" />
-                        <span className="text-[#007F00]">{tr.title2}</span>
+                        {c('hero', 'heading_line1', tr.title1)} <br className="hidden md:block" />
+                        <span className="text-[#007F00]">{c('hero', 'heading_line2', tr.title2)}</span>
                     </h1>
                     <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
-                        {tr.heroP}
+                        {c('hero', 'description', tr.heroP)}
                     </p>
                 </div>
             </section>
@@ -151,20 +155,29 @@ const About = () => {
                         {/* Left Side: Story Text */}
                         <div className="lg:col-span-8 space-y-8 text-gray-600 leading-relaxed font-sans text-lg text-left">
                             <div className="mb-8">
-                                <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight">{tr.storyH}</h2>
+                                <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight">{c('story', 'heading', tr.storyH)}</h2>
                             </div>
-                            {tr.story.map((p, i) => <p key={i}>{p}</p>)}
+                            <p>{c('story', 'paragraph1', tr.story[0])}</p>
+                            <p>{c('story', 'paragraph2', tr.story[1])}</p>
+                            <p>{c('story', 'paragraph3', tr.story[2])}</p>
+                            <p>{c('story', 'paragraph4', tr.story[3])}</p>
                         </div>
 
                         {/* Right Side: Stats / Impact */}
                         <div className="lg:col-span-4 lg:pl-12 lg:border-l border-gray-200">
                             <div className="sticky top-12 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-8 lg:space-y-12">
-                                {tr.stats.map((s, i) => (
-                                    <div key={i}>
-                                        <p className="text-4xl md:text-5xl font-black text-[#007F00] mb-2">{s.n}</p>
-                                        <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-tight">{s.l1} <br className="hidden lg:block" />{s.l2}</p>
-                                    </div>
-                                ))}
+                                <div>
+                                    <p className="text-4xl md:text-5xl font-black text-[#007F00] mb-2">{c('story', 'stat1_value', tr.stats[0].n)}</p>
+                                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-tight">{c('story', 'stat1_label', `${tr.stats[0].l1} ${tr.stats[0].l2}`)}</p>
+                                </div>
+                                <div>
+                                    <p className="text-4xl md:text-5xl font-black text-[#007F00] mb-2">{c('story', 'stat2_value', tr.stats[1].n)}</p>
+                                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-tight">{c('story', 'stat2_label', `${tr.stats[1].l1} ${tr.stats[1].l2}`)}</p>
+                                </div>
+                                <div>
+                                    <p className="text-4xl md:text-5xl font-black text-[#007F00] mb-2">{c('story', 'stat3_value', tr.stats[2].n)}</p>
+                                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-tight">{c('story', 'stat3_label', `${tr.stats[2].l1} ${tr.stats[2].l2}`)}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -207,13 +220,13 @@ const About = () => {
                 <div className="container max-w-full">
                     <div className="bg-gray-50 p-12 md:p-20 text-center relative overflow-hidden border border-gray-100">
                         <div className="relative z-10">
-                            <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 uppercase tracking-tight">{tr.joinH} <br />{tr.joinH2}</h2>
+                            <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 uppercase tracking-tight">{c('cta', 'heading', tr.joinH)} <br />{c('cta', 'heading_highlight', tr.joinH2)}</h2>
                             <p className="text-gray-500 text-lg mb-10 max-w-xl mx-auto font-medium">
-                                {tr.joinP}
+                                {c('cta', 'description', tr.joinP)}
                             </p>
-                            <Link to="/contact-us">
+                            <Link to={c('cta', 'button_url', '/contact-us')}>
                                 <button className="bg-[#007F00] text-white font-black px-12 py-5 rounded-2xl hover:bg-[#006400] transition-all shadow-xl flex items-center gap-3 mx-auto transform hover:-translate-y-1 active:translate-y-0">
-                                    {tr.cta} <ArrowRight size={20} />
+                                    {c('cta', 'button_text', tr.cta)} <ArrowRight size={20} />
                                 </button>
                             </Link>
                         </div>

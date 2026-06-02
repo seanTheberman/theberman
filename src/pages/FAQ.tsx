@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import SEOHead from '../components/SEOHead';
 import { getTenantFromDomain, getTenantEmail } from '../lib/tenant';
+import { usePageContent, cmsValue } from '../hooks/usePageContent';
 
 interface FaqItem {
     id: string;
@@ -23,6 +24,8 @@ const FAQ = () => {
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
     const tenantEmail = getTenantEmail(tenant);
+    const { content: cms } = usePageContent('faq');
+    const c = (section: string, key: string, fallback: string) => cmsValue(cms, section, key, fallback);
     const tr = isSpanish ? {
         loading: 'Cargando FAQ...',
         comingSoonH: 'FAQ Próximamente',
@@ -210,8 +213,8 @@ const FAQ = () => {
                             </nav>
 
                             <div className="mt-12 p-8 bg-green-50 rounded-[2rem] border border-green-100">
-                                <p className="text-lg font-black text-[#007F00] mb-2 uppercase tracking-tight">{tr.consultantsH}</p>
-                                <p className="text-sm text-green-700/80 mb-6 font-medium leading-relaxed">{tr.consultantsP}</p>
+                                <p className="text-lg font-black text-[#007F00] mb-2 uppercase tracking-tight">{c('cta', 'heading', tr.consultantsH)}</p>
+                                <p className="text-sm text-green-700/80 mb-6 font-medium leading-relaxed">{c('cta', 'description', tr.consultantsP)}</p>
                                 <p className="text-sm text-green-700/80 mb-6 font-medium leading-relaxed">{tr.emailLine}</p>
                             </div>
                         </div>
