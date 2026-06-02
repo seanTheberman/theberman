@@ -579,7 +579,7 @@ const Layout = () => {
                                 {isSpanish && (
                                     <li className="flex items-start gap-3 text-gray-400 text-sm">
                                         <Mail className="text-[#9ACD32] mt-0.5" size={16} />
-                                        <a href="mailto:info@certificadosenergeticos.eu" className="hover:text-white transition">info@certificadosenergeticos.eu</a>
+                                        <a href="mailto:info@certificadoenergético.eu" className="hover:text-white transition">info@certificadoenergético.eu</a>
                                     </li>
                                 )}
                                 <li className="flex items-start gap-3 text-gray-400 text-sm">

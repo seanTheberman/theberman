@@ -15,8 +15,8 @@ interface SEOHeadProps {
 const TENANT_CONFIG: Record<string, { siteName: string; baseUrl: string; ogImage: string; locale: string; currency: string }> = {
     spain: {
         siteName: 'Certificado Energ\u00e9tico',
-        baseUrl: 'https://certificadoenergetico.eu',
-        ogImage: 'https://certificadoenergetico.eu/logo.png',
+        baseUrl: 'https://certificadoenergético.eu',
+        ogImage: 'https://certificadoenergético.eu/logo.png',
         locale: 'es_ES',
         currency: 'EUR',
     },

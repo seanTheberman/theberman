@@ -92,9 +92,11 @@ const LocationPage = () => {
     }, [pageTitle, pageDescription]);
 
     const heroTitle = customData?.hero_title || `${labels.assessor} ${labels.in} ${townName || countyName}`;
-    const heroSubtitle = customData?.hero_subtitle || (townName
-        ? `Find ${labels.assessor.toLowerCase()} ${labels.in} ${townName}, ${countyName}. ${isSpanish ? 'Técnicos certificados listos para ayudarle con su certificado de eficiencia energética.' : 'Certified assessors ready to help with your energy certificate.'}`
-        : `Find ${labels.assessor.toLowerCase()} ${labels.in} ${countyName}. ${isSpanish ? 'Técnicos certificados listos para ayudarle con su certificado de eficiencia energética.' : 'Certified assessors ready to help with your energy certificate.'}`
+    const heroSubtitle = customData?.hero_subtitle || (isSpanish
+        ? `Su Certificado de Eficiencia Energética en ${countyName}.`
+        : (townName
+            ? `Find ${labels.assessor.toLowerCase()} ${labels.in} ${townName}, ${countyName}. Certified assessors ready to help with your energy certificate.`
+            : `Find ${labels.assessor.toLowerCase()} ${labels.in} ${countyName}. Certified assessors ready to help with your energy certificate.`)
     );
 
     const introText = customData?.intro_text || (isSpanish
