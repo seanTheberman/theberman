@@ -27,6 +27,51 @@ const REGISTRATION_NUMBER_LABELS: Record<string, { label: string; placeholder: s
     }
 };
 
+const ONBOARDING_LABELS: Record<string, Record<string, string>> = {
+    en: {
+        firstName: 'First Name', lastName: 'Last Name', emailAddress: 'Email Address',
+        mobilePhone: 'Mobile Phone', optional: '(optional)',
+        assessorType: 'Assessor Type (select one or more)',
+        domesticAssessor: 'Domestic Assessor', commercialAssessor: 'Commercial Assessor', technicalAssessor: 'Technical Assessor',
+        businessDetails: 'Business Details', companyName: 'Company Name',
+        companyPlaceholder: 'e.g. ABC Energy Assessments',
+        website: 'Website', websitePlaceholder: 'https://www.example.com',
+        socialMedia: 'Social Media', facebook: 'Facebook', instagram: 'Instagram', linkedin: 'LinkedIn',
+        featuresServices: 'Features / Services',
+        featuresDesc: 'Add key services or features to highlight on your listing (e.g. "Fast Turnaround", "24hr E-certs").',
+        featurePlaceholder: 'Type a feature and press Enter', add: 'Add',
+        insuranceHolder: 'Professional insurance policy holder',
+        insuranceDesc: 'Do you hold valid professional indemnity insurance?',
+        vatRegistered: 'VAT Registered', yes: 'Yes', no: 'No',
+        proceed: 'Proceed', savingProfile: 'Saving Profile...',
+        requiredFields: 'Please fill in all required fields including Assessor Type',
+        serviceAreaRequired: 'Please select at least one service area',
+        registrationSubmitted: 'Registration submitted! Your account is pending admin approval.',
+        failedToProcess: 'Failed to process information. Please try again.',
+    },
+    es: {
+        firstName: 'Nombre', lastName: 'Apellidos', emailAddress: 'Correo Electrónico',
+        mobilePhone: 'Teléfono Móvil', optional: '(opcional)',
+        assessorType: 'Tipo de Certificador (selecciona uno o más)',
+        domesticAssessor: 'Certificador de Viviendas', commercialAssessor: 'Certificador Comercial', technicalAssessor: 'Técnico Certificado',
+        businessDetails: 'Datos del Negocio', companyName: 'Nombre de la Empresa',
+        companyPlaceholder: 'Ej. Certificaciones Energéticas SL',
+        website: 'Sitio Web', websitePlaceholder: 'https://www.ejemplo.com',
+        socialMedia: 'Redes Sociales', facebook: 'Facebook', instagram: 'Instagram', linkedin: 'LinkedIn',
+        featuresServices: 'Servicios / Características',
+        featuresDesc: 'Añade servicios clave para destacar en tu perfil (ej. "Entrega Rápida", "Certificados 24h").',
+        featurePlaceholder: 'Escribe un servicio y pulsa Enter', add: 'Añadir',
+        insuranceHolder: 'Titular de seguro profesional',
+        insuranceDesc: '¿Tienes seguro de responsabilidad civil profesional vigente?',
+        vatRegistered: 'Autónomo / Empresa Registrada', yes: 'Sí', no: 'No',
+        proceed: 'Continuar', savingProfile: 'Guardando perfil...',
+        requiredFields: 'Por favor completa todos los campos obligatorios incluyendo el Tipo de Certificador',
+        serviceAreaRequired: 'Por favor selecciona al menos una zona de servicio',
+        registrationSubmitted: '¡Registro enviado! Tu cuenta está pendiente de aprobación por el administrador.',
+        failedToProcess: 'Error al procesar la información. Por favor inténtalo de nuevo.',
+    },
+};
+
 // Tenant-specific page titles and labels
 const TENANT_LABELS: Record<string, { title: string; subtitle: string; catalogueLabel: string; catalogueDesc: string }> = {
     ireland: {
@@ -57,6 +102,7 @@ const ContractorOnboarding = () => {
     const isSpanish = tenant === 'spain';
     const regLabels = REGISTRATION_NUMBER_LABELS[tenant] || REGISTRATION_NUMBER_LABELS.ireland;
     const tenantLabels = TENANT_LABELS[tenant] || TENANT_LABELS.ireland;
+    const lbl = ONBOARDING_LABELS[isSpanish ? 'es' : 'en'];
     const COUNTIES = getCountiesForTenant(tenant);
     const TOWNS_DATA = getTownsForTenant(tenant);
     const areaPrefix = isSpanish ? '' : '';
@@ -158,12 +204,12 @@ const ContractorOnboarding = () => {
         e.preventDefault();
 
         if (!formData.phone || !formData.homeCounty || !formData.homeTown || formData.assessorTypes.length === 0) {
-            toast.error('Please fill in all required fields including Assessor Type');
+            toast.error(lbl.requiredFields);
             return;
         }
 
         if (formData.serviceAreas.length === 0) {
-            toast.error('Please select at least one service area');
+            toast.error(lbl.serviceAreaRequired);
             return;
         }
 
@@ -220,14 +266,14 @@ const ContractorOnboarding = () => {
                 body: { registrationData, type: 'assessor' }
             }).catch(err => console.error('Failed to send interest notification:', err));
 
-            toast.success('Registration submitted! Your account is pending admin approval.');
+            toast.success(lbl.registrationSubmitted);
             await refreshProfile();
             sessionStorage.removeItem(`pending_assessor_registration_${user?.id}`);
             navigate('/dashboard/ber-assessor', { replace: true });
 
         } catch (error: unknown) {
             console.error('Onboarding Processing Error:', error);
-            toast.error('Failed to process information. Please try again.');
+            toast.error(lbl.failedToProcess);
         } finally {
             setLoading(false);
         }
@@ -253,15 +299,15 @@ const ContractorOnboarding = () => {
                         {/* READ ONLY INFO */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-md border border-gray-100 mb-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">First Name</label>
+                                <label className="block text-sm font-medium text-gray-700">{lbl.firstName}</label>
                                 <div className="mt-1 text-gray-900 font-medium">{user?.user_metadata?.full_name?.split(' ')[0] || '-'}</div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                                <label className="block text-sm font-medium text-gray-700">{lbl.lastName}</label>
                                 <div className="mt-1 text-gray-900 font-medium">{user?.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '-'}</div>
                             </div>
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700">Email Address</label>
+                                <label className="block text-sm font-medium text-gray-700">{lbl.emailAddress}</label>
                                 <div className="mt-1 text-gray-900 font-medium">{user?.email}</div>
                             </div>
                         </div>
@@ -269,7 +315,7 @@ const ContractorOnboarding = () => {
                         {/* NEW FIELDS */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label htmlFor="phone" className="block text-sm font-bold text-gray-700">Mobile Phone</label>
+                                <label htmlFor="phone" className="block text-sm font-bold text-gray-700">{lbl.mobilePhone}</label>
                                 <input
                                     type="tel"
                                     name="phone"
@@ -315,7 +361,7 @@ const ContractorOnboarding = () => {
                             </div>
 
                             <div>
-                                <label htmlFor="seaiNumber" className="block text-sm font-bold text-gray-700 mb-1">{regLabels.label} <span className="text-gray-400 font-normal">(optional)</span></label>
+                                <label htmlFor="seaiNumber" className="block text-sm font-bold text-gray-700 mb-1">{regLabels.label} <span className="text-gray-400 font-normal">{lbl.optional}</span></label>
                                 <input
                                     type="text"
                                     name="seaiNumber"
@@ -341,19 +387,23 @@ const ContractorOnboarding = () => {
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-bold text-gray-700 mb-3">Assessor Type (select one or more) <span className="text-red-500">*</span></label>
+                                <label className="block text-sm font-bold text-gray-700 mb-3">{lbl.assessorType} <span className="text-red-500">*</span></label>
                                 <div className="flex flex-wrap gap-4">
-                                    {['Domestic Assessor', 'Commercial Assessor', 'Technical Assessor'].map((type) => (
+                                    {[
+                                        { key: 'Domestic Assessor', label: lbl.domesticAssessor },
+                                        { key: 'Commercial Assessor', label: lbl.commercialAssessor },
+                                        { key: 'Technical Assessor', label: lbl.technicalAssessor },
+                                    ].map(({ key, label }) => (
                                         <button
-                                            key={type}
+                                            key={key}
                                             type="button"
-                                            onClick={() => handleAssessorTypeToggle(type)}
-                                            className={`px-6 py-3 rounded-xl border-2 font-bold transition-all flex items-center gap-2 ${formData.assessorTypes.includes(type) ? 'border-[#007F00] bg-green-50 text-[#007F00]' : 'border-gray-200 bg-white text-gray-400'}`}
+                                            onClick={() => handleAssessorTypeToggle(key)}
+                                            className={`px-6 py-3 rounded-xl border-2 font-bold transition-all flex items-center gap-2 ${formData.assessorTypes.includes(key) ? 'border-[#007F00] bg-green-50 text-[#007F00]' : 'border-gray-200 bg-white text-gray-400'}`}
                                         >
-                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${formData.assessorTypes.includes(type) ? 'border-[#007F00]' : 'border-gray-300'}`}>
-                                                {formData.assessorTypes.includes(type) && <div className="w-2.5 h-2.5 rounded-full bg-[#007F00]" />}
+                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${formData.assessorTypes.includes(key) ? 'border-[#007F00]' : 'border-gray-300'}`}>
+                                                {formData.assessorTypes.includes(key) && <div className="w-2.5 h-2.5 rounded-full bg-[#007F00]" />}
                                             </div>
-                                            {type}
+                                            {label}
                                         </button>
                                     ))}
                                 </div>
@@ -363,11 +413,11 @@ const ContractorOnboarding = () => {
                         {/* BUSINESS DETAILS */}
                         <div className="pt-8 border-t border-gray-100">
                             <label className="block text-lg font-bold text-gray-900 mb-4">
-                                Business Details
+                                {lbl.businessDetails}
                             </label>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label htmlFor="companyName" className="block text-sm font-bold text-gray-700 mb-1">Company Name</label>
+                                    <label htmlFor="companyName" className="block text-sm font-bold text-gray-700 mb-1">{lbl.companyName}</label>
                                     <input
                                         type="text"
                                         name="companyName"
@@ -375,11 +425,11 @@ const ContractorOnboarding = () => {
                                         className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
                                         value={formData.companyName}
                                         onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                                        placeholder="e.g. ABC Energy Assessments"
+                                        placeholder={lbl.companyPlaceholder}
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="website" className="block text-sm font-bold text-gray-700 mb-1">Website</label>
+                                    <label htmlFor="website" className="block text-sm font-bold text-gray-700 mb-1">{lbl.website}</label>
                                     <input
                                         type="url"
                                         name="website"
@@ -387,7 +437,7 @@ const ContractorOnboarding = () => {
                                         className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
                                         value={formData.website}
                                         onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                                        placeholder="https://www.example.com"
+                                        placeholder={lbl.websitePlaceholder}
                                     />
                                 </div>
                             </div>
@@ -395,10 +445,10 @@ const ContractorOnboarding = () => {
 
                         {/* SOCIAL MEDIA */}
                         <div className="pt-6">
-                            <label className="block text-sm font-bold text-gray-700 mb-3">Social Media <span className="text-gray-400 font-normal">(optional)</span></label>
+                            <label className="block text-sm font-bold text-gray-700 mb-3">{lbl.socialMedia} <span className="text-gray-400 font-normal">{lbl.optional}</span></label>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                    <label className="block text-xs text-gray-500 mb-1 ml-1">Facebook</label>
+                                    <label className="block text-xs text-gray-500 mb-1 ml-1">{lbl.facebook}</label>
                                     <input
                                         type="url"
                                         className="block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors text-sm"
@@ -408,7 +458,7 @@ const ContractorOnboarding = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs text-gray-500 mb-1 ml-1">Instagram</label>
+                                    <label className="block text-xs text-gray-500 mb-1 ml-1">{lbl.instagram}</label>
                                     <input
                                         type="url"
                                         className="block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors text-sm"
@@ -418,7 +468,7 @@ const ContractorOnboarding = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs text-gray-500 mb-1 ml-1">LinkedIn</label>
+                                    <label className="block text-xs text-gray-500 mb-1 ml-1">{lbl.linkedin}</label>
                                     <input
                                         type="url"
                                         className="block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors text-sm"
@@ -432,8 +482,8 @@ const ContractorOnboarding = () => {
 
                         {/* FEATURES */}
                         <div className="pt-6">
-                            <label className="block text-sm font-bold text-gray-700 mb-1">Features / Services <span className="text-gray-400 font-normal">(optional)</span></label>
-                            <p className="text-xs text-gray-500 mb-3">Add key services or features to highlight on your listing (e.g. "Fast Turnaround", "24hr E-certs").</p>
+                            <label className="block text-sm font-bold text-gray-700 mb-1">{lbl.featuresServices} <span className="text-gray-400 font-normal">{lbl.optional}</span></label>
+                            <p className="text-xs text-gray-500 mb-3">{lbl.featuresDesc}</p>
                             <div className="flex gap-2 mb-3">
                                 <input
                                     type="text"
@@ -449,7 +499,7 @@ const ContractorOnboarding = () => {
                                             }
                                         }
                                     }}
-                                    placeholder="Type a feature and press Enter"
+                                    placeholder={lbl.featurePlaceholder}
                                 />
                                 <button
                                     type="button"
@@ -461,7 +511,7 @@ const ContractorOnboarding = () => {
                                     }}
                                     className="px-4 py-2 bg-[#007F00] text-white rounded-xl text-sm font-bold hover:bg-[#006600] transition-colors flex items-center gap-1"
                                 >
-                                    <Plus size={16} /> Add
+                                    <Plus size={16} /> {lbl.add}
                                 </button>
                             </div>
                             {formData.features.length > 0 && (
@@ -482,8 +532,8 @@ const ContractorOnboarding = () => {
                         <div className="space-y-4 pt-4">
                             <div className={`flex items-center justify-between border p-4 rounded-xl transition-all ${formData.insuranceHolder ? 'border-[#007F00] bg-green-50/30' : 'border-gray-200 bg-white'}`}>
                                 <div>
-                                    <span className={`block text-sm font-bold ${formData.insuranceHolder ? 'text-[#007F00]' : 'text-gray-900'}`}>Professional insurance policy holder</span>
-                                    <span className="text-xs text-gray-500">Do you hold valid professional indemnity insurance?</span>
+                                    <span className={`block text-sm font-bold ${formData.insuranceHolder ? 'text-[#007F00]' : 'text-gray-900'}`}>{lbl.insuranceHolder}</span>
+                                    <span className="text-xs text-gray-500">{lbl.insuranceDesc}</span>
                                 </div>
                                 <div className="flex items-center space-x-3">
                                     <button
@@ -493,13 +543,13 @@ const ContractorOnboarding = () => {
                                     >
                                         <span className={`pointer-events-none inline-block h-6 w-6 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200 ${formData.insuranceHolder ? 'translate-x-5' : 'translate-x-0'}`} />
                                     </button>
-                                    <span className={`text-sm font-bold w-8 ${formData.insuranceHolder ? 'text-[#007F00]' : 'text-gray-700'}`}>{formData.insuranceHolder ? 'Yes' : 'No'}</span>
+                                    <span className={`text-sm font-bold w-8 ${formData.insuranceHolder ? 'text-[#007F00]' : 'text-gray-700'}`}>{formData.insuranceHolder ? lbl.yes : lbl.no}</span>
                                 </div>
                             </div>
 
                             <div className={`flex items-center justify-between border p-4 rounded-xl transition-all ${formData.vatRegistered ? 'border-[#007F00] bg-green-50/30' : 'border-gray-200 bg-white'}`}>
                                 <div>
-                                    <span className={`block text-sm font-bold ${formData.vatRegistered ? 'text-[#007F00]' : 'text-gray-900'}`}>VAT Registered</span>
+                                    <span className={`block text-sm font-bold ${formData.vatRegistered ? 'text-[#007F00]' : 'text-gray-900'}`}>{lbl.vatRegistered}</span>
                                 </div>
                                 <div className="flex items-center space-x-3">
                                     <button
@@ -509,7 +559,7 @@ const ContractorOnboarding = () => {
                                     >
                                         <span className={`pointer-events-none inline-block h-6 w-6 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200 ${formData.vatRegistered ? 'translate-x-5' : 'translate-x-0'}`} />
                                     </button>
-                                    <span className={`text-sm font-bold w-8 ${formData.vatRegistered ? 'text-[#007F00]' : 'text-gray-700'}`}>{formData.vatRegistered ? 'Yes' : 'No'}</span>
+                                    <span className={`text-sm font-bold w-8 ${formData.vatRegistered ? 'text-[#007F00]' : 'text-gray-700'}`}>{formData.vatRegistered ? lbl.yes : lbl.no}</span>
                                 </div>
                             </div>
                         </div>
@@ -530,7 +580,7 @@ const ContractorOnboarding = () => {
                                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${formData.wantsCatalogueListing ? 'border-[#007F00]' : 'border-gray-300'}`}>
                                         {formData.wantsCatalogueListing && <div className="w-2.5 h-2.5 rounded-full bg-[#007F00]" />}
                                     </div>
-                                    YES
+                                    {lbl.yes.toUpperCase()}
                                 </button>
                                 <button
                                     type="button"
@@ -540,7 +590,7 @@ const ContractorOnboarding = () => {
                                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${!formData.wantsCatalogueListing ? 'border-red-500' : 'border-gray-300'}`}>
                                         {!formData.wantsCatalogueListing && <div className="w-2.5 h-2.5 rounded-full bg-red-500" />}
                                     </div>
-                                    NO
+                                    {lbl.no.toUpperCase()}
                                 </button>
                             </div>
                         </div>
@@ -577,7 +627,7 @@ const ContractorOnboarding = () => {
                                 disabled={loading}
                                 className={`w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-lg font-bold text-white bg-[#007F00] hover:bg-[#006600] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#007F00] transition-all transform active:scale-95 ${loading ? 'opacity-75 cursor-not-allowed' : ''}`}
                             >
-                                {loading ? 'Saving Profile...' : 'Proceed'}
+                                {loading ? lbl.savingProfile : lbl.proceed}
                             </button>
                         </div>
                     </form>
