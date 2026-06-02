@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { getTenantFromDomain } from '../lib/tenant';
-import { getDefaultsForTenant } from '../lib/cmsDefaults';
+import { getDefaultsForTenant, CMS_PAGES } from '../lib/cmsDefaults';
 
 interface PageContentMap {
     [section: string]: Record<string, any>;
@@ -31,12 +31,22 @@ export function usePageContent(page: string): { content: PageContentMap; loading
 
                 if (!cancelled) {
                     const map: PageContentMap = {};
-                    if (data) {
-                        for (const row of data) {
-                            const defaults = getDefaultsForTenant(page, row.section, tenant);
-                            map[row.section] = { ...defaults, ...row.content };
+
+                    // Start with defaults for ALL sections on this page
+                    const pageDef = CMS_PAGES.find(p => p.id === page);
+                    if (pageDef) {
+                        for (const section of pageDef.sections) {
+                            map[section.id] = getDefaultsForTenant(page, section.id, tenant);
                         }
                     }
+
+                    // Merge DB content over defaults (DB wins)
+                    if (data) {
+                        for (const row of data) {
+                            map[row.section] = { ...(map[row.section] || {}), ...row.content };
+                        }
+                    }
+
                     setContent(map);
                 }
             } catch (err) {
