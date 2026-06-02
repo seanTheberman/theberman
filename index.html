@@ -61,6 +61,7 @@
       }
 
       document.title = title;
+      document.documentElement.lang = isEsp ? 'es' : isEng ? 'en' : isFra ? 'fr' : isPor ? 'pt' : 'en';
 
       function setMeta(sel, attr, val) {
         var el = document.querySelector(sel);
