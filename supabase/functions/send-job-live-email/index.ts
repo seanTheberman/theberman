@@ -227,7 +227,7 @@ Deno.serve(async (req: Request) => {
             .eq('id', assessmentId)
             .eq('tenant', tenant)
             .single()).data?.contact_phone : null);
-        const smsResult = await trySendSms(smsPhone, `Hi ${customerName}, your BER assessment request in ${town || county} is now live on ${websiteUrl.replace('https://', '')}! Assessors in your area are being notified. We'll let you know when quotes arrive.`, config.phone_country_code);
+        const smsResult = await trySendSms(smsPhone, `Hi ${customerName}, your ${config.display_name} assessment request in ${town || county} is now live on ${websiteUrl.replace('https://', '')}! Assessors in your area are being notified. We'll let you know when quotes arrive.`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
         smsSent = smsResult === true;
         console.log(`[send-job-live-email] Customer SMS to ${smsPhone}: ${smsSent ? 'sent' : 'failed'} (tenant: ${tenant})`);
 
@@ -369,7 +369,7 @@ Deno.serve(async (req: Request) => {
                 // Send SMS with direct quote link (always, independent of SMTP)
                 if (contractor.phone) {
                     const smsMessage = `Hi ${assessorName}, new job in ${jobLocation}! Quote here: ${quoteLink}`;
-                    const smsSentToContractor = await trySendSms(contractor.phone, smsMessage, config.phone_country_code);
+                    const smsSentToContractor = await trySendSms(contractor.phone, smsMessage, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
                     if (smsSentToContractor) contractorSmsSentCount++;
                     console.log(`[send-job-live-email] SMS to contractor ${contractor.phone}: ${smsSentToContractor ? 'sent' : 'failed'} (tenant: ${tenant})`);
                 }
