@@ -47,6 +47,14 @@ export function getTenantFromDomain(): string {
   }
 
   const hostname = window.location.hostname;
+  const domainTenant = DOMAIN_TO_TENANT[hostname];
+
+  // On any known production domain (not localhost), trust the hostname
+  // unconditionally. This prevents ?tenant=spain from the admin visual
+  // editor preview from leaking into real tenant domains.
+  if (domainTenant && hostname !== 'localhost') {
+    return domainTenant;
+  }
 
   // Allow query param override: ?tenant=spain (used by admin visual editor preview iframe)
   const urlParams = new URLSearchParams(window.location.search);
@@ -60,7 +68,7 @@ export function getTenantFromDomain(): string {
   const storedTenant = sessionStorage.getItem('dev_tenant_override');
   if (storedTenant) return storedTenant;
 
-  return DOMAIN_TO_TENANT[hostname] || 'ireland';
+  return domainTenant || 'ireland';
 }
 
 export function getTenantDisplayName(tenant: string): string {
