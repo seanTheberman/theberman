@@ -88,10 +88,6 @@ const HomePage = () => {
 
             {/* 1. HERO SECTION - BERcert Conversion Style */}
             <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 bg-white overflow-hidden">
-                {/* Decorative background elements */}
-                <div className="absolute top-0 right-0 -mr-24 -mt-24 w-96 h-96 rounded-full bg-green-50/50 blur-3xl -z-0"></div>
-                <div className="absolute bottom-0 left-0 -ml-24 -mb-24 w-96 h-96 rounded-full bg-green-50/50 blur-3xl -z-0"></div>
-
                 <div className="container mx-auto px-6 relative z-10">
                     <div className="max-w-4xl mx-auto text-center">
                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-100 rounded-full mb-8 animate-fade-in">
@@ -406,7 +402,7 @@ const HomePage = () => {
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                                 <div className="absolute bottom-10 left-10 right-10">
-                                    <div className="bg-white/95 backdrop-blur-md p-6 rounded-3xl shadow-lg border border-white/20">
+                                    <div className="bg-white/95 p-6 rounded-3xl shadow-lg border border-white/20">
                                         <div className="flex items-center gap-4 mb-3">
                                             <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-[#007F00]">
                                                 <Search size={24} />

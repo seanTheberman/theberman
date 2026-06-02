@@ -238,7 +238,7 @@ const Layout = () => {
 
     return (
         <div className="flex flex-col min-h-screen font-sans">
-            <header className="fixed w-full top-0 z-[9999] bg-[#0c121d] backdrop-blur-md border-b border-white/5 shadow-lg transition-all duration-300">
+            <header className="fixed w-full top-0 z-[9999] bg-[#0c121d] border-b border-white/5 shadow-lg transition-colors duration-300">
                 <div className="absolute top-full left-0 right-0 h-px bg-white/5 pointer-events-none"></div>
                 <div className="container mx-auto px-6 h-20 flex justify-between items-center">
 

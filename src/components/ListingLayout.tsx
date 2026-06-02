@@ -194,7 +194,7 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
                                 </button>
                             )}
                             {isOwner && (
-                                <Link to="/dashboard/business" className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur-sm text-[#007EA7] px-3 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-1.5 shadow-lg hover:bg-[#007EA7] hover:text-white transition-all">
+                                <Link to="/dashboard/business" className="absolute top-4 right-4 z-10 bg-white/90 text-[#007EA7] px-3 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-1.5 shadow-lg hover:bg-[#007EA7] hover:text-white transition-colors">
                                     <LayoutDashboard size={12} />Manage Profile
                                 </Link>
                             )}
@@ -538,7 +538,7 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
             {/* Lightbox Modal */}
             {selectedImage && (
                 <div
-                    className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-8"
+                    className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-4 md:p-8"
                     onClick={() => setSelectedImage(null)}
                 >
                     <button

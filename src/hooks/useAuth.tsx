@@ -27,7 +27,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [session, setSession] = useState<Session | null>(null);
     const [role, setRole] = useState<'admin' | 'contractor' | 'user' | 'homeowner' | 'business' | null>(null);
     const [loading, setLoading] = useState(true);
-    const [isInitialCheckDone, setIsInitialCheckDone] = useState(false);
     const [tenant, setTenant] = useState<string>(getTenantFromDomain());
 
     const [profile, setProfile] = useState<Record<string, unknown> | null>(null);
@@ -37,12 +36,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (isFetchingProfile.current) return;
         isFetchingProfile.current = true;
         try {
-            // Update last_login first
-            await supabase
-                .from('profiles')
-                .update({ last_login: new Date().toISOString() })
-                .eq('id', userId);
-
             const { data } = await supabase
                 .from('profiles')
                 .select('*')
@@ -82,12 +75,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (session?.user) {
                 fetchProfile(session.user.id).finally(() => {
                     setLoading(false);
-                    setIsInitialCheckDone(true);
                 });
             } else {
                 setRole(null);
                 setLoading(false);
-                setIsInitialCheckDone(true);
             }
         });
 
@@ -197,11 +188,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return (
         <AuthContext.Provider value={{ user, session, profile, loading, role, tenant, signIn, signUp, resetPassword, updateUserPassword, signOut, refreshProfile }}>
-            {isInitialCheckDone ? children : (
-                <div className="min-h-screen flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007F00]"></div>
-                </div>
-            )}
+            {children}
         </AuthContext.Provider>
     );
 };
