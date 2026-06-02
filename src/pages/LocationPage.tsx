@@ -67,7 +67,7 @@ const LocationPage = () => {
         available: isSpanish ? 'Disponibles' : isFrance ? 'Disponibles' : isPortugal ? 'Disponíveis' : 'Available',
         getQuote: isSpanish ? 'Obtener cotización' : isFrance ? 'Obtenir un devis' : isPortugal ? 'Pedir orçamento' : 'Get Quote',
         viewAll: isSpanish ? 'Ver todos' : isFrance ? 'Voir tout' : isPortugal ? 'Ver todos' : 'View All',
-        townsIn: isSpanish ? 'Pueblos en' : isFrance ? 'Communes de' : isPortugal ? 'Localidades em' : 'Towns in',
+        townsIn: isSpanish ? 'Localidades en' : isFrance ? 'Communes de' : isPortugal ? 'Localidades em' : 'Towns in',
         serviceAreas: isSpanish ? 'Áreas de servicio' : 'Service Areas',
     };
 
@@ -98,7 +98,7 @@ const LocationPage = () => {
     );
 
     const introText = customData?.intro_text || (isSpanish
-        ? `${brandName} conecta propietarios con técnicos certificados en ${townName || countyName}. Nuestros técnicos expertos están listos para proporcionar certificados de eficiencia energética de alta calidad.`
+        ? `Su Certificado de Eficiencia Energética en ${countyName}.`
         : `${brandName} connects homeowners with ${isEngland ? 'certified assessors' : 'BER assessors'} in ${townName || countyName}. Our expert assessors are ready to provide high-quality ${isEngland ? 'Energy Performance Certificates' : 'Building Energy Ratings'}.`
     );
 

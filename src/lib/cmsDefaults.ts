@@ -527,7 +527,7 @@ export const CMS_PAGES: PageDefinition[] = [
                 ],
                 defaults: {
                     ireland: { tag: 'Our Mission', heading_line1: 'Precision in every', heading_line2: 'Assessment.', description: "Helping homeowners across Ireland understand, improve, and certify their property's energy efficiency since 2015." },
-                    spain: { tag: 'Nuestra Misión', heading_line1: 'Precisión en cada', heading_line2: 'Certificación.', description: 'Ayudamos a los propietarios de toda España a entender, mejorar y certificar la eficiencia energética de sus propiedades desde 2015.' },
+                    spain: { tag: 'Nuestra Misión', heading_line1: 'Precisión en cada', heading_line2: 'Certificación.', description: 'le ayudamos a entender, mejorar y ahorrar dinero con una certificación de eficiencia energética que le será explicada por los mejores profesionales del sector.' },
                     england: { tag: 'Our Mission', heading_line1: 'Precision in every', heading_line2: 'Assessment.', description: "Helping homeowners across England understand, improve, and certify their property's energy performance." },
                     france: { tag: 'Our Mission', heading_line1: 'Precision in every', heading_line2: 'Assessment.', description: "Helping homeowners across France understand, improve, and certify their property's energy performance." },
                     portugal: { tag: 'Our Mission', heading_line1: 'Precision in every', heading_line2: 'Assessment.', description: "Helping homeowners across Portugal understand, improve, and certify their property's energy performance." },

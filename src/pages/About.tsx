@@ -17,7 +17,7 @@ const About = () => {
         missionTag: 'Nuestra Misión',
         title1: 'Precisión en cada',
         title2: 'Certificación.',
-        heroP: 'Ayudamos a los propietarios de toda España a entender, mejorar y certificar la eficiencia energética de sus propiedades desde 2015.',
+        heroP: 'le ayudamos a entender, mejorar y ahorrar dinero con una certificación de eficiencia energética que le será explicada por los mejores profesionales del sector.',
         storyH: 'Nuestra Historia',
         story: [
             `${brand} se fundó con un objetivo claro: aportar claridad profesional y rigor técnico al sector de la certificación energética en España. Detectamos que los propietarios y las empresas no solo buscaban un certificado; buscaban una hoja de ruta hacia un futuro más sostenible y rentable.`,

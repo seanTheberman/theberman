@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { getTenantFromDomain } from '../lib/tenant';
-import { Lock, Unlock, ArrowRight } from 'lucide-react';
+import { Lock, Unlock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 const CORRECT_PASSWORD = 'Anup228';
 
@@ -14,6 +14,7 @@ export function ComingSoonGate({ children }: { children: React.ReactNode }) {
     const storageKey = `${tenant}_coming_soon_unlocked`;
 
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState(false);
     const [unlocked, setUnlocked] = useState(() => {
         if (typeof sessionStorage !== 'undefined') {
@@ -55,16 +56,23 @@ export function ComingSoonGate({ children }: { children: React.ReactNode }) {
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="relative">
                         <input
-                            type="password"
+                            type={showPassword ? 'text' : 'password'}
                             value={password}
                             onChange={(e) => {
                                 setPassword(e.target.value);
                                 setError(false);
                             }}
                             placeholder="Enter early access password"
-                            className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#007F00] focus:border-transparent transition-all text-center text-lg tracking-widest"
+                            className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#007F00] focus:border-transparent transition-all text-center text-lg tracking-widest pr-12"
                             autoFocus
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                        >
+                            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
                         {error && (
                             <p className="text-red-400 text-sm mt-2 font-medium">Incorrect password. Please try again.</p>
                         )}

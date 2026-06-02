@@ -6,7 +6,7 @@ import * as z from 'zod';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { useNavigate, Link } from 'react-router-dom';
-import { Loader2, ArrowLeft, X } from 'lucide-react';
+import { Loader2, ArrowLeft, X, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getTenantFromDomain } from '../lib/tenant';
 
@@ -25,6 +25,8 @@ const UpdatePassword = () => {
     const navigate = useNavigate();
     const [redirecting, setRedirecting] = useState(false);
     const [authWait, setAuthWait] = useState(true);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const isSpanish = getTenantFromDomain() === 'spain';
 
     // Give Supabase a moment to process the hash if user is not immediately available
@@ -234,23 +236,41 @@ const UpdatePassword = () => {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                         <div className="space-y-1">
                             <label className="text-sm font-bold text-gray-700">{isSpanish ? 'Nueva Contraseña' : 'New Password'}</label>
-                            <input
-                                {...register('password')}
-                                type="password"
-                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                placeholder="••••••••"
-                            />
+                            <div className="relative">
+                                <input
+                                    {...register('password')}
+                                    type={showPassword ? 'text' : 'password'}
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all pr-12"
+                                    placeholder="••••••••"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                >
+                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
                             {errors.password && <p className="text-red-500 text-xs mt-1 font-medium">{errors.password.message}</p>}
                         </div>
 
                         <div className="space-y-1">
                             <label className="text-sm font-bold text-gray-700">{isSpanish ? 'Confirmar Contraseña' : 'Confirm Password'}</label>
-                            <input
-                                {...register('confirmPassword')}
-                                type="password"
-                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                placeholder="••••••••"
-                            />
+                            <div className="relative">
+                                <input
+                                    {...register('confirmPassword')}
+                                    type={showConfirmPassword ? 'text' : 'password'}
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all pr-12"
+                                    placeholder="••••••••"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                >
+                                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
                             {errors.confirmPassword && <p className="text-red-500 text-xs mt-1 font-medium">{errors.confirmPassword.message}</p>}
                         </div>
 
