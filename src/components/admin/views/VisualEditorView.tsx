@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { uploadImageToCloudinary } from '../../../lib/cloudinary';
-import { CMS_PAGES, getDefaultsForTenant } from '../../../lib/cmsDefaults';
+import { CMS_PAGES, getDefaultsForTenant, getPageLabel, getSectionLabel, getSectionDescription } from '../../../lib/cmsDefaults';
 import type { FieldDefinition, PageDefinition, SectionDefinition } from '../../../lib/cmsDefaults';
 import {
     ChevronDown, ChevronRight, Save, RotateCcw, Monitor, Smartphone,
@@ -311,7 +311,7 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
                         className="text-sm font-bold bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-gray-100 transition-colors"
                     >
                         {CMS_PAGES.map(p => (
-                            <option key={p.id} value={p.id}>{p.label} Page</option>
+                            <option key={p.id} value={p.id}>{getPageLabel(p, selectedTenant)} Page</option>
                         ))}
                     </select>
 
@@ -376,18 +376,20 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
                     {/* Section List Header */}
                     <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                         <div>
-                            <h3 className="text-sm font-black text-gray-900">Sections</h3>
+                            <h3 className="text-sm font-black text-gray-900">
+                                {selectedTenant === 'spain' ? 'Secciones' : selectedTenant === 'france' ? 'Sections' : selectedTenant === 'portugal' ? 'Secções' : 'Sections'}
+                            </h3>
                             <p className="text-[10px] text-gray-400 font-medium mt-0.5">
-                                {selectedPage.sections.length} sections · {selectedTenant === 'spain' ? 'Spain' : 'Ireland'}
+                                {selectedPage.sections.length} {selectedTenant === 'spain' ? 'secciones' : selectedTenant === 'france' ? 'sections' : selectedTenant === 'portugal' ? 'secções' : 'sections'} · {selectedTenant === 'spain' ? 'España' : selectedTenant === 'france' ? 'France' : selectedTenant === 'portugal' ? 'Portugal' : selectedTenant === 'england' ? 'England' : 'Ireland'}
                             </p>
                         </div>
                         <button
                             onClick={handleResetToDefaults}
                             className="text-[10px] font-bold text-gray-400 hover:text-red-500 flex items-center gap-1 transition-colors"
-                            title="Reset to defaults"
+                            title={selectedTenant === 'spain' ? 'Restablecer valores predeterminados' : selectedTenant === 'france' ? 'Réinitialiser aux valeurs par défaut' : selectedTenant === 'portugal' ? 'Repor predefinições' : 'Reset to defaults'}
                         >
                             <RotateCcw size={12} />
-                            Reset
+                            {selectedTenant === 'spain' ? 'Restablecer' : selectedTenant === 'france' ? 'Réinitialiser' : selectedTenant === 'portugal' ? 'Repor' : 'Reset'}
                         </button>
                     </div>
 
@@ -402,6 +404,7 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
                                 <SectionPanel
                                     key={section.id}
                                     section={section}
+                                    tenant={selectedTenant}
                                     data={sectionData[section.id] || {}}
                                     isExpanded={expandedSection === section.id}
                                     expandedGroup={expandedSection === section.id ? expandedGroup : null}
@@ -454,6 +457,7 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
 
 interface SectionPanelProps {
     section: SectionDefinition;
+    tenant: string;
     data: SectionData;
     isExpanded: boolean;
     expandedGroup: string | null;
@@ -467,7 +471,7 @@ interface SectionPanelProps {
 }
 
 const SectionPanel = ({
-    section, data, isExpanded, expandedGroup, onToggle, onGroupToggle,
+    section, tenant, data, isExpanded, expandedGroup, onToggle, onGroupToggle,
     onFieldChange, onImageUpload, uploadingField, sectionId, getFieldGroups,
 }: SectionPanelProps) => {
     const groups = getFieldGroups(section.fields);
@@ -481,8 +485,8 @@ const SectionPanel = ({
             >
                 <span className="text-lg flex-shrink-0">{section.icon}</span>
                 <div className="flex-1 min-w-0">
-                    <span className="text-sm font-bold text-gray-900 block">{section.label}</span>
-                    <span className="text-[10px] text-gray-400 font-medium">{section.description}</span>
+                    <span className="text-sm font-bold text-gray-900 block">{getSectionLabel(section, tenant)}</span>
+                    <span className="text-[10px] text-gray-400 font-medium">{getSectionDescription(section, tenant)}</span>
                 </div>
                 {isExpanded ? (
                     <ChevronDown size={16} className="text-gray-400 flex-shrink-0" />

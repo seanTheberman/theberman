@@ -24,6 +24,10 @@ export interface SectionDefinition {
         france: Record<string, any>;
         portugal: Record<string, any>;
     };
+    /** Per-tenant section labels */
+    labels?: Record<string, string>;
+    /** Per-tenant section descriptions */
+    descriptions?: Record<string, string>;
 }
 
 export interface PageDefinition {
@@ -31,18 +35,38 @@ export interface PageDefinition {
     label: string;
     path: string;
     sections: SectionDefinition[];
+    /** Per-tenant page labels */
+    labels?: Record<string, string>;
+}
+
+/** Get localized section label */
+export function getSectionLabel(section: SectionDefinition, tenant: string): string {
+    return section.labels?.[tenant] || section.label;
+}
+
+/** Get localized section description */
+export function getSectionDescription(section: SectionDefinition, tenant: string): string {
+    return section.descriptions?.[tenant] || section.description;
+}
+
+/** Get localized page label */
+export function getPageLabel(page: PageDefinition, tenant: string): string {
+    return page.labels?.[tenant] || page.label;
 }
 
 export const CMS_PAGES: PageDefinition[] = [
     {
         id: 'home',
         label: 'Home',
+        labels: { spain: 'Inicio', france: 'Accueil', portugal: 'Início' },
         path: '/',
         sections: [
             {
                 id: 'hero',
                 label: 'Hero Section',
+                labels: { spain: 'Sección Hero', france: 'Section Hero', portugal: 'Secção Hero' },
                 description: 'Main banner at the top of the homepage',
+                descriptions: { spain: 'Banner principal en la parte superior de la página de inicio', france: 'Bannière principale en haut de la page d\'accueil', portugal: 'Banner principal no topo da página inicial' },
                 icon: '🏠',
                 fields: [
                     { key: 'badge_text', label: 'Badge Text', type: 'text', group: 'Content' },
@@ -146,7 +170,9 @@ export const CMS_PAGES: PageDefinition[] = [
             {
                 id: 'how_it_works',
                 label: 'How It Works',
+                labels: { spain: 'Cómo Funciona', france: 'Comment ça Marche', portugal: 'Como Funciona' },
                 description: '4-step process section',
+                descriptions: { spain: 'Sección de proceso en 4 pasos', france: 'Section processus en 4 étapes', portugal: 'Secção de processo em 4 passos' },
                 icon: '⚙️',
                 fields: [
                     { key: 'tag', label: 'Section Tag', type: 'text', group: 'Content' },
@@ -207,7 +233,9 @@ export const CMS_PAGES: PageDefinition[] = [
             {
                 id: 'benefits',
                 label: 'Why Choose Us',
+                labels: { spain: 'Por Qué Elegirnos', france: 'Pourquoi Nous Choisir', portugal: 'Por Que Nos Escolher' },
                 description: 'Trust & benefits section with stats',
+                descriptions: { spain: 'Sección de confianza y beneficios con estadísticas', france: 'Section confiance et avantages avec statistiques', portugal: 'Secção de confiança e benefícios com estatísticas' },
                 icon: '✅',
                 fields: [
                     { key: 'tag', label: 'Section Tag', type: 'text', group: 'Content' },
@@ -284,7 +312,9 @@ export const CMS_PAGES: PageDefinition[] = [
             {
                 id: 'reviews',
                 label: 'Reviews',
+                labels: { spain: 'Opiniones', france: 'Avis', portugal: 'Avaliações' },
                 description: 'Customer testimonials section',
+                descriptions: { spain: 'Sección de testimonios de clientes', france: 'Section témoignages clients', portugal: 'Secção de depoimentos de clientes' },
                 icon: '⭐',
                 fields: [
                     { key: 'heading', label: 'Rating Label', type: 'text', group: 'Content' },
@@ -335,7 +365,9 @@ export const CMS_PAGES: PageDefinition[] = [
             {
                 id: 'assessor_cta',
                 label: 'Assessor CTA',
+                labels: { spain: 'CTA Certificador', france: 'CTA Évaluateur', portugal: 'CTA Certificador' },
                 description: 'Call to action for assessors to join',
+                descriptions: { spain: 'Llamada a la acción para que certificadores se unan', france: 'Appel à l\'action pour les évaluateurs', portugal: 'Chamada à ação para certificadores se juntarem' },
                 icon: '📣',
                 fields: [
                     { key: 'heading', label: 'Heading', type: 'text', group: 'Content' },
@@ -354,7 +386,9 @@ export const CMS_PAGES: PageDefinition[] = [
             {
                 id: 'catalogue_promo',
                 label: 'Energy Catalogue',
+                labels: { spain: 'Catálogo de Energía', france: 'Catalogue Énergie', portugal: 'Catálogo de Energia' },
                 description: 'Home energy partners catalogue section',
+                descriptions: { spain: 'Sección de catálogo de socios de energía doméstica', france: 'Section catalogue des partenaires énergie', portugal: 'Secção de catálogo de parceiros de energia doméstica' },
                 icon: '🔍',
                 fields: [
                     { key: 'tag', label: 'Section Tag', type: 'text', group: 'Content' },
@@ -402,7 +436,9 @@ export const CMS_PAGES: PageDefinition[] = [
             {
                 id: 'faq',
                 label: 'FAQ Section',
+                labels: { spain: 'Sección FAQ', france: 'Section FAQ', portugal: 'Secção FAQ' },
                 description: 'Frequently asked questions',
+                descriptions: { spain: 'Preguntas frecuentes', france: 'Questions fréquemment posées', portugal: 'Perguntas frequentes' },
                 icon: '❓',
                 fields: [
                     { key: 'tag', label: 'Section Tag', type: 'text', group: 'Content' },
@@ -470,7 +506,9 @@ export const CMS_PAGES: PageDefinition[] = [
             {
                 id: 'newsletter',
                 label: 'Newsletter',
+                labels: { spain: 'Boletín', france: 'Newsletter', portugal: 'Newsletter' },
                 description: 'Email subscription section',
+                descriptions: { spain: 'Sección de suscripción por correo electrónico', france: 'Section d\'abonnement email', portugal: 'Secção de subscrição por email' },
                 icon: '📧',
                 fields: [
                     { key: 'tag', label: 'Section Tag', type: 'text', group: 'Content' },
@@ -512,12 +550,15 @@ export const CMS_PAGES: PageDefinition[] = [
     {
         id: 'about',
         label: 'About',
+        labels: { spain: 'Nosotros', france: 'À Propos', portugal: 'Sobre' },
         path: '/about',
         sections: [
             {
                 id: 'hero',
                 label: 'Hero Section',
+                labels: { spain: 'Sección Hero', france: 'Section Hero', portugal: 'Secção Hero' },
                 description: 'About page header',
+                descriptions: { spain: 'Encabezado de la página Sobre Nosotros', france: 'En-tête de la page À Propos', portugal: 'Cabeçalho da página Sobre' },
                 icon: '🏢',
                 fields: [
                     { key: 'tag', label: 'Section Tag', type: 'text', group: 'Content' },
@@ -536,7 +577,9 @@ export const CMS_PAGES: PageDefinition[] = [
             {
                 id: 'story',
                 label: 'Our Story',
+                labels: { spain: 'Nuestra Historia', france: 'Notre Histoire', portugal: 'A Nossa História' },
                 description: 'Company history and story',
+                descriptions: { spain: 'Historia y trayectoria de la empresa', france: 'Histoire et parcours de l\'entreprise', portugal: 'História e trajetória da empresa' },
                 icon: '📖',
                 fields: [
                     { key: 'heading', label: 'Heading', type: 'text', group: 'Content' },
@@ -607,7 +650,9 @@ export const CMS_PAGES: PageDefinition[] = [
             {
                 id: 'cta',
                 label: 'Join CTA',
+                labels: { spain: 'CTA Unirse', france: 'CTA Rejoindre', portugal: 'CTA Juntar-se' },
                 description: 'Bottom call-to-action',
+                descriptions: { spain: 'Llamada a la acción al final de la página', france: 'Appel à l\'action en bas de page', portugal: 'Chamada à ação no final da página' },
                 icon: '🚀',
                 fields: [
                     { key: 'heading', label: 'Heading', type: 'text', group: 'Content' },
@@ -628,12 +673,15 @@ export const CMS_PAGES: PageDefinition[] = [
     {
         id: 'contact',
         label: 'Contact',
+        labels: { spain: 'Contacto', france: 'Contact', portugal: 'Contacto' },
         path: '/contact-us',
         sections: [
             {
                 id: 'hero',
                 label: 'Contact Header',
+                labels: { spain: 'Encabezado de Contacto', france: 'En-tête Contact', portugal: 'Cabeçalho de Contacto' },
                 description: 'Contact page heading and intro',
+                descriptions: { spain: 'Encabezado e introducción de la página de contacto', france: 'En-tête et introduction de la page de contact', portugal: 'Cabeçalho e introdução da página de contacto' },
                 icon: '📞',
                 fields: [
                     { key: 'badge', label: 'Badge Text', type: 'text', group: 'Content' },
@@ -654,12 +702,15 @@ export const CMS_PAGES: PageDefinition[] = [
     {
         id: 'location',
         label: 'Location',
+        labels: { spain: 'Ubicación', france: 'Localisation', portugal: 'Localização' },
         path: '/dublin',
         sections: [
             {
                 id: 'hero',
                 label: 'Hero Section',
+                labels: { spain: 'Sección Hero', france: 'Section Hero', portugal: 'Secção Hero' },
                 description: 'Location page hero content',
+                descriptions: { spain: 'Contenido hero de la página de ubicación', france: 'Contenu hero de la page de localisation', portugal: 'Conteúdo hero da página de localização' },
                 icon: '📍',
                 fields: [
                     { key: 'hero_title', label: 'Hero Title', type: 'text', group: 'Content' },
@@ -676,7 +727,9 @@ export const CMS_PAGES: PageDefinition[] = [
             {
                 id: 'content',
                 label: 'Page Content',
+                labels: { spain: 'Contenido de Página', france: 'Contenu de Page', portugal: 'Conteúdo da Página' },
                 description: 'Main body text for the location page',
+                descriptions: { spain: 'Texto principal de la página de ubicación', france: 'Texte principal de la page de localisation', portugal: 'Texto principal da página de localização' },
                 icon: '📝',
                 fields: [
                     { key: 'intro_text', label: 'Intro Text', type: 'textarea', group: 'Content' },
@@ -692,7 +745,9 @@ export const CMS_PAGES: PageDefinition[] = [
             {
                 id: 'seo',
                 label: 'SEO Settings',
+                labels: { spain: 'Configuración SEO', france: 'Paramètres SEO', portugal: 'Configurações SEO' },
                 description: 'Meta tags for search engines',
+                descriptions: { spain: 'Meta etiquetas para motores de búsqueda', france: 'Méta-tags pour les moteurs de recherche', portugal: 'Meta tags para motores de busca' },
                 icon: '🔍',
                 fields: [
                     { key: 'seo_title', label: 'SEO Title', type: 'text', group: 'SEO' },
@@ -713,12 +768,15 @@ export const CMS_PAGES: PageDefinition[] = [
     {
         id: 'faq',
         label: 'FAQ',
+        labels: { spain: 'FAQ', france: 'FAQ', portugal: 'FAQ' },
         path: '/faq',
         sections: [
             {
                 id: 'hero',
                 label: 'Hero Section',
+                labels: { spain: 'Sección Hero', france: 'Section Hero', portugal: 'Secção Hero' },
                 description: 'FAQ page header',
+                descriptions: { spain: 'Encabezado de la página FAQ', france: 'En-tête de la page FAQ', portugal: 'Cabeçalho da página FAQ' },
                 icon: '❓',
                 fields: [
                     { key: 'badge', label: 'Badge Text', type: 'text', group: 'Content' },
@@ -737,7 +795,9 @@ export const CMS_PAGES: PageDefinition[] = [
             {
                 id: 'cta',
                 label: 'Bottom CTA',
+                labels: { spain: 'CTA Inferior', france: 'CTA Bas de Page', portugal: 'CTA Inferior' },
                 description: 'Call to action at bottom of FAQ page',
+                descriptions: { spain: 'Llamada a la acción al final de la página FAQ', france: 'Appel à l\'action en bas de la page FAQ', portugal: 'Chamada à ação no final da página FAQ' },
                 icon: '📣',
                 fields: [
                     { key: 'heading', label: 'CTA Heading', type: 'text', group: 'Content' },
@@ -759,12 +819,15 @@ export const CMS_PAGES: PageDefinition[] = [
     {
         id: 'catalogue',
         label: 'Catalogue',
+        labels: { spain: 'Catálogo', france: 'Catalogue', portugal: 'Catálogo' },
         path: '/catalogue',
         sections: [
             {
                 id: 'hero',
                 label: 'Hero Section',
+                labels: { spain: 'Sección Hero', france: 'Section Hero', portugal: 'Secção Hero' },
                 description: 'Catalogue page header',
+                descriptions: { spain: 'Encabezado de la página de catálogo', france: 'En-tête de la page catalogue', portugal: 'Cabeçalho da página de catálogo' },
                 icon: '📦',
                 fields: [
                     { key: 'badge', label: 'Badge Text', type: 'text', group: 'Content' },
@@ -783,7 +846,9 @@ export const CMS_PAGES: PageDefinition[] = [
             {
                 id: 'features',
                 label: 'Features',
+                labels: { spain: 'Características', france: 'Fonctionnalités', portugal: 'Funcionalidades' },
                 description: 'Catalogue features section',
+                descriptions: { spain: 'Sección de características del catálogo', france: 'Section fonctionnalités du catalogue', portugal: 'Secção de funcionalidades do catálogo' },
                 icon: '✨',
                 fields: [
                     { key: 'feature1_title', label: 'Feature 1 Title', type: 'text', group: 'Features' },
@@ -809,12 +874,15 @@ export const CMS_PAGES: PageDefinition[] = [
     {
         id: 'news',
         label: 'News',
+        labels: { spain: 'Noticias', france: 'Actualités', portugal: 'Notícias' },
         path: '/news',
         sections: [
             {
                 id: 'hero',
                 label: 'Hero Section',
+                labels: { spain: 'Sección Hero', france: 'Section Hero', portugal: 'Secção Hero' },
                 description: 'News page header',
+                descriptions: { spain: 'Encabezado de la página de noticias', france: 'En-tête de la page actualités', portugal: 'Cabeçalho da página de notícias' },
                 icon: '📰',
                 fields: [
                     { key: 'badge', label: 'Badge Text', type: 'text', group: 'Content' },
@@ -833,7 +901,9 @@ export const CMS_PAGES: PageDefinition[] = [
             {
                 id: 'featured',
                 label: 'Featured Article',
+                labels: { spain: 'Artículo Destacado', france: 'Article à la Une', portugal: 'Artigo em Destaque' },
                 description: 'Featured news article section',
+                descriptions: { spain: 'Sección de artículo destacado', france: 'Section article à la une', portugal: 'Secção de artigo em destaque' },
                 icon: '⭐',
                 fields: [
                     { key: 'tag', label: 'Tag', type: 'text', group: 'Content' },
@@ -855,12 +925,15 @@ export const CMS_PAGES: PageDefinition[] = [
     {
         id: 'blog',
         label: 'Blog',
+        labels: { spain: 'Blog', france: 'Blog', portugal: 'Blog' },
         path: '/blog',
         sections: [
             {
                 id: 'hero',
                 label: 'Hero Section',
+                labels: { spain: 'Sección Hero', france: 'Section Hero', portugal: 'Secção Hero' },
                 description: 'Blog page header',
+                descriptions: { spain: 'Encabezado de la página de blog', france: 'En-tête de la page blog', portugal: 'Cabeçalho da página de blog' },
                 icon: '✍️',
                 fields: [
                     { key: 'badge', label: 'Badge Text', type: 'text', group: 'Content' },
@@ -879,7 +952,9 @@ export const CMS_PAGES: PageDefinition[] = [
             {
                 id: 'featured',
                 label: 'Featured Post',
+                labels: { spain: 'Publicación Destacada', france: 'Article à la Une', portugal: 'Publicação em Destaque' },
                 description: 'Featured blog post section',
+                descriptions: { spain: 'Sección de publicación destacada del blog', france: 'Section article à la une du blog', portugal: 'Secção de publicação em destaque do blog' },
                 icon: '⭐',
                 fields: [
                     { key: 'tag', label: 'Tag', type: 'text', group: 'Content' },
