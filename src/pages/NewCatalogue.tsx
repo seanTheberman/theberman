@@ -153,6 +153,29 @@ const NewCatalogue = () => {
                 ? { 'Default Order': 'Ordem Predefinida', 'Highest Rated': 'Mais Bem Avaliados', 'Newest Listings': 'Mais Recentes', 'Oldest Listings': 'Mais Antigos', 'Alphabetically': 'Alfabeticamente', 'Featured': 'Destaque' }
                 : { 'Default Order': 'Default Order', 'Highest Rated': 'Highest Rated', 'Newest Listings': 'Newest Listings', 'Oldest Listings': 'Oldest Listings', 'Alphabetically': 'Alphabetically', 'Featured': 'Featured' };
 
+    const extractCityFromAddress = (address?: string | null): string | null => {
+        if (!address) return null;
+        // Strip the ", Co. County" suffix that the backend appends
+        const beforeCo = address.split(', Co.')[0];
+        const parts = beforeCo.split(',').map(p => p.trim());
+        if (parts.length >= 2) {
+            // last comma-separated segment before the Co. suffix is typically the city
+            return parts[parts.length - 1];
+        }
+        return parts[0];
+    };
+
+    const getCardLocation = (listing: CatalogueListing): string => {
+        const locName = listing.locations?.[0]?.name;
+        const genericCountries = ['Spain', 'España', 'France', 'Francia', 'Portugal', 'Ireland', 'England', 'Inglaterra'];
+        if (locName && !genericCountries.includes(locName)) {
+            return locName;
+        }
+        const city = extractCityFromAddress(listing.address);
+        if (city) return city;
+        return t.defaultLocation;
+    };
+
     const fetchListings = async () => {
         setLoading(true);
         try {
@@ -510,7 +533,7 @@ const NewCatalogue = () => {
                                                 </h3>
                                                 <div className="flex items-center gap-2 text-white/70">
                                                     <span className="text-xs font-medium drop-shadow-md truncate">
-                                                        {listing.locations?.[0]?.name || t.defaultLocation}
+                                                        {getCardLocation(listing)}
                                                     </span>
                                                 </div>
                                             </div>
