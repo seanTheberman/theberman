@@ -59,9 +59,6 @@ Deno.serve(async (req: Request) => {
             if (isSpanish) {
                 html = `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
-                    <div style="text-align: center; margin-bottom: 25px;">
-                        <img src="${websiteUrl}/logo.svg" alt="Certificado Energético" style="height: 40px; filter: grayscale(1) brightness(0.2);">
-                    </div>
                     <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">¡Estás Aprobado! 🎉</h2>
                     <p style="font-size: 16px; color: #333;">Hola <strong>${fullName}</strong>,</p>
                     <p style="font-size: 15px; color: #555; line-height: 1.6;">
@@ -145,9 +142,6 @@ Deno.serve(async (req: Request) => {
             if (isSpanish) {
                 html = `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
-                    <div style="text-align: center; margin-bottom: 25px;">
-                        <img src="${websiteUrl}/logo.svg" alt="Certificado Energético" style="height: 40px; filter: grayscale(1) brightness(0.2);">
-                    </div>
                     <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Bienvenido a Certificado Energético</h2>
                     <p style="font-size: 16px; color: #333;">Hola <strong>${fullName}</strong>,</p>
                     <p style="font-size: 15px; color: #555; line-height: 1.6;">
@@ -216,9 +210,6 @@ Deno.serve(async (req: Request) => {
             if (isSpanish) {
                 html = `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
-                    <div style="text-align: center; margin-bottom: 25px;">
-                        <img src="${websiteUrl}/logo.svg" alt="Certificado Energético" style="height: 40px; filter: grayscale(1) brightness(0.2);">
-                    </div>
                     <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Bienvenido a Certificado Energético</h2>
                     <p style="font-size: 16px; color: #333;">Hola <strong>${fullName}</strong>,</p>
                     <p style="font-size: 15px; color: #555; line-height: 1.6;">
