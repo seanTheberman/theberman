@@ -153,11 +153,11 @@ serve(async (req: Request) => {
                 <p>You can now log in to manage your profile and view leads in your dashboard.</p>
 
                 <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://theberman.eu/login" style="background-color: #007F00; color: white; padding: 12px 24px; text-decoration: none; border-radius: 0.5rem; font-weight: bold;">Go to Dashboard</a>
+                    <a href="${websiteUrl}/login" style="background-color: #007F00; color: white; padding: 12px 24px; text-decoration: none; border-radius: 0.5rem; font-weight: bold;">Go to Dashboard</a>
                 </div>
 
                 <p style="margin-top: 40px; font-size: 0.8rem; color: #6b7280; text-align: center;">
-                    If you have any questions, please contact us at hello@theberman.eu
+                    If you have any questions, please contact us at ${smtpFrom}
                 </p>
             </div>
         `;
@@ -169,6 +169,7 @@ serve(async (req: Request) => {
         const smtpUsername = config.smtp_username;
         const smtpPassword = config.smtp_password;
         const smtpFrom = config.smtp_from;
+        const websiteUrl = config.website_url || 'https://theberman.eu';
 
         const client = new CustomSmtpClient();
         try {
@@ -209,7 +210,7 @@ serve(async (req: Request) => {
                     </div>
 
                     <div style="text-align: center; margin-top: 30px;">
-                        <a href="https://theberman.eu/admin" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 0.5rem; font-weight: bold;">View in Admin Dashboard</a>
+                        <a href="${websiteUrl}/admin" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 0.5rem; font-weight: bold;">View in Admin Dashboard</a>
                     </div>
                 </div>
             `;
