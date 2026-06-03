@@ -4,10 +4,13 @@ import { Link } from 'react-router-dom';
 import SEOHead from '../components/SEOHead';
 
 import { useAuth } from '../hooks/useAuth';
+import { getTenantFromDomain } from '../lib/tenant';
 
 const Pricing = () => {
     const { profile } = useAuth();
     const isManualActive = profile?.stripe_payment_id === 'MANUAL_BY_ADMIN';
+    const isEngland = getTenantFromDomain() === 'england';
+    const currencySymbol = isEngland ? '£' : '€';
 
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen">
@@ -41,7 +44,7 @@ const Pricing = () => {
                     <div className="grid md:grid-cols-3 gap-8">
                         <PricingCard
                             title="Apartment / Flat"
-                            price="€150-€250"
+                            price={`${currencySymbol}150-${currencySymbol}250`}
                             description="Ideal for 1-2 bed self-contained units or duplexes."
                             features={[
                                 "Full SEAI Registered assessment",
@@ -52,7 +55,7 @@ const Pricing = () => {
                         />
                         <PricingCard
                             title="Standard House"
-                            price="€200-€400"
+                            price={`${currencySymbol}200-${currencySymbol}400`}
                             isPopular={true}
                             description="For 3-4 bed semi-detached or terraced homes."
                             features={[

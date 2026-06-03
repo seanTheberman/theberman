@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
 import { supabase } from '../lib/supabase';
+import { formatCurrency } from '../lib/tenant';
 import { LogOut, FileText, User, Home, AlertCircle, X, Menu, Trash2, Search, Clock } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -817,9 +818,9 @@ const UserDashboard = () => {
                                                                     </td>
                                                                     <td className="py-4 px-6">
                                                                         <div className="flex flex-col">
-                                                                            <div className="text-lg font-black text-gray-900">€{quote.price + bookingDepositAmount}</div>
+                                                                            <div className="text-lg font-black text-gray-900">{formatCurrency(quote.price + bookingDepositAmount)}</div>
                                                                             <div className="text-[10px] text-gray-500 font-medium">
-                                                                                {isSpanish ? 'Depósito: €' : 'Deposit: €'}{bookingDepositAmount}{isSpanish ? ' | Saldo: €' : ' | Balance: €'}{quote.price}
+                                                                                {isSpanish ? 'Depósito: ' : 'Deposit: '}{formatCurrency(bookingDepositAmount)}{isSpanish ? ' | Saldo: ' : ' | Balance: '}{formatCurrency(quote.price)}
                                                                             </div>
                                                                         </div>
                                                                     </td>
@@ -926,9 +927,9 @@ const UserDashboard = () => {
                                                                 </p>
                                                             </div>
                                                             <div className="text-right">
-                                                                <p className="text-xl font-black text-gray-900">€{quote.price + bookingDepositAmount}</p>
+                                                                <p className="text-xl font-black text-gray-900">{formatCurrency(quote.price + bookingDepositAmount)}</p>
                                                                 <div className="text-[9px] text-gray-500 font-medium mt-0.5">
-                                                                    {isSpanish ? `Depósito: €${bookingDepositAmount} / Saldo: €` : `Deposit: €${bookingDepositAmount} / Balance: €`}{quote.price}
+                                                                    {isSpanish ? `Depósito: ${formatCurrency(bookingDepositAmount)} / Saldo: ` : `Deposit: ${formatCurrency(bookingDepositAmount)} / Balance: `}{formatCurrency(quote.price)}
                                                                 </div>
                                                                 <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter border ${quote.status === 'accepted' ? 'bg-green-50 text-green-700 border-green-100' :
                                                                     quote.status === 'rejected' ? 'bg-red-50 text-red-700 border-red-100' :

@@ -6,6 +6,7 @@ import PaymentModal from '../components/PaymentModal';
 import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 import { REGISTRATION_PRICES, VAT_RATE } from '../constants/pricing';
+import { formatCurrency } from '../lib/tenant';
 import SEOHead from '../components/SEOHead';
 
 const MembershipPayment = () => {
@@ -256,10 +257,10 @@ const MembershipPayment = () => {
 
                         <div className="mb-4">
                             <p className="text-2xl md:text-3xl font-black text-gray-900">
-                                Total: <span className="text-[#007F00]">€{priceData.total.toFixed(2)}</span>
+                                Total: <span className="text-[#007F00]">{formatCurrency(priceData.total)}</span>
                             </p>
                             <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px] mt-1">
-                                for 12 months <span className="text-gray-400 font-medium">(€{priceData.subtotal} + VAT)</span>
+                                for 12 months <span className="text-gray-400 font-medium">({formatCurrency(priceData.subtotal)} + VAT)</span>
                             </p>
                         </div>
 

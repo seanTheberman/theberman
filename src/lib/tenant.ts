@@ -101,6 +101,12 @@ export function getTenantCurrency(tenant: string): string {
   return map[tenant] || 'EUR';
 }
 
+export function formatCurrency(amount: number | null | undefined, tenant?: string): string {
+  const currency = getTenantCurrency(tenant || getTenantFromDomain());
+  const value = typeof amount === 'number' ? amount : 0;
+  return new Intl.NumberFormat('en-GB', { style: 'currency', currency, maximumFractionDigits: 2 }).format(value);
+}
+
 function getCurrentHostname(): string | null {
   if (typeof window === 'undefined') return null;
   return window.location.hostname.replace(/^www\./, '');

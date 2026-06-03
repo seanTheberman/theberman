@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Search, MapPin, Clock, FileText, ChevronDown, ChevronRight, X, Briefcase, AlertTriangle, XCircle, Eye, Trash2 } from 'lucide-react';
+import { formatCurrency } from '../../../lib/tenant';
 import type { Assessment } from '../../../types/admin';
 
 interface Props {
@@ -715,7 +716,7 @@ export const JobsView: React.FC<Props> = ({
                                                                 <div className="text-xs text-gray-500">
                                                                     {quote.contractor?.company_name && <div>{quote.contractor.company_name}</div>}
                                                                     <div className="font-black text-gray-900 text-sm mt-1">
-                                                                        {new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' }).format(quote.price)}
+                                                                        {formatCurrency(quote.price)}
                                                                     </div>
                                                                     <div className="mt-1">{formatDate(quote.created_at)}</div>
                                                                 </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState, Fragment } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
-import { getTenantEmail, getTenantFromDomain } from '../lib/tenant';
+import { getTenantEmail, getTenantFromDomain, formatCurrency } from '../lib/tenant';
 import { supabase } from '../lib/supabase';
 
 const tenant = getTenantFromDomain();
@@ -1110,9 +1110,9 @@ const ContractorDashboard = () => {
                                                                     </span>
                                                                 </td>
                                                                 <td className="py-3 px-3 text-gray-600">{a?.preferred_date || 'Flexible'}</td>
-                                                                <td className="py-3 px-3 text-gray-900 font-bold">€ {quote.lowestPrice?.toLocaleString() || '-'}</td>
+                                                                <td className="py-3 px-3 text-gray-900 font-bold">{quote.lowestPrice != null ? formatCurrency(quote.lowestPrice) : '-'}</td>
                                                                 <td className={`py-3 px-3 font-bold ${isCompetitive ? 'text-green-700' : 'text-red-600'}`}>
-                                                                    €{quote.price.toLocaleString()}
+                                                                    {formatCurrency(quote.price)}
                                                                 </td>
                                                                 <td className="py-3 px-3">
                                                                     <button
@@ -1189,11 +1189,11 @@ const ContractorDashboard = () => {
                                                         <div className="grid grid-cols-2 gap-4 mb-4">
                                                             <div>
                                                                 <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Lowest Quote</p>
-                                                                <p className="text-lg font-bold text-[#8B0000]">€ {quote.lowestPrice?.toLocaleString() || '-'}</p>
+                                                                <p className="text-lg font-bold text-[#8B0000]">{quote.lowestPrice != null ? formatCurrency(quote.lowestPrice) : '-'}</p>
                                                             </div>
                                                             <div>
                                                                 <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">My Quote</p>
-                                                                <p className="text-lg font-bold text-green-700">€{quote.price.toLocaleString()}</p>
+                                                                <p className="text-lg font-bold text-green-700">{formatCurrency(quote.price)}</p>
                                                             </div>
                                                         </div>
                                                         <button
@@ -1341,7 +1341,7 @@ const ContractorDashboard = () => {
                                                                 )}
                                                             </td>
                                                             <td className="py-3 px-3 text-green-700 font-bold">
-                                                                €{job.contractor_payout?.toLocaleString() || job.quotes?.find(q => q.status === 'accepted')?.price?.toLocaleString() || job.quotes?.[0]?.price?.toLocaleString() || '-'}
+                                                                {formatCurrency(job.contractor_payout || job.quotes?.find((q: any) => q.status === 'accepted')?.price || job.quotes?.[0]?.price)}
                                                             </td>
 
                                                         </tr>
@@ -1387,7 +1387,7 @@ const ContractorDashboard = () => {
                                                         </div>
                                                         <div className="text-right">
                                                             <p className="text-lg font-black text-green-700">
-                                                                €{job.contractor_payout?.toLocaleString() || job.quotes?.find(q => q.status === 'accepted')?.price?.toLocaleString() || job.quotes?.[0]?.price?.toLocaleString() || '-'}
+                                                                {formatCurrency(job.contractor_payout || job.quotes?.find((q: any) => q.status === 'accepted')?.price || job.quotes?.[0]?.price)}
                                                             </p>
                                                             <p className="text-[10px] font-extrabold text-orange-600 uppercase">
                                                                 {job.payment_status || 'Unpaid'}
@@ -1996,7 +1996,7 @@ const ContractorDashboard = () => {
                                         <h2 className="text-2xl font-bold text-gray-800 mb-2">Earliest date you can do the survey.</h2>
                                         {myQuotes.find(q => q.assessment_id === selectedJob.id) && (
                                             <p className="text-sm font-medium text-green-700 mb-4 bg-green-50 py-2 px-4 rounded-full inline-block">
-                                                Your previous quote was <span className="underline font-bold">€{myQuotes.find(q => q.assessment_id === selectedJob.id)?.price}</span>
+                                                Your previous quote was <span className="underline font-bold">{formatCurrency(myQuotes.find(q => q.assessment_id === selectedJob.id)?.price)}</span>
                                             </p>
                                         )}
                                         <p className="text-sm text-gray-600">
@@ -2066,7 +2066,7 @@ const ContractorDashboard = () => {
                                             const previousQuote = myQuotes.find(q => q.assessment_id === selectedJob.id);
                                             return previousQuote ? (
                                                 <p className="text-sm font-medium text-green-700">
-                                                    Your previous quote was <span className="underline font-bold">€{previousQuote.price}</span>
+                                                    Your previous quote was <span className="underline font-bold">{formatCurrency(previousQuote.price)}</span>
                                                 </p>
                                             ) : (
                                                 <p className="text-sm text-green-600">Submit your quote below.</p>
@@ -2127,10 +2127,10 @@ const ContractorDashboard = () => {
                                                 <p className="text-sm text-green-700 text-center font-bold">
                                                     {(profile?.completed_jobs_count || 0) % 11 === 10 ? (
                                                         <span className="flex items-center justify-center gap-1.5 text-blue-600 bg-blue-50 py-1 rounded-lg border border-blue-100 animate-pulse">
-                                                            <CheckCircle2 size={14} /> LOYALTY JOB: €0 PLATFORM FEE
+                                                            <CheckCircle2 size={14} /> LOYALTY JOB: {formatCurrency(0)} PLATFORM FEE
                                                         </span>
                                                     ) : (
-                                                        <span className="italic">Include €25 platform fee.</span>
+                                                        <span className="italic">Include {formatCurrency(25)} platform fee.</span>
                                                     )}
                                                 </p>
 
@@ -2144,7 +2144,7 @@ const ContractorDashboard = () => {
                                                     />
                                                 </div>
                                                 <p className="text-sm text-center font-bold text-gray-600">
-                                                    You will receive: €{quotePrice ? (parseInt(quotePrice) - ((profile?.completed_jobs_count || 0) % 11 === 10 ? 0 : 25)) : 0} (direct from customer)
+                                                    You will receive: {formatCurrency(quotePrice ? (parseInt(quotePrice) - ((profile?.completed_jobs_count || 0) % 11 === 10 ? 0 : 25)) : 0)} (direct from customer)
                                                 </p>
                                                 <p className="text-xs text-gray-400 text-center">Eg. 170, no euro sign or cents.</p>
 
