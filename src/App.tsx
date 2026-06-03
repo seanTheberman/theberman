@@ -49,7 +49,6 @@ import ReferralTracker from './components/ReferralTracker';
 
 
 import ScrollToTop from './components/ScrollToTop';
-import { ComingSoonGate } from './components/ComingSoonGate';
 
 function App() {
     return (
@@ -69,10 +68,9 @@ function App() {
                 }}
             />
             <BrowserRouter>
-                <ComingSoonGate>
-                    <ReferralTracker />
-                    <ScrollToTop />
-                    <Routes>
+                <ReferralTracker />
+                <ScrollToTop />
+                <Routes>
                     <Route path="/" element={<Layout />}>
                         <Route index element={<Home />} />
                         <Route path="about" element={<About />} />
@@ -208,7 +206,6 @@ function App() {
                     {/* 404 Catch-all */}
                     <Route path="*" element={<NotFound />} />
                 </Routes>
-                </ComingSoonGate>
             </BrowserRouter>
         </AuthProvider>
     );
