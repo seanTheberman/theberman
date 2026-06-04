@@ -2155,6 +2155,7 @@ const Admin = () => {
                             setItemToSuspend={setItemToSuspend} setShowSuspendModal={setShowSuspendModal}
                             setNewUserRole={setNewUserRole} setShowAddUserModal={setShowAddUserModal}
                             handleDeleteClick={handleDeleteClick}
+                            onResendOnboarding={handleResendCredentials}
                         />
                     ) : view === 'businesses' ? (
                         <BusinessesView
