@@ -18,6 +18,7 @@ interface Props {
     onCancelSubscription: (userId: string) => void;
     onOpenCatalogue: (user: Profile, listing?: any) => void;
     onUpdateRegistrationStatus: (userId: string, status: 'active' | 'rejected') => void;
+    onResendCredentials?: (user: Profile) => void;
 }
 
 const decodePayment = (pid?: string) => {
@@ -50,7 +51,7 @@ export const UserDetailsModal = ({
     user, editForm, setEditForm, customMonths, setCustomMonths,
     listings, isUpdating, onClose, onUpdate, onSuspend,
     onManualRenewal, onSendRenewalReminder, onCancelSubscription, onOpenCatalogue,
-    onUpdateRegistrationStatus,
+    onUpdateRegistrationStatus, onResendCredentials,
 }: Props) => {
     const listing = listings.find(l => l.user_id === user.id || l.owner_id === user.id);
     const accountState = getAccountState(user);
@@ -320,6 +321,15 @@ export const UserDetailsModal = ({
                                 </div>
                             </div>
                         </div>
+                    )}
+
+                    {/* Resend Credentials (assessors only) */}
+                    {user.role === 'contractor' && onResendCredentials && (
+                        <button onClick={() => onResendCredentials(user)}
+                            className="w-full py-3 bg-green-50 border border-green-200 text-green-700 font-bold text-sm rounded-xl hover:bg-green-100 transition-all flex items-center justify-center gap-2">
+                            <Mail size={15} />
+                            Resend Login Credentials
+                        </button>
                     )}
 
                     {/* Catalogue (business) */}

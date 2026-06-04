@@ -896,8 +896,18 @@ const Admin = () => {
             if (!fnData?.success) throw new Error(fnData?.error || 'Failed to create user');
 
             try {
-                const { data: emailData } = await supabase.functions.invoke('send-onboarding-link', {
-                    body: {
+                // Use the polished credentials email for assessors, onboarding email for businesses
+                const isAssessorRole = newUserRole === 'contractor';
+                const emailFn = isAssessorRole ? 'send-assessor-credentials' : 'send-onboarding-link';
+                const emailBody = isAssessorRole
+                    ? {
+                        fullName: newUserFormData.fullName,
+                        email: newUserFormData.email,
+                        password: fnData.password,
+                        loginUrl: fnData.loginUrl || fnData.magicLink,
+                        tenant: selectedTenant,
+                    }
+                    : {
                         fullName: newUserFormData.fullName,
                         email: newUserFormData.email,
                         password: fnData.password,
@@ -906,10 +916,11 @@ const Admin = () => {
                         role: newUserRole,
                         userId: fnData.user.id,
                         tenant: selectedTenant,
-                    }
-                });
+                    };
+
+                const { data: emailData } = await supabase.functions.invoke(emailFn, { body: emailBody });
                 if (emailData?.success) {
-                    toast.success(`${newUserRole === 'contractor' ? 'Assessor' : 'Business'} created & login link sent via email!`);
+                    toast.success(`${isAssessorRole ? 'Assessor' : 'Business'} created & login link sent via email!`);
                 } else {
                     toast.success('User created but email failed. Please share the login link manually.');
                 }
@@ -1077,6 +1088,42 @@ const Admin = () => {
         }
     }, []);
 
+    const handleResendCredentials = useCallback(async (u: Profile) => {
+        const toastId = toast.loading('Resending login credentials...');
+        try {
+            const tenantForEmail = u.tenant || selectedTenant;
+            const websiteUrl = getTenantWebsiteUrl(tenantForEmail).replace(/\/$/, '');
+            const loginUrl = `${websiteUrl}/login`;
+
+            // Reset the user's password via edge function (needs service role key)
+            const { data: resetData, error: resetError } = await supabase.functions.invoke('reset-user-password', {
+                body: { userId: u.id }
+            });
+            if (resetError) throw resetError;
+            if (!resetData?.success) throw new Error(resetData?.error || 'Failed to reset password');
+            const tempPassword = resetData.password;
+
+            // Send the credentials email
+            const { data, error } = await supabase.functions.invoke('send-assessor-credentials', {
+                body: {
+                    fullName: u.full_name,
+                    email: u.email,
+                    password: tempPassword,
+                    loginUrl,
+                    tenant: tenantForEmail,
+                }
+            });
+
+            if (error) throw error;
+            if (!data?.success) throw new Error(data?.error || 'Failed to send email');
+
+            toast.success('Login credentials resent successfully!', { id: toastId });
+            await logAudit('resend_credentials', 'user', u.id, { email: u.email });
+        } catch (error: any) {
+            console.error('Resend credentials error:', error);
+            toast.error(error.message || 'Failed to resend credentials', { id: toastId });
+        }
+    }, [selectedTenant, logAudit]);
 
     const toggleUserStatus = useCallback(async () => {
         if (!itemToSuspend) return;
@@ -2340,6 +2387,7 @@ const Admin = () => {
                     onCancelSubscription={handleCancelSubscription}
                     onOpenCatalogue={(u, listing) => { handleOpenCatalogueView(u, listing); setSelectedUser(null); }}
                     onUpdateRegistrationStatus={updateRegistrationStatus}
+                    onResendCredentials={handleResendCredentials}
                 />
             )}
 

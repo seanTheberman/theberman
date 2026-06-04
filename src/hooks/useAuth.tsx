@@ -118,6 +118,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 setSession(result.data.session);
                 setUser(result.data.user);
                 await fetchProfile(result.data.user.id);
+
+                // Record last login timestamp for admin tracking
+                await supabase
+                    .from('profiles')
+                    .update({ last_login: new Date().toISOString() })
+                    .eq('id', result.data.user.id);
             }
 
             return result;
