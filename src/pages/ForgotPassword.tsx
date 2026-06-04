@@ -6,6 +6,7 @@ import { useAuth } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getTenantFromDomain } from '../lib/tenant';
 
 const forgotPasswordSchema = z.object({
     email: z.string().email('Invalid email address'),
@@ -14,6 +15,9 @@ const forgotPasswordSchema = z.object({
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 const ForgotPassword = () => {
+    const tenant = getTenantFromDomain();
+    const isEngland = tenant === 'england';
+    const brandName = isEngland ? 'EPC Cert' : 'The Berman';
     const { resetPassword } = useAuth();
 
     const {
@@ -45,9 +49,9 @@ const ForgotPassword = () => {
                 <div className="relative z-10">
                     <Link to="/" className="flex items-center gap-3 group w-fit">
                         <div className="relative">
-                            <img src="/logo.svg" alt="The Berman Logo" className="h-12 w-auto brightness-0 invert" />
+                            <img src="/logo.svg" alt={`${brandName} Logo`} className="h-12 w-auto brightness-0 invert" />
                         </div>
-                        <span className="text-2xl font-serif font-bold text-white">The Berman</span>
+                        <span className="text-2xl font-serif font-bold text-white">{brandName}</span>
                     </Link>
 
                     <div className="mt-20">

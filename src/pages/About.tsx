@@ -10,7 +10,8 @@ const About = () => {
     const isSpanish = tenant === 'spain';
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
-    const brand = isSpanish ? 'Certificado Energético' : isFrance ? 'DPE France' : isPortugal ? 'Certificado Energético' : 'The Berman';
+    const isEngland = tenant === 'england';
+    const brand = isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Cert' : isFrance ? 'DPE France' : isPortugal ? 'Certificado Energético' : 'The Berman';
 
     const { content: cms } = usePageContent('about');
     const c = (section: string, key: string, fallback: string) => cmsValue(cms, section, key, fallback);
@@ -59,26 +60,35 @@ const About = () => {
         joinP: '¿Preparado para tu certificación energética profesional? Nuestro equipo nacional está listo para ayudarte hoy mismo.',
         cta: 'Pedir mi Presupuesto',
     } : {
-        seoTitle: 'About Us - Expert BER Assessors',
-        seoDesc: "Learn about The Berman, Ireland's leading energy consultancy. Fast, accurate, and professional energy ratings.",
+        seoTitle: isEngland ? 'About Us - Expert EPC Assessors' : 'About Us - Expert BER Assessors',
+        seoDesc: isEngland ? "Learn about EPC Cert, England's leading energy consultancy. Fast, accurate, and professional energy ratings." : "Learn about The Berman, Ireland's leading energy consultancy. Fast, accurate, and professional energy ratings.",
         missionTag: 'Our Mission',
         title1: 'Precision in every',
         title2: 'Assessment.',
-        heroP: "Helping homeowners across Ireland understand, improve, and certify their property's energy efficiency since 2015.",
+        heroP: isEngland ? "Helping homeowners across England understand, improve, and certify their property's energy efficiency since 2015." : "Helping homeowners across Ireland understand, improve, and certify their property's energy efficiency since 2015.",
         storyH: 'Our Story',
-        story: [
+        story: isEngland ? [
+            `${brand} was founded with a singular objective: to bring professional clarity and technical rigor to England's energy rating industry. We recognized that homeowners and businesses weren't just looking for a certificate. They were looking for a roadmap to a more sustainable, cost-effective future.`,
+            "What began as a specialized team in London has grown into a nationwide network of accredited experts. Our growth has been fueled by a commitment to accuracy, integrity, and a deep understanding of the English building stock. We don't just measure energy performance; we interpret it, providing actionable insights that lead to real-world savings.",
+            `Today, ${brand} stands as a benchmark for energy consultancy in England. We have successfully completed over 10,000 assessments, helping families and enterprises navigate the complexities of EPC ratings and government grants. Our mission remains unchanged: to empower our clients with the knowledge they need to make informed decisions about their property's energy journey.`,
+            `As we look toward the future, our focus continues to be on innovation and excellence. We are constantly refining our processes and staying at the forefront of energy technology to ensure our clients receive the highest standard of service. At ${brand}, we believe that an energy-efficient home is the foundation of a modern, sustainable England.`,
+        ] : [
             "The Berman was founded with a singular objective: to bring professional clarity and technical rigor to Ireland's energy rating industry. We recognized that homeowners and businesses weren't just looking for a certificate. They were looking for a roadmap to a more sustainable, cost-effective future.",
             "What began as a specialized team in Dublin has grown into a nationwide network of SEAI-registered experts. Our growth has been fueled by a commitment to accuracy, integrity, and a deep understanding of the Irish building stock. We don't just measure energy performance; we interpret it, providing actionable insights that lead to real-world savings.",
             "Today, The Berman stands as a benchmark for energy consultancy in Ireland. We have successfully completed over 10,000 assessments, helping families and enterprises navigate the complexities of BER ratings and SEAI grants. Our mission remains unchanged: to empower our clients with the knowledge they need to make informed decisions about their property's energy journey.",
             "As we look toward the future, our focus continues to be on innovation and excellence. We are constantly refining our processes and staying at the forefront of energy technology to ensure our clients receive the highest standard of service. At The Berman, we believe that an energy-efficient home is the foundation of a modern, sustainable Ireland.",
         ],
-        stats: [
+        stats: isEngland ? [
+            { n: '1k+', l1: 'Completed', l2: 'EPC Assessments' },
+            { n: '100+', l1: 'Nationwide', l2: 'Network Assessors' },
+            { n: 'EPC', l1: 'Fully Accredited', l2: 'Energy Experts' },
+        ] : [
             { n: '1k+', l1: 'Completed', l2: 'BER Assessments' },
             { n: '100+', l1: 'Nationwide', l2: 'Network Assessors' },
             { n: 'SEAI', l1: 'Fully Registered', l2: 'Energy Experts' },
         ],
         howH: 'How We Work',
-        howSub: 'The Berman Principles',
+        howSub: isEngland ? `${brand} Principles` : 'The Berman Principles',
         values: [
             { icon: <Zap size={24} />, title: 'Speed & Accuracy', desc: 'We understand your time is valuable. Our assessors provide precise ratings with a focus on fast turnaround.' },
             { icon: <Shield size={24} />, title: 'Expert Integrity', desc: 'All assessments are handled by fully insured and registered professionals committed to honest reporting.' },
@@ -86,7 +96,17 @@ const About = () => {
         ],
         faqH: 'Frequently Asked Questions',
         faqSub: 'Everything you need to know',
-        faqs: [
+        faqs: isEngland ? [
+            { q: 'What is an EPC Certificate?', a: 'An EPC (Energy Performance Certificate) shows how energy efficient a property is. It rates buildings from A (most efficient) to G (least efficient), similar to appliance energy labels.' },
+            { q: 'Is an EPC Certificate mandatory in England?', a: 'Yes. An EPC certificate is legally required when a property is sold, rented, or advertised for sale or rent, with limited exemptions.' },
+            { q: 'How much does an EPC Certificate cost?', a: 'The cost depends on the size and type of the property. Prices vary, which is why comparing quotes from multiple assessors helps you get the best price.' },
+            { q: 'How long does an EPC assessment take?', a: 'The on-site assessment usually takes 1–3 hours, depending on the property size.' },
+            { q: 'How long is an EPC Certificate valid for?', a: 'An EPC certificate is valid for 10 years, unless major changes are made to the property that affect energy performance.' },
+            { q: 'How do I get an EPC Certificate?', a: 'You book an accredited EPC assessor, they visit and assess your property, and your certificate is issued and registered.' },
+            { q: 'Can I choose my assessment date and time?', a: 'Yes. You can select a preferred date and time when booking through the platform.' },
+            { q: 'Are EPC assessors registered and trusted?', a: 'Yes. All EPC assessments are carried out by accredited assessors who follow an official code of practice.' },
+            { q: 'What happens if I get a bad rating?', a: 'A bad rating does not prevent you from selling. It simply informs the buyer. Our advisory report will suggest ways to improve it.' },
+        ] : [
             { q: 'What is a BER Certificate?', a: 'A BER (Building Energy Rating) Certificate shows how energy efficient a property is. It rates buildings from A (most efficient) to G (least efficient), similar to appliance energy labels.' },
             { q: 'Is a BER Certificate mandatory in Ireland?', a: 'Yes. A BER certificate is legally required when a property is sold, rented, or advertised for sale or rent, with limited exemptions.' },
             { q: 'How much does a BER Certificate cost?', a: 'The cost depends on the size and type of the property. Prices vary, which is why comparing quotes from multiple assessors helps you get the best price.' },
@@ -97,9 +117,9 @@ const About = () => {
             { q: 'Are BER assessors registered and trusted?', a: 'Yes. All BER assessments are carried out by SEAI-registered assessors who follow an official code of practice.' },
             { q: 'What happens if I get a bad rating?', a: 'A bad rating does not prevent you from selling. It simply informs the buyer. Our advisory report will suggest ways to improve it.' },
         ],
-        joinH: 'Join the Berman',
-        joinH2: 'Family',
-        joinP: 'Ready for a professional BER assessment? Our nationwide team is here to help you today.',
+        joinH: isEngland ? `Join ${brand}` : 'Join the Berman',
+        joinH2: isEngland ? '' : 'Family',
+        joinP: isEngland ? 'Ready for a professional EPC assessment? Our nationwide team is here to help you today.' : 'Ready for a professional BER assessment? Our nationwide team is here to help you today.',
         cta: 'Get My Quote',
     };
 

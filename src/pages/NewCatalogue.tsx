@@ -109,17 +109,32 @@ const NewCatalogue = () => {
         const [catRes] = await Promise.all([
             supabase.from('catalogue_categories').select('*').eq('tenant', tenant).order('name')
         ]);
-        if (catRes.data) setCategories(catRes.data);
+        if (catRes.data && catRes.data.length > 0) {
+            setCategories(catRes.data);
+        } else if (tenant === 'england') {
+            // Fallback default categories for England tenant
+            setCategories([
+                { id: 'insulation', name: 'Insulation', slug: 'insulation' },
+                { id: 'heat-pumps', name: 'Heat Pumps', slug: 'heat-pumps' },
+                { id: 'solar-panels', name: 'Solar Panels', slug: 'solar-panels' },
+                { id: 'boiler-upgrade', name: 'Boiler Upgrade', slug: 'boiler-upgrade' },
+                { id: 'windows-doors', name: 'Windows & Doors', slug: 'windows-doors' },
+                { id: 'smart-heating', name: 'Smart Heating', slug: 'smart-heating' },
+                { id: 'draught-proofing', name: 'Draught Proofing', slug: 'draught-proofing' },
+                { id: 'energy-assessment', name: 'Energy Assessment', slug: 'energy-assessment' },
+            ]);
+        }
     };
 
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
+    const isEngland = tenant === 'england';
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
     const t = {
-        catalogueBadge: isSpanish ? 'El Catálogo' : isFrance ? 'Le Catalogue' : isPortugal ? 'O Catálogo' : 'The Catalogue',
-        heroLine1: isSpanish ? 'Catálogo de Negocios de' : isFrance ? 'Catalogue des Entreprises' : isPortugal ? 'Catálogo de Empresas' : 'The Berman Home Energy',
-        heroLine2: isSpanish ? 'Eficiencia Energética.' : isFrance ? 'd\'Efficacité Énergétique.' : isPortugal ? 'de Eficiência Energética.' : 'Businesses Catalogue.',
+        catalogueBadge: isSpanish ? 'El Catálogo' : isEngland ? 'The Catalogue' : isFrance ? 'Le Catalogue' : isPortugal ? 'O Catálogo' : 'The Catalogue',
+        heroLine1: isSpanish ? 'Catálogo de Negocios de' : isEngland ? 'EPC Cert' : isFrance ? 'Catalogue des Entreprises' : isPortugal ? 'Catálogo de Empresas' : 'The Berman Home Energy',
+        heroLine2: isSpanish ? 'Eficiencia Energética.' : isEngland ? 'Energy Experts Catalogue.' : isFrance ? 'd\'Efficacité Énergétique.' : isPortugal ? 'de Eficiência Energética.' : 'Businesses Catalogue.',
         upgradeType: isSpanish ? 'Tipo de Mejora' : isFrance ? 'Type d\'Amélioration' : isPortugal ? 'Tipo de Melhoria' : 'Upgrade Type',
         selectUpgrade: isSpanish ? 'Seleccionar Mejora...' : isFrance ? 'Sélectionner...' : isPortugal ? 'Selecionar Melhoria...' : 'Select Upgrade...',
         location: isSpanish ? 'Ubicación' : isFrance ? 'Localisation' : isPortugal ? 'Localização' : 'Location',
@@ -128,10 +143,10 @@ const NewCatalogue = () => {
         todaysSpotlight: isSpanish ? 'Destacado de Hoy' : isFrance ? 'À la Une Aujourd\'hui' : isPortugal ? 'Destaque de Hoje' : "Today's Spotlight",
         viewProfile: isSpanish ? 'Ver Perfil' : isFrance ? 'Voir le Profil' : isPortugal ? 'Ver Perfil' : 'View Profile',
         businesses: isSpanish ? 'Negocios' : isFrance ? 'Entreprises' : isPortugal ? 'Empresas' : 'Businesses',
-        berAssessors: isSpanish ? 'Certificadores Energéticos' : isFrance ? 'Diagnostiqueurs DPE' : isPortugal ? 'Peritos Certificados' : 'BER Assessors',
+        berAssessors: isSpanish ? 'Certificadores Energéticos' : isEngland ? 'EPC Assessors' : isFrance ? 'Diagnostiqueurs DPE' : isPortugal ? 'Peritos Certificados' : 'BER Assessors',
         businessesHeading: isSpanish ? 'Negocios y Consultores Energéticos' : isFrance ? 'Entreprises et Conseillers Énergétiques' : isPortugal ? 'Empresas e Consultores Energéticos' : 'Businesses and Energy Consultants',
         businessesSub: isSpanish ? 'Encuentra Negocios y Consultores Energéticos en tu Zona Hoy' : isFrance ? 'Trouvez des Entreprises et Conseillers Énergétiques près de chez vous' : isPortugal ? 'Encontre Empresas e Consultores Energéticos na sua Zona' : 'Find Businesses and Energy Consultants in Your Local Area Today',
-        assessorsSub: isSpanish ? 'Encuentra Certificadores Energéticos Acreditados en tu Zona Hoy' : isFrance ? 'Trouvez des Diagnostiqueurs Certifiés près de chez vous' : isPortugal ? 'Encontre Peritos Certificados na sua Zona' : 'Find Certified BER Assessors in Your Local Area Today',
+        assessorsSub: isSpanish ? 'Encuentra Certificadores Energéticos Acreditados en tu Zona Hoy' : isEngland ? 'Find Certified EPC Assessors in Your Local Area Today' : isFrance ? 'Trouvez des Diagnostiqueurs Certifiés près de chez vous' : isPortugal ? 'Encontre Peritos Certificados na sua Zona' : 'Find Certified BER Assessors in Your Local Area Today',
         sortBy: isSpanish ? 'Ordenar Por:' : isFrance ? 'Trier Par:' : isPortugal ? 'Ordenar Por:' : 'Sort By:',
         loadingPartners: isSpanish ? 'Cargando Socios...' : isFrance ? 'Chargement des Partenaires...' : isPortugal ? 'A Carregar Parceiros...' : 'Loading Partners...',
         featured: isSpanish ? 'Destacado' : isFrance ? 'En Vedette' : isPortugal ? 'Destaque' : 'Featured',
@@ -139,9 +154,9 @@ const NewCatalogue = () => {
         tryAdjusting: isSpanish ? 'Intenta ajustar tus filtros o términos de búsqueda.' : isFrance ? 'Essayez d\'ajuster vos filtres ou termes de recherche.' : isPortugal ? 'Tente ajustar os seus filtros ou termos de pesquisa.' : 'Try adjusting your filters or search terms.',
         resetSearch: isSpanish ? 'Restablecer Búsqueda' : isFrance ? 'Réinitialiser' : isPortugal ? 'Reiniciar Pesquisa' : 'Reset Search',
         hireAgent: isSpanish ? 'Contrata un Asesor Energético Gratis' : isFrance ? 'Embauchez un Conseiller Énergétique Gratuitement' : isPortugal ? 'Contrate um Consultor Energético Grátis' : 'Hire An Energy Agent For Free',
-        defaultLocation: isSpanish ? 'España' : isFrance ? 'France' : isPortugal ? 'Portugal' : 'Ireland',
+        defaultLocation: isSpanish ? 'España' : isEngland ? 'England' : isFrance ? 'France' : isPortugal ? 'Portugal' : 'Ireland',
         seoTitle: isSpanish ? 'Catálogo de Negocios' : isFrance ? 'Catalogue d\'Entreprises' : isPortugal ? 'Catálogo de Empresas' : 'Business Catalogue',
-        seoDescription: isSpanish ? 'Explora el catálogo de negocios de eficiencia energética verificados. Encuentra aislamiento, bombas de calor, energía solar y más.' : isFrance ? 'Parcourez le catalogue des entreprises d\'efficacité énergétique vérifiées. Trouvez isolation, pompes à chaleur, solaire et plus.' : isPortugal ? 'Explore o catálogo de empresas de eficiência energética verificadas. Encontre isolamento, bombas de calor, solar e mais.' : "Browse The Berman's catalogue of verified home energy businesses. Find insulation, heat pumps, solar, and more.",
+        seoDescription: isSpanish ? 'Explora el catálogo de negocios de eficiencia energética verificados. Encuentra aislamiento, bombas de calor, energía solar y más.' : isEngland ? "Browse EPC Cert's catalogue of verified home energy businesses. Find insulation, heat pumps, solar, and more." : isFrance ? 'Parcourez le catalogue des entreprises d\'efficacité énergétique vérifiées. Trouvez isolation, pompes à chaleur, solaire et plus.' : isPortugal ? 'Explore o catálogo de empresas de eficiência energética verificadas. Encontre isolamento, bombas de calor, solar e mais.' : "Browse The Berman's catalogue of verified home energy businesses. Find insulation, heat pumps, solar, and more.",
         consideringSolar: isSpanish ? '¿Interesado en Paneles Solares?' : isFrance ? 'Intéressé par le Solaire?' : isPortugal ? 'Interessado em Painéis Solares?' : 'Considering Solar?',
         viewAll: isSpanish ? 'Ver Todo' : isFrance ? 'Voir Tout' : isPortugal ? 'Ver Tudo' : 'View All',
     };

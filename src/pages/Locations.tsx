@@ -10,6 +10,7 @@ const makeSlug = (name: string) =>
 const Locations = () => {
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
+    const isEngland = tenant === 'england';
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
     const counties = getCountiesForTenant(tenant);
@@ -31,6 +32,12 @@ const Locations = () => {
         heading: 'Navegar por Localização',
         subtitle: 'Encontre profissionais certificados na sua área. Selecione uma região para ver os listados disponíveis.',
         viewListings: 'Ver Listados',
+    } : isEngland ? {
+        seoTitle: 'EPC Assessors by Location',
+        seoDesc: 'Find EPC assessors and energy upgrade professionals in your area across England. Browse by county and region.',
+        heading: 'Browse by Location',
+        subtitle: 'Find top-rated professionals and suppliers in your area. Select a county to see available listings.',
+        viewListings: 'View Listings',
     } : {
         seoTitle: 'BER Assessors by Location',
         seoDesc: 'Find BER assessors and energy upgrade professionals in your area across Ireland. Browse by county and region.',

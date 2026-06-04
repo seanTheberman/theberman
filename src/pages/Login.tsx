@@ -10,6 +10,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { checkRateLimit, recordFailedAttempt, recordSuccessfulLogin } from '../lib/rateLimiter';
+import { getTenantFromDomain } from '../lib/tenant';
 
 const loginSchema = z.object({
     email: z.string().email('Invalid email address'),
@@ -20,6 +21,9 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 const Login = () => {
     const { t, isSpanish } = useTranslation();
+    const tenant = getTenantFromDomain();
+    const isEngland = tenant === 'england';
+    const assessorLabel = isEngland ? 'EPC Assessor' : isSpanish ? 'Certificador Energético' : 'BER Assessor';
     const { signIn, signOut, user, role, profile, loading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -237,7 +241,7 @@ const Login = () => {
                             : 'border-transparent text-gray-400 hover:text-gray-600'
                             }`}
                     >
-                        {isSpanish ? 'Certificador Energético' : 'BER Assessor'}
+                        {assessorLabel}
                     </button>
                     <button
                         type="button"

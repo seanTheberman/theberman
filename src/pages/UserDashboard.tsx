@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
 import { supabase } from '../lib/supabase';
-import { formatCurrency } from '../lib/tenant';
+import { formatCurrency, getTenantFromDomain } from '../lib/tenant';
 import { LogOut, FileText, User, Home, AlertCircle, X, Menu, Trash2, Search, Clock } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -64,6 +64,9 @@ interface Assessment {
 
 const UserDashboard = () => {
     const { t, isSpanish } = useTranslation();
+    const tenant = getTenantFromDomain();
+    const isEngland = tenant === 'england';
+    const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : 'The Berman';
     const { user, signOut, profile } = useAuth();
     const navigate = useNavigate();
     const [assessments, setAssessments] = useState<Assessment[]>([]);
@@ -399,7 +402,7 @@ const UserDashboard = () => {
                 <div className="container mx-auto px-6 h-20 flex justify-between items-center">
                     <div className="flex items-center gap-8">
                         <Link to="/" className="relative flex-shrink-0">
-                            <img src="/logo.svg" alt="The Berman Logo" className="h-10 w-auto relative z-10" />
+                            <img src="/logo.svg" alt={`${brandName} Logo`} className="h-10 w-auto relative z-10" />
                         </Link>
                         <div className="hidden xl:block">
                             <h1 className="text-lg font-bold text-white leading-tight">{isSpanish ? 'Mi Panel' : 'My Dashboard'}</h1>

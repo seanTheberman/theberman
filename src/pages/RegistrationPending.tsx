@@ -1,8 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { Mail, Clock, ArrowRight, LogOut } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { getTenantFromDomain } from '../lib/tenant';
 
 const RegistrationPending = () => {
+    const tenant = getTenantFromDomain();
+    const isEngland = tenant === 'england';
+    const brandName = isEngland ? 'EPC Cert' : 'The Berman';
     const { signOut, user } = useAuth();
     const navigate = useNavigate();
 
@@ -26,7 +30,7 @@ const RegistrationPending = () => {
                         Registration <span className="text-[#007F00]">Pending</span>
                     </h1>
                     <p className="text-gray-600 font-medium leading-relaxed">
-                        Thank you for your interest in joining The Berman Home Energy Catalogue.
+                        Thank you for your interest in joining {brandName} Home Energy Catalogue.
                         Your application for <strong>{user?.email}</strong> is currently being reviewed by our team.
                     </p>
                 </div>
@@ -64,7 +68,7 @@ const RegistrationPending = () => {
                 </div>
 
                 <div className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] pt-8">
-                    The Berman Home Energy Management
+                    {brandName} Home Energy Management
                 </div>
             </div>
         </div>

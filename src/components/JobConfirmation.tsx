@@ -1,5 +1,6 @@
 import { Check, Mail, Clock, Home, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { getTenantFromDomain } from '../lib/tenant';
 
 interface JobConfirmationProps {
     customerName: string;
@@ -11,10 +12,16 @@ interface JobConfirmationProps {
 }
 
 const JobConfirmation = ({ customerName, county, email, emailError, hideNavigation, jobType = 'BER' }: JobConfirmationProps) => {
+    const tenant = getTenantFromDomain();
+    const isEngland = tenant === 'england';
+    const isSpanish = tenant === 'spain';
+    const brandDomain = isEngland ? 'epccert.com' : isSpanish ? 'certificadoenergético.eu' : 'theberman.eu';
+    const ratingName = isEngland ? 'EPC' : isSpanish ? 'CEE' : 'BER';
+    const country = isEngland ? 'England' : isSpanish ? 'Spain' : 'Ireland';
     const isSolar = jobType === 'Solar';
-    const professionalTitle = isSolar ? 'Solar Installers' : 'BER Assessors';
-    const professionalSingular = isSolar ? 'Installer' : 'Assessor';
-    const jobTitle = isSolar ? 'Solar quote request' : 'BER assessment request';
+    const professionalTitle = isSolar ? 'Solar Installers' : (isEngland ? 'EPC Assessors' : (isSpanish ? 'Certificadores' : 'BER Assessors'));
+    const professionalSingular = isSolar ? 'Installer' : (isEngland ? 'EPC Assessor' : (isSpanish ? 'Certificador' : 'Assessor'));
+    const jobTitle = isSolar ? 'Solar quote request' : `${ratingName} assessment request`;
 
     return (
         <div className="space-y-8 text-center">
@@ -126,7 +133,7 @@ const JobConfirmation = ({ customerName, county, email, emailError, hideNavigati
 
                     {/* Footer Note */}
                     <p className="text-gray-400 text-sm">
-                        Thanks for using TheBerman.eu — Ireland's largest BER website
+                        Thanks for using {brandDomain} — {country}'s largest {ratingName} website
                     </p>
                 </>
             )}

@@ -21,6 +21,7 @@ import toast from 'react-hot-toast';
 const tenant = getTenantFromDomain();
 const isEngland = tenant === 'england';
 const isSpanish = tenant === 'spain';
+const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : 'The Berman';
 const regNumberLabel = isEngland ? 'Accreditation #' : isSpanish ? 'CEE #' : 'SEAI #';
 
 const PublicAssessorProfile = () => {
@@ -124,7 +125,7 @@ const PublicAssessorProfile = () => {
                         <div className="w-8 h-8 bg-[#007EA7] rounded-lg flex items-center justify-center text-white font-black text-lg shadow-lg shadow-blue-100">
                             B
                         </div>
-                        <span className="text-xl font-black text-gray-900 tracking-tight">Theberman</span>
+                        <span className="text-xl font-black text-gray-900 tracking-tight">{brandName}</span>
                     </Link>
                     <Link
                         to="/catalogue"
@@ -209,7 +210,7 @@ const PublicAssessorProfile = () => {
                                 About the Assessor
                             </h2>
                             <div className="bg-white p-8 md:p-10 rounded-[2rem] border border-gray-50 shadow-sm leading-relaxed text-gray-600 font-medium text-lg">
-                                {profile.about_me || "This assessor has not provided a detailed biography yet, but they are a licensed and verified professional on Theberman platform."}
+                                {profile.about_me || `This assessor has not provided a detailed biography yet, but they are a licensed and verified professional on ${brandName} platform.`}
                             </div>
                         </div>
 
@@ -348,7 +349,7 @@ const PublicAssessorProfile = () => {
             {/* Trust Footer */}
             <footer className="bg-white border-t border-gray-100 py-12 mt-20">
                 <div className="max-w-7xl mx-auto px-6 text-center">
-                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">The Berman Licensed Professional Network</p>
+                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">{brandName} Licensed Professional Network</p>
                     <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-30 grayscale">
                         <span className="font-black text-lg italic tracking-tight">SEAI REGISTERED</span>
                         <span className="font-black text-lg italic tracking-tight">NSAI CERTIFIED</span>

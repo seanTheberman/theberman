@@ -2,6 +2,11 @@ import { useState } from "react"
 import { Link } from "react-router-dom"
 import { ChevronRight } from "lucide-react"
 import { getTenantFromDomain } from '../lib/tenant'
+import { TOWNS_BY_COUNTY_ENGLAND } from '../data/englandTowns'
+
+function slugify(str: string): string {
+  return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
 
 interface County {
     id: string
@@ -139,73 +144,21 @@ const SPAIN_LOCATIONS: Province[] = [
     }
 ];
 
-const ENGLAND_LOCATIONS: Province[] = [
-    {
-        id: 'greater-london',
-        name: 'Greater London',
-        slug: 'greater-london',
-        counties: [{ id: 'london', name: 'London', slug: 'london' }]
-    },
-    {
-        id: 'south-east',
-        name: 'South East',
-        slug: 'south-east',
-        counties: [
-            { id: 'brighton', name: 'Brighton', slug: 'brighton' },
-            { id: 'southampton', name: 'Southampton', slug: 'southampton' }
-        ]
-    },
-    {
-        id: 'west-midlands',
-        name: 'West Midlands',
-        slug: 'west-midlands',
-        counties: [
-            { id: 'birmingham', name: 'Birmingham', slug: 'birmingham' },
-            { id: 'coventry', name: 'Coventry', slug: 'coventry' }
-        ]
-    },
-    {
-        id: 'east-midlands',
-        name: 'East Midlands',
-        slug: 'east-midlands',
-        counties: [
-            { id: 'nottingham', name: 'Nottingham', slug: 'nottingham' },
-            { id: 'leicester', name: 'Leicester', slug: 'leicester' }
-        ]
-    },
-    {
-        id: 'north-west',
-        name: 'North West',
-        slug: 'north-west',
-        counties: [
-            { id: 'manchester', name: 'Manchester', slug: 'manchester' },
-            { id: 'liverpool', name: 'Liverpool', slug: 'liverpool' },
-            { id: 'leeds', name: 'Leeds', slug: 'leeds' }
-        ]
-    },
-    {
-        id: 'north-east',
-        name: 'North East',
-        slug: 'north-east',
-        counties: [
-            { id: 'newcastle', name: 'Newcastle', slug: 'newcastle' },
-            { id: 'york', name: 'York', slug: 'york' }
-        ]
-    },
-    {
-        id: 'south-west',
-        name: 'South West',
-        slug: 'south-west',
-        counties: [
-            { id: 'bristol', name: 'Bristol', slug: 'bristol' },
-            { id: 'bath', name: 'Bath', slug: 'bath' },
-            { id: 'exeter', name: 'Exeter', slug: 'exeter' },
-            { id: 'plymouth', name: 'Plymouth', slug: 'plymouth' },
-            { id: 'southampton', name: 'Southampton', slug: 'southampton' },
-            { id: 'brighton', name: 'Brighton', slug: 'brighton' }
-        ]
-    }
-];
+const ENGLAND_LOCATIONS: Province[] = Object.entries(TOWNS_BY_COUNTY_ENGLAND)
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([countyName, towns]) => ({
+    id: slugify(countyName),
+    name: countyName,
+    slug: slugify(countyName),
+    counties: towns.map(town => {
+      const townSlug = slugify(town);
+      return {
+        id: townSlug,
+        name: town,
+        slug: townSlug,
+      };
+    }),
+  }));
 
 export default function LocationsMenu({ open }: { open: boolean }) {
     const tenant = getTenantFromDomain();

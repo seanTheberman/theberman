@@ -1335,8 +1335,9 @@ const Admin = () => {
             const { error } = await supabase.from('assessments').update({ status: 'scheduled', scheduled_date: selectedDate }).eq('id', selectedAssessment.id);
             if (error) throw error;
 
+            const brandName = selectedTenant === 'england' ? 'EPC Cert' : selectedTenant === 'spain' ? 'Certificado Energético' : selectedTenant === 'france' ? 'DPE France' : selectedTenant === 'portugal' ? 'Certificado Energético' : 'The Berman';
             supabase.functions.invoke('send-job-status-notification', {
-                body: { assessmentId: selectedAssessment.id, status: isRescheduled ? 'rescheduled' : 'scheduled', details: { inspectionDate: selectedDate, contractorName: 'The Berman Team' }, tenant: selectedTenant }
+                body: { assessmentId: selectedAssessment.id, status: isRescheduled ? 'rescheduled' : 'scheduled', details: { inspectionDate: selectedDate, contractorName: `${brandName} Team` }, tenant: selectedTenant }
             }).catch(err => console.error('Failed to trigger status notification:', err));
 
             await logAudit('schedule_assessment', 'assessment', selectedAssessment.id, { scheduled_date: selectedDate });
@@ -1358,8 +1359,9 @@ const Admin = () => {
             const { error } = await supabase.from('assessments').update({ status: 'completed', certificate_url: certUrl, completed_at: new Date().toISOString() }).eq('id', selectedAssessment.id);
             if (error) throw error;
 
+            const brandName2 = selectedTenant === 'england' ? 'EPC Cert' : selectedTenant === 'spain' ? 'Certificado Energético' : selectedTenant === 'france' ? 'DPE France' : selectedTenant === 'portugal' ? 'Certificado Energético' : 'The Berman';
             supabase.functions.invoke('send-job-status-notification', {
-                body: { assessmentId: selectedAssessment.id, status: 'completed', details: { certificateUrl: certUrl, contractorName: 'The Berman Team' }, tenant: selectedTenant }
+                body: { assessmentId: selectedAssessment.id, status: 'completed', details: { certificateUrl: certUrl, contractorName: `${brandName2} Team` }, tenant: selectedTenant }
             }).catch(err => console.error('Failed to trigger status notification:', err));
 
             await logAudit('complete_assessment', 'assessment', selectedAssessment.id, { certificate_url: certUrl });
@@ -1477,7 +1479,8 @@ const Admin = () => {
         const csvContent = 'data:text/csv;charset=utf-8,' + csvRows.join('\n');
         const link = document.createElement('a');
         link.setAttribute('href', encodeURI(csvContent));
-        link.setAttribute('download', `berman_payments_export_${new Date().toISOString().split('T')[0]}.csv`);
+        const brandSlug = selectedTenant === 'england' ? 'epc' : selectedTenant === 'spain' ? 'cee' : selectedTenant === 'france' ? 'dpe' : selectedTenant === 'portugal' ? 'cee' : 'berman';
+        link.setAttribute('download', `${brandSlug}_payments_export_${new Date().toISOString().split('T')[0]}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -1909,10 +1912,10 @@ const Admin = () => {
                 {/* Logo */}
                 <div className="h-14 flex items-center justify-between px-4 border-b border-white/10 flex-shrink-0">
                     <Link to="/" className={`block ${desktopExpanded ? 'md:block' : 'md:hidden'} lg:block`}>
-                        <img src="/logo.svg" alt="The Berman" className="h-7 w-auto" />
+                        <img src="/logo.svg" alt={selectedTenant === 'england' ? 'EPC Cert' : selectedTenant === 'spain' ? 'Certificado Energético' : selectedTenant === 'france' ? 'DPE France' : selectedTenant === 'portugal' ? 'Certificado Energético' : 'The Berman'} className="h-7 w-auto" />
                     </Link>
                     <div className={`flex items-center justify-center ${desktopExpanded ? 'md:hidden' : 'md:flex'} lg:hidden`}>
-                        <img src="/logo.svg" alt="The Berman" className="h-7 w-auto" />
+                        <img src="/logo.svg" alt={selectedTenant === 'england' ? 'EPC Cert' : selectedTenant === 'spain' ? 'Certificado Energético' : selectedTenant === 'france' ? 'DPE France' : selectedTenant === 'portugal' ? 'Certificado Energético' : 'The Berman'} className="h-7 w-auto" />
                     </div>
                     {/* Close on mobile */}
                     <button onClick={() => setSidebarOpen(false)} className="md:hidden text-white/40 hover:text-white p-1">
