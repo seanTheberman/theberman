@@ -212,6 +212,7 @@ export interface PageContent {
     sort_order: number;
     is_active: boolean;
     updated_at: string;
+    tenant?: string;
 }
 
 export interface CatalogueFormData {
