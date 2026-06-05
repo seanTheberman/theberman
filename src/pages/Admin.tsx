@@ -1325,7 +1325,7 @@ const Admin = () => {
                     assessmentId: selectedAssessment.id,
                     jobType: selectedAssessment.job_type || 'domestic',
                     customerPhone: selectedAssessment.contact_phone,
-                    tenant: selectedTenant,
+                    tenant: selectedAssessment.tenant || selectedTenant,
                     force: alreadyNotified,
                 }
             }).catch(err => console.error('Failed to send job live email:', err));
@@ -1358,7 +1358,7 @@ const Admin = () => {
             const { error: updateError } = await supabase.from('assessments').update({ status: 'pending_quote' }).eq('id', selectedAssessment.id);
             if (updateError) throw updateError;
 
-            supabase.functions.invoke('send-quote-notification', { body: { assessmentId: selectedAssessment.id, tenant: selectedTenant } })
+            supabase.functions.invoke('send-quote-notification', { body: { assessmentId: selectedAssessment.id, tenant: selectedAssessment.tenant || selectedTenant } })
                 .catch(err => console.error('Failed to trigger homeowner notification:', err));
 
             await logAudit('generate_quote', 'assessment', selectedAssessment.id, { quote_id: quote.id, price: quoteData.price });
@@ -1382,9 +1382,10 @@ const Admin = () => {
             const { error } = await supabase.from('assessments').update({ status: 'scheduled', scheduled_date: selectedDate }).eq('id', selectedAssessment.id);
             if (error) throw error;
 
-            const brandName = selectedTenant === 'england' ? 'EPC Cert' : selectedTenant === 'spain' ? 'Certificado Energético' : selectedTenant === 'france' ? 'DPE France' : selectedTenant === 'portugal' ? 'Certificado Energético' : 'The Berman';
+            const assessmentTenant = selectedAssessment.tenant || selectedTenant;
+            const brandName = assessmentTenant === 'england' ? 'EPC Cert' : assessmentTenant === 'spain' ? 'Certificado Energético' : assessmentTenant === 'france' ? 'DPE France' : assessmentTenant === 'portugal' ? 'Certificado Energético' : 'The Berman';
             supabase.functions.invoke('send-job-status-notification', {
-                body: { assessmentId: selectedAssessment.id, status: isRescheduled ? 'rescheduled' : 'scheduled', details: { inspectionDate: selectedDate, contractorName: `${brandName} Team` }, tenant: selectedTenant }
+                body: { assessmentId: selectedAssessment.id, status: isRescheduled ? 'rescheduled' : 'scheduled', details: { inspectionDate: selectedDate, contractorName: `${brandName} Team` }, tenant: assessmentTenant }
             }).catch(err => console.error('Failed to trigger status notification:', err));
 
             await logAudit('schedule_assessment', 'assessment', selectedAssessment.id, { scheduled_date: selectedDate });
@@ -1406,9 +1407,10 @@ const Admin = () => {
             const { error } = await supabase.from('assessments').update({ status: 'completed', certificate_url: certUrl, completed_at: new Date().toISOString() }).eq('id', selectedAssessment.id);
             if (error) throw error;
 
-            const brandName2 = selectedTenant === 'england' ? 'EPC Cert' : selectedTenant === 'spain' ? 'Certificado Energético' : selectedTenant === 'france' ? 'DPE France' : selectedTenant === 'portugal' ? 'Certificado Energético' : 'The Berman';
+            const assessmentTenant2 = selectedAssessment.tenant || selectedTenant;
+            const brandName2 = assessmentTenant2 === 'england' ? 'EPC Cert' : assessmentTenant2 === 'spain' ? 'Certificado Energético' : assessmentTenant2 === 'france' ? 'DPE France' : assessmentTenant2 === 'portugal' ? 'Certificado Energético' : 'The Berman';
             supabase.functions.invoke('send-job-status-notification', {
-                body: { assessmentId: selectedAssessment.id, status: 'completed', details: { certificateUrl: certUrl, contractorName: `${brandName2} Team` }, tenant: selectedTenant }
+                body: { assessmentId: selectedAssessment.id, status: 'completed', details: { certificateUrl: certUrl, contractorName: `${brandName2} Team` }, tenant: assessmentTenant2 }
             }).catch(err => console.error('Failed to trigger status notification:', err));
 
             await logAudit('complete_assessment', 'assessment', selectedAssessment.id, { certificate_url: certUrl });
@@ -1430,7 +1432,8 @@ const Admin = () => {
         try {
             const clientEmail = selectedAssessment.user?.email || selectedAssessment.contact_email;
             if (!clientEmail) { toast.error('Client email not found'); return; }
-            const assessmentLabel = selectedTenant === 'spain' ? 'Certificado Energético' : selectedTenant === 'england' ? 'EPC' : selectedTenant === 'france' ? 'DPE' : selectedTenant === 'portugal' ? 'Certificado Energético' : 'BER';
+            const assessmentTenant3 = selectedAssessment.tenant || selectedTenant;
+            const assessmentLabel = assessmentTenant3 === 'spain' ? 'Certificado Energético' : assessmentTenant3 === 'england' ? 'EPC' : assessmentTenant3 === 'france' ? 'DPE' : assessmentTenant3 === 'portugal' ? 'Certificado Energético' : 'BER';
             const subject = `Update regarding your ${assessmentLabel} Assessment - ${selectedAssessment.property_address}`;
 
             const { data, error } = await supabase.functions.invoke('send-admin-message', {
@@ -1438,7 +1441,7 @@ const Admin = () => {
                     to: clientEmail,
                     subject,
                     body: messageContent,
-                    tenant: selectedTenant,
+                    tenant: assessmentTenant3,
                     assessmentId: selectedAssessment.id,
                 }
             });
