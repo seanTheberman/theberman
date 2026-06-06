@@ -262,6 +262,7 @@ const Login = () => {
                         <input
                             {...register('email')}
                             type="email"
+                            autoComplete="email"
                             placeholder={isSpanish ? 'nombre@empresa.com' : 'name@company.com'}
                             className="w-full px-4 py-3 bg-[#e8f0fe] border-none rounded-lg focus:ring-2 focus:ring-[#007F00]/30 outline-none"
                         />
@@ -274,6 +275,7 @@ const Login = () => {
                             <input
                                 {...register('password')}
                                 type={showPassword ? 'text' : 'password'}
+                                autoComplete="current-password"
                                 placeholder="••••••••"
                                 className="w-full px-4 py-3 bg-[#e8f0fe] border-none rounded-lg focus:ring-2 focus:ring-[#007F00]/30 outline-none pr-12"
                             />

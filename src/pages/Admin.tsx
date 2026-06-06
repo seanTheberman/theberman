@@ -6,6 +6,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { geocodeAddress, COUNTY_COORDINATES } from '../lib/geocoding';
 import { getTenantFromDomain, getTenantWebsiteUrl } from '../lib/tenant';
+import SEOHead from '../components/SEOHead';
 
 // Types
 import type { Lead, Assessment, Profile, Payment, Sponsor, AppSettings, NewsArticle, BlogArticle, FaqItem, CatalogueFormData, AdminView, DeletedItem, CatalogueListing } from '../types/admin';
@@ -1940,7 +1941,9 @@ const Admin = () => {
     const navClick = (id: string) => { setView(id as AdminView); setLocationFilter(''); setSearchTerm(''); };
 
     return (
-        <div className="min-h-screen bg-gray-100 font-sans flex">
+        <>
+            <SEOHead title="Admin Dashboard" description="Restricted admin dashboard." noindex={true} />
+            <div className="min-h-screen bg-gray-100 font-sans flex">
 
             {/* ── Mobile overlay backdrop ──────────────────────────────────────── */}
             {sidebarOpen && (
@@ -2415,6 +2418,7 @@ const Admin = () => {
                 />
             )}
         </div>
+        </>
     );
 };
 

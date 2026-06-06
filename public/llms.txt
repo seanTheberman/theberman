@@ -33,14 +33,6 @@
 - `/forgot-password` — Password recovery
 - `/update-password` — Password reset
 
-### Admin Pages
-- `/login/admin` — Admin login
-- `/admin` — Admin dashboard (users, leads, assessments, payments)
-- `/admin/news/new` — Create news article
-- `/admin/news/edit/:id` — Edit news article
-- `/admin/blog/new` — Create blog post
-- `/admin/blog/edit/:id` — Edit blog post
-
 ## Technical Stack
 
 - **Frontend**: React 19, Vite, Tailwind CSS, TypeScript

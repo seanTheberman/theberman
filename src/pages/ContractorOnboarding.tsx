@@ -263,7 +263,7 @@ const ContractorOnboarding = () => {
 
             // Fire-and-forget admin notification (non-blocking)
             supabase.functions.invoke('notify-admin-interest', {
-                body: { registrationData, type: 'assessor' }
+                body: { registrationData, type: 'assessor', tenant: getTenantFromDomain() }
             }).catch(err => console.error('Failed to send interest notification:', err));
 
             toast.success(lbl.registrationSubmitted);

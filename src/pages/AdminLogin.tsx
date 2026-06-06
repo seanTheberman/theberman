@@ -6,6 +6,7 @@ import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Shield, Lock, Mail, Eye, EyeOff, AlertTriangle, ArrowLeft, LogOut } from 'lucide-react';
+import SEOHead from '../components/SEOHead';
 import toast from 'react-hot-toast';
 import { checkRateLimit, recordFailedAttempt, recordSuccessfulLogin, verifySecurityCode, resendVerificationCode, isAccountLocked, validateEmail, validatePassword } from '../lib/rateLimiter';
 
@@ -17,7 +18,7 @@ const adminLoginSchema = z.object({
 type AdminLoginFormData = z.infer<typeof adminLoginSchema>;
 
 const AdminLogin = () => {
-    const { signIn, signOut, user, role, loading } = useAuth();
+    const { signIn, user, role, loading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [showPassword, setShowPassword] = useState(false);
@@ -46,12 +47,16 @@ const AdminLogin = () => {
                 navigate('/admin', { replace: true });
             }
         } else if (!loading && user && role !== 'admin') {
-            // Non-admin users shouldn't be here — redirect them to the correct login
-            signOut();
-            toast('This is the admin login page. Redirecting you to the correct login...');
-            navigate('/login', { replace: true });
+            // Non-admin users already logged in — redirect them to their dashboard
+            if (role === 'contractor') {
+                navigate('/dashboard/ber-assessor', { replace: true });
+            } else if (role === 'business') {
+                navigate('/dashboard/business', { replace: true });
+            } else {
+                navigate('/dashboard/user', { replace: true });
+            }
         }
-    }, [user, role, loading, navigate, from, signOut]);
+    }, [user, role, loading, navigate, from]);
 
     const {
         register,
@@ -145,22 +150,31 @@ const AdminLogin = () => {
                     .maybeSingle();
 
                 if (profile?.role !== 'admin') {
-                    await signOut();
-                    toast('This is the admin login page. Redirecting you to the correct login...');
-                    navigate('/login', { replace: true });
+                    // Non-admin user — log them into their correct dashboard instead of blocking
+                    recordSuccessfulLogin(email);
+                    toast.success('Login successful! Redirecting to your dashboard...');
+
+                    const userRole = profile?.role;
+                    if (userRole === 'contractor') {
+                        navigate('/dashboard/ber-assessor', { replace: true });
+                    } else if (userRole === 'business') {
+                        navigate('/dashboard/business', { replace: true });
+                    } else {
+                        navigate('/dashboard/user', { replace: true });
+                    }
                     return;
                 }
 
                 // Record successful login (clears rate limit)
                 recordSuccessfulLogin(email);
-                
+
                 // Reset verification state
                 setRequiresVerification(false);
                 setVerificationCode('');
                 setLockoutMessage('');
-                
+
                 toast.success('Admin login successful!');
-                
+
                 // Redirect will happen in useEffect
                 if (from) {
                     navigate(from, { replace: true });
@@ -231,7 +245,9 @@ const AdminLogin = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+        <>
+            <SEOHead title="Admin Access" description="Restricted administrator login." noindex={true} />
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
             {/* Background Pattern */}
             <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
             
@@ -279,6 +295,7 @@ const AdminLogin = () => {
                                 <input
                                     {...register('email')}
                                     type="email"
+                                    autoComplete="off"
                                     placeholder="email"
                                     className="w-full pl-10 pr-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
                                     disabled={isSubmitting}
@@ -299,6 +316,7 @@ const AdminLogin = () => {
                                 <input
                                     {...register('password')}
                                     type={showPassword ? 'text' : 'password'}
+                                    autoComplete="off"
                                     placeholder=""
                                     className="w-full pl-10 pr-12 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
                                     disabled={isSubmitting}
@@ -395,6 +413,7 @@ const AdminLogin = () => {
                 </div>
             </div>
         </div>
+        </>
     );
 };
 
