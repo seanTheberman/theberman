@@ -6,10 +6,12 @@ import PaymentModal from '../components/PaymentModal';
 import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 import { REGISTRATION_PRICES, VAT_RATE } from '../constants/pricing';
-import { formatCurrency } from '../lib/tenant';
+import { formatCurrency, getTenantFromDomain } from '../lib/tenant';
 import SEOHead from '../components/SEOHead';
 
 const MembershipPayment = () => {
+    const tenant = getTenantFromDomain();
+    const isEngland = tenant === 'england';
     const navigate = useNavigate();
     const { refreshProfile, user } = useAuth();
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -199,7 +201,7 @@ const MembershipPayment = () => {
         <div className="font-sans text-gray-900 bg-white h-screen flex flex-col justify-center items-center px-4">
             <SEOHead
                 title="Membership Payment"
-                description="Complete your membership payment for The Berman platform."
+                description={isEngland ? "Complete your membership payment for the EPC Cert platform." : "Complete your membership payment for The Berman platform."}
                 noindex={true}
             />
 
@@ -211,7 +213,7 @@ const MembershipPayment = () => {
                     </h1>
                     <p className="text-sm md:text-base text-gray-600 font-medium">
                         {registrationType === 'assessor'
-                            ? "Get more BER jobs with Ireland's largest BER platform."
+                            ? (isEngland ? "Get more EPC jobs with England's leading EPC platform." : "Get more BER jobs with Ireland's largest BER platform.")
                             : "Unlock premium features and get discovered by thousands of homeowners."}
                     </p>
                 </div>
@@ -228,7 +230,7 @@ const MembershipPayment = () => {
                     <div className="space-y-2.5">
                         {registrationType === 'assessor' ? (
                             <>
-                                <BenefitItem text="Premium listing as a BER Assessor" />
+                                <BenefitItem text={isEngland ? "Premium listing as an EPC Assessor" : "Premium listing as a BER Assessor"} />
                                 <BenefitItem text="Unlimited Quotes & Job Notifications" />
                                 <BenefitItem text="Verified Assessor Badge" />
                                 <BenefitItem text="Direct Quote Request Form" />

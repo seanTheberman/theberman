@@ -6,6 +6,7 @@ import { getTenantFromDomain } from '../lib/tenant';
 const CookiePolicy = () => {
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
+    const isEngland = tenant === 'england';
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
 
@@ -74,6 +75,28 @@ const CookiePolicy = () => {
         optH: 'Recusar',
         optP1: 'Se não concordar com a nossa utilização de cookies, por favor abandone este site',
         optP2: 'clicando aqui',
+        optP3: '.',
+    } : isEngland ? {
+        seoTitle: 'Cookie Policy',
+        seoDesc: 'Cookie Policy for EPC Cert. Learn about how we use cookies on our website.',
+        badge: 'Legal',
+        title1: 'Cookie',
+        title2: 'Policy.',
+        hero: 'We use cookies to make this website better for you and your continued use of this website implies that you agree to our use of cookies.',
+        whatH: 'What is a Cookie?',
+        whatP: "A cookie is a small piece of data sent from a website and stored on your computer via your web browser, while you are browsing our website. Cookies were designed to be a reliable mechanism for websites to remember stateful information (such as items added in the shopping cart in an online store) or to record the user's browsing activity (including clicking particular buttons, logging in, or recording which pages were visited in the past). They can also be used to remember arbitrary pieces of information that the user previously entered into form fields such as names, addresses, passwords, and credit card numbers.",
+        useH: 'Cookies We Use',
+        useIntro: 'We may use the following cookies among others from time to time on our website:',
+        useItems: [
+            { b: 'tawkuuid', t: 'for support chat app' },
+            { b: 'utma / utmz', t: 'for Google Analytics' },
+            { b: 'cfclient cookies', t: 'for ColdFusion client/session/server cookies' },
+            { b: 'adNetwork', t: 'adNetwork tracking' },
+            { b: 'Cookies for advertising and remarketing', t: '' },
+        ],
+        optH: 'Opt Out',
+        optP1: "If you don't agree to our use of cookies, please leave this website by",
+        optP2: 'clicking here',
         optP3: '.',
     } : {
         seoTitle: 'Cookie Policy',

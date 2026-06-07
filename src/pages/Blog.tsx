@@ -55,6 +55,7 @@ const BlogPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
+    const isEngland = tenant === 'england';
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
     const { content: cms } = usePageContent('blog');
@@ -107,6 +108,20 @@ const BlogPage = () => {
         viewAllPosts: 'Ver Todos os Artigos',
         newBadge: 'Novo',
         locale: 'pt-PT' as const,
+    } : isEngland ? {
+        seoTitle: 'Blog',
+        seoDesc: 'Expert guides on EPC certificates, energy grants, home upgrades, and more from EPC Cert.',
+        loading: 'Loading blog...',
+        latest: 'Latest Articles',
+        showing: (n: number, t: number) => `Showing ${n} of ${t} articles`,
+        searchPlaceholder: 'Search articles...',
+        categories: 'Categories',
+        quickQuote: 'Quick Quote',
+        quickQuoteP: 'Get EPC quotes while you read.',
+        getQuotes: 'Get Quotes',
+        noArticlesSearch: (q: string) => `No articles found for "${q}"`,
+        noArticlesCategory: 'No articles found in this category.',
+        locale: 'en-GB' as const,
     } : {
         seoTitle: 'Blog',
         seoDesc: 'Expert guides on BER certificates, energy grants, home upgrades, and more from The Berman.',

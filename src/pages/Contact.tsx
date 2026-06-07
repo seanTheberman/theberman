@@ -43,6 +43,7 @@ const Contact = () => {
     const selectedCounty = watch('county');
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
+    const isEngland = tenant === 'england';
     const townsByCounty = getTownsForTenant(tenant);
     const tenantEmail = getTenantEmail(tenant);
     const tenantDomain = getTenantDomain(tenant);
@@ -50,11 +51,19 @@ const Contact = () => {
     const c = (section: string, key: string, fallback: string) => cmsValue(cms, section, key, fallback);
     const tr = {
         seoTitle: isSpanish ? 'Contacto' : 'Contact Us',
-        seoDesc: isSpanish ? 'Contacta con Certificado Energético para tus certificados energéticos, calificaciones y mejoras en toda España.' : 'Get in touch with The Berman for BER assessments, energy ratings, and home energy upgrades across Ireland.',
+        seoDesc: isSpanish
+            ? 'Contacta con Certificado Energético para tus certificados energéticos, calificaciones y mejoras en toda España.'
+            : isEngland
+                ? 'Get in touch with EPC Cert for EPC assessments, energy ratings, and home energy upgrades across England.'
+                : 'Get in touch with The Berman for BER assessments, energy ratings, and home energy upgrades across Ireland.',
         badge: isSpanish ? 'Ponte en Contacto' : 'Get In Touch',
         title1: isSpanish ? '¿En qué podemos' : 'How can we',
         title2: isSpanish ? 'ayudarte?' : 'help?',
-        subtitle: isSpanish ? '¿Tienes alguna pregunta sobre certificaciones energéticas? Nuestro equipo está aquí para ayudarte.' : 'Have a question about BER assessments? Our team is here to provide the support you need.',
+        subtitle: isSpanish
+            ? '¿Tienes alguna pregunta sobre certificaciones energéticas? Nuestro equipo está aquí para ayudarte.'
+            : isEngland
+                ? 'Have a question about EPC assessments? Our team is here to provide the support you need.'
+                : 'Have a question about BER assessments? Our team is here to provide the support you need.',
         ourDetails: isSpanish ? 'Nuestros Datos' : 'Our details',
         emailUs: isSpanish ? 'Escríbenos' : 'Email Us',
         website: isSpanish ? 'Sitio Web' : 'Website',
@@ -78,7 +87,7 @@ const Contact = () => {
         semiDetached: isSpanish ? 'Casa Pareada' : 'Semi-Detached',
         detached: isSpanish ? 'Casa Independiente' : 'Detached',
         bungalow: isSpanish ? 'Chalet' : 'Bungalow',
-        purposeLabel: isSpanish ? 'Propósito del Certificado' : 'Purpose of BER',
+        purposeLabel: isSpanish ? 'Propósito del Certificado' : isEngland ? 'Purpose of EPC' : 'Purpose of BER',
         selectPurpose: isSpanish ? 'Seleccionar Propósito' : 'Select Purpose',
         mortgage: isSpanish ? 'Hipoteca/Banco' : 'Mortgage/Bank',
         selling: isSpanish ? 'Venta' : 'Selling',

@@ -26,6 +26,7 @@ const NewsPage = () => {
     const [loading, setLoading] = useState(true);
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
+    const isEngland = tenant === 'england';
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
     const { content: cms } = usePageContent('news');
@@ -96,6 +97,26 @@ const NewsPage = () => {
         toastSuccess: 'Subscrição confirmada.',
         toastError: 'Verifique a sua ligação ou email.',
         locale: 'pt-PT' as const,
+    } : isEngland ? {
+        seoTitle: 'News',
+        seoDesc: 'Stay informed with the latest energy updates, grants, and industry news from EPC Cert.',
+        loading: 'Loading latest news...',
+        comingSoonH: 'Coming Soon',
+        comingSoonP: "We're currently preparing the latest updates on energy grants and sustainability. Check back shortly for fresh content.",
+        returnHome: 'Return Home',
+        heading: 'News & Updates',
+        subheading: 'Latest from EPC Cert on Energy, Grants and community',
+        noArticles: 'No articles found in this category.',
+        viewAllNews: 'View All News',
+        activeOffersH: 'Active Retrofit Offers',
+        activeOffersP: 'Check out the latest grants and offers.',
+        viewOffers: 'View Offers',
+        newsletterH: 'Stay Updated',
+        newsletterP: 'Subscribe to receive news, energy grants, and technical guides.',
+        emailPlaceholder: 'EMAIL ADDRESS',
+        sending: 'SENDING...',
+        subscribe: 'Subscribe',
+        locale: 'en-GB' as const,
     } : {
         seoTitle: 'News',
         seoDesc: 'Stay informed with the latest energy updates, grants, and industry news from The Berman.',

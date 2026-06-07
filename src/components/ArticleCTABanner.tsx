@@ -1,14 +1,18 @@
 import { Link } from 'react-router-dom';
+import { getTenantFromDomain } from '../lib/tenant';
 
-const ArticleCTABanner = () => (
+const ArticleCTABanner = () => {
+    const isEngland = getTenantFromDomain() === 'england';
+    const certName = isEngland ? 'EPC' : 'BER';
+    return (
     <section className="mt-20 py-20 bg-gray-50 border-t border-gray-100">
         <div className="container mx-auto px-6 max-w-4xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 <div className="group">
                     <Link to="/get-quote" className="block">
-                        <span className="text-[10px] font-black text-[#007F00] uppercase tracking-[0.2em] block mb-4">BER Quotes</span>
-                        <h3 className="text-xl font-bold group-hover:underline decoration-1 underline-offset-4">Secure Your BER Quote Today – It's Fast and Easy</h3>
-                        <p className="text-gray-500 text-sm mt-3 leading-relaxed">Getting your BER quote is quick, easy, and tailored to your domestic or commercial property. Our nationwide team is here to help you today.</p>
+                        <span className="text-[10px] font-black text-[#007F00] uppercase tracking-[0.2em] block mb-4">{certName} Quotes</span>
+                        <h3 className="text-xl font-bold group-hover:underline decoration-1 underline-offset-4">Secure Your {certName} Quote Today – It's Fast and Easy</h3>
+                        <p className="text-gray-500 text-sm mt-3 leading-relaxed">Getting your {certName} quote is quick, easy, and tailored to your domestic or commercial property. Our nationwide team is here to help you today.</p>
                     </Link>
                 </div>
                 <div className="group">
@@ -21,6 +25,7 @@ const ArticleCTABanner = () => (
             </div>
         </div>
     </section>
-);
+    );
+};
 
 export default ArticleCTABanner;

@@ -28,6 +28,8 @@ const UpdatePassword = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const isSpanish = getTenantFromDomain() === 'spain';
+    const isEngland = getTenantFromDomain() === 'england';
+    const brandName = isEngland ? 'EPC Cert' : 'The Berman';
 
     // Give Supabase a moment to process the hash if user is not immediately available
     useEffect(() => {
@@ -199,9 +201,9 @@ const UpdatePassword = () => {
                 <div className="relative z-10">
                     <Link to="/" className="flex items-center gap-3 group w-fit">
                         <div className="relative">
-                            <img src="/logo.svg" alt="The Berman Logo" className="h-12 w-auto brightness-0 invert" />
+                            <img src="/logo.svg" alt={`${brandName} Logo`} className="h-12 w-auto brightness-0 invert" />
                         </div>
-                        <span className="text-2xl font-serif font-bold text-white">The Berman</span>
+                        <span className="text-2xl font-serif font-bold text-white">{brandName}</span>
                     </Link>
 
                     <div className="mt-20">

@@ -87,6 +87,8 @@ const useDebounce = (callback: Function, delay: number) => {
 const BusinessDashboard = () => {
     const { user, profile, signOut } = useAuth();
     const { isSpanish } = useTranslation();
+    const isEngland = getTenantFromDomain() === 'england';
+    const brandName = isEngland ? 'EPC Cert' : 'The Berman';
     const navigate = useNavigate();
     const [listing, setListing] = useState<CatalogueListing | null>(null);
     const [loading, setLoading] = useState(true);
@@ -412,7 +414,7 @@ const BusinessDashboard = () => {
                 <header className="bg-white border-b border-gray-200 sticky top-0 z-[9999] shadow-sm">
                     <div className="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
                         <Link to="/" className="flex-shrink-0">
-                            <img src="/logo.svg" alt="The Berman Logo" className="h-9 w-auto" />
+                            <img src="/logo.svg" alt={`${brandName} Logo`} className="h-9 w-auto" />
                         </Link>
                         <nav className="hidden md:flex items-center gap-6">
                             <Link to="/" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">{isSpanish ? 'Inicio' : 'Home'}</Link>
@@ -505,7 +507,7 @@ const BusinessDashboard = () => {
                 <div className="container mx-auto px-6 h-20 flex justify-between items-center">
                     <div className="flex items-center gap-4 md:gap-8">
                         <Link to="/" className="hover:opacity-80 transition-opacity shrink-0">
-                            <img src="/logo.svg" alt="The Berman" className="h-16 w-auto relative z-10" />
+                            <img src="/logo.svg" alt={brandName} className="h-16 w-auto relative z-10" />
                         </Link>
 
                         <div className="h-10 w-px bg-white/10 hidden lg:block"></div>

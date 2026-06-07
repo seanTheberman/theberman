@@ -1,8 +1,13 @@
 import { useState } from 'react';
 import { ChevronDown, Star, CheckCircle2, Info } from 'lucide-react';
+import { getTenantFromDomain } from '../lib/tenant';
 
 const HireAgentDetails = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const isEngland = getTenantFromDomain() === 'england';
+    const certName = isEngland ? 'EPC' : 'BER';
+    const assessorLabel = isEngland ? 'assessor' : 'BER assessor';
+    const grantBody = isEngland ? 'grant' : 'SEAI grant';
 
     return (
         <div className="mb-8 overflow-hidden rounded-3xl border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-md">
@@ -35,7 +40,7 @@ const HireAgentDetails = () => {
             >
                 <div className="p-6 md:p-8 bg-white border-t border-gray-100 space-y-6">
                     <p className="text-sm md:text-base font-medium text-gray-600 leading-relaxed">
-                        Your energy agent will organise and work directly with a BER assessor to ensure all advice and upgrade recommendations are technically accurate and based on your existing BER certificate and advisory report.
+                        Your energy agent will organise and work directly with an {assessorLabel} to ensure all advice and upgrade recommendations are technically accurate and based on your existing {certName} certificate and advisory report.
                     </p>
 
                     <div className="space-y-4">
@@ -43,10 +48,10 @@ const HireAgentDetails = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {[
                                 "Identify the most cost-effective and efficient upgrade options",
-                                "Advise on which measures deliver the best BER improvement",
+                                `Advise on which measures deliver the best ${certName} improvement`,
                                 "Source and compare quotes from suitable contractors",
                                 "Help negotiate and select the best-value options",
-                                "Assist with SEAI grant guidance and paperwork",
+                                `Assist with ${grantBody} guidance and paperwork`,
                                 "Help avoid unnecessary, overpriced, or poorly targeted works"
                             ].map((text, i) => (
                                 <div key={i} className="flex gap-3">
@@ -70,7 +75,7 @@ const HireAgentDetails = () => {
                             <Info size={16} />
                         </div>
                         <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wide leading-relaxed">
-                            Energy agents do not carry out works and are independent from contractors. BER assessors provide technical input and certification.
+                            Energy agents do not carry out works and are independent from contractors. {certName} assessors provide technical input and certification.
                         </p>
                     </div>
                 </div>

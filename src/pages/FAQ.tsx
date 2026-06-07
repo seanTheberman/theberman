@@ -21,6 +21,7 @@ const FAQ = () => {
     const [activeId, setActiveId] = useState('');
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
+    const isEngland = tenant === 'england';
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
     const tenantEmail = getTenantEmail(tenant);
@@ -64,6 +65,19 @@ const FAQ = () => {
         sidebarLabel: 'FAQ Energética',
         consultantsH: 'Especialistas em Certificação Energética em Portugal',
         consultantsP: 'Mais de 10 000 clientes satisfeitos.',
+        emailLine: `Email: ${tenantEmail}`,
+    } : isEngland ? {
+        loading: 'Loading FAQ...',
+        comingSoonH: 'FAQ Coming Soon',
+        comingSoonP: "We're currently preparing our frequently asked questions. Check back shortly.",
+        seoTitle: 'Frequently Asked Questions',
+        seoDesc: 'Find answers to common questions about EPC assessments, energy ratings, costs, and home energy upgrades in England.',
+        needHelp: 'Need immediate help?',
+        emailUs: `Email ${tenantEmail}`,
+        getQuote: 'Get a Quote Now',
+        sidebarLabel: 'EPC FAQ',
+        consultantsH: "England's Leading EPC Consultants",
+        consultantsP: 'Trusted by 10,000+ homeowners across the country.',
         emailLine: `Email: ${tenantEmail}`,
     } : {
         loading: 'Loading FAQ...',

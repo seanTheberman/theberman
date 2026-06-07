@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
+import { getTenantFromDomain } from '../lib/tenant';
 
 export interface NavItem {
     id: string;
@@ -44,6 +45,8 @@ const DashboardLayout = ({
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [desktopExpanded, setDesktopExpanded] = useState(true);
+    const isEngland = getTenantFromDomain() === 'england';
+    const brandName = isEngland ? 'EPC Cert' : 'The Berman';
 
     const handleSignOut = async () => {
         await signOut();
@@ -77,7 +80,7 @@ const DashboardLayout = ({
                                 Certificado Energético.EU
                             </span>
                         ) : (
-                            <img src="/logo.svg" alt="The Berman" className="h-7 w-auto" />
+                            <img src="/logo.svg" alt={brandName} className="h-7 w-auto" />
                         )}
                     </Link>
                     <div className={`flex items-center justify-center ${desktopExpanded ? 'md:hidden' : 'md:flex'} lg:hidden`}>
@@ -86,7 +89,7 @@ const DashboardLayout = ({
                                 Certificado Energético.EU
                             </span>
                         ) : (
-                            <img src="/logo.svg" alt="The Berman" className="h-7 w-auto" />
+                            <img src="/logo.svg" alt={brandName} className="h-7 w-auto" />
                         )}
                     </div>
                     {/* Close on mobile */}

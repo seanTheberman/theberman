@@ -6,6 +6,16 @@ const TENANT_LANG: Record<string, string> = {
   portugal: 'pt',
 };
 
+const ENGLAND_OVERRIDES: Record<string, string> = {
+  ber_cert: 'EPC Certificate',
+  ber_assessment: 'EPC Assessment',
+  ber_rating: 'EPC Rating',
+  book_assessment: 'Book Your EPC Assessment',
+  ber_purpose: 'Purpose of EPC',
+  hero_title: 'Get Your EPC Certificate Fast',
+  step_3_desc: 'Choose your assessor and get your EPC certificate.',
+};
+
 const TRANSLATIONS: Record<string, Record<string, string>> = {
   en: {
     // Brand / Product
@@ -723,8 +733,12 @@ export function useTranslation() {
   const lang = TENANT_LANG[tenant] || 'en';
   const dict = TRANSLATIONS[lang];
   const optDict = OPTION_LABELS[lang] || {};
+  const isEngland = tenant === 'england';
 
   const t = (key: string, fallback?: string): string => {
+    if (isEngland && ENGLAND_OVERRIDES[key]) {
+      return ENGLAND_OVERRIDES[key];
+    }
     return dict[key] ?? fallback ?? key;
   };
 
