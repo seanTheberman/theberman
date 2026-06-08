@@ -1245,19 +1245,23 @@ const Admin = () => {
                 const websiteUrl = getTenantWebsiteUrl(tenantForEmail).replace(/\/$/, '');
                 const catalogueFormUrl = `${websiteUrl}/business-onboarding?userId=${targetUser.id}`;
                 
-                supabase.functions.invoke('send-onboarding-link', {
-                    body: {
-                        fullName: targetUser.full_name,
-                        email: targetUser.email,
-                        onboardingUrl: catalogueFormUrl,
-                        role: 'business',
-                        tenant: tenantForEmail,
-                    }
-                }).then(({ data: emailData }) => {
+                try {
+                    const { data: emailData } = await supabase.functions.invoke('send-onboarding-link', {
+                        body: {
+                            fullName: targetUser.full_name,
+                            email: targetUser.email,
+                            onboardingUrl: catalogueFormUrl,
+                            role: 'business',
+                            tenant: tenantForEmail,
+                        }
+                    });
                     if (emailData?.success) {
                         toast.success('Catalogue form invitation sent successfully!');
                     }
-                }).catch(err => console.error('Failed to send catalogue form invitation:', err));
+                } catch (err: any) {
+                    console.error('Failed to send catalogue form invitation:', err);
+                    toast.error('Failed to send catalogue form invitation');
+                }
             }
 
             fetchUsers();
@@ -1359,7 +1363,7 @@ const Admin = () => {
             const { error: updateError } = await supabase.from('assessments').update({ status: 'pending_quote' }).eq('id', selectedAssessment.id);
             if (updateError) throw updateError;
 
-            supabase.functions.invoke('send-quote-notification', { body: { assessmentId: selectedAssessment.id, tenant: selectedAssessment.tenant || selectedTenant } })
+            await supabase.functions.invoke('send-quote-notification', { body: { assessmentId: selectedAssessment.id, tenant: selectedAssessment.tenant || selectedTenant } })
                 .catch(err => console.error('Failed to trigger homeowner notification:', err));
 
             await logAudit('generate_quote', 'assessment', selectedAssessment.id, { quote_id: quote.id, price: quoteData.price });
@@ -1385,7 +1389,7 @@ const Admin = () => {
 
             const assessmentTenant = selectedAssessment.tenant || selectedTenant;
             const brandName = assessmentTenant === 'england' ? 'EPC Cert' : assessmentTenant === 'spain' ? 'Certificado Energético' : assessmentTenant === 'france' ? 'DPE France' : assessmentTenant === 'portugal' ? 'Certificado Energético' : 'The Berman';
-            supabase.functions.invoke('send-job-status-notification', {
+            await supabase.functions.invoke('send-job-status-notification', {
                 body: { assessmentId: selectedAssessment.id, status: isRescheduled ? 'rescheduled' : 'scheduled', details: { inspectionDate: selectedDate, contractorName: `${brandName} Team` }, tenant: assessmentTenant }
             }).catch(err => console.error('Failed to trigger status notification:', err));
 
@@ -1410,7 +1414,7 @@ const Admin = () => {
 
             const assessmentTenant2 = selectedAssessment.tenant || selectedTenant;
             const brandName2 = assessmentTenant2 === 'england' ? 'EPC Cert' : assessmentTenant2 === 'spain' ? 'Certificado Energético' : assessmentTenant2 === 'france' ? 'DPE France' : assessmentTenant2 === 'portugal' ? 'Certificado Energético' : 'The Berman';
-            supabase.functions.invoke('send-job-status-notification', {
+            await supabase.functions.invoke('send-job-status-notification', {
                 body: { assessmentId: selectedAssessment.id, status: 'completed', details: { certificateUrl: certUrl, contractorName: `${brandName2} Team` }, tenant: assessmentTenant2 }
             }).catch(err => console.error('Failed to trigger status notification:', err));
 
