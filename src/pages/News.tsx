@@ -116,6 +116,8 @@ const NewsPage = () => {
         emailPlaceholder: 'EMAIL ADDRESS',
         sending: 'SENDING...',
         subscribe: 'Subscribe',
+        toastSuccess: 'Subscription confirmed.',
+        toastError: 'Check your internet or email.',
         locale: 'en-GB' as const,
     } : {
         seoTitle: 'News',
