@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { CheckCircle2, Crown, Zap, Building2 } from 'lucide-react';
@@ -18,8 +18,12 @@ const MembershipPayment = () => {
     const [finalizing, setFinalizing] = useState(false);
     const [registrationType, setRegistrationType] = useState<'assessor' | 'business' | null>(null);
     const [priceData, setPriceData] = useState<{ subtotal: number, vat: number, total: number } | null>(null);
+    const hasFreeRegistered = useRef(false);
+    const hasPaymentSuccess = useRef(false);
 
     const handleFreeAssessorRegistration = async (registrationData: any) => {
+        if (hasFreeRegistered.current) return;
+        hasFreeRegistered.current = true;
         setFinalizing(true);
         try {
             const { error } = await supabase.functions.invoke('confirm-assessor-registration', {
@@ -35,6 +39,7 @@ const MembershipPayment = () => {
             const err = error as Error;
             console.error('Free Registration Error:', err);
             toast.error('Failed to complete free registration. Please contact support.');
+            hasFreeRegistered.current = false;
         } finally {
             setFinalizing(false);
         }
@@ -149,6 +154,8 @@ const MembershipPayment = () => {
     }, []);
 
     const handlePaymentSuccess = async (paymentIntentId: string) => {
+        if (hasPaymentSuccess.current) return;
+        hasPaymentSuccess.current = true;
         setFinalizing(true);
         try {
             if (registrationType === 'assessor') {
