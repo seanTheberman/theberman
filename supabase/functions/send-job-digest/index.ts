@@ -176,7 +176,8 @@ Deno.serve(async (req: Request) => {
                 .select('id, county, town, property_type, job_type, ber_purpose, created_at, scheduled_date')
                 .eq('tenant', tenant)
                 .eq('status', 'live')
-                .is('completed_at', null);
+                .is('completed_at', null)
+                .is('deleted_at', null);
 
             if (jobsError || !liveJobs || liveJobs.length === 0) {
                 console.log(`[send-job-digest] No live jobs for tenant ${tenant}.`);

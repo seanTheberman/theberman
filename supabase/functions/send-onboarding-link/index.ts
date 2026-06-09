@@ -138,6 +138,7 @@ Deno.serve(async (req: Request) => {
 
             // Use the magic link if provided, otherwise fallback to business-onboarding page
             const actionUrl = onboardingUrl || `${websiteUrl}/business-onboarding`;
+            const loginUrl = `${websiteUrl}/login`;
 
             if (isSpanish) {
                 html = `
@@ -145,7 +146,7 @@ Deno.serve(async (req: Request) => {
                     <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Bienvenido a Certificado Energético</h2>
                     <p style="font-size: 16px; color: #333;">Hola <strong>${fullName}</strong>,</p>
                     <p style="font-size: 15px; color: #555; line-height: 1.6;">
-                        Bienvenido a Certificado Energético, haz clic en el enlace de abajo para completar el formulario de registro
+                        Bienvenido a Certificado Energético. Haz clic en el enlace de abajo para completar el formulario de registro
                         y ser publicado en nuestro catálogo de certificados energéticos.
                         Esperamos construir una relación sólida contigo.
                     </p>
@@ -156,8 +157,17 @@ Deno.serve(async (req: Request) => {
                         </a>
                     </div>
 
+                    <div style="background-color: #f1f8e9; padding: 22px; border-radius: 8px; border: 1px solid #c5e1a5; margin: 30px 0;">
+                        <h3 style="margin-top: 0; font-size: 14px; color: #2e7d32; text-transform: uppercase; letter-spacing: 0.5px;">Tus Datos de Acceso</h3>
+                        <p style="margin: 10px 0; font-size: 15px; color: #333;"><strong>Email:</strong> ${email}</p>
+                        ${password ? `<p style="margin: 10px 0; font-size: 15px; color: #333;"><strong>Contraseña:</strong> <code style="background:#fff; padding:4px 8px; border-radius:4px; border:1px solid #ddd; font-size:15px;">${password}</code></p>` : ''}
+                        <p style="margin: 15px 0 0 0; font-size: 13px; color: #555; line-height: 1.5;">
+                            <strong>Importante:</strong> Usa estos datos para iniciar sesión en <a href="${loginUrl}" style="color: #2e7d32;">${loginUrl}</a>
+                        </p>
+                    </div>
+
                     <p style="color: #888; font-size: 13px; text-align: center;">
-                        Enlace Directo:<br>
+                        Enlace Directo al Formulario:<br>
                         <a href="${actionUrl}" style="color: #2e7d32; text-decoration: none; font-size: 11px; word-break: break-all;">${actionUrl}</a>
                     </p>
 
@@ -177,7 +187,7 @@ Deno.serve(async (req: Request) => {
                     <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Welcome to ${isEngland ? 'EPC Cert' : 'The Berman'}</h2>
                     <p style="font-size: 16px; color: #333;">Hello <strong>${fullName}</strong>,</p>
                     <p style="font-size: 15px; color: #555; line-height: 1.6;">
-                        Welcome to ${isEngland ? 'EPC Cert' : 'the Berman'}, click the link below to finish the registration form and be published in our ${isEngland ? 'EPC' : 'home energy'} catalogue.
+                        Welcome to ${isEngland ? 'EPC Cert' : 'the Berman'}. Click the link below to finish the registration form and be published in our ${isEngland ? 'EPC' : 'home energy'} catalogue.
                         We look forward to building a strong relationship with you.
                     </p>
 
@@ -187,8 +197,17 @@ Deno.serve(async (req: Request) => {
                         </a>
                     </div>
 
+                    <div style="background-color: #f1f8e9; padding: 22px; border-radius: 8px; border: 1px solid #c5e1a5; margin: 30px 0;">
+                        <h3 style="margin-top: 0; font-size: 14px; color: #2e7d32; text-transform: uppercase; letter-spacing: 0.5px;">Your Login Details</h3>
+                        <p style="margin: 10px 0; font-size: 15px; color: #333;"><strong>Email:</strong> ${email}</p>
+                        ${password ? `<p style="margin: 10px 0; font-size: 15px; color: #333;"><strong>Password:</strong> <code style="background:#fff; padding:4px 8px; border-radius:4px; border:1px solid #ddd; font-size:15px;">${password}</code></p>` : ''}
+                        <p style="margin: 15px 0 0 0; font-size: 13px; color: #555; line-height: 1.5;">
+                            <strong>Important:</strong> Use these credentials to log in at <a href="${loginUrl}" style="color: #2e7d32;">${loginUrl}</a>
+                        </p>
+                    </div>
+
                     <p style="color: #888; font-size: 13px; text-align: center;">
-                        Direct Link:<br>
+                        Direct Form Link:<br>
                         <a href="${actionUrl}" style="color: #2e7d32; text-decoration: none; font-size: 11px; word-break: break-all;">${actionUrl}</a>
                     </p>
 

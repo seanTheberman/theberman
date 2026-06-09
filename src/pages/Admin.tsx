@@ -900,6 +900,7 @@ const Admin = () => {
                 // Use the polished credentials email for assessors, onboarding email for businesses
                 const isAssessorRole = newUserRole === 'contractor';
                 const emailFn = isAssessorRole ? 'send-assessor-credentials' : 'send-onboarding-link';
+                const websiteUrl = getTenantWebsiteUrl(selectedTenant).replace(/\/$/, '');
                 const emailBody = isAssessorRole
                     ? {
                         fullName: newUserFormData.fullName,
@@ -913,7 +914,7 @@ const Admin = () => {
                         email: newUserFormData.email,
                         password: fnData.password,
                         town: newUserFormData.town || '',
-                        onboardingUrl: fnData.loginUrl || fnData.magicLink,
+                        onboardingUrl: `${websiteUrl}/business-onboarding?userId=${fnData.user.id}`,
                         role: newUserRole,
                         userId: fnData.user.id,
                         tenant: selectedTenant,
@@ -1246,17 +1247,24 @@ const Admin = () => {
                 const catalogueFormUrl = `${websiteUrl}/business-onboarding?userId=${targetUser.id}`;
                 
                 try {
+                    // Reset password so we can include it in the email
+                    const { data: resetData, error: resetError } = await supabase.functions.invoke('reset-user-password', {
+                        body: { userId: targetUser.id }
+                    });
+                    if (resetError) throw resetError;
+                    
                     const { data: emailData } = await supabase.functions.invoke('send-onboarding-link', {
                         body: {
                             fullName: targetUser.full_name,
                             email: targetUser.email,
+                            password: resetData?.password,
                             onboardingUrl: catalogueFormUrl,
                             role: 'business',
                             tenant: tenantForEmail,
                         }
                     });
                     if (emailData?.success) {
-                        toast.success('Catalogue form invitation sent successfully!');
+                        toast.success('Catalogue form invitation sent with login credentials!');
                     }
                 } catch (err: any) {
                     console.error('Failed to send catalogue form invitation:', err);
