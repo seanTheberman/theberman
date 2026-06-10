@@ -218,24 +218,29 @@ export const JobsView: React.FC<Props> = ({
     return (
         <div className="bg-white flex flex-col min-h-[600px]">
             {/* Header Banner - matching assessor panel style */}
-            <div className="bg-[#c8e6c9] py-6 px-6 text-center relative">
-                <div className="absolute top-4 right-4">
-                    {onCreateJob && (
-                        <button
-                            onClick={onCreateJob}
-                            className="flex items-center gap-2 bg-[#007F00] text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-sm"
-                        >
-                            <Plus size={16} />
-                            Create Job
-                        </button>
-                    )}
+            <div className="bg-[#c8e6c9] py-6 px-6 text-center">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-2">
+                    <div className="flex-1" />
+                    <div className="flex-1 text-center">
+                        <h2 className="text-2xl font-bold italic text-gray-900 mb-1">Jobs Management</h2>
+                        <p className="text-sm italic text-gray-800">
+                            Manage and track all assessment jobs, quotes, and contractor activity.
+                        </p>
+                    </div>
+                    <div className="flex-1 flex justify-end">
+                        {onCreateJob && (
+                            <button
+                                onClick={onCreateJob}
+                                className="flex items-center gap-2 bg-[#007F00] text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-sm"
+                            >
+                                <Plus size={16} />
+                                Create Job
+                            </button>
+                        )}
+                    </div>
                 </div>
-                <h2 className="text-2xl font-bold italic text-gray-900 mb-1">Jobs Management</h2>
-                <p className="text-sm italic text-gray-800">
-                    Manage and track all assessment jobs, quotes, and contractor activity.
-                </p>
                 {/* Quick Stats Row */}
-                <div className="flex items-center justify-center gap-6 mt-4">
+                <div className="flex items-center justify-center gap-6 mt-4 flex-wrap">
                     <div className="text-center">
                         <div className="text-xl font-black text-gray-900">{stats.total}</div>
                         <div className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Total</div>
