@@ -198,12 +198,12 @@ export const JobsView: React.FC<Props> = ({
         totalQuotes: assessments.reduce((c, a) => c + (a.quotes?.length || 0), 0),
     }), [liveJobs, expiredJobs, noBuyerResponseJobs, noAssessorQuotesJobs, assessments]);
 
-    const tabs: { id: JobTab; label: string; count: number; color: string; icon: React.ReactNode }[] = [
-        { id: 'live', label: 'Live Jobs', count: stats.live, color: 'bg-green-500', icon: <Briefcase size={15} /> },
-        { id: 'expired', label: 'Expired (7d Idle)', count: stats.expired, color: 'bg-gray-500', icon: <Clock size={15} /> },
-        { id: 'no_buyer_response', label: 'No Response from Buyer', count: stats.noBuyerResponse, color: 'bg-amber-500', icon: <AlertTriangle size={15} /> },
-        { id: 'no_assessor_quotes', label: 'No Quotes from Assessors', count: stats.noAssessorQuotes, color: 'bg-red-500', icon: <XCircle size={15} /> },
-        { id: 'all', label: 'All Jobs', count: stats.total, color: 'bg-blue-500', icon: <FileText size={15} /> },
+    const tabs: { id: JobTab; label: string; shortLabel: string; count: number; color: string; icon: React.ReactNode }[] = [
+        { id: 'live', label: 'Live Jobs', shortLabel: 'Live', count: stats.live, color: 'bg-green-500', icon: <Briefcase size={15} /> },
+        { id: 'expired', label: 'Expired (7d Idle)', shortLabel: 'Expired', count: stats.expired, color: 'bg-gray-500', icon: <Clock size={15} /> },
+        { id: 'no_buyer_response', label: 'No Response from Buyer', shortLabel: 'No Buyer', count: stats.noBuyerResponse, color: 'bg-amber-500', icon: <AlertTriangle size={15} /> },
+        { id: 'no_assessor_quotes', label: 'No Quotes from Assessors', shortLabel: 'No Quotes', count: stats.noAssessorQuotes, color: 'bg-red-500', icon: <XCircle size={15} /> },
+        { id: 'all', label: 'All Jobs', shortLabel: 'All', count: stats.total, color: 'bg-blue-500', icon: <FileText size={15} /> },
     ];
 
     if (loading) {
@@ -269,21 +269,22 @@ export const JobsView: React.FC<Props> = ({
             </div>
 
             {/* Tab Navigation */}
-            <div className="border-b border-gray-200 bg-white overflow-x-auto">
-                <div className="flex">
+            <div className="border-b border-gray-200 bg-white">
+                <div className="flex flex-wrap">
                     {tabs.map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-2 px-5 py-3.5 text-[11px] font-black uppercase tracking-[0.08em] border-b-2 transition-all whitespace-nowrap ${
+                            className={`flex items-center gap-1.5 px-3 py-2.5 text-[10px] font-black uppercase tracking-[0.08em] border-b-2 transition-all ${
                                 activeTab === tab.id
                                     ? 'border-[#007F00] text-[#007F00] bg-green-50/50'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                             }`}
                         >
                             {tab.icon}
-                            {tab.label}
-                            <span className={`ml-1 px-2 py-0.5 rounded-full text-[10px] font-black text-white ${tab.color}`}>
+                            <span className="hidden sm:inline">{tab.label}</span>
+                            <span className="sm:hidden">{tab.shortLabel}</span>
+                            <span className={`ml-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-black text-white ${tab.color}`}>
                                 {tab.count}
                             </span>
                         </button>
@@ -356,13 +357,13 @@ export const JobsView: React.FC<Props> = ({
                                         <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Date<br/><span className="font-bold text-[10px] text-gray-500">Posted</span></th>
                                         <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Status</th>
                                         <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Customer</th>
-                                        <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Town</th>
-                                        <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">County</th>
-                                        <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Type</th>
+                                        <th className="text-left py-3 px-3 font-bold text-gray-800">Town</th>
+                                        <th className="text-left py-3 px-3 font-bold text-gray-800">County</th>
+                                        <th className="text-left py-3 px-3 font-bold text-gray-800">Type</th>
                                         <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Sq. Mt.</th>
-                                        <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Beds</th>
-                                        <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Purpose</th>
-                                        <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Quotes</th>
+                                        <th className="text-left py-3 px-3 font-bold text-gray-800">Beds</th>
+                                        <th className="text-left py-3 px-3 font-bold text-gray-800">Purpose</th>
+                                        <th className="text-left py-3 px-3 font-bold text-gray-800">Quotes</th>
                                         <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Last<br/><span className="font-bold text-[10px] text-gray-500">Activity</span></th>
                                         <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Idle<br/><span className="font-bold text-[10px] text-gray-500">Days</span></th>
                                         <th className="py-3 px-3 font-bold text-gray-800 whitespace-nowrap text-center">Actions</th>
