@@ -36,6 +36,8 @@ import { MessageModal } from '../components/admin/modals/MessageModal';
 import { ScheduleModal } from '../components/admin/modals/ScheduleModal';
 import { CompleteModal } from '../components/admin/modals/CompleteModal';
 import { AssessmentDetailModal } from '../components/admin/modals/AssessmentDetailModal';
+import { CreateJobModal } from '../components/admin/modals/CreateJobModal';
+import { EditJobModal } from '../components/admin/modals/EditJobModal';
 import { AssignAssessorModal } from '../components/admin/modals/AssignAssessorModal';
 import { SponsorModal } from '../components/admin/modals/SponsorModal';
 import { DeleteConfirmModal } from '../components/admin/modals/DeleteConfirmModal';
@@ -142,6 +144,8 @@ const Admin = () => {
     const [showCompleteModal, setShowCompleteModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showAssessmentDetailModal, setShowAssessmentDetailModal] = useState(false);
+    const [showCreateJobModal, setShowCreateJobModal] = useState(false);
+    const [showEditJobModal, setShowEditJobModal] = useState(false);
     const [showSponsorModal, setShowSponsorModal] = useState(false);
     const [showSuspendModal, setShowSuspendModal] = useState(false);
     const [showAddUserModal, setShowAddUserModal] = useState(false);
@@ -2158,6 +2162,7 @@ const Admin = () => {
                             onAssessmentClick={(a) => { setSelectedAssessment(a); setShowAssessmentDetailModal(true); }}
                             onExpireJob={handleExpireClick}
                             onDeleteJob={(id) => handleDeleteClick(id, 'assessment')}
+                            onCreateJob={() => setShowCreateJobModal(true)}
                             loading={loading}
                         />
                     ) : view === 'homeowners' || view === 'assessors' ? (
@@ -2329,6 +2334,22 @@ const Admin = () => {
                     onSchedule={() => { setShowScheduleModal(true); setShowAssessmentDetailModal(false); }}
                     onComplete={() => { setShowCompleteModal(true); setShowAssessmentDetailModal(false); }}
                     onMessage={(content) => { setMessageContent(content); setShowMessageModal(true); setShowAssessmentDetailModal(false); }}
+                    onEdit={() => { setShowEditJobModal(true); }}
+                />
+            )}
+
+            {showCreateJobModal && (
+                <CreateJobModal
+                    onClose={() => setShowCreateJobModal(false)}
+                    onJobCreated={() => { fetchAssessments(); }}
+                />
+            )}
+
+            {showEditJobModal && selectedAssessment && (
+                <EditJobModal
+                    assessment={selectedAssessment}
+                    onClose={() => setShowEditJobModal(false)}
+                    onSaved={() => { fetchAssessments(); setShowAssessmentDetailModal(false); }}
                 />
             )}
 

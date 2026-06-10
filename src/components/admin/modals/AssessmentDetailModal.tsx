@@ -1,4 +1,4 @@
-import { X, Home, Calendar, Send, User, Building, Euro, Clock } from 'lucide-react';
+import { X, Home, Calendar, Send, User, Building, Euro, Clock, Edit } from 'lucide-react';
 import type { Assessment } from '../../../types/admin';
 import { getStatusColor } from '../adminUtils';
 
@@ -11,10 +11,11 @@ interface Props {
     onSchedule: () => void;
     onComplete: () => void;
     onMessage: (content: string) => void;
+    onEdit?: () => void;
 }
 
 export const AssessmentDetailModal = ({
-    assessment, onClose, onGenerateQuote, onResendNotifications, onAssignAssessor, onSchedule, onComplete, onMessage,
+    assessment, onClose, onGenerateQuote, onResendNotifications, onAssignAssessor, onSchedule, onComplete, onMessage, onEdit,
 }: Props) => (
     <div
         className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
@@ -247,6 +248,15 @@ export const AssessmentDetailModal = ({
                     <div className="pt-6 border-t border-gray-100">
                         <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Required Actions</h4>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            {onEdit && (
+                                <button
+                                    onClick={onEdit}
+                                    className="bg-blue-600 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-sm flex items-center justify-center gap-2"
+                                >
+                                    <Edit size={18} />
+                                    Edit Job Details
+                                </button>
+                            )}
                             {assessment.status === 'submitted' && (
                                 <button
                                     onClick={onGenerateQuote}

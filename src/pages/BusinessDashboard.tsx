@@ -18,6 +18,7 @@ import {
     Menu,
     X,
     AlertCircle,
+    Briefcase,
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from '../hooks/useTranslation';
@@ -25,6 +26,7 @@ import { getTenantEmail, getTenantFromDomain } from '../lib/tenant';
 import toast from 'react-hot-toast';
 import { geocodeAddress } from '../lib/geocoding';
 import ReferralProgram from '../components/business/ReferralProgram';
+import { BusinessPostJob } from '../components/business/BusinessPostJob';
 import { Gift } from 'lucide-react';
 
 const IRISH_COUNTIES = [
@@ -626,6 +628,12 @@ const BusinessDashboard = () => {
                             <MapPin size={14} /> {isSpanish ? 'Ubicaciones' : 'Locations'}
                         </button>
                         <button
+                            onClick={() => document.getElementById('post-job')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                            className="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-orange-600 hover:bg-orange-50 hover:text-orange-700 transition-all whitespace-nowrap bg-orange-50 border border-orange-100"
+                        >
+                            <Briefcase size={14} /> {isSpanish ? 'Publicar Trabajo' : 'Post a Job'}
+                        </button>
+                        <button
                             onClick={() => document.getElementById('referral-program')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                             className="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-purple-600 hover:bg-purple-50 hover:text-purple-700 transition-all whitespace-nowrap bg-purple-50 border border-purple-100"
                         >
@@ -783,6 +791,38 @@ const BusinessDashboard = () => {
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </section>
+
+                        {/* Section: Post a Job */}
+                        <section id="post-job" className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="px-10 py-8 border-b border-gray-100 bg-orange-50/50 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                                        <Briefcase size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">{isSpanish ? 'Publicar un Trabajo' : 'Post a Job'}</h3>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{isSpanish ? 'Registre un trabajo para un propietario de forma gratuita' : 'Register a job for a homeowner for free'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="p-10">
+                                {listing && (
+                                    <BusinessPostJob
+                                        businessUserId={user?.id || ''}
+                                        listingId={listing?.id || null}
+                                        businessName={(listing?.company_name || (profile as any)?.full_name || '') as string}
+                                        businessEmail={(listing?.email || user?.email || '') as string}
+                                        businessPhone={(listing?.phone || '') as string}
+                                        isSpanish={isSpanish}
+                                    />
+                                )}
+                                {!listing && (
+                                    <div className="text-center py-8 text-gray-500">
+                                        {isSpanish ? 'Complete su perfil de catálogo primero.' : 'Please complete your catalogue profile first.'}
+                                    </div>
+                                )}
                             </div>
                         </section>
 

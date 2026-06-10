@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Search, MapPin, Clock, FileText, ChevronDown, ChevronRight, X, Briefcase, AlertTriangle, XCircle, Eye, Trash2 } from 'lucide-react';
+import { Search, MapPin, Clock, FileText, ChevronDown, ChevronRight, X, Briefcase, AlertTriangle, XCircle, Eye, Trash2, Plus } from 'lucide-react';
 import { formatCurrency } from '../../../lib/tenant';
 import type { Assessment } from '../../../types/admin';
 
@@ -12,6 +12,7 @@ interface Props {
     onAssessmentClick: (assessment: Assessment) => void;
     onExpireJob?: (id: string) => void;
     onDeleteJob?: (id: string) => void;
+    onCreateJob?: () => void;
     loading?: boolean;
 }
 
@@ -95,6 +96,7 @@ export const JobsView: React.FC<Props> = ({
     onAssessmentClick,
     onExpireJob,
     onDeleteJob,
+    onCreateJob,
     loading = false
 }) => {
     const [activeTab, setActiveTab] = useState<JobTab>('live');
@@ -216,7 +218,18 @@ export const JobsView: React.FC<Props> = ({
     return (
         <div className="bg-white flex flex-col min-h-[600px]">
             {/* Header Banner - matching assessor panel style */}
-            <div className="bg-[#c8e6c9] py-6 px-6 text-center">
+            <div className="bg-[#c8e6c9] py-6 px-6 text-center relative">
+                <div className="absolute top-4 right-4">
+                    {onCreateJob && (
+                        <button
+                            onClick={onCreateJob}
+                            className="flex items-center gap-2 bg-[#007F00] text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-sm"
+                        >
+                            <Plus size={16} />
+                            Create Job
+                        </button>
+                    )}
+                </div>
                 <h2 className="text-2xl font-bold italic text-gray-900 mb-1">Jobs Management</h2>
                 <p className="text-sm italic text-gray-800">
                     Manage and track all assessment jobs, quotes, and contractor activity.

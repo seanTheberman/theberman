@@ -110,6 +110,15 @@ export interface Assessment {
     job_live_sms_sent?: boolean | null;
     job_live_notified_at?: string | null;
     tenant?: string;
+    payer_type?: 'business' | 'homeowner';
+    posted_by?: 'homeowner' | 'business' | 'admin';
+    building_type?: string;
+    floor_area?: string;
+    building_complexity?: string;
+    existing_docs?: string[];
+    assessment_purpose?: string;
+    heating_cooling_systems?: string[];
+    notes?: string;
 }
 
 export interface Sponsor {

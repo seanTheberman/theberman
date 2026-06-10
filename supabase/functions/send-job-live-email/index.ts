@@ -176,6 +176,14 @@ Deno.serve(async (req: Request) => {
             console.error(`[send-job-live-email] SMTP connection failed for tenant ${tenant}, SMS will still send:`, smtpErr?.message);
         }
 
+        // Fetch full assessment details for poster notification
+        const { data: fullAssessment } = await supabase
+            .from('assessments')
+            .select('posted_by, user_id, referred_by_listing_id, contact_name')
+            .eq('id', assessmentId)
+            .eq('tenant', tenant)
+            .single();
+
         // 1. Notify Customer via email (only if SMTP is ready)
         if (smtpReady) {
             try {
@@ -217,6 +225,70 @@ Deno.serve(async (req: Request) => {
                 console.log(`[send-job-live-email] Notified customer: ${email} (tenant: ${tenant})`);
             } catch (custErr) {
                 console.error(`[send-job-live-email] [SMTP ERROR] Failed to notify customer ${email} (tenant: ${tenant}):`, custErr);
+            }
+        }
+
+        // 1b. Notify job poster (business or admin) if they didn't post as homeowner
+        if (smtpReady && fullAssessment && fullAssessment.posted_by !== 'homeowner') {
+            let posterEmail: string | null = null;
+            let posterName = '';
+            try {
+                if (fullAssessment.posted_by === 'business' && fullAssessment.referred_by_listing_id) {
+                    const { data: listing } = await supabase
+                        .from('catalogue_listings')
+                        .select('email, company_name, owner_id')
+                        .eq('id', fullAssessment.referred_by_listing_id)
+                        .maybeSingle();
+                    if (listing) {
+                        posterEmail = listing.email;
+                        posterName = listing.company_name || '';
+                    }
+                } else if (fullAssessment.posted_by === 'admin') {
+                    const { data: appSetting } = await supabase
+                        .from('app_settings')
+                        .select('support_email')
+                        .eq('tenant', tenant)
+                        .maybeSingle();
+                    if (appSetting?.support_email) {
+                        posterEmail = appSetting.support_email;
+                        posterName = 'Admin';
+                    }
+                }
+
+                if (posterEmail) {
+                    const posterHtml = `
+                        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 0; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
+                            <div style="background-color: #007F00; color: white; padding: 35px 20px; text-align: center;">
+                                <img src="${websiteUrl}/logo.svg" alt="${config.display_name}" style="height: 30px; margin-bottom: 12px; filter: brightness(0) invert(1);">
+                                <h2 style="margin: 0; font-size: 24px; font-weight: 700;">Your Posted Job is Now Live</h2>
+                            </div>
+                            <div style="padding: 35px 30px; color: #333;">
+                                <p style="font-size: 17px; font-weight: 600; margin-top: 0;">Hi ${posterName},</p>
+                                <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                                    The job you posted in <strong>${town || county}</strong> for <strong>${fullAssessment.contact_name || 'a homeowner'}</strong> is now live on our network.
+                                </p>
+                                <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0;">
+                                    <h3 style="margin-top: 0; font-size: 15px; color: #007F00;">What happens next?</h3>
+                                    <ol style="padding-left: 20px; margin-bottom: 0; font-size: 14px; color: #555; line-height: 1.8;">
+                                        <li>Registered assessors in <strong>${county}</strong> are being notified.</li>
+                                        <li>You will be copied on all quotes received.</li>
+                                        <li>The homeowner will also be notified at each step.</li>
+                                    </ol>
+                                </div>
+                                <p style="font-size: 14px; color: #777;">
+                                    We'll send you an email as soon as a quote arrives.
+                                </p>
+                            </div>
+                            <div style="text-align: center; padding-bottom: 25px; font-size: 11px; color: #aaa;">
+                                &copy; ${new Date().getFullYear()} ${config.display_name}. Supporting energy efficiency.
+                            </div>
+                        </div>
+                    `;
+                    await client.send(smtpFrom, posterEmail, `Your posted job is live on ${websiteUrl.replace('https://', '')}`, posterHtml);
+                    console.log(`[send-job-live-email] Notified poster (${fullAssessment.posted_by}): ${posterEmail} (tenant: ${tenant})`);
+                }
+            } catch (posterErr) {
+                console.error(`[send-job-live-email] [SMTP ERROR] Failed to notify poster (${fullAssessment?.posted_by}):`, posterErr);
             }
         }
 

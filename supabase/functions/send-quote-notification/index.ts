@@ -5,6 +5,7 @@ import { CustomSmtpClient } from "../shared/smtp.ts";
 import { trySendSms } from "../shared/twilio.ts";
 import { getTenantConfig } from "../shared/tenant.ts";
 import { generateHomeownerQuoteEmail } from "./templates/homeowner-notification.ts";
+import { generatePosterQuoteEmail } from "./templates/poster-notification.ts";
 import { generatePromoHtml } from "./templates/promo-section.ts";
 
 const corsHeaders = {
@@ -38,7 +39,7 @@ Deno.serve(async (req: Request) => {
         // 1. Fetch Assessment & Homeowner Details
         const { data: assessment, error: assessmentError } = await supabase
             .from('assessments')
-            .select('contact_name, contact_email, contact_phone, status')
+            .select('contact_name, contact_email, contact_phone, status, posted_by, user_id, referred_by_listing_id')
             .eq('id', assessmentId)
             .eq('tenant', tenant)
             .single();
@@ -67,11 +68,48 @@ Deno.serve(async (req: Request) => {
             const { data: sponsors } = await supabase.from('sponsors').select('*').eq('is_active', true).eq('tenant', tenant).limit(3);
             const promoHtml = generatePromoHtml(sponsors || []);
 
-            // 3. Generate Email HTML
+            // 3. Generate Email HTML for homeowner
             const emailHtml = generateHomeownerQuoteEmail(assessment.contact_name, websiteUrl, promoHtml);
 
-            // 4. Send Email
+            // 4. Send Email to homeowner
             await client.send(smtpFrom, assessment.contact_email, 'BER quote received.', emailHtml);
+
+            // 4b. Send email to job poster (business or admin) if not posted by homeowner
+            if (assessment.posted_by && assessment.posted_by !== 'homeowner') {
+                let posterEmail: string | null = null;
+                let posterName = '';
+                try {
+                    if (assessment.posted_by === 'business' && assessment.referred_by_listing_id) {
+                        const { data: listing } = await supabase
+                            .from('catalogue_listings')
+                            .select('email, company_name')
+                            .eq('id', assessment.referred_by_listing_id)
+                            .maybeSingle();
+                        if (listing) {
+                            posterEmail = listing.email;
+                            posterName = listing.company_name || '';
+                        }
+                    } else if (assessment.posted_by === 'admin') {
+                        const { data: appSetting } = await supabase
+                            .from('app_settings')
+                            .select('support_email')
+                            .eq('tenant', tenant)
+                            .maybeSingle();
+                        if (appSetting?.support_email) {
+                            posterEmail = appSetting.support_email;
+                            posterName = 'Admin';
+                        }
+                    }
+
+                    if (posterEmail) {
+                        const posterHtml = generatePosterQuoteEmail(posterName, websiteUrl, promoHtml);
+                        await client.send(smtpFrom, posterEmail, 'New quote on your posted job.', posterHtml);
+                        console.log(`[send-quote-notification] Copied poster (${assessment.posted_by}): ${posterEmail} (tenant: ${tenant})`);
+                    }
+                } catch (posterErr) {
+                    console.error(`[send-quote-notification] [SMTP ERROR] Failed to notify poster (${assessment.posted_by}):`, posterErr);
+                }
+            }
 
             // SMS to homeowner
             await trySendSms(assessment.contact_phone, `Hi ${assessment.contact_name}, great news! You've received a new BER quote on ${websiteUrl.replace('https://', '')}. Log in to review and compare prices: ${websiteUrl}`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
