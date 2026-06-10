@@ -1131,6 +1131,46 @@ const Admin = () => {
         }
     }, [selectedTenant, logAudit]);
 
+    const handleResendBusinessOnboarding = useCallback(async (u: Profile) => {
+        const toastId = toast.loading('Resending onboarding email...');
+        try {
+            const tenantForEmail = u.tenant || selectedTenant;
+            const websiteUrl = getTenantWebsiteUrl(tenantForEmail).replace(/\/$/, '');
+            const onboardingUrl = `${websiteUrl}/business-onboarding?userId=${u.id}`;
+
+            // Reset the user's password via edge function (needs service role key)
+            const { data: resetData, error: resetError } = await supabase.functions.invoke('reset-user-password', {
+                body: { userId: u.id }
+            });
+            if (resetError) throw resetError;
+            if (!resetData?.success) throw new Error(resetData?.error || 'Failed to reset password');
+            const tempPassword = resetData.password;
+
+            // Send the onboarding email for business
+            const { data, error } = await supabase.functions.invoke('send-onboarding-link', {
+                body: {
+                    fullName: u.full_name,
+                    email: u.email,
+                    password: tempPassword,
+                    onboardingUrl,
+                    role: 'business',
+                    type: 'approved',
+                    userId: u.id,
+                    tenant: tenantForEmail,
+                }
+            });
+
+            if (error) throw error;
+            if (!data?.success) throw new Error(data?.error || 'Failed to send email');
+
+            toast.success('Onboarding email resent successfully!', { id: toastId });
+            await logAudit('resend_business_onboarding', 'user', u.id, { email: u.email });
+        } catch (error: any) {
+            console.error('Resend business onboarding error:', error);
+            toast.error(error.message || 'Failed to resend onboarding email', { id: toastId });
+        }
+    }, [selectedTenant, logAudit]);
+
     const toggleUserStatus = useCallback(async () => {
         if (!itemToSuspend) return;
         setIsUpdating(true);
@@ -2196,6 +2236,7 @@ const Admin = () => {
                             updateRegistrationStatus={updateRegistrationStatus}
                             setNewUserRole={setNewUserRole} setShowAddUserModal={setShowAddUserModal}
                             handleDeleteClick={handleDeleteClick}
+                            onResendOnboarding={handleResendBusinessOnboarding}
                         />
                     ) : view === 'catalogue' ? (
                         <CatalogueView

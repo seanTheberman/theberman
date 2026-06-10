@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Briefcase, AlertTriangle, CheckCircle2, Mail, Pencil, Eye, RefreshCw, XCircle, X, Trash2 } from 'lucide-react';
+import { Search, Briefcase, AlertTriangle, CheckCircle2, Mail, Pencil, Eye, RefreshCw, XCircle, X, Trash2, Send } from 'lucide-react';
 import { Filter as FilterIcon } from 'lucide-react';
 import type { Profile, CatalogueListing } from '../../../types/admin';
 import { StatusCell, SubscriptionInfo } from '../StatusBadges';
@@ -26,6 +26,7 @@ interface Props {
     setNewUserRole: (v: 'business') => void;
     setShowAddUserModal: (v: boolean) => void;
     handleDeleteClick: (id: string, type: 'user') => void;
+    onResendOnboarding?: (u: Profile) => void;
 }
 
 export const BusinessesView = React.memo(({
@@ -37,7 +38,8 @@ export const BusinessesView = React.memo(({
     setSelectedUser, setEditForm, setItemToSuspend, setShowSuspendModal,
     updateRegistrationStatus,
     setNewUserRole, setShowAddUserModal,
-    handleDeleteClick
+    handleDeleteClick,
+    onResendOnboarding
 }: Props) => (
     <div className="space-y-4">
         {/* Toolbar */}
@@ -200,6 +202,10 @@ export const BusinessesView = React.memo(({
                                                     <button onClick={() => handleCancelSubscription(u.id)} disabled={isUpdating} title="Cancel subscription" className="p-1.5 text-red-500 hover:bg-red-50 rounded transition-all"><XCircle size={12} /></button>
                                                 )}
                                             </div>
+                                            {/* Resend onboarding email for businesses */}
+                                            {onResendOnboarding && (
+                                                <button onClick={() => onResendOnboarding(u)} title="Resend onboarding email" className="p-1.5 text-green-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"><Send size={14} /></button>
+                                            )}
                                             <button
                                                 onClick={() => { setSelectedUser(u); setEditForm({ role: u.role, subscription_status: u.subscription_status || 'inactive', subscription_start_date: u.subscription_start_date || '', subscription_end_date: u.subscription_end_date || '', manual_override_reason: u.manual_override_reason || '', stripe_payment_id: u.stripe_payment_id || '' }); }}
                                                 title="View/Edit" className="p-1.5 text-gray-300 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all"><Eye size={14} /></button>
