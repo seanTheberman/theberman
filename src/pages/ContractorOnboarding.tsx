@@ -261,11 +261,6 @@ const ContractorOnboarding = () => {
                 throw profileUpdateError;
             }
 
-            // Fire-and-forget admin notification (non-blocking)
-            supabase.functions.invoke('notify-admin-interest', {
-                body: { registrationData, type: 'assessor', tenant: getTenantFromDomain() }
-            }).catch(err => console.error('Failed to send interest notification:', err));
-
             toast.success(lbl.registrationSubmitted);
             await refreshProfile();
             sessionStorage.removeItem(`pending_assessor_registration_${user?.id}`);

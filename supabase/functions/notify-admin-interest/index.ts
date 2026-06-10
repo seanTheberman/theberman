@@ -63,7 +63,7 @@ serve(async (req: Request) => {
                     <p style="color: #6b7280; font-size: 0.9rem;">The user has been redirected to the payment page. You may want to follow up if they don't complete registration within 24 hours.</p>
 
                     <div style="text-align: center; margin-top: 30px;">
-                        <a href="https://theberman.eu/admin" style="background-color: #F59E0B; color: white; padding: 12px 24px; text-decoration: none; border-radius: 0.5rem; font-weight: bold;">View Admin Dashboard</a>
+                        <p style="color: #6b7280; font-size: 0.9rem;">Please log in to your admin dashboard to follow up.</p>
                     </div>
                 </div>
             `;

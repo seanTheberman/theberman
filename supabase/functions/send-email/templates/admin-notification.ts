@@ -57,7 +57,7 @@ export const generateAdminEmail = (record: any, sponsors: any[], promoHtml: stri
                       ` : ''}
 
                       <div style="margin-top: 30px; text-align: center;">
-                        <a href="https://theberman.eu/admin" style="background-color: #9ACD32; color: #004d00; padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 4px; display: inline-block;">View in Admin Panel</a>
+                        <p style="color: #6b7280; font-size: 0.9rem;">Please log in to your admin dashboard to review this lead.</p>
                       </div>
                     </div>
                     <div style="text-align: center; padding: 10px; font-size: 12px; color: #999;">

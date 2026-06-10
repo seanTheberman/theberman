@@ -233,7 +233,7 @@ serve(async (req: Request) => {
                     </div>
 
                     <div style="text-align: center; margin-top: 30px;">
-                        <a href="${websiteUrl}/admin" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 0.5rem; font-weight: bold;">View in Admin Dashboard</a>
+                        <p style="color: #6b7280; font-size: 0.9rem;">Please log in to your admin dashboard to review this registration.</p>
                     </div>
             `;
             await client.send(
