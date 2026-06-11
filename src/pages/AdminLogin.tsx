@@ -44,7 +44,7 @@ const AdminLogin = () => {
             if (from) {
                 navigate(from, { replace: true });
             } else {
-                navigate('/admin', { replace: true });
+                navigate('/secure-admin-portal', { replace: true });
             }
         } else if (!loading && user && role !== 'admin') {
             // Non-admin users already logged in — redirect them to their dashboard
@@ -179,7 +179,7 @@ const AdminLogin = () => {
                 if (from) {
                     navigate(from, { replace: true });
                 } else {
-                    navigate('/admin', { replace: true });
+                    navigate('/secure-admin-portal', { replace: true });
                 }
             }
         } catch (error: any) {
@@ -256,11 +256,11 @@ const AdminLogin = () => {
                 {/* Back Button */}
                 <div className="mb-6">
                     <Link
-                        to="/login"
+                        to="/"
                         className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm"
                     >
                         <ArrowLeft size={16} />
-                        Back to Login Options
+                        Back to Home
                     </Link>
                 </div>
 

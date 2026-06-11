@@ -79,7 +79,7 @@ const Login = () => {
             } else if (from) {
                 navigate(from, { replace: true });
             } else {
-                if (role === 'admin') navigate('/admin', { replace: true });
+                if (role === 'admin') navigate('/secure-admin-portal', { replace: true });
                 else if (role === 'contractor') navigate('/dashboard/ber-assessor', { replace: true });
                 else if (role === 'business') navigate('/dashboard/business', { replace: true });
                 else navigate('/dashboard/user', { replace: true });
@@ -194,7 +194,7 @@ const Login = () => {
                 if (from) {
                     navigate(from, { replace: true });
                 } else {
-                    if (userRole === 'admin') navigate('/admin', { replace: true });
+                    if (userRole === 'admin') navigate('/secure-admin-portal', { replace: true });
                     else if (userRole === 'contractor') {
                         navigate('/dashboard/ber-assessor', { replace: true });
                     } else if (userRole === 'business') {

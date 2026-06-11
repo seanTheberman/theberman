@@ -1,5 +1,5 @@
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './hooks/useAuth';
 import Layout from './components/Layout';
@@ -88,7 +88,7 @@ function App() {
                         <Route path="cookie-policy" element={<CookiePolicy />} />
                         <Route path="assessor-terms" element={<AssessorTerms />} />
                         <Route path="login" element={<Login />} />
-                        <Route path="login/admin" element={<AdminLogin />} />
+                        <Route path="secure-admin-login" element={<AdminLogin />} />
                         <Route path="signup" element={<SignUp />} />
                         <Route path="faq" element={<FAQ />} />
                         <Route path="news" element={<News />} />
@@ -109,9 +109,12 @@ function App() {
                     <Route path="/update-password" element={<UpdatePassword />} />
                     <Route path="/auth/error" element={<AuthError />} />
 
-                    {/* Admin Dashboard */}
+                    {/* Old admin route redirect to main login */}
+                    <Route path="/admin" element={<Navigate to="/login" replace />} />
+
+                    {/* Admin Dashboard - New secure path */}
                     <Route
-                        path="/admin"
+                        path="/secure-admin-portal"
                         element={
                             <ProtectedRoute allowedRoles={['admin']}>
                                 <Admin />
@@ -119,7 +122,7 @@ function App() {
                         }
                     />
                     <Route
-                        path="/admin/news/new"
+                        path="/secure-admin-portal/news/new"
                         element={
                             <ProtectedRoute allowedRoles={['admin']}>
                                 <AdminNewsAction />
@@ -127,7 +130,7 @@ function App() {
                         }
                     />
                     <Route
-                        path="/admin/news/edit/:id"
+                        path="/secure-admin-portal/news/edit/:id"
                         element={
                             <ProtectedRoute allowedRoles={['admin']}>
                                 <AdminNewsAction />
@@ -135,7 +138,7 @@ function App() {
                         }
                     />
                     <Route
-                        path="/admin/blog/new"
+                        path="/secure-admin-portal/blog/new"
                         element={
                             <ProtectedRoute allowedRoles={['admin']}>
                                 <AdminBlogAction />
@@ -143,7 +146,7 @@ function App() {
                         }
                     />
                     <Route
-                        path="/admin/blog/edit/:id"
+                        path="/secure-admin-portal/blog/edit/:id"
                         element={
                             <ProtectedRoute allowedRoles={['admin']}>
                                 <AdminBlogAction />

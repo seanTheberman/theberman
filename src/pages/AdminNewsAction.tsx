@@ -64,7 +64,7 @@ const AdminNewsAction = () => {
         } catch (error: any) {
             console.error('Error fetching article:', error);
             toast.error('Failed to load article');
-            navigate('/admin');
+            navigate('/secure-admin-portal');
         } finally {
             setLoading(false);
         }
@@ -146,7 +146,7 @@ const AdminNewsAction = () => {
             if (error) throw error;
 
             toast.success(id ? 'Article updated successfully' : 'Article published successfully');
-            navigate('/admin');
+            navigate('/secure-admin-portal');
         } catch (error: any) {
             console.error('Error saving article:', error);
             toast.error(`Failed to save article: ${error.message}`);
@@ -169,7 +169,7 @@ const AdminNewsAction = () => {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                     <div>
-                        <Link to="/admin" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors mb-4 group">
+                        <Link to="/secure-admin-portal" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors mb-4 group">
                             <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
                             <span className="text-sm font-bold uppercase tracking-widest">Back to Dashboard</span>
                         </Link>
@@ -407,7 +407,7 @@ const AdminNewsAction = () => {
                         {/* Actions */}
                         <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
                             <Link
-                                to="/admin"
+                                to="/secure-admin-portal"
                                 className="text-gray-400 hover:text-gray-900 font-bold text-sm uppercase tracking-widest transition-colors flex items-center gap-2"
                             >
                                 <X size={20} />

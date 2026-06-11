@@ -84,7 +84,7 @@ const AdminBlogAction = () => {
         } catch (error: any) {
             console.error('Error fetching blog article:', error);
             toast.error('Failed to load article');
-            navigate('/admin');
+            navigate('/secure-admin-portal');
         } finally {
             setLoading(false);
         }
@@ -147,7 +147,7 @@ const AdminBlogAction = () => {
             if (error) throw error;
 
             toast.success(id ? 'Blog post updated' : 'Blog post published');
-            navigate('/admin');
+            navigate('/secure-admin-portal');
         } catch (error: any) {
             toast.error(`Failed to save: ${error.message}`);
         } finally {
@@ -168,7 +168,7 @@ const AdminBlogAction = () => {
             <div className="container mx-auto px-6 max-w-4xl">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                     <div>
-                        <Link to="/admin" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors mb-4 group">
+                        <Link to="/secure-admin-portal" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors mb-4 group">
                             <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
                             <span className="text-sm font-bold uppercase tracking-widest">Back to Dashboard</span>
                         </Link>
@@ -357,7 +357,7 @@ const AdminBlogAction = () => {
                         </div>
 
                         <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
-                            <Link to="/admin" className="text-gray-400 hover:text-gray-900 font-bold text-sm uppercase tracking-widest transition-colors flex items-center gap-2">
+                            <Link to="/secure-admin-portal" className="text-gray-400 hover:text-gray-900 font-bold text-sm uppercase tracking-widest transition-colors flex items-center gap-2">
                                 <X size={20} /> Discard Changes
                             </Link>
                             <button type="submit" disabled={isSaving} className="w-full md:w-auto bg-[#007F00] text-white px-12 py-5 rounded-2xl font-black uppercase tracking-wider text-sm shadow-xl shadow-green-900/20 hover:shadow-green-900/40 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:translate-y-0">

@@ -27,13 +27,13 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
 
     if (!user) {
         // Not logged in -> Go to login (admin-specific if trying to access admin)
-        const loginPath = location.pathname.startsWith('/admin') ? '/login/admin' : '/login';
+        const loginPath = location.pathname.startsWith('/secure-admin-portal') ? '/secure-admin-login' : '/login';
         return <Navigate to={loginPath} state={{ from: location }} replace />;
     }
 
     if (allowedRoles && (!role || !allowedRoles.includes(role))) {
         // Logged in but wrong role -> Go to their respective dashboard
-        if (role === 'admin') return <Navigate to="/admin" replace />;
+        if (role === 'admin') return <Navigate to="/secure-admin-portal" replace />;
         if (role === 'contractor') return <Navigate to="/dashboard/ber-assessor" replace />;
         if (role === 'business') return <Navigate to="/dashboard/business" replace />;
         return <Navigate to="/dashboard/user" replace />;

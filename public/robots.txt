@@ -10,6 +10,8 @@ Sitemap: https://certificadoenergético.eu/sitemap.xml
 Disallow: /dashboard/
 Disallow: /admin/
 Disallow: /login/admin
+Disallow: /secure-admin-portal
+Disallow: /secure-admin-login
 Disallow: /api/
 Disallow: /membership-payment
 Disallow: /registration-pending

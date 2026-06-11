@@ -58,7 +58,7 @@ const SignUp = () => {
     // Redirect if already authenticated
     useEffect(() => {
         if (!loading && user && role) {
-            if (role === 'admin') navigate('/admin', { replace: true });
+            if (role === 'admin') navigate('/secure-admin-portal', { replace: true });
             else if (role === 'contractor') navigate('/dashboard/ber-assessor', { replace: true });
             else if (role === 'business') navigate('/dashboard/business', { replace: true });
             else navigate('/dashboard/user', { replace: true });

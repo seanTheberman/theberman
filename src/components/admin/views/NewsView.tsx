@@ -31,7 +31,7 @@ export const NewsView = React.memo(({ newsArticles, loading, fetchNewsArticles, 
                         <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
                     </button>
                     <button
-                        onClick={() => navigate(`/admin/news/new?tenant=${selectedTenant || 'ireland'}`)}
+                        onClick={() => navigate(`/secure-admin-portal/news/new?tenant=${selectedTenant || 'ireland'}`)}
                         className="bg-[#007F00] text-white px-3 sm:px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#006600] transition-colors flex items-center gap-2"
                     >
                         <Newspaper size={16} />
@@ -46,7 +46,7 @@ export const NewsView = React.memo(({ newsArticles, loading, fetchNewsArticles, 
                 {newsArticles.map((article) => (
                     <div
                         key={article.id}
-                        onClick={() => navigate(`/admin/news/edit/${article.id}?tenant=${selectedTenant || 'ireland'}`)}
+                        onClick={() => navigate(`/secure-admin-portal/news/edit/${article.id}?tenant=${selectedTenant || 'ireland'}`)}
                         className="p-4 flex gap-3 cursor-pointer hover:bg-gray-50 transition-colors"
                     >
                         {article.image_url && (
@@ -68,7 +68,7 @@ export const NewsView = React.memo(({ newsArticles, loading, fetchNewsArticles, 
                             <div className="text-xs text-gray-400">{new Date(article.published_at).toLocaleDateString()}</div>
                             <div className="flex items-center gap-2 mt-2" onClick={e => e.stopPropagation()}>
                                 <button
-                                    onClick={() => navigate(`/admin/news/edit/${article.id}?tenant=${selectedTenant || 'ireland'}`)}
+                                    onClick={() => navigate(`/secure-admin-portal/news/edit/${article.id}?tenant=${selectedTenant || 'ireland'}`)}
                                     className="p-1.5 hover:bg-blue-50 rounded-lg transition-colors text-[#007EA7]"
                                     title="Edit Article"
                                 >
@@ -115,7 +115,7 @@ export const NewsView = React.memo(({ newsArticles, loading, fetchNewsArticles, 
                         {newsArticles.map((article) => (
                             <tr
                                 key={article.id}
-                                onClick={() => navigate(`/admin/news/edit/${article.id}?tenant=${selectedTenant || 'ireland'}`)}
+                                onClick={() => navigate(`/secure-admin-portal/news/edit/${article.id}?tenant=${selectedTenant || 'ireland'}`)}
                                 className="hover:bg-gray-50 transition-colors cursor-pointer"
                             >
                                 <td className="px-6 py-4 max-w-sm">
@@ -148,7 +148,7 @@ export const NewsView = React.memo(({ newsArticles, loading, fetchNewsArticles, 
                                 <td className="px-6 py-4 text-right">
                                     <div className="flex items-center justify-end gap-2 text-[#007EA7]" onClick={e => e.stopPropagation()}>
                                         <button
-                                            onClick={() => navigate(`/admin/news/edit/${article.id}?tenant=${selectedTenant || 'ireland'}`)}
+                                            onClick={() => navigate(`/secure-admin-portal/news/edit/${article.id}?tenant=${selectedTenant || 'ireland'}`)}
                                             className="p-1.5 hover:bg-blue-50 rounded-lg transition-colors"
                                             title="Edit Article"
                                         >
