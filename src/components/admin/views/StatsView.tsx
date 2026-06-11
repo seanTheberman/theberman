@@ -53,6 +53,7 @@ interface Props {
     setShowSuspendModal: (v: boolean) => void;
     setView: (v: AdminView) => void;
     handleDeleteClick: (id: string, type: 'lead' | 'sponsor' | 'assessment' | 'user') => void;
+    selectedTenant: string;
 }
 
 type UserType = 'all' | 'homeowners' | 'assessors' | 'businesses';
@@ -147,6 +148,7 @@ export const StatsView = React.memo(({
     stats, users_list, listings, assessments, payments,
     searchTerm, setSearchTerm, locationFilter, setLocationFilter,
     handleOpenCatalogueView, setSelectedUser, setItemToSuspend, setShowSuspendModal, setView, handleDeleteClick,
+    selectedTenant
 }: Props) => {
     const [userType, setUserType] = useState<UserType>('all');
     const [typeFilter, setTypeFilter] = useState('');
@@ -195,7 +197,7 @@ export const StatsView = React.memo(({
                         </div>
                     </div>
                     <p className="text-2xl font-black text-gray-900 mb-1">
-                        {new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(stats.totalRevenue)}
+                        {new Intl.NumberFormat('en-GB', { style: 'currency', currency: selectedTenant === 'england' ? 'GBP' : 'EUR', maximumFractionDigits: 0 }).format(stats.totalRevenue)}
                     </p>
                     <p className="text-[11px] text-green-600 font-semibold">{payments.filter(p => p.status === 'completed').length} payments</p>
                 </button>

@@ -174,6 +174,7 @@ interface Props {
     isUpdatingBanner: boolean;
     fetchAppSettings: () => void;
     savePromoSettings: (e: React.FormEvent) => void;
+    selectedTenant: string;
 }
 
 export const SettingsView = ({
@@ -183,6 +184,7 @@ export const SettingsView = ({
     isSavingSubscription, setIsSavingSubscription,
     isUpdatingBanner,
     fetchAppSettings, savePromoSettings,
+    selectedTenant
 }: Props) => (
     <div className="space-y-6">
         {/* General Settings */}
@@ -223,7 +225,7 @@ export const SettingsView = ({
                     <input name="support_email" defaultValue={appSettings?.support_email || ''} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                 </div>
                 <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-1">Default Quote Price (€)</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Default Quote Price ({selectedTenant === 'england' ? '£' : '€'})</label>
                     <input name="default_quote_price" type="number" step="0.01" defaultValue={appSettings?.default_quote_price} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                 </div>
                 <div>
@@ -273,7 +275,7 @@ export const SettingsView = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-bold text-gray-700 mb-1">
-                            Monthly Subscription Amount (€)
+                            Monthly Subscription Amount ({selectedTenant === 'england' ? '£' : '€'})
                         </label>
                         <input 
                             name="business_subscription_amount" 
@@ -290,7 +292,7 @@ export const SettingsView = ({
                     <div className="flex items-center">
                         <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 w-full">
                             <p className="text-sm font-bold text-purple-900">
-                                Current Status: {appSettings?.business_subscription_amount === 0 ? 'FREE' : `€${appSettings?.business_subscription_amount?.toFixed(2) || '29.99'}/month`}
+                                Current Status: {appSettings?.business_subscription_amount === 0 ? 'FREE' : `${selectedTenant === 'england' ? '£' : '€'}${appSettings?.business_subscription_amount?.toFixed(2) || '29.99'}/month`}
                             </p>
                             <p className="text-xs text-purple-700 mt-1">
                                 {appSettings?.business_subscription_amount === 0 
@@ -344,19 +346,19 @@ export const SettingsView = ({
             >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Domestic Assessor (€)</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Domestic Assessor ({selectedTenant === 'england' ? '£' : '€'})</label>
                         <input name="domestic_assessor_price" type="number" step="1" defaultValue={appSettings?.domestic_assessor_price ?? REGISTRATION_PRICES.DOMESTIC_ASSESSOR} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Commercial Assessor (€)</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Commercial Assessor ({selectedTenant === 'england' ? '£' : '€'})</label>
                         <input name="commercial_assessor_price" type="number" step="1" defaultValue={appSettings?.commercial_assessor_price ?? REGISTRATION_PRICES.COMMERCIAL_ASSESSOR} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Bundle Assessor (€)</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Bundle Assessor ({selectedTenant === 'england' ? '£' : '€'})</label>
                         <input name="bundle_assessor_price" type="number" step="1" defaultValue={appSettings?.bundle_assessor_price ?? REGISTRATION_PRICES.BUNDLE_ASSESSOR} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Business Reg (€)</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Business Reg ({selectedTenant === 'england' ? '£' : '€'})</label>
                         <input name="business_registration_price" type="number" step="1" defaultValue={appSettings?.business_registration_price ?? REGISTRATION_PRICES.BUSINESS_REGISTRATION} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                     </div>
                 </div>
@@ -405,17 +407,17 @@ export const SettingsView = ({
             >
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Platform Fee (€)</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Platform Fee ({selectedTenant === 'england' ? '£' : '€'})</label>
                         <input name="platform_fee_amount" type="number" step="1" defaultValue={appSettings?.platform_fee_amount ?? 25} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                         <p className="text-xs text-gray-400 mt-1">Added to assessor quote (visible in total)</p>
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Hidden Fee (€)</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Hidden Fee ({selectedTenant === 'england' ? '£' : '€'})</label>
                         <input name="hidden_fee_amount" type="number" step="1" defaultValue={appSettings?.hidden_fee_amount ?? 10} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                         <p className="text-xs text-gray-400 mt-1">Added to total (homeowner doesn't see breakdown)</p>
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Total Deposit (€)</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Total Deposit ({selectedTenant === 'england' ? '£' : '€'})</label>
                         <input type="number" disabled value={(appSettings?.platform_fee_amount ?? 25) + (appSettings?.hidden_fee_amount ?? 10)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-600" />
                         <p className="text-xs text-gray-400 mt-1">Auto-calculated (Platform + Hidden)</p>
                     </div>

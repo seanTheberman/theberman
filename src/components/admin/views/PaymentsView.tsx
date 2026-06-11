@@ -4,9 +4,10 @@ import type { Payment } from '../../../types/admin';
 interface Props {
     payments: Payment[];
     handleExportPayments: () => void;
+    selectedTenant: string;
 }
 
-export const PaymentsView = React.memo(({ payments, handleExportPayments }: Props) => (
+export const PaymentsView = React.memo(({ payments, handleExportPayments, selectedTenant }: Props) => (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
             <div>
@@ -24,7 +25,7 @@ export const PaymentsView = React.memo(({ payments, handleExportPayments }: Prop
         {payments.length === 0 ? (
             <div className="text-center py-20">
                 <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
-                    <div className="font-bold text-2xl">€</div>
+                    <div className="font-bold text-2xl">{selectedTenant === 'england' ? '£' : '€'}</div>
                 </div>
                 <h3 className="text-lg font-bold text-gray-900">No payments found</h3>
                 <p className="text-gray-500">Once payments are received, they will appear here.</p>

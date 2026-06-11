@@ -2177,6 +2177,7 @@ const Admin = () => {
                             setItemToSuspend={setItemToSuspend} setShowSuspendModal={setShowSuspendModal}
                             setView={setView}
                             handleDeleteClick={handleDeleteClick}
+                            selectedTenant={selectedTenant}
                         />
                     ) : view === 'leads' ? (
                         <LeadsView
@@ -2268,7 +2269,7 @@ const Admin = () => {
                             selectedTenant={selectedTenant}
                         />
                     ) : view === 'payments' ? (
-                        <PaymentsView payments={payments} handleExportPayments={handleExportPayments} />
+                        <PaymentsView payments={payments} handleExportPayments={handleExportPayments} selectedTenant={selectedTenant} />
                     ) : view === 'news' ? (
                         <NewsView
                             newsArticles={newsArticles} loading={loading}
@@ -2302,6 +2303,7 @@ const Admin = () => {
                             isUpdatingBanner={isUpdatingBanner}
                             fetchAppSettings={fetchAppSettings}
                             savePromoSettings={savePromoSettings}
+                            selectedTenant={selectedTenant}
                         />
                     ) : view === 'recently-deleted' ? (
                         <RecentlyDeletedView
