@@ -63,6 +63,7 @@ export const BusinessPostJob = ({ businessUserId, listingId, businessName, busin
     };
 
     const handleSubmit = async () => {
+        if (isSubmitting) return; // Prevent double submission
         if (!county || !town || !propertyType || !berPurpose) {
             toast.error(isSpanish ? 'Por favor complete todos los campos obligatorios' : 'Please fill in all required fields');
             return;

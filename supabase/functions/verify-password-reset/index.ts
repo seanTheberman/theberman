@@ -29,6 +29,8 @@ serve(async (req: Request) => {
         const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
         const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
+        console.log(`[verify-password-reset] Processing reset for: ${email}`);
+
         // 1. Verify token from email_otps
         const { data: otpRecord, error: otpError } = await supabase
             .from('email_otps')
@@ -41,22 +43,29 @@ serve(async (req: Request) => {
             .limit(1)
             .maybeSingle();
 
+        console.log(`[verify-password-reset] OTP query result:`, { otpRecord, otpError });
+
         if (otpError) throw otpError;
         if (!otpRecord) {
             throw new Error("Invalid or expired reset token");
         }
 
-        // 2. Find the auth user
-        const { data: userData, error: userError } = await supabase.auth.admin.listUsers();
-        if (userError) throw userError;
+        // 2. Find the user via profiles table (not paginated auth.listUsers)
+        const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('id, email')
+            .eq('email', email.toLowerCase())
+            .maybeSingle();
 
-        const user = userData.users.find((u: any) => u.email?.toLowerCase() === email.toLowerCase());
-        if (!user) {
-            throw new Error("User not found");
+        console.log(`[verify-password-reset] Profile lookup:`, { profile, profileError });
+
+        if (profileError) throw profileError;
+        if (!profile) {
+            throw new Error("User not found in profiles");
         }
 
         // 3. Update password via Admin API
-        const { error: updateError } = await supabase.auth.admin.updateUserById(user.id, {
+        const { error: updateError } = await supabase.auth.admin.updateUserById(profile.id, {
             password: password,
             user_metadata: { requires_password_change: false },
             email_confirm: true, // Ensure email is confirmed

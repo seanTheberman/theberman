@@ -33,18 +33,23 @@ serve(async (req: Request) => {
         const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
         const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-        // 1. Check if user exists in auth
-        const { data: userData, error: userError } = await supabase.auth.admin.listUsers();
-        if (userError) throw userError;
+        // 1. Check if user exists via profiles table (more reliable than paginated auth.listUsers)
+        const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('id, email')
+            .eq('email', email.toLowerCase())
+            .maybeSingle();
 
-        const user = userData.users.find((u: any) => u.email?.toLowerCase() === email.toLowerCase());
-        if (!user) {
+        if (profileError) throw profileError;
+
+        if (!profile) {
             // Don't reveal if email exists or not for security
             return new Response(
                 JSON.stringify({ success: true, message: "If this email exists, a reset link has been sent." }),
                 { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
         }
+        console.log(`[send-password-reset] Found user profile: ${profile.id}`);
 
         // 2. Generate token and store in email_otps table
         const token = generateToken();

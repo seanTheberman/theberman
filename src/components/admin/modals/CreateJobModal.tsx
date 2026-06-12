@@ -98,6 +98,7 @@ export const CreateJobModal = ({ onClose, onJobCreated }: Props) => {
     };
 
     const handleSubmit = async () => {
+        if (isSubmitting) return; // Prevent double submission
         if (!contactName || !contactEmail || !contactPhone || !county || !town) {
             toast.error('Please fill in all required fields');
             return;

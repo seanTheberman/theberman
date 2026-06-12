@@ -429,6 +429,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
     };
 
     const handleFinalSubmission = async () => {
+        if (isSubmitting) return; // Prevent double submission
         setIsSubmitting(true);
         try {
             const { data: { session } } = await supabase.auth.getSession();
