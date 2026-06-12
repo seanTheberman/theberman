@@ -87,17 +87,31 @@ serve(async (req: Request) => {
             </div>
         `;
 
+        // 4. Send email via SMTP
+        console.log(`[send-password-reset] Starting SMTP send to ${email}`);
+        console.log(`[send-password-reset] SMTP config: host=${config.smtp_hostname}, port=${config.smtp_port}, from=${config.smtp_from}`);
+
         const client = new CustomSmtpClient();
         try {
+            console.log("[send-password-reset] Connecting to SMTP...");
             await client.connect(config.smtp_hostname, config.smtp_port);
+            console.log("[send-password-reset] SMTP connected");
+
+            console.log("[send-password-reset] Authenticating...");
             await client.authenticate(config.smtp_username, config.smtp_password);
+            console.log("[send-password-reset] SMTP authenticated");
+
+            console.log(`[send-password-reset] Sending email from ${config.smtp_from} to ${email}...`);
             await client.send(
                 config.smtp_from,
                 email,
                 `Password Reset - ${brandName}`,
                 emailHtml
             );
+            console.log("[send-password-reset] SMTP send command completed");
+
             await client.close();
+            console.log("[send-password-reset] SMTP connection closed successfully");
         } catch (smtpErr: any) {
             console.error("[send-password-reset] SMTP ERROR", smtpErr);
             throw new Error(`Failed to send email: ${smtpErr.message}`);
