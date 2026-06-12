@@ -1,12 +1,13 @@
 
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAuth } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getTenantFromDomain } from '../lib/tenant';
+import { supabase } from '../lib/supabase';
 
 const forgotPasswordSchema = z.object({
     email: z.string().email('Invalid email address'),
@@ -18,7 +19,7 @@ const ForgotPassword = () => {
     const tenant = getTenantFromDomain();
     const isEngland = tenant === 'england';
     const brandName = isEngland ? 'EPC Cert' : 'The Berman';
-    const { resetPassword } = useAuth();
+    const [sent, setSent] = useState(false);
 
     const {
         register,
@@ -30,9 +31,13 @@ const ForgotPassword = () => {
 
     const onSubmit = async (data: ForgotPasswordFormData) => {
         try {
-            const { error } = await resetPassword(data.email);
+            const { data: result, error } = await supabase.functions.invoke('send-password-reset', {
+                body: { email: data.email, tenant }
+            });
             if (error) throw error;
+            if (!result?.success) throw new Error(result?.error || 'Failed to send reset email');
             toast.success('Password reset email sent! Check your inbox.');
+            setSent(true);
         } catch (err: any) {
             toast.error(err.message || 'Failed to send reset email');
         }
@@ -93,33 +98,51 @@ const ForgotPassword = () => {
                         <p className="text-gray-500">Enter your email and we'll send you a link to reset your password.</p>
                     </div>
 
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                        <div className="space-y-1">
-                            <label className="text-sm font-bold text-gray-700">Email</label>
-                            <input
-                                {...register('email')}
-                                type="email"
-                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                placeholder="name@company.com"
-                            />
-                            {errors.email && <p className="text-red-500 text-xs mt-1 font-medium">{errors.email.message}</p>}
+                    {sent ? (
+                        <div className="text-center py-8">
+                            <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <CheckCircle className="text-[#007F00]" size={32} />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Check Your Email</h3>
+                            <p className="text-gray-500 mb-6">
+                                If this email address is associated with an account, we've sent a password reset link. Please check your inbox and spam folder.
+                            </p>
+                            <Link
+                                to="/login"
+                                className="inline-flex items-center gap-2 text-[#007F00] font-bold hover:underline"
+                            >
+                                <ArrowLeft size={16} /> Back to Login
+                            </Link>
                         </div>
+                    ) : (
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                            <div className="space-y-1">
+                                <label className="text-sm font-bold text-gray-700">Email</label>
+                                <input
+                                    {...register('email')}
+                                    type="email"
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
+                                    placeholder="name@company.com"
+                                />
+                                {errors.email && <p className="text-red-500 text-xs mt-1 font-medium">{errors.email.message}</p>}
+                            </div>
 
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="w-full bg-[#007F00] text-white font-bold py-3.5 rounded-xl hover:bg-green-800 transition-all shadow-lg hover:shadow-green-900/20 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
-                        >
-                            {isSubmitting ? (
-                                <>
-                                    <Loader2 className="animate-spin" size={20} />
-                                    Sending Link...
-                                </>
-                            ) : (
-                                'Send Reset Link'
-                            )}
-                        </button>
-                    </form>
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="w-full bg-[#007F00] text-white font-bold py-3.5 rounded-xl hover:bg-green-800 transition-all shadow-lg hover:shadow-green-900/20 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="animate-spin" size={20} />
+                                        Sending Link...
+                                    </>
+                                ) : (
+                                    'Send Reset Link'
+                                )}
+                            </button>
+                        </form>
+                    )}
                 </div>
             </div>
         </div>

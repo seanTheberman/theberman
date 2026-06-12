@@ -5,8 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { useNavigate, Link } from 'react-router-dom';
-import { Loader2, ArrowLeft, X, Eye, EyeOff } from 'lucide-react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { Loader2, ArrowLeft, X, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getTenantFromDomain } from '../lib/tenant';
 
@@ -23,18 +23,39 @@ type UpdatePasswordFormData = z.infer<typeof updatePasswordSchema>;
 const UpdatePassword = () => {
     const { updateUserPassword, user, loading } = useAuth();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [redirecting, setRedirecting] = useState(false);
     const [authWait, setAuthWait] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [customToken, setCustomToken] = useState<string | null>(null);
+    const [customEmail, setCustomEmail] = useState<string | null>(null);
+    const [resetSuccess, setResetSuccess] = useState(false);
     const isSpanish = getTenantFromDomain() === 'spain';
     const isEngland = getTenantFromDomain() === 'england';
     const brandName = isEngland ? 'EPC Cert' : 'The Berman';
+
+    // Detect custom token from email link (/update-password?token=xyz&email=abc)
+    useEffect(() => {
+        const token = searchParams.get('token');
+        const email = searchParams.get('email');
+        if (token && email) {
+            setCustomToken(token);
+            setCustomEmail(email);
+            setAuthWait(false);
+        }
+    }, [searchParams]);
 
     // Give Supabase a moment to process the hash if user is not immediately available
     useEffect(() => {
         // If we already have a user, no need to wait
         if (user) {
+            setAuthWait(false);
+            return;
+        }
+
+        // If custom token from email link is present, don't wait for auth
+        if (customToken && customEmail) {
             setAuthWait(false);
             return;
         }
@@ -113,8 +134,11 @@ const UpdatePassword = () => {
         );
     }
 
-    // If no user and no hash after waiting, they probably accessed it directly/invalidly
-    if (!user && !(window.location.hash.includes('access_token') || window.location.search.includes('code=') || window.location.search.includes('type=recovery'))) {
+    // If no user and no hash and no custom token after waiting, they probably accessed it directly/invalidly
+    const hasSupabaseReset = window.location.hash.includes('access_token') || window.location.search.includes('code=') || window.location.search.includes('type=recovery');
+    const hasCustomToken = !!customToken && !!customEmail;
+
+    if (!user && !hasSupabaseReset && !hasCustomToken) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
                 <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-10 text-center border border-gray-100">
@@ -133,6 +157,20 @@ const UpdatePassword = () => {
 
     const onSubmit = async (data: UpdatePasswordFormData) => {
         try {
+            // CUSTOM TOKEN FLOW (from SMTP email)
+            if (customToken && customEmail) {
+                const { data: result, error } = await supabase.functions.invoke('verify-password-reset', {
+                    body: { token: customToken, email: customEmail, password: data.password }
+                });
+                if (error) throw error;
+                if (!result?.success) throw new Error(result?.error || 'Failed to reset password');
+
+                toast.success(isSpanish ? '¡Contraseña actualizada!' : 'Password updated successfully!');
+                setResetSuccess(true);
+                return;
+            }
+
+            // SUPABASE MAGIC LINK FLOW (existing behavior)
             // Force a session refresh to be absolutely sure we have one
             const { data: sessionData } = await supabase.auth.getSession();
 
@@ -235,9 +273,26 @@ const UpdatePassword = () => {
                         <p className="text-gray-500">{isSpanish ? 'Por favor, introduce tu nueva contraseña.' : 'Please enter your new password.'}</p>
                     </div>
 
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                        <div className="space-y-1">
-                            <label className="text-sm font-bold text-gray-700">{isSpanish ? 'Nueva Contraseña' : 'New Password'}</label>
+                    {resetSuccess ? (
+                        <div className="text-center py-8">
+                            <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <CheckCircle className="text-[#007F00]" size={32} />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">{isSpanish ? '¡Contraseña Actualizada!' : 'Password Updated!'}</h3>
+                            <p className="text-gray-500 mb-6">
+                                {isSpanish ? 'Tu contraseña ha sido actualizada. Por favor, inicia sesión con tu nueva contraseña.' : 'Your password has been updated. Please log in with your new password.'}
+                            </p>
+                            <Link
+                                to="/login"
+                                className="inline-flex items-center justify-center w-full bg-[#007F00] text-white font-bold py-3.5 rounded-xl hover:bg-green-800 transition-all shadow-lg"
+                            >
+                                {isSpanish ? 'Ir al inicio de sesión' : 'Go to Login'}
+                            </Link>
+                        </div>
+                    ) : (
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                            <div className="space-y-1">
+                                <label className="text-sm font-bold text-gray-700">{isSpanish ? 'Nueva Contraseña' : 'New Password'}</label>
                             <div className="relative">
                                 <input
                                     {...register('password')}
@@ -291,6 +346,7 @@ const UpdatePassword = () => {
                             )}
                         </button>
                     </form>
+                )}
                 </div>
             </div>
         </div>
