@@ -83,14 +83,14 @@ const FAQ = () => {
         loading: 'Loading FAQ...',
         comingSoonH: 'FAQ Coming Soon',
         comingSoonP: "We're currently preparing our frequently asked questions. Check back shortly.",
-        seoTitle: 'Frequently Asked Questions',
-        seoDesc: 'Find answers to common questions about BER assessments, energy ratings, costs, and home energy upgrades in Ireland.',
+        seoTitle: 'BER Certificate FAQs Ireland | The BER Man',
+        seoDesc: 'Find Answers to Common BER Certificate Questions, Including Costs, Timelines, and Legal Requirements',
         needHelp: 'Need immediate help?',
         emailUs: `Email ${tenantEmail}`,
         getQuote: 'Get a Quote Now',
         sidebarLabel: 'BER FAQ',
         consultantsH: "Ireland's Leading BER Consultants",
-        consultantsP: 'Trusted by 10,000+ homeowners across the country.',
+        consultantsP: 'Trusted by homeowners across the country.',
         emailLine: `Email: ${tenantEmail}`,
     };
     const location = useLocation();
@@ -158,19 +158,31 @@ const FAQ = () => {
             <SEOHead
                 title={tr.seoTitle}
                 description={tr.seoDesc}
-                canonical="/faq"
-                jsonLd={{
-                    '@context': 'https://schema.org',
-                    '@type': 'FAQPage',
-                    mainEntity: faqItems.map(item => ({
-                        '@type': 'Question',
-                        name: item.title.charAt(0).toUpperCase() + item.title.slice(1),
-                        acceptedAnswer: {
-                            '@type': 'Answer',
-                            text: item.title.charAt(0).toUpperCase() + item.title.slice(1)
-                        }
-                    }))
-                }}
+                canonical={isEngland ? '/faq' : isSpanish ? '/faq' : '/ber-faqs/'}
+                jsonLd={[
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'FAQPage',
+                        mainEntity: faqItems.map(item => ({
+                            '@type': 'Question',
+                            name: item.title.charAt(0).toUpperCase() + item.title.slice(1),
+                            acceptedAnswer: {
+                                '@type': 'Answer',
+                                text: item.title.charAt(0).toUpperCase() + item.title.slice(1)
+                            }
+                        }))
+                    },
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'Organization',
+                        name: isEngland ? 'EPC Cert' : 'The Berman',
+                        url: isEngland ? 'https://epccert.com' : 'https://theberman.eu',
+                        logo: isEngland ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
+                        sameAs: isEngland
+                            ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
+                            : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
+                    }
+                ]}
             />
             <div className="container mx-auto px-6 max-w-7xl">
                 <div className="grid lg:grid-cols-12 gap-16 items-start">

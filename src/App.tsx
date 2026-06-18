@@ -73,7 +73,8 @@ function App() {
                 <Routes>
                     <Route path="/" element={<Layout />}>
                         <Route index element={<Home />} />
-                        <Route path="about" element={<About />} />
+                        <Route path="about" element={<Navigate to="/about-us" replace />} />
+                        <Route path="about-us" element={<About />} />
                         <Route path="services" element={<Services />} />
                         <Route path="pricing" element={<Pricing />} />
                         <Route path="contact-us" element={<Contact />} />
@@ -90,7 +91,9 @@ function App() {
                         <Route path="login" element={<Login />} />
                         <Route path="secure-admin-login" element={<AdminLogin />} />
                         <Route path="signup" element={<SignUp />} />
-                        <Route path="faq" element={<FAQ />} />
+                        <Route path="faq" element={<Navigate to="/ber-faqs/" replace />} />
+                        <Route path="ber-faqs" element={<FAQ />} />
+                        <Route path="ber-faqs/*" element={<FAQ />} />
                         <Route path="news" element={<News />} />
                         <Route path="news/:id" element={<NewsDetail />} />
                         <Route path="blog" element={<Blog />} />

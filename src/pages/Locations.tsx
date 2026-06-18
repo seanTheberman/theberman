@@ -52,6 +52,16 @@ const Locations = () => {
                 title={tr.seoTitle}
                 description={tr.seoDesc}
                 canonical="/locations"
+                jsonLd={{
+                    '@context': 'https://schema.org',
+                    '@type': 'Organization',
+                    name: tenant === 'england' ? 'EPC Cert' : 'The Berman',
+                    url: tenant === 'england' ? 'https://epccert.com' : 'https://theberman.eu',
+                    logo: tenant === 'england' ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
+                    sameAs: tenant === 'england'
+                        ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
+                        : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
+                }}
             />
             {/* Header */}
             <div className="container mx-auto px-6 mb-16 text-center">

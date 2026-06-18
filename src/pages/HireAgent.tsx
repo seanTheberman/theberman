@@ -165,17 +165,17 @@ const HireAgent = () => {
         toastSuccess: 'Your inquiry has been sent! An Energy Advisor will contact you shortly.',
         toastError: 'Failed to send message. Please try again.',
     } : {
-        seoTitle: 'Hire an Energy Agent',
-        seoDesc: 'Get free impartial guidance from a certified Energy Agent. Verified technical input and competitive pricing for your home energy upgrades.',
+        seoTitle: 'Energy Advisor Ireland - The BER Man',
+        seoDesc: 'Speak with an Independent Energy Advisor for Expert Guidance on BER Improvements, Retrofit Planning, Contractor Selection, and Home Energy Upgrades',
         badge: 'Expert Guidance',
-        title1: 'Hire An',
-        titleHighlight: 'Energy Agent',
-        title2: ' For Free',
-        subtitle: 'Get impartial guidance, verified technical input, and access to competitive pricing for your home energy upgrades.',
+        title1: 'Speak to an Independent',
+        titleHighlight: 'Energy Advisor',
+        title2: ' in Ireland',
+        subtitle: 'Make informed home energy upgrade decisions with expert advice, technical insights, and support tailored to your property\'s needs.',
         speakH1: 'Speak to an',
         speakH2: 'Energy Advisor',
-        speakP: 'Your energy agent will organise and work directly with a BER assessor to ensure all advice and upgrade recommendations are technically accurate and based on your existing BER certificate and advisory report.',
-        agentWillLabel: 'The agent will then:',
+        speakP: 'Your energy advisor will work alongside BER assessors to help evaluate upgrade opportunities, prioritise improvements, and provide recommendations based on your BER certificate and advisory report.',
+        agentWillLabel: 'YOUR ENERGY ADVISOR CAN HELP YOU:',
         benefits: [
             'Identify cost-effective upgrade options',
             'Advise on best BER improvements',
@@ -184,7 +184,7 @@ const HireAgent = () => {
             'Assist with SEAI grant paperwork',
             'Avoid unnecessary or overpriced works',
         ],
-        speakClose: 'The goal is to provide clear, impartial guidance, verified technical input, and access to competitive pricing, ensuring upgrades are completed in the smartest and most economical way possible.',
+        speakClose: 'Our goal is to help you make informed energy upgrade decisions through expert advice, technical insights, and practical recommendations tailored to your property. If you need to find a BER assessor, compare providers in our home energy business directory, or discuss your project further, you can also contact The BER Man.',
         badge1: 'Independent from contractors',
         badge2: 'Technical input & certification',
         ourDetails: 'Our details',
@@ -267,6 +267,16 @@ const HireAgent = () => {
                 title={tr.seoTitle}
                 description={tr.seoDesc}
                 canonical="/hire-agent"
+                jsonLd={{
+                    '@context': 'https://schema.org',
+                    '@type': 'Organization',
+                    name: isEngland ? 'EPC Cert' : 'The Berman',
+                    url: isEngland ? 'https://epccert.com' : 'https://theberman.eu',
+                    logo: isEngland ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
+                    sameAs: isEngland
+                        ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
+                        : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
+                }}
             />
 
             {/* 1. COMPACT HERO */}

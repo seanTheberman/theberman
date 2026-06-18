@@ -18,6 +18,16 @@ const Pricing = () => {
                 title="Pricing - Transparent BER Rating Costs"
                 description="Clear, upfront pricing for Building Energy Ratings. Plans for apartments, houses, and commercial units."
                 canonical="/pricing"
+                jsonLd={{
+                    '@context': 'https://schema.org',
+                    '@type': 'Organization',
+                    name: isEngland ? 'EPC Cert' : 'The Berman',
+                    url: isEngland ? 'https://epccert.com' : 'https://theberman.eu',
+                    logo: isEngland ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
+                    sameAs: isEngland
+                        ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
+                        : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
+                }}
             />
 
             {/* 1. COMPACT HERO SECTION */}

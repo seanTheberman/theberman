@@ -50,24 +50,25 @@ const Contact = () => {
     const { content: cms } = usePageContent('contact');
     const c = (section: string, key: string, fallback: string) => cmsValue(cms, section, key, fallback);
     const tr = {
-        seoTitle: isSpanish ? 'Contacto' : 'Contact Us',
+        seoTitle: isSpanish ? 'Contacto' : isEngland ? 'Contact Us' : 'Book a BER Assessment in Ireland | Contact The BER Man',
         seoDesc: isSpanish
             ? 'Contacta con Certificado Energético para tus certificados energéticos, calificaciones y mejoras en toda España.'
             : isEngland
                 ? 'Get in touch with EPC Cert for EPC assessments, energy ratings, and home energy upgrades across England.'
-                : 'Get in touch with The Berman for BER assessments, energy ratings, and home energy upgrades across Ireland.',
+                : 'Book a BER Assessment in Ireland or Contact the BER Man for Support. Connect with Qualified BER Assessors and Get Assistance with Your Enquiry',
         badge: isSpanish ? 'Ponte en Contacto' : 'Get In Touch',
-        title1: isSpanish ? '¿En qué podemos' : 'How can we',
-        title2: isSpanish ? 'ayudarte?' : 'help?',
+        title1: isSpanish ? '¿En qué podemos' : isEngland ? 'How can we' : 'Book a BER',
+        title2: isSpanish ? 'ayudarte?' : isEngland ? 'help?' : 'Assessment in Ireland',
         subtitle: isSpanish
             ? '¿Tienes alguna pregunta sobre certificaciones energéticas? Nuestro equipo está aquí para ayudarte.'
             : isEngland
                 ? 'Have a question about EPC assessments? Our team is here to provide the support you need.'
-                : 'Have a question about BER assessments? Our team is here to provide the support you need.',
-        ourDetails: isSpanish ? 'Nuestros Datos' : 'Our details',
+                : 'Contact The BER Man to book a BER assessment, connect with qualified BER assessors, or get support with your enquiry.',
+        trustStrip: isEngland ? '' : '1,000+ Assessments Completed • 100+ Qualified Assessors • Nationwide Coverage',
+        ourDetails: isSpanish ? 'Nuestros Datos' : isEngland ? 'Our details' : 'Contact Information',
         emailUs: isSpanish ? 'Escríbenos' : 'Email Us',
         website: isSpanish ? 'Sitio Web' : 'Website',
-        sendDetailed: isSpanish ? 'Envíanos un mensaje detallado' : 'Send us a detailed message',
+        sendDetailed: isSpanish ? 'Envíanos un mensaje detallado' : isEngland ? 'Send us a detailed message' : 'Request a BER Assessment',
         fullName: isSpanish ? 'Nombre Completo' : 'Full Name',
         fullNamePlaceholder: isSpanish ? 'Nombre completo' : 'Full name',
         phoneNumber: isSpanish ? 'Número de Teléfono' : 'Phone Number',
@@ -94,10 +95,10 @@ const Contact = () => {
         renting: isSpanish ? 'Alquiler' : 'Renting',
         grant: isSpanish ? 'Subvención' : 'Govt Grant',
         other: isSpanish ? 'Otro' : 'Other',
-        message: isSpanish ? 'Mensaje' : 'Message',
-        messagePlaceholder: isSpanish ? 'Cuéntanos más sobre tu solicitud...' : 'Tell us more about your request...',
-        sending: isSpanish ? 'Enviando...' : 'Sending...',
-        sendMessage: isSpanish ? 'Enviar Mensaje' : 'Send Message',
+        message: isSpanish ? 'Mensaje' : isEngland ? 'Message' : 'Message',
+        messagePlaceholder: isSpanish ? 'Cuéntanos más sobre tu solicitud...' : isEngland ? 'Tell us more about your request...' : 'Tell us about your property or BER assessment requirements.',
+        sending: isSpanish ? 'Enviando...' : isEngland ? 'Sending...' : 'Submitting...',
+        sendMessage: isSpanish ? 'Enviar Mensaje' : isEngland ? 'Send Message' : 'Submit Enquiry',
         toastSuccess: isSpanish ? '¡Mensaje enviado correctamente! Nos pondremos en contacto en breve.' : 'Message sent successfully! We will be in touch shortly.',
         toastError: isSpanish ? 'Error al enviar el mensaje. Por favor, inténtalo de nuevo.' : 'Failed to send message. Please try again.',
     };
@@ -145,6 +146,16 @@ const Contact = () => {
                 title={tr.seoTitle}
                 description={tr.seoDesc}
                 canonical="/contact-us"
+                jsonLd={{
+                    '@context': 'https://schema.org',
+                    '@type': 'Organization',
+                    name: tenant === 'england' ? 'EPC Cert' : 'The Berman',
+                    url: tenant === 'england' ? 'https://epccert.com' : 'https://theberman.eu',
+                    logo: tenant === 'england' ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
+                    sameAs: tenant === 'england'
+                        ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
+                        : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
+                }}
             />
 
             {/* 1. COMPACT HERO */}
@@ -159,6 +170,11 @@ const Contact = () => {
                     <p className="text-base md:text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
                         {c('hero', 'subtitle', tr.subtitle)}
                     </p>
+                    {!isSpanish && !isEngland && tr.trustStrip && (
+                        <p className="mt-4 text-sm font-bold text-[#007F00] uppercase tracking-widest">
+                            {tr.trustStrip}
+                        </p>
+                    )}
                 </div>
             </section>
 

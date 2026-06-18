@@ -132,9 +132,9 @@ const NewCatalogue = () => {
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
     const t = {
-        catalogueBadge: isSpanish ? 'El Catálogo' : isEngland ? 'The Catalogue' : isFrance ? 'Le Catalogue' : isPortugal ? 'O Catálogo' : 'The Catalogue',
-        heroLine1: isSpanish ? 'Catálogo de Negocios de' : isEngland ? 'EPC Cert' : isFrance ? 'Catalogue des Entreprises' : isPortugal ? 'Catálogo de Empresas' : 'The Berman Home Energy',
-        heroLine2: isSpanish ? 'Eficiencia Energética.' : isEngland ? 'Energy Experts Catalogue.' : isFrance ? 'd\'Efficacité Énergétique.' : isPortugal ? 'de Eficiência Energética.' : 'Businesses Catalogue.',
+        catalogueBadge: isSpanish ? 'El Catálogo' : isEngland ? 'The Catalogue' : isFrance ? 'Le Catalogue' : isPortugal ? 'O Catálogo' : 'Home Energy Upgrade Services',
+        heroLine1: isSpanish ? 'Catálogo de Negocios de' : isEngland ? 'EPC Cert' : isFrance ? 'Catalogue des Entreprises' : isPortugal ? 'Catálogo de Empresas' : 'Home Energy Upgrade',
+        heroLine2: isSpanish ? 'Eficiencia Energética.' : isEngland ? 'Energy Experts Catalogue.' : isFrance ? 'd\'Efficacité Énergétique.' : isPortugal ? 'de Eficiência Energética.' : 'Services Directory.',
         upgradeType: isSpanish ? 'Tipo de Mejora' : isFrance ? 'Type d\'Amélioration' : isPortugal ? 'Tipo de Melhoria' : 'Upgrade Type',
         selectUpgrade: isSpanish ? 'Seleccionar Mejora...' : isFrance ? 'Sélectionner...' : isPortugal ? 'Selecionar Melhoria...' : 'Select Upgrade...',
         location: isSpanish ? 'Ubicación' : isFrance ? 'Localisation' : isPortugal ? 'Localização' : 'Location',
@@ -144,8 +144,8 @@ const NewCatalogue = () => {
         viewProfile: isSpanish ? 'Ver Perfil' : isFrance ? 'Voir le Profil' : isPortugal ? 'Ver Perfil' : 'View Profile',
         businesses: isSpanish ? 'Negocios' : isFrance ? 'Entreprises' : isPortugal ? 'Empresas' : 'Businesses',
         berAssessors: isSpanish ? 'Certificadores Energéticos' : isEngland ? 'EPC Assessors' : isFrance ? 'Diagnostiqueurs DPE' : isPortugal ? 'Peritos Certificados' : 'BER Assessors',
-        businessesHeading: isSpanish ? 'Negocios y Consultores Energéticos' : isFrance ? 'Entreprises et Conseillers Énergétiques' : isPortugal ? 'Empresas e Consultores Energéticos' : 'Businesses and Energy Consultants',
-        businessesSub: isSpanish ? 'Encuentra Negocios y Consultores Energéticos en tu Zona Hoy' : isFrance ? 'Trouvez des Entreprises et Conseillers Énergétiques près de chez vous' : isPortugal ? 'Encontre Empresas e Consultores Energéticos na sua Zona' : 'Find Businesses and Energy Consultants in Your Local Area Today',
+        businessesHeading: isSpanish ? 'Negocios y Consultores Energéticos' : isFrance ? 'Entreprises et Conseillers Énergétiques' : isPortugal ? 'Empresas e Consultores Energéticos' : 'Home Energy Upgrade Services Directory',
+        businessesSub: isSpanish ? 'Encuentra Negocios y Consultores Energéticos en tu Zona Hoy' : isFrance ? 'Trouvez des Entreprises et Conseillers Énergétiques près de chez vous' : isPortugal ? 'Encontre Empresas e Consultores Energéticos na sua Zona' : 'Find Trusted Home Energy Upgrade Services Across Ireland, Including Insulation, Solar, and Heating Upgrades',
         assessorsSub: isSpanish ? 'Encuentra Certificadores Energéticos Acreditados en tu Zona Hoy' : isEngland ? 'Find Certified EPC Assessors in Your Local Area Today' : isFrance ? 'Trouvez des Diagnostiqueurs Certifiés près de chez vous' : isPortugal ? 'Encontre Peritos Certificados na sua Zona' : 'Find Certified BER Assessors in Your Local Area Today',
         sortBy: isSpanish ? 'Ordenar Por:' : isFrance ? 'Trier Par:' : isPortugal ? 'Ordenar Por:' : 'Sort By:',
         loadingPartners: isSpanish ? 'Cargando Socios...' : isFrance ? 'Chargement des Partenaires...' : isPortugal ? 'A Carregar Parceiros...' : 'Loading Partners...',
@@ -155,8 +155,8 @@ const NewCatalogue = () => {
         resetSearch: isSpanish ? 'Restablecer Búsqueda' : isFrance ? 'Réinitialiser' : isPortugal ? 'Reiniciar Pesquisa' : 'Reset Search',
         hireAgent: isSpanish ? 'Contrata un Asesor Energético Gratis' : isFrance ? 'Embauchez un Conseiller Énergétique Gratuitement' : isPortugal ? 'Contrate um Consultor Energético Grátis' : 'Hire An Energy Agent For Free',
         defaultLocation: isSpanish ? 'España' : isEngland ? 'England' : isFrance ? 'France' : isPortugal ? 'Portugal' : 'Ireland',
-        seoTitle: isSpanish ? 'Catálogo de Negocios' : isFrance ? 'Catalogue d\'Entreprises' : isPortugal ? 'Catálogo de Empresas' : 'Business Catalogue',
-        seoDescription: isSpanish ? 'Explora el catálogo de negocios de eficiencia energética verificados. Encuentra aislamiento, bombas de calor, energía solar y más.' : isEngland ? "Browse EPC Cert's catalogue of verified home energy businesses. Find insulation, heat pumps, solar, and more." : isFrance ? 'Parcourez le catalogue des entreprises d\'efficacité énergétique vérifiées. Trouvez isolation, pompes à chaleur, solaire et plus.' : isPortugal ? 'Explore o catálogo de empresas de eficiência energética verificadas. Encontre isolamento, bombas de calor, solar e mais.' : "Browse The Berman's catalogue of verified home energy businesses. Find insulation, heat pumps, solar, and more.",
+        seoTitle: isSpanish ? 'Catálogo de Negocios' : isEngland ? 'Business Catalogue' : isFrance ? 'Catalogue d\'Entreprises' : isPortugal ? 'Catálogo de Empresas' : 'Home Energy Upgrade Services Directory',
+        seoDescription: isSpanish ? 'Explora el catálogo de negocios de eficiencia energética verificados. Encuentra aislamiento, bombas de calor, energía solar y más.' : isEngland ? "Browse EPC Cert's catalogue of verified home energy businesses. Find insulation, heat pumps, solar, and more." : isFrance ? 'Parcourez le catalogue des entreprises d\'efficacité énergétique vérifiées. Trouvez isolation, pompes à chaleur, solaire et plus.' : isPortugal ? 'Explore o catálogo de empresas de eficiência energética verificadas. Encontre isolamento, bombas de calor, solar e mais.' : 'Find Trusted Home Energy Upgrade Services Across Ireland, Including Insulation, Solar, and Heating Upgrades. Compare Providers and Get Quotes Today',
         consideringSolar: isSpanish ? '¿Interesado en Paneles Solares?' : isFrance ? 'Intéressé par le Solaire?' : isPortugal ? 'Interessado em Painéis Solares?' : 'Considering Solar?',
         viewAll: isSpanish ? 'Ver Todo' : isFrance ? 'Voir Tout' : isPortugal ? 'Ver Tudo' : 'View All',
     };
@@ -312,6 +312,16 @@ const NewCatalogue = () => {
                 title={t.seoTitle}
                 description={t.seoDescription}
                 canonical="/catalogue"
+                jsonLd={{
+                    '@context': 'https://schema.org',
+                    '@type': 'Organization',
+                    name: isEngland ? 'EPC Cert' : 'The Berman',
+                    url: isEngland ? 'https://epccert.com' : 'https://theberman.eu',
+                    logo: isEngland ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
+                    sameAs: isEngland
+                        ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
+                        : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
+                }}
             />
 
             <section className="relative min-h-[70vh] md:min-h-[80vh] overflow-hidden flex items-center md:m-10 md:rounded-2xl">

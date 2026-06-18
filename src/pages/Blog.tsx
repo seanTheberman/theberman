@@ -123,10 +123,10 @@ const BlogPage = () => {
         noArticlesCategory: 'No articles found in this category.',
         locale: 'en-GB' as const,
     } : {
-        seoTitle: 'Blog',
-        seoDesc: 'Expert guides on BER certificates, energy grants, home upgrades, and more from The Berman.',
+        seoTitle: 'BER Blog Ireland | The BER Man',
+        seoDesc: 'Stay Updated with the BER Blog from The BER Man. Discover Expert Insights on Building Energy Ratings, Home Efficiency, and Sustainable Living in Ireland',
         loading: 'Loading blog...',
-        latest: 'Latest Articles',
+        latest: 'BER Blog Ireland',
         showing: (n: number, t: number) => `Showing ${n} of ${t} articles`,
         searchPlaceholder: 'Search articles...',
         categories: 'Categories',
@@ -206,6 +206,16 @@ const BlogPage = () => {
                 title={tr.seoTitle}
                 description={tr.seoDesc}
                 canonical="/blog"
+                jsonLd={{
+                    '@context': 'https://schema.org',
+                    '@type': 'Organization',
+                    name: tenant === 'england' ? 'EPC Cert' : 'The Berman',
+                    url: tenant === 'england' ? 'https://epccert.com' : 'https://theberman.eu',
+                    logo: tenant === 'england' ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
+                    sameAs: tenant === 'england'
+                        ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
+                        : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
+                }}
             />
 
             {/* Header */}
@@ -219,6 +229,11 @@ const BlogPage = () => {
                             <h1 className="text-4xl md:text-5xl font-black text-gray-900 uppercase tracking-tighter italic mb-2">
                                 {c('hero', 'heading', tr.latest)}
                             </h1>
+                            {!isSpanish && !isEngland && (
+                                <p className="text-gray-600 font-medium tracking-wide text-sm max-w-xl mb-2">
+                                    Explore expert insights and guides on Building Energy Ratings, home efficiency, and sustainable living in Ireland.
+                                </p>
+                            )}
                             <p className="text-gray-500 font-medium tracking-wide text-sm">
                                 {c('hero', 'subtitle', tr.showing(filteredArticles.length, articles.length))}
                             </p>

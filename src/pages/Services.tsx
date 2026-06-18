@@ -49,7 +49,19 @@ const Services = () => {
                 title={title}
                 description={description}
                 canonical="/services"
-                jsonLd={serviceSchema}
+                jsonLd={[
+                    serviceSchema,
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'Organization',
+                        name: brand,
+                        url: baseUrl,
+                        logo: `${baseUrl}/logo.png`,
+                        sameAs: isEngland
+                            ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
+                            : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
+                    }
+                ]}
             />
 
             {/* 1. COMPACT HERO SECTION */}

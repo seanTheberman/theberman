@@ -60,39 +60,39 @@ const About = () => {
         joinP: '¿Preparado para tu certificación energética profesional? Nuestro equipo nacional está listo para ayudarte hoy mismo.',
         cta: 'Pedir mi Presupuesto',
     } : {
-        seoTitle: isEngland ? 'About Us - Expert EPC Assessors' : 'About Us - Expert BER Assessors',
-        seoDesc: isEngland ? "Learn about EPC Cert, England's leading energy consultancy. Fast, accurate, and professional energy ratings." : "Learn about The Berman, Ireland's leading energy consultancy. Fast, accurate, and professional energy ratings.",
-        missionTag: 'Our Mission',
-        title1: 'Precision in every',
-        title2: 'Assessment.',
-        heroP: isEngland ? "Helping homeowners across England understand, improve, and certify their property's energy efficiency since 2015." : "Helping homeowners across Ireland understand, improve, and certify their property's energy efficiency since 2015.",
-        storyH: 'Our Story',
+        seoTitle: isEngland ? 'About Us - Expert EPC Assessors' : 'About The BER Man | BER Experts Ireland',
+        seoDesc: isEngland ? "Learn about EPC Cert, England's leading energy consultancy. Fast, accurate, and professional energy ratings." : "Learn About the BER Man and How We Connect Property Owners with Qualified BER Assessors. Trusted by Homeowners Across Ireland",
+        missionTag: 'Who We Are',
+        title1: 'About The BER',
+        title2: 'Man',
+        heroP: isEngland ? "Helping homeowners across England understand, improve, and certify their property's energy efficiency since 2015." : "The BER Man helps property owners connect with qualified BER assessors through a simple and transparent process. Our platform makes arranging BER assessments easier while helping users make informed energy decisions.",
+        storyH: 'Connecting Property Owners with Qualified BER Assessors',
         story: isEngland ? [
             `${brand} was founded with a singular objective: to bring professional clarity and technical rigor to England's energy rating industry. We recognized that homeowners and businesses weren't just looking for a certificate. They were looking for a roadmap to a more sustainable, cost-effective future.`,
             "What began as a specialized team in London has grown into a nationwide network of accredited experts. Our growth has been fueled by a commitment to accuracy, integrity, and a deep understanding of the English building stock. We don't just measure energy performance; we interpret it, providing actionable insights that lead to real-world savings.",
             `Today, ${brand} stands as a benchmark for energy consultancy in England. We have successfully completed over 10,000 assessments, helping families and enterprises navigate the complexities of EPC ratings and government grants. Our mission remains unchanged: to empower our clients with the knowledge they need to make informed decisions about their property's energy journey.`,
             `As we look toward the future, our focus continues to be on innovation and excellence. We are constantly refining our processes and staying at the forefront of energy technology to ensure our clients receive the highest standard of service. At ${brand}, we believe that an energy-efficient home is the foundation of a modern, sustainable England.`,
         ] : [
-            "The Berman was founded with a singular objective: to bring professional clarity and technical rigor to Ireland's energy rating industry. We recognized that homeowners and businesses weren't just looking for a certificate. They were looking for a roadmap to a more sustainable, cost-effective future.",
-            "What began as a specialized team in Dublin has grown into a nationwide network of SEAI-registered experts. Our growth has been fueled by a commitment to accuracy, integrity, and a deep understanding of the Irish building stock. We don't just measure energy performance; we interpret it, providing actionable insights that lead to real-world savings.",
-            "Today, The Berman stands as a benchmark for energy consultancy in Ireland. We have successfully completed over 10,000 assessments, helping families and enterprises navigate the complexities of BER ratings and SEAI grants. Our mission remains unchanged: to empower our clients with the knowledge they need to make informed decisions about their property's energy journey.",
-            "As we look toward the future, our focus continues to be on innovation and excellence. We are constantly refining our processes and staying at the forefront of energy technology to ensure our clients receive the highest standard of service. At The Berman, we believe that an energy-efficient home is the foundation of a modern, sustainable Ireland.",
+            "The BER Man was created to make arranging BER assessments simpler, more transparent, and easier to manage for property owners.",
+            "What started as a specialist service has grown into a trusted network of SEAI-registered BER Assessors, helping homeowners, landlords, estate agents, and businesses access professional energy rating services through one convenient platform.",
+            "Today, the BER Man helps connect property owners with qualified assessors while making BER assessments easier to arrange and understand.",
+            "Our focus remains simple: helping people make informed decisions about their property's energy performance with confidence.",
         ],
         stats: isEngland ? [
             { n: '1k+', l1: 'Completed', l2: 'EPC Assessments' },
             { n: '100+', l1: 'Nationwide', l2: 'Network Assessors' },
             { n: 'EPC', l1: 'Fully Accredited', l2: 'Energy Experts' },
         ] : [
-            { n: '1k+', l1: 'Completed', l2: 'BER Assessments' },
-            { n: '100+', l1: 'Nationwide', l2: 'Network Assessors' },
-            { n: 'SEAI', l1: 'Fully Registered', l2: 'Energy Experts' },
+            { n: '1,000+', l1: 'BER Assessments', l2: 'Completed' },
+            { n: '100+', l1: 'Qualified', l2: 'Assessors' },
+            { n: 'SEAI', l1: 'Registered', l2: 'BER Assessors' },
         ],
         howH: 'How We Work',
-        howSub: isEngland ? `${brand} Principles` : 'The Berman Principles',
+        howSub: isEngland ? `${brand} Principles` : 'The BER Man combines local expertise with a streamlined online process, helping property owners arrange BER assessments with confidence.',
         values: [
-            { icon: <Zap size={24} />, title: 'Speed & Accuracy', desc: 'We understand your time is valuable. Our assessors provide precise ratings with a focus on fast turnaround.' },
-            { icon: <Shield size={24} />, title: 'Expert Integrity', desc: 'All assessments are handled by fully insured and registered professionals committed to honest reporting.' },
-            { icon: <Globe size={24} />, title: 'Green Future', desc: 'We provide recommendations aimed at long-term energy savings and environmental impact reduction.' },
+            { icon: <Zap size={24} />, title: 'Speed & Accuracy', desc: isEngland ? 'We understand your time is valuable. Our assessors provide precise ratings with a focus on fast turnaround.' : 'Arrange BER assessments through a streamlined process designed to save time while maintaining professional standards.' },
+            { icon: <Shield size={24} />, title: isEngland ? 'Expert Integrity' : 'Qualified Professionals', desc: isEngland ? 'All assessments are handled by fully insured and registered professionals committed to honest reporting.' : 'Connect with experienced assessors who meet recognised industry requirements and deliver reliable property assessments.' },
+            { icon: <Globe size={24} />, title: isEngland ? 'Green Future' : 'Better Energy Decisions', desc: isEngland ? 'We provide recommendations aimed at long-term energy savings and environmental impact reduction.' : 'Gain valuable insights into your property\'s energy performance and identify opportunities for improvement.' },
         ],
         faqH: 'Frequently Asked Questions',
         faqSub: 'Everything you need to know',
@@ -117,10 +117,10 @@ const About = () => {
             { q: 'Are BER assessors registered and trusted?', a: 'Yes. All BER assessments are carried out by SEAI-registered assessors who follow an official code of practice.' },
             { q: 'What happens if I get a bad rating?', a: 'A bad rating does not prevent you from selling. It simply informs the buyer. Our advisory report will suggest ways to improve it.' },
         ],
-        joinH: isEngland ? `Join ${brand}` : 'Join the Berman',
-        joinH2: isEngland ? '' : 'Family',
-        joinP: isEngland ? 'Ready for a professional EPC assessment? Our nationwide team is here to help you today.' : 'Ready for a professional BER assessment? Our nationwide team is here to help you today.',
-        cta: 'Get My Quote',
+        joinH: isEngland ? `Join ${brand}` : 'Ready to Arrange Your',
+        joinH2: isEngland ? '' : 'BER Assessment?',
+        joinP: isEngland ? 'Ready for a professional EPC assessment? Our nationwide team is here to help you today.' : 'Connect with qualified BER assessors and compare options for your property through one simple platform.',
+        cta: 'Get My BER Quote',
     };
 
     const baseUrl = tenant === 'england' ? 'https://epccert.com' : isSpanish ? 'https://certificadoenerg\u00e9tico.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://theberman.eu';
@@ -140,7 +140,7 @@ const About = () => {
                     ? ['https://www.facebook.com/dpefrance', 'https://www.instagram.com/dpefrance']
                     : tenant === 'portugal'
                         ? ['https://www.facebook.com/certificadoenergeticopt', 'https://www.instagram.com/certificadoenergeticopt']
-                        : ['https://www.facebook.com/theberman', 'https://www.instagram.com/theberman'],
+                        : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
     };
 
     return (
@@ -148,7 +148,7 @@ const About = () => {
             <SEOHead
                 title={tr.seoTitle}
                 description={tr.seoDesc}
-                canonical="/about"
+                canonical="/about-us"
                 jsonLd={orgSchema}
             />
 

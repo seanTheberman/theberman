@@ -10,13 +10,13 @@ import QuoteModal from './QuoteModal';
 
 const NAV_LINKS = [
     { label: 'Home', path: '/' },
-    { label: 'About', path: '/about' },
+    { label: 'About', path: '/about-us' },
     { label: 'Home Energy Upgrade Catalogue', path: '/catalogue' },
     { label: 'Speak to an Energy Advisor', path: '/hire-agent' },
     { label: 'Book Ber Assessors', path: '/contact-us' },
     { label: 'Our News', path: '/news' },
     { label: 'Blog', path: '/blog' },
-    { label: 'FAQ', path: '/faq' },
+    { label: 'FAQ', path: '/ber-faqs/' },
     { label: 'Location', path: '/locations' },
     { label: 'Contact', path: '/contact-us' },
 ];
@@ -533,11 +533,11 @@ const Layout = () => {
                             <ul className="space-y-3">
                                 {[
                                     { label: isSpanish ? 'Inicio' : 'Home', path: '/' },
-                                    { label: isSpanish ? 'Sobre Nosotros' : 'About Us', path: '/about' },
+                                    { label: isSpanish ? 'Sobre Nosotros' : 'About Us', path: '/about-us' },
                                     { label: isSpanish ? 'Catálogo de Eficiencia Energética' : 'Energy Upgrade Catalogue', path: '/catalogue' },
                                     { label: isSpanish ? 'Habla con un Asesor Energético' : 'Speak to an Energy Advisor', path: '/hire-agent' },
                                     { label: isSpanish ? 'Registro de Negocio' : 'Business Registration', path: '/signup?role=business' },
-                                    { label: 'FAQ', path: '/faq' }
+                                    { label: 'FAQ', path: '/ber-faqs/' }
                                 ].map(link => (
                                     <li key={link.path}>
                                         <Link to={link.path} className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{link.label}</Link>
