@@ -12,13 +12,24 @@ interface PageContentMap {
  * Returns section data keyed by section ID.
  * Values from the DB override defaults, so the frontend always has content.
  */
+function getDefaultContentForPage(page: string, tenant: string): PageContentMap {
+    const map: PageContentMap = {};
+    const pageDef = CMS_PAGES.find(p => p.id === page);
+    if (pageDef) {
+        for (const section of pageDef.sections) {
+            map[section.id] = getDefaultsForTenant(page, section.id, tenant);
+        }
+    }
+    return map;
+}
+
 export function usePageContent(page: string): { content: PageContentMap; loading: boolean } {
-    const [content, setContent] = useState<PageContentMap>({});
+    const tenant = getTenantFromDomain();
+    const [content, setContent] = useState<PageContentMap>(() => getDefaultContentForPage(page, tenant));
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         let cancelled = false;
-        const tenant = getTenantFromDomain();
 
         const fetchContent = async () => {
             try {
@@ -30,15 +41,7 @@ export function usePageContent(page: string): { content: PageContentMap; loading
                     .eq('is_active', true);
 
                 if (!cancelled) {
-                    const map: PageContentMap = {};
-
-                    // Start with defaults for ALL sections on this page
-                    const pageDef = CMS_PAGES.find(p => p.id === page);
-                    if (pageDef) {
-                        for (const section of pageDef.sections) {
-                            map[section.id] = getDefaultsForTenant(page, section.id, tenant);
-                        }
-                    }
+                    const map = getDefaultContentForPage(page, tenant);
 
                     // Merge DB content over defaults (DB wins)
                     if (data) {
@@ -57,7 +60,7 @@ export function usePageContent(page: string): { content: PageContentMap; loading
 
         fetchContent();
         return () => { cancelled = true; };
-    }, [page]);
+    }, [page, tenant]);
 
     return { content, loading };
 }

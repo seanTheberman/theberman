@@ -86,10 +86,10 @@ export const CMS_PAGES: PageDefinition[] = [
                 ],
                 defaults: {
                     ireland: {
-                        badge_text: "Ireland's Largest BER Website",
-                        heading: 'Need a',
-                        heading_highlight: 'BER Cert?',
-                        subheading: 'The fastest, most reliable way to get your Building Energy Rating. Guaranteed lowest prices from 100+ assessors nationwide.',
+                        badge_text: 'Trusted by 1,000+ Irish homeowners',
+                        heading: 'BER Cert Ireland – Get Quotes from',
+                        heading_highlight: 'Registered Assessors',
+                        subheading: 'The fastest, most reliable way to get your official Building Energy Rating. Compare competing quotes from local, SEAI-registered assessors today.',
                         cta_line: 'Get the Best Quotes from local BER Assessors today.',
                         cta_button_text: 'Get a Free Quote',
                         cta_button_url: '/get-quote',
@@ -189,7 +189,7 @@ export const CMS_PAGES: PageDefinition[] = [
                 ],
                 defaults: {
                     ireland: {
-                        tag: 'Simple Process', heading: 'How It Works',
+                        tag: 'Simple Process', heading: 'How to Get Your BER Certificate',
                         step1_title: 'Select Date', step1_desc: 'Tell us your preferred date & time for assessment.',
                         step2_title: 'Post Details', step2_desc: 'Share your property info in less than 1 minute.',
                         step3_title: 'Get Quotes', step3_desc: 'Receive competitive prices from local assessors.',
@@ -259,10 +259,10 @@ export const CMS_PAGES: PageDefinition[] = [
                 defaults: {
                     ireland: {
                         tag: 'The Advantage', heading: 'Why Homeowners Trust', heading_highlight: 'The BER Man',
-                        benefit1_title: 'Lowest Prices Guaranteed', benefit1_desc: 'Receive multiple quotes and choose the best option for you.',
-                        benefit2_title: 'BER Registered Assessors Only', benefit2_desc: 'Every assessor is fully certified and vetted for quality.',
-                        benefit3_title: 'Money-Back Guarantee', benefit3_desc: 'We ensure you get a professional service or your money back.',
-                        benefit4_title: 'Instant Online Booking', benefit4_desc: 'No back-and-forth phone calls. Book everything in real-time.',
+                        benefit1_title: 'Compare Multiple Quotes', benefit1_desc: 'Receive quotes from trusted assessors and find the option that suits your needs.',
+                        benefit2_title: 'SEAI-registered BER Assessors', benefit2_desc: 'Every assessor is verified to help maintain high service standards.',
+                        benefit3_title: 'Book with Confidence', benefit3_desc: "We're committed to helping property owners connect with trusted professionals.",
+                        benefit4_title: 'Quick Online Booking', benefit4_desc: 'Choose an appointment time that fits your schedule.',
                         stat1_value: '1k+', stat1_label: 'Users Served',
                         stat2_value: '100+', stat2_label: 'Assessors',
                         stat3_value: '4.9/5', stat3_label: 'Average Rating',
@@ -376,7 +376,7 @@ export const CMS_PAGES: PageDefinition[] = [
                     { key: 'cta_url', label: 'Button URL', type: 'url', group: 'Content' },
                 ],
                 defaults: {
-                    ireland: { heading: 'Are You a BER Assessor?', description: 'Register with theberman.eu and receive local job leads, straight to your phone.', cta_text: 'Join Now', cta_url: '/signup?role=contractor' },
+                    ireland: { heading: 'Are You a BER Assessor?', description: 'Register with theberman.eu and receive local job leads, straight to your phone.', cta_text: 'Register as an Assessor', cta_url: '/signup?role=contractor' },
                     spain: { heading: '¿Eres Certificador Energético?', description: 'Regístrate y recibe leads de trabajo locales, directamente en tu teléfono.', cta_text: 'Únete Ahora', cta_url: '/signup?role=contractor' },
                     england: { heading: 'Are You a Domestic Energy Assessor?', description: 'Register with epccert.com and receive local EPC job leads, straight to your phone.', cta_text: 'Join Now', cta_url: '/signup?role=contractor' },
                     france: { heading: 'Êtes-vous Diagnostiqueur DPE?', description: 'Inscrivez-vous sur dpefrance.eu et recevez des leads locaux.', cta_text: 'Rejoindre', cta_url: '/signup?role=contractor' },
@@ -402,7 +402,7 @@ export const CMS_PAGES: PageDefinition[] = [
                 ],
                 defaults: {
                     ireland: {
-                        tag: 'Explore Our Network', heading: 'Find the Best', heading_highlight: 'Home Energy Partners.',
+                        tag: 'Explore Our Network', heading: 'Home Energy Upgrade Services Across Ireland', heading_highlight: '',
                         description: "Access our curated catalogue of certified home energy businesses. From solar panel installers to insulation specialists, find the right partner for your home's journey to efficiency.",
                         cta1_text: 'Browse Catalogue', cta2_text: 'Register your Business', cta3_text: 'Speak to Advisor',
                         image_url: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=800',
@@ -567,7 +567,7 @@ export const CMS_PAGES: PageDefinition[] = [
                     { key: 'description', label: 'Description', type: 'textarea', group: 'Content' },
                 ],
                 defaults: {
-                    ireland: { tag: 'Our Mission', heading_line1: 'Precision in every', heading_line2: 'Assessment.', description: "Helping homeowners across Ireland understand, improve, and certify their property's energy efficiency since 2015." },
+                    ireland: { tag: 'Who We Are', heading_line1: 'About The BER', heading_line2: 'Man', description: "The BER Man helps property owners connect with qualified BER assessors through a simple and transparent process. Our platform makes arranging BER assessments easier while helping users make informed energy decisions." },
                     spain: { tag: 'Nuestra Misión', heading_line1: 'Precisión en cada', heading_line2: 'Certificación.', description: 'le ayudamos a entender, mejorar y ahorrar dinero con una certificación de eficiencia energética que le será explicada por los mejores profesionales del sector.' },
                     england: { tag: 'Our Mission', heading_line1: 'Precision in every', heading_line2: 'Assessment.', description: "Helping homeowners across England understand, improve, and certify their property's energy performance." },
                     france: { tag: 'Our Mission', heading_line1: 'Precision in every', heading_line2: 'Assessment.', description: "Helping homeowners across France understand, improve, and certify their property's energy performance." },
@@ -596,14 +596,14 @@ export const CMS_PAGES: PageDefinition[] = [
                 ],
                 defaults: {
                     ireland: {
-                        heading: 'Our Story',
-                        paragraph1: "The Berman was founded with a singular objective: to bring professional clarity and technical rigor to Ireland's energy rating industry.",
-                        paragraph2: "What began as a specialized team in Dublin has grown into a nationwide network of SEAI-registered experts.",
-                        paragraph3: "Today, The Berman stands as a benchmark for energy consultancy in Ireland. We have successfully completed over 10,000 assessments.",
-                        paragraph4: "As we look toward the future, our focus continues to be on innovation and excellence.",
-                        stat1_value: '1k+', stat1_label: 'Completed BER Assessments',
-                        stat2_value: '100+', stat2_label: 'Nationwide Network Assessors',
-                        stat3_value: 'SEAI', stat3_label: 'Fully Registered Energy Experts',
+                        heading: 'Connecting Property Owners with Qualified BER Assessors',
+                        paragraph1: "The BER Man was created to make arranging BER assessments simpler, more transparent, and easier to manage for property owners.",
+                        paragraph2: "What started as a specialist service has grown into a trusted network of SEAI-registered BER Assessors, helping homeowners, landlords, estate agents, and businesses access professional energy rating services through one convenient platform.",
+                        paragraph3: "Today, the BER Man helps connect property owners with qualified assessors while making BER assessments easier to arrange and understand.",
+                        paragraph4: "Our focus remains simple: helping people make informed decisions about their property's energy performance with confidence.",
+                        stat1_value: '1,000+', stat1_label: 'BER Assessments Completed',
+                        stat2_value: '100+', stat2_label: 'Qualified Assessors',
+                        stat3_value: 'SEAI', stat3_label: 'Registered BER Assessors',
                     },
                     spain: {
                         heading: 'Nuestra Historia',
@@ -661,7 +661,7 @@ export const CMS_PAGES: PageDefinition[] = [
                     { key: 'button_text', label: 'Button Text', type: 'text', group: 'Content' },
                 ],
                 defaults: {
-                    ireland: { heading: 'Join the', heading_highlight: 'The Berman', description: 'Ready for a professional BER assessment? Our nationwide team is ready to help you today.', button_text: 'Get My BER Quote' },
+                    ireland: { heading: 'Ready to Arrange Your', heading_highlight: 'BER Assessment?', description: 'Connect with qualified BER assessors and compare options for your property through one simple platform.', button_text: 'Get My BER Quote' },
                     spain: { heading: 'Únete a la familia', heading_highlight: 'Certificado Energético', description: '¿Preparado para tu certificación energética profesional? Nuestro equipo nacional está listo para ayudarte hoy mismo.', button_text: 'Pedir mi Presupuesto' },
                     england: { heading: 'Join', heading_highlight: 'EPC Cert', description: 'Ready for a professional EPC assessment? Our nationwide network of accredited DEAs is ready to help you today.', button_text: 'Get My EPC Quote' },
                     france: { heading: 'Join', heading_highlight: 'DPE Cert', description: 'Ready for a professional DPE assessment? Our nationwide network of accredited DPEs is ready to help you today.', button_text: 'Get My DPE Quote' },
@@ -690,7 +690,7 @@ export const CMS_PAGES: PageDefinition[] = [
                     { key: 'subtitle', label: 'Subtitle', type: 'textarea', group: 'Content' },
                 ],
                 defaults: {
-                    ireland: { badge: 'Get In Touch', heading_line1: 'How can we', heading_line2: 'help?', subtitle: 'Have a question about BER assessments? Our team is here to provide the support you need.' },
+                    ireland: { badge: 'Get In Touch', heading_line1: 'Book a BER', heading_line2: 'Assessment in Ireland', subtitle: 'Book a BER Assessment in Ireland or Contact the BER Man for Support. Connect with Qualified BER Assessors and Get Assistance with Your Enquiry' },
                     spain: { badge: 'Ponte en Contacto', heading_line1: '¿En qué podemos', heading_line2: 'ayudarte?', subtitle: '¿Tienes alguna pregunta sobre certificaciones energéticas? Nuestro equipo está aquí para ayudarte.' },
                     england: { badge: 'Get In Touch', heading_line1: 'How can we', heading_line2: 'help?', subtitle: 'Have a question about EPC assessments? Our team is here to provide the support you need.' },
                     france: { badge: 'Get In Touch', heading_line1: 'How can we', heading_line2: 'help?', subtitle: 'Have a question about DPE assessments? Our team is here to provide the support you need.' },
@@ -807,7 +807,7 @@ export const CMS_PAGES: PageDefinition[] = [
                     { key: 'cta_image', label: 'CTA Image', type: 'image', group: 'Media' },
                 ],
                 defaults: {
-                    ireland: { heading: 'Still have questions?', description: 'Our team is here to help. Get in touch for personalised assistance.', button_text: 'Contact Us', button_url: '/contact-us', cta_image: '' },
+                    ireland: { heading: "Ireland's Leading BER Consultants", description: 'Trusted by homeowners across the country.', button_text: 'Contact Us', button_url: '/contact-us', cta_image: '' },
                     spain: { heading: '¿Todavía tienes preguntas?', description: 'Nuestro equipo está aquí para ayudarte. Ponte en contacto para asistencia personalizada.', button_text: 'Contáctanos', button_url: '/contact-us', cta_image: '' },
                     england: { heading: 'Still have questions?', description: 'Our team is here to help. Get in touch for personalised assistance.', button_text: 'Contact Us', button_url: '/contact-us', cta_image: '' },
                     france: { heading: 'Vous avez encore des questions ?', description: 'Notre équipe est là pour vous aider. Contactez-nous pour une assistance personnalisée.', button_text: 'Contactez-nous', button_url: '/contact-us', cta_image: '' },
@@ -891,7 +891,7 @@ export const CMS_PAGES: PageDefinition[] = [
                     { key: 'hero_image', label: 'Hero Image', type: 'image', group: 'Media' },
                 ],
                 defaults: {
-                    ireland: { badge: 'Latest Updates', heading: 'Our News', subtitle: 'Stay informed with the latest updates on energy regulations, grants, and industry insights.', hero_image: '' },
+                    ireland: { badge: 'Latest Updates', heading: 'News & Updates', subtitle: 'Latest from The Berman on Energy, Grants and community', hero_image: '' },
                     spain: { badge: 'Últimas Noticias', heading: 'Nuestras Noticias', subtitle: 'Mantente informado con las últimas actualizaciones sobre regulaciones energéticas, subvenciones y tendencias del sector.', hero_image: '' },
                     england: { badge: 'Latest Updates', heading: 'Our News', subtitle: 'Stay informed with the latest updates on energy regulations, grants, and industry insights.', hero_image: '' },
                     france: { badge: 'Dernières Actualités', heading: 'Nos Actualités', subtitle: 'Restez informé des dernières mises à jour sur les réglementations énergétiques, les aides et les tendances du secteur.', hero_image: '' },
@@ -942,7 +942,7 @@ export const CMS_PAGES: PageDefinition[] = [
                     { key: 'hero_image', label: 'Hero Image', type: 'image', group: 'Media' },
                 ],
                 defaults: {
-                    ireland: { badge: 'Insights', heading: 'Energy Blog', subtitle: 'Expert articles, guides, and tips on energy efficiency, home upgrades, and certification.', hero_image: '' },
+                    ireland: { badge: 'Insights', heading: 'BER Blog Ireland', subtitle: 'Expert articles, guides, and tips on Building Energy Ratings, home efficiency, and certification in Ireland.', hero_image: '' },
                     spain: { badge: 'Consejos', heading: 'Blog Energético', subtitle: 'Artículos expertos, guías y consejos sobre eficiencia energética, mejoras del hogar y certificación.', hero_image: '' },
                     england: { badge: 'Insights', heading: 'Energy Blog', subtitle: 'Expert articles, guides, and tips on energy efficiency, home upgrades, and certification.', hero_image: '' },
                     france: { badge: 'Conseils', heading: 'Blog Énergie', subtitle: 'Articles experts, guides et astuces sur l\'efficacité énergétique, les rénovations et la certification.', hero_image: '' },
