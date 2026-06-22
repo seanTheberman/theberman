@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '../lib/supabase';
 import {
-    Loader2, Send, Mail, Globe
+    Loader2, Send, Mail, Globe, Phone, MapPin, Clock
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getTownsForTenant } from '../lib/tenantData';
@@ -189,29 +189,47 @@ const Contact = () => {
                             <h3 className="text-xl font-black text-gray-900 mb-8 uppercase tracking-tight">{tr.ourDetails}</h3>
 
                             <div className="space-y-6">
+                                {c('contact_details', 'phone', '') && (
+                                    <InfoItem
+                                        icon={<Phone size={20} />}
+                                        title={isSpanish ? 'Teléfono' : isEngland ? 'Phone' : 'Phone'}
+                                        value={c('contact_details', 'phone', '')}
+                                        href={`tel:${c('contact_details', 'phone', '')}`}
+                                    />
+                                )}
 
                                 <InfoItem
                                     icon={<Mail size={20} />}
                                     title={tr.emailUs}
-                                    value={tenantEmail}
-                                    href={`mailto:${tenantEmail}`}
+                                    value={c('contact_details', 'email', tenantEmail)}
+                                    href={`mailto:${c('contact_details', 'email', tenantEmail)}`}
                                 />
-                                {/* <div className="space-y-3">
+
+                                {c('contact_details', 'address', '') && (
+                                    <div className="space-y-3">
+                                        <InfoItem
+                                            icon={<MapPin size={20} />}
+                                            title={isSpanish ? 'Dirección' : isEngland ? 'Address' : 'Address'}
+                                            value={c('contact_details', 'address', '')}
+                                        />
+                                        {c('contact_details', 'map_url', '') && (
+                                            <button
+                                                onClick={() => window.open(c('contact_details', 'map_url', ''), '_blank')}
+                                                className="ml-0 md:ml-15 px-4 py-1.5 bg-green-50 text-[#007F00] text-[10px] font-black rounded-lg hover:bg-[#007F00] hover:text-white transition-all flex items-center justify-center md:justify-start gap-2 border border-green-100 cursor-pointer w-full md:w-auto"
+                                            >
+                                                {isSpanish ? 'Ver en Mapa' : isEngland ? 'View on Map' : 'View on Map'} <MapPin size={10} />
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+
+                                {c('contact_details', 'business_hours', '') && (
                                     <InfoItem
-                                        icon={<MapPin size={20} />}
-                                        title="Visit Us"
-                                        value="Dublin, Ireland - D04 W7K5"
-                                        onClick={() => {
-                                            window.open('https://www.google.com/maps/search/?api=1&query=13+Upper+Baggot+Street,+Dublin+4+D04+W7K5', '_blank');
-                                        }}
+                                        icon={<Clock size={20} />}
+                                        title={isSpanish ? 'Horario' : isEngland ? 'Opening Hours' : 'Opening Hours'}
+                                        value={c('contact_details', 'business_hours', '')}
                                     />
-                                    <button
-                                        onClick={() => window.open('https://www.google.com/maps/search/?api=1&query=13+Upper+Baggot+Street,+Dublin+4+D04+W7K5', '_blank')}
-                                        className="ml-0 md:ml-15 px-4 py-1.5 bg-green-50 text-[#007F00] text-[10px] font-black rounded-lg hover:bg-[#007F00] hover:text-white transition-all flex items-center justify-center md:justify-start gap-2 border border-green-100 cursor-pointer w-full md:w-auto"
-                                    >
-                                        View in Map <MapPin size={10} />
-                                    </button>
-                                </div> */}
+                                )}
 
                                 <div className="pt-6 border-t border-gray-50">
                                     <InfoItem

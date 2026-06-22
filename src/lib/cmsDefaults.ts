@@ -697,6 +697,28 @@ export const CMS_PAGES: PageDefinition[] = [
                     portugal: { badge: 'Get In Touch', heading_line1: 'How can we', heading_line2: 'help?', subtitle: 'Have a question about Certificado Energético assessments? Our team is here to provide the support you need.' },
                 },
             },
+            {
+                id: 'contact_details',
+                label: 'Contact Details',
+                labels: { spain: 'Detalles de Contacto', france: 'Coordonnées', portugal: 'Detalhes de Contacto' },
+                description: 'Phone, address, and business hours shown on the contact page',
+                descriptions: { spain: 'Teléfono, dirección y horario mostrados en la página de contacto', france: 'Téléphone, adresse et horaires affichés sur la page de contact', portugal: 'Telefone, morada e horário mostrados na página de contacto' },
+                icon: '📋',
+                fields: [
+                    { key: 'phone', label: 'Phone Number', type: 'text', group: 'Details' },
+                    { key: 'email', label: 'Email Address', type: 'text', group: 'Details' },
+                    { key: 'address', label: 'Address', type: 'textarea', group: 'Details' },
+                    { key: 'business_hours', label: 'Business Hours', type: 'text', group: 'Details' },
+                    { key: 'map_url', label: 'Google Maps URL', type: 'url', group: 'Details' },
+                ],
+                defaults: {
+                    ireland: { phone: '', email: 'hello@theberman.eu', address: '', business_hours: '', map_url: '' },
+                    spain: { phone: '', email: 'info@certificadoenergético.eu', address: '', business_hours: '', map_url: '' },
+                    england: { phone: '', email: 'hello@epccert.com', address: '', business_hours: '', map_url: '' },
+                    france: { phone: '', email: 'contact@dpefrance.eu', address: '', business_hours: '', map_url: '' },
+                    portugal: { phone: '', email: 'contact@certificadopt.eu', address: '', business_hours: '', map_url: '' },
+                },
+            },
         ],
     },
     {
