@@ -19,7 +19,7 @@ export const TOWNS_BY_COUNTY_SPAIN: Record<string, string[]> = {
     'Canarias': [
         'Las Palmas de Gran Canaria', 'Santa Cruz de Tenerife', 'Telde', 'Arucas',
         'San Cristóbal de La Laguna', 'Arrecife', 'Puerto del Rosario',
-        'Santa Lucía de Tirajana', 'Adeje', 'Arona'
+        'Santa Lucía de Tirajana', 'Adeje', 'Arona', 'Lanzarote'
     ],
     'Cantabria': [
         'Santander', 'Torrelavega', 'Camargo', 'Piélagos', 'El Astillero',
@@ -36,7 +36,10 @@ export const TOWNS_BY_COUNTY_SPAIN: Record<string, string[]> = {
     'Cataluña': [
         'Barcelona', 'Hospitalet de Llobregat', 'Terrassa', 'Badalona', 'Sabadell',
         'Tarragona', 'Lleida', 'Girona', 'Mataró', 'Reus',
-        'Santa Coloma de Gramenet', 'Cornellà de Llobregat', 'Sant Cugat del Vallès', 'Manresa', 'Rubí'
+        'Santa Coloma de Gramenet', 'Cornellà de Llobregat', 'Sant Cugat del Vallès', 'Manresa', 'Rubí',
+        'Ripoll', 'Camprodon', 'Maçanet de la Selva', 'Blanes', 'Caldes de Malavella',
+        'Bescanó', 'Lloret de Mar', 'Cervià de Ter', 'Puigcerdà', 'Banyoles',
+        "L'Escala", 'Figueres'
     ],
     'Comunidad de Madrid': [
         'Madrid', 'Alcalá de Henares', 'Alcobendas', 'Alcorcón', 'Fuenlabrada',

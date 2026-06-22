@@ -276,8 +276,16 @@ Deno.serve(async (req: Request) => {
 
                 try {
                     console.log(`[send-job-digest] Sending digest with ${relevantJobs.length} jobs to ${contractor.email} (tenant: ${tenant})`);
-                    const html = generateDigestEmail(contractor.full_name, relevantJobs, websiteUrl);
-                    await client.send(smtpFrom, contractor.email, `${relevantJobs.length}x Jobs Still Available to Quote`, html);
+                    const html = generateDigestEmail(contractor.full_name, relevantJobs, websiteUrl, tenant);
+                    const langMap: Record<string, string> = { spain: 'es', france: 'fr', portugal: 'pt' };
+                    const lang = langMap[tenant] || 'en';
+                    const subjects: Record<string, string> = {
+                        en: `${relevantJobs.length}x Jobs Still Available to Quote`,
+                        es: `${relevantJobs.length} trabajos disponibles para presupuestar`,
+                        fr: `${relevantJobs.length} missions encore disponibles pour devis`,
+                        pt: `${relevantJobs.length} trabalhos disponíveis para orçamento`,
+                    };
+                    await client.send(smtpFrom, contractor.email, subjects[lang], html);
                     perTenantResults[tenant].sent++;
                 } catch (sendErr) {
                     console.error(`[send-job-digest] Failed to send digest to ${contractor.email}:`, sendErr);

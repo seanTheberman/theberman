@@ -13,6 +13,7 @@ import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, Bri
 import { useNavigate, Link } from 'react-router-dom';
 import { DatePicker } from '../components/ui/DatePicker';
 import { geocodeAddress } from '../lib/geocoding';
+import { getCountiesForTenant } from '../lib/tenantData';
 
 import toast from 'react-hot-toast';
 
@@ -86,12 +87,7 @@ interface Assessment {
     contractor_payout?: number;
 }
 
-const COUNTIES = [
-    'Carlow', 'Cavan', 'Clare', 'Cork', 'Donegal', 'Dublin', 'Galway', 'Kerry',
-    'Kildare', 'Kilkenny', 'Laois', 'Leitrim', 'Limerick', 'Longford', 'Louth',
-    'Mayo', 'Meath', 'Monaghan', 'Offaly', 'Roscommon', 'Sligo', 'Tipperary',
-    'Waterford', 'Westmeath', 'Wexford', 'Wicklow'
-];
+const COUNTIES = getCountiesForTenant(tenant);
 
 const ContractorDashboard = () => {
     const { t, isSpanish } = useTranslation();

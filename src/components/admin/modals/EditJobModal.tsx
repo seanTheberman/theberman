@@ -3,14 +3,7 @@ import { X, Save } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import toast from 'react-hot-toast';
 import type { Assessment } from '../../../types/admin';
-
-const IRISH_COUNTIES = [
-    'Carlow', 'Cavan', 'Clare', 'Cork', 'Donegal', 'Dublin', 'Galway',
-    'Kerry', 'Kildare', 'Kilkenny', 'Laois', 'Leitrim', 'Limerick',
-    'Longford', 'Louth', 'Mayo', 'Meath', 'Monaghan', 'Offaly',
-    'Roscommon', 'Sligo', 'Tipperary', 'Waterford', 'Westmeath',
-    'Wexford', 'Wicklow'
-];
+import { getCountiesForTenant } from '../../../lib/tenantData';
 
 const JOB_STATUSES = ['draft', 'submitted', 'pending', 'pending_quote', 'quote_accepted', 'scheduled', 'completed', 'assigned', 'live', 'expired'];
 
@@ -179,7 +172,7 @@ export const EditJobModal = ({ assessment, onClose, onSaved }: Props) => {
                                     <label className="block text-xs font-medium text-gray-600 mb-1">County</label>
                                     <select value={formData.county} onChange={e => updateField('county', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500">
                                         <option value="">Select county</option>
-                                        {IRISH_COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                        {getCountiesForTenant(assessment.tenant || 'ireland').map((c: string) => <option key={c} value={c}>{c}</option>)}
                                     </select>
                                 </div>
                                 <div>

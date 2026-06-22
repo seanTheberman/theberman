@@ -2385,8 +2385,9 @@ const Admin = () => {
                 <CreateJobModal
                     onClose={() => setShowCreateJobModal(false)}
                     onJobCreated={() => { fetchAssessments(); }}
+                    selectedTenant={selectedTenant}
                 />
-            )}
+            )},
 
             {showEditJobModal && selectedAssessment && (
                 <EditJobModal

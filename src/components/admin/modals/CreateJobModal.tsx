@@ -2,15 +2,7 @@ import { useState } from 'react';
 import { X, Plus, Home, Briefcase } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import toast from 'react-hot-toast';
-import { getTenantFromDomain } from '../../../lib/tenant';
-
-const IRISH_COUNTIES = [
-    'Carlow', 'Cavan', 'Clare', 'Cork', 'Donegal', 'Dublin', 'Galway',
-    'Kerry', 'Kildare', 'Kilkenny', 'Laois', 'Leitrim', 'Limerick',
-    'Longford', 'Louth', 'Mayo', 'Meath', 'Monaghan', 'Offaly',
-    'Roscommon', 'Sligo', 'Tipperary', 'Waterford', 'Westmeath',
-    'Wexford', 'Wicklow'
-];
+import { getCountiesForTenant } from '../../../lib/tenantData';
 
 const PROPERTY_TYPES = ['Semi-Detached', 'Mid-Terrace', 'End-Terrace', 'Apartment', 'Piso', 'Duplex', 'Detached', 'Bungalow', 'Multi-Unit', 'Other'];
 const PROPERTY_SIZES = [
@@ -34,9 +26,10 @@ const HEATING_COOLING = ['Gas boiler', 'Oil boiler', 'Heat pump', 'Chillers', 'A
 interface Props {
     onClose: () => void;
     onJobCreated: () => void;
+    selectedTenant?: string;
 }
 
-export const CreateJobModal = ({ onClose, onJobCreated }: Props) => {
+export const CreateJobModal = ({ onClose, onJobCreated, selectedTenant = 'ireland' }: Props) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [jobType, setJobType] = useState<'domestic' | 'commercial' | ''>('');
     const [step, setStep] = useState(1);
@@ -105,7 +98,7 @@ export const CreateJobModal = ({ onClose, onJobCreated }: Props) => {
         }
         setIsSubmitting(true);
         try {
-            const tenant = getTenantFromDomain();
+            const tenant = selectedTenant;
             const basePayload: any = {
                 property_address: `${town}, ${county}`,
                 town,
@@ -266,7 +259,7 @@ export const CreateJobModal = ({ onClose, onJobCreated }: Props) => {
                                     <label className="block text-sm font-medium text-gray-700 mb-1">County *</label>
                                     <select value={county} onChange={e => setCounty(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#007F00]">
                                         <option value="">Select county</option>
-                                        {IRISH_COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                        {getCountiesForTenant(selectedTenant).map((c: string) => <option key={c} value={c}>{c}</option>)},
                                     </select>
                                 </div>
                                 <div>
