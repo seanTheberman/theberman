@@ -106,32 +106,32 @@ const HireAgent = () => {
         toastSuccess: '¡Tu consulta ha sido enviada! Un Asesor Energético se pondrá en contacto contigo en breve.',
         toastError: 'Error al enviar el mensaje. Por favor, inténtalo de nuevo.',
     } : isEngland ? {
-        seoTitle: 'Hire an Energy Agent',
-        seoDesc: 'Get free impartial guidance from a certified Energy Agent. Verified technical input and competitive pricing for your home energy upgrades.',
-        badge: 'Expert Guidance',
-        title1: 'Hire An',
-        titleHighlight: 'Energy Agent',
-        title2: ' For Free',
-        subtitle: 'Get impartial guidance, verified technical input, and access to competitive pricing for your home energy upgrades.',
+        seoTitle: 'Energy Advisor England | Independent Home Energy Advice',
+        seoDesc: 'Receive independent energy advice, upgrade guidance and technical support to help improve your property\'s energy performance',
+        badge: 'Expert EPC Guidance',
+        title1: 'Independent',
+        titleHighlight: 'Energy Advice',
+        title2: ' for Homeowners Across England',
+        subtitle: 'Make informed home energy upgrades with EPC expert advice, technical insights, and support tailored to your property\'s needs.',
         speakH1: 'Speak to an',
         speakH2: 'Energy Advisor',
-        speakP: 'Your energy agent will organise and work directly with an EPC assessor to ensure all advice and upgrade recommendations are technically accurate and based on your existing EPC certificate and advisory report.',
-        agentWillLabel: 'The agent will then:',
+        speakP: 'Your Energy Advisor works alongside accredited EPC assessors to help you understand upgrade options, compare quotes and make informed decisions for your property.',
+        agentWillLabel: 'Your EPC Advisor Can Help You:',
         benefits: [
-            'Identify cost-effective upgrade options',
-            'Advise on best EPC improvements',
-            'Source and compare contractor quotes',
-            'Negotiate best-value options',
-            'Assist with grant paperwork',
-            'Avoid unnecessary or overpriced works',
+            'Understand your current EPC rating',
+            'Identify practical improvement options',
+            'Advise on energy efficiency upgrades',
+            'Source and compare assessor and contractor quotes',
+            'Navigate available grants and schemes',
+            'Plan improvements in a logical, cost-effective order',
         ],
-        speakClose: 'The goal is to provide clear, impartial guidance, verified technical input, and access to competitive pricing, ensuring upgrades are completed in the smartest and most economical way possible.',
+        speakClose: 'The goal is to provide clear guidance, verified technical input, and access to competitive pricing, ensuring upgrades are completed as smartly and economically as possible.',
         badge1: 'Independent from contractors',
-        badge2: 'Technical input & certification',
+        badge2: 'Accredited EPC expertise',
         ourDetails: 'Our details',
         emailUs: 'Email Us',
         website: 'Website',
-        requestH: 'Request Your Energy Agent',
+        requestH: 'Request an EPC Advisor Consultation',
         fullName: 'Full Name',
         fullNamePh: 'Full name',
         phoneNumber: 'Phone Number',
@@ -267,16 +267,29 @@ const HireAgent = () => {
                 title={tr.seoTitle}
                 description={tr.seoDesc}
                 canonical="/hire-agent"
-                jsonLd={{
-                    '@context': 'https://schema.org',
-                    '@type': 'Organization',
-                    name: isEngland ? 'EPC Cert' : 'The Berman',
-                    url: isEngland ? 'https://epccert.com' : 'https://theberman.eu',
-                    logo: isEngland ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
-                    sameAs: isEngland
-                        ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
-                        : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
-                }}
+                jsonLd={[
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'BreadcrumbList',
+                        itemListElement: isEngland ? [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.epccert.com/' },
+                            { '@type': 'ListItem', position: 2, name: 'Energy Advisor', item: 'https://www.epccert.com/hire-agent' },
+                        ] : [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.theberman.eu/' },
+                            { '@type': 'ListItem', position: 2, name: 'Hire an Energy Advisor', item: 'https://www.theberman.eu/hire-agent' },
+                        ],
+                    },
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'Organization',
+                        name: isEngland ? 'EPC Cert' : 'The Berman',
+                        url: isEngland ? 'https://epccert.com' : 'https://theberman.eu',
+                        logo: isEngland ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
+                        sameAs: isEngland
+                            ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
+                            : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
+                    },
+                ]}
             />
 
             {/* 1. COMPACT HERO */}

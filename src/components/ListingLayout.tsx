@@ -71,7 +71,7 @@ interface ListingLayoutProps {
 
 
 
-const DEFAULT_HERO_IMAGE = "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2000";
+const DEFAULT_HERO_IMAGE = "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2000&fm=webp";
 
 const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmitting, isOwner = false }: ListingLayoutProps) => {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);

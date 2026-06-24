@@ -60,18 +60,18 @@ const About = () => {
         joinP: '¿Preparado para tu certificación energética profesional? Nuestro equipo nacional está listo para ayudarte hoy mismo.',
         cta: 'Pedir mi Presupuesto',
     } : {
-        seoTitle: isEngland ? 'About Us - Expert EPC Assessors' : 'About The BER Man | BER Experts Ireland',
-        seoDesc: isEngland ? "Learn about EPC Cert, England's leading energy consultancy. Fast, accurate, and professional energy ratings." : "Learn About the BER Man and How We Connect Property Owners with Qualified BER Assessors. Trusted by Homeowners Across Ireland",
+        seoTitle: isEngland ? 'About EPC Cert | Energy Performance Certificate Experts' : 'About The BER Man | BER Experts Ireland',
+        seoDesc: isEngland ? 'Learn about EPC Cert, trusted Energy Performance Certificate experts helping property owners across England arrange EPC assessments' : "Learn About the BER Man and How We Connect Property Owners with Qualified BER Assessors. Trusted by Homeowners Across Ireland",
         missionTag: 'Who We Are',
-        title1: 'About The BER',
-        title2: 'Man',
-        heroP: isEngland ? "Helping homeowners across England understand, improve, and certify their property's energy efficiency since 2015." : "The BER Man helps property owners connect with qualified BER assessors through a simple and transparent process. Our platform makes arranging BER assessments easier while helping users make informed energy decisions.",
-        storyH: 'Connecting Property Owners with Qualified BER Assessors',
+        title1: isEngland ? 'Helping Property Owners' : 'About The BER',
+        title2: isEngland ? 'Arrange EPC Assessments Across England' : 'Man',
+        heroP: isEngland ? 'Helping homeowners, landlords and businesses across England arrange EPC assessments with confidence. Compare quotes from accredited assessors and receive a compliant Energy Performance Certificate at a competitive price.' : "The BER Man helps property owners connect with qualified BER assessors through a simple and transparent process. Our platform makes arranging BER assessments easier while helping users make informed energy decisions.",
+        storyH: isEngland ? 'Connecting Property Owners with Accredited EPC Assessors' : 'Connecting Property Owners with Qualified BER Assessors',
         story: isEngland ? [
-            `${brand} was founded with a singular objective: to bring professional clarity and technical rigor to England's energy rating industry. We recognized that homeowners and businesses weren't just looking for a certificate. They were looking for a roadmap to a more sustainable, cost-effective future.`,
-            "What began as a specialized team in London has grown into a nationwide network of accredited experts. Our growth has been fueled by a commitment to accuracy, integrity, and a deep understanding of the English building stock. We don't just measure energy performance; we interpret it, providing actionable insights that lead to real-world savings.",
-            `Today, ${brand} stands as a benchmark for energy consultancy in England. We have successfully completed over 10,000 assessments, helping families and enterprises navigate the complexities of EPC ratings and government grants. Our mission remains unchanged: to empower our clients with the knowledge they need to make informed decisions about their property's energy journey.`,
-            `As we look toward the future, our focus continues to be on innovation and excellence. We are constantly refining our processes and staying at the forefront of energy technology to ensure our clients receive the highest standard of service. At ${brand}, we believe that an energy-efficient home is the foundation of a modern, sustainable England.`,
+            `${brand} was established to make Energy Performance Certificate (EPC) assessments easier to access for property owners, landlords, estate agents and businesses across England. We understand that obtaining an EPC is often a necessary part of selling, renting or managing a property, yet finding a qualified assessor and arranging an appointment can be time-consuming. Our platform was created to simplify the process by connecting customers with accredited EPC assessors through a trusted nationwide network.`,
+            `From residential homes and rental properties to commercial buildings, ${brand} helps customers access professional EPC assessment services with greater convenience and confidence. We focus on providing a straightforward booking experience, flexible appointment availability and access to qualified assessors who operate in accordance with current EPC regulations and industry standards.`,
+            `As energy efficiency continues to play an important role in the property sector, our commitment remains the same: helping customers across England access reliable EPC assessment services while making the process clear, efficient and stress-free.`,
+            ``,
         ] : [
             "The BER Man was created to make arranging BER assessments simpler, more transparent, and easier to manage for property owners.",
             "What started as a specialist service has grown into a trusted network of SEAI-registered BER Assessors, helping homeowners, landlords, estate agents, and businesses access professional energy rating services through one convenient platform.",
@@ -80,19 +80,19 @@ const About = () => {
         ],
         stats: isEngland ? [
             { n: '1k+', l1: 'Completed', l2: 'EPC Assessments' },
-            { n: '100+', l1: 'Nationwide', l2: 'Network Assessors' },
-            { n: 'EPC', l1: 'Fully Accredited', l2: 'Energy Experts' },
+            { n: '100+', l1: 'Accredited EPC Assessors', l2: 'Across England' },
+            { n: 'EPC', l1: 'Level 3 Qualified', l2: 'Energy Assessors' },
         ] : [
             { n: '1,000+', l1: 'BER Assessments', l2: 'Completed' },
             { n: '100+', l1: 'Qualified', l2: 'Assessors' },
             { n: 'SEAI', l1: 'Registered', l2: 'BER Assessors' },
         ],
         howH: 'How We Work',
-        howSub: isEngland ? `${brand} Principles` : 'The BER Man combines local expertise with a streamlined online process, helping property owners arrange BER assessments with confidence.',
+        howSub: isEngland ? 'Our Core Principles' : 'The BER Man combines local expertise with a streamlined online process, helping property owners arrange BER assessments with confidence.',
         values: [
-            { icon: <Zap size={24} />, title: 'Speed & Accuracy', desc: isEngland ? 'We understand your time is valuable. Our assessors provide precise ratings with a focus on fast turnaround.' : 'Arrange BER assessments through a streamlined process designed to save time while maintaining professional standards.' },
-            { icon: <Shield size={24} />, title: isEngland ? 'Expert Integrity' : 'Qualified Professionals', desc: isEngland ? 'All assessments are handled by fully insured and registered professionals committed to honest reporting.' : 'Connect with experienced assessors who meet recognised industry requirements and deliver reliable property assessments.' },
-            { icon: <Globe size={24} />, title: isEngland ? 'Green Future' : 'Better Energy Decisions', desc: isEngland ? 'We provide recommendations aimed at long-term energy savings and environmental impact reduction.' : 'Gain valuable insights into your property\'s energy performance and identify opportunities for improvement.' },
+            { icon: <Zap size={24} />, title: isEngland ? 'Professional Service' : 'Speed & Accuracy', desc: isEngland ? "Accredited assessors deliver reliable EPC assessments with clear reporting and efficient turnaround times." : 'Arrange BER assessments through a streamlined process designed to save time while maintaining professional standards.' },
+            { icon: <Shield size={24} />, title: isEngland ? 'Accredited Assessors' : 'Qualified Professionals', desc: isEngland ? 'We work with qualified EPC assessors committed to professional standards and impartial assessments.' : 'Connect with experienced assessors who meet recognised industry requirements and deliver reliable property assessments.' },
+            { icon: <Globe size={24} />, title: isEngland ? 'Energy Efficiency Focus' : 'Better Energy Decisions', desc: isEngland ? 'EPC assessments help property owners understand energy performance and identify improvement opportunities.' : 'Gain valuable insights into your property\'s energy performance and identify opportunities for improvement.' },
         ],
         faqH: 'Frequently Asked Questions',
         faqSub: 'Everything you need to know',
@@ -117,10 +117,10 @@ const About = () => {
             { q: 'Are BER assessors registered and trusted?', a: 'Yes. All BER assessments are carried out by SEAI-registered assessors who follow an official code of practice.' },
             { q: 'What happens if I get a bad rating?', a: 'A bad rating does not prevent you from selling. It simply informs the buyer. Our advisory report will suggest ways to improve it.' },
         ],
-        joinH: isEngland ? `Join ${brand}` : 'Ready to Arrange Your',
+        joinH: isEngland ? 'Need an EPC Certificate?' : 'Ready to Arrange Your',
         joinH2: isEngland ? '' : 'BER Assessment?',
-        joinP: isEngland ? 'Ready for a professional EPC assessment? Our nationwide team is here to help you today.' : 'Connect with qualified BER assessors and compare options for your property through one simple platform.',
-        cta: 'Get My BER Quote',
+        joinP: isEngland ? 'Compare quotes from accredited EPC assessors serving homeowners, landlords and businesses across England.' : 'Connect with qualified BER assessors and compare options for your property through one simple platform.',
+        cta: isEngland ? 'Get a Free Quote' : 'Get My BER Quote',
     };
 
     const baseUrl = tenant === 'england' ? 'https://epccert.com' : isSpanish ? 'https://certificadoenerg\u00e9tico.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://theberman.eu';
@@ -149,7 +149,20 @@ const About = () => {
                 title={tr.seoTitle}
                 description={tr.seoDesc}
                 canonical="/about-us"
-                jsonLd={orgSchema}
+                jsonLd={[
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'BreadcrumbList',
+                        itemListElement: isEngland ? [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.epccert.com/' },
+                            { '@type': 'ListItem', position: 2, name: 'About Us', item: 'https://www.epccert.com/about-us' },
+                        ] : [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.theberman.eu/' },
+                            { '@type': 'ListItem', position: 2, name: 'About Us', item: 'https://www.theberman.eu/about-us' },
+                        ],
+                    },
+                    orgSchema,
+                ]}
             />
 
             {/* 1. SIMPLE CENTERED HERO */}

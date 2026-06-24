@@ -50,25 +50,25 @@ const Contact = () => {
     const { content: cms } = usePageContent('contact');
     const c = (section: string, key: string, fallback: string) => cmsValue(cms, section, key, fallback);
     const tr = {
-        seoTitle: isSpanish ? 'Contacto' : isEngland ? 'Contact Us' : 'Book a BER Assessment in Ireland | Contact The BER Man',
+        seoTitle: isSpanish ? 'Contacto' : isEngland ? 'Book EPC Assessment England | Contact EPC Cert' : 'Book a BER Assessment in Ireland | Contact The BER Man',
         seoDesc: isSpanish
             ? 'Contacta con Certificado Energético para tus certificados energéticos, calificaciones y mejoras en toda España.'
             : isEngland
-                ? 'Get in touch with EPC Cert for EPC assessments, energy ratings, and home energy upgrades across England.'
+                ? 'Book an EPC assessment in England with accredited assessors. Contact EPC Cert to compare quotes and arrange your EPC today'
                 : 'Book a BER Assessment in Ireland or Contact the BER Man for Support. Connect with Qualified BER Assessors and Get Assistance with Your Enquiry',
         badge: isSpanish ? 'Ponte en Contacto' : 'Get In Touch',
-        title1: isSpanish ? '¿En qué podemos' : isEngland ? 'How can we' : 'Book a BER',
-        title2: isSpanish ? 'ayudarte?' : isEngland ? 'help?' : 'Assessment in Ireland',
+        title1: isSpanish ? '¿En qué podemos' : isEngland ? 'Book an EPC Assessment' : 'Book a BER',
+        title2: isSpanish ? 'ayudarte?' : isEngland ? 'in England' : 'Assessment in Ireland',
         subtitle: isSpanish
             ? '¿Tienes alguna pregunta sobre certificaciones energéticas? Nuestro equipo está aquí para ayudarte.'
             : isEngland
-                ? 'Have a question about EPC assessments? Our team is here to provide the support you need.'
+                ? 'Compare quotes from accredited EPC assessors across England and arrange your EPC assessment with confidence.'
                 : 'Contact The BER Man to book a BER assessment, connect with qualified BER assessors, or get support with your enquiry.',
         trustStrip: isEngland ? '' : '1,000+ Assessments Completed • 100+ Qualified Assessors • Nationwide Coverage',
         ourDetails: isSpanish ? 'Nuestros Datos' : isEngland ? 'Our details' : 'Contact Information',
         emailUs: isSpanish ? 'Escríbenos' : 'Email Us',
         website: isSpanish ? 'Sitio Web' : 'Website',
-        sendDetailed: isSpanish ? 'Envíanos un mensaje detallado' : isEngland ? 'Send us a detailed message' : 'Request a BER Assessment',
+        sendDetailed: isSpanish ? 'Envíanos un mensaje detallado' : isEngland ? 'Request an EPC Assessment' : 'Request a BER Assessment',
         fullName: isSpanish ? 'Nombre Completo' : 'Full Name',
         fullNamePlaceholder: isSpanish ? 'Nombre completo' : 'Full name',
         phoneNumber: isSpanish ? 'Número de Teléfono' : 'Phone Number',
@@ -96,9 +96,9 @@ const Contact = () => {
         grant: isSpanish ? 'Subvención' : 'Govt Grant',
         other: isSpanish ? 'Otro' : 'Other',
         message: isSpanish ? 'Mensaje' : isEngland ? 'Message' : 'Message',
-        messagePlaceholder: isSpanish ? 'Cuéntanos más sobre tu solicitud...' : isEngland ? 'Tell us more about your request...' : 'Tell us about your property or BER assessment requirements.',
+        messagePlaceholder: isSpanish ? 'Cuéntanos más sobre tu solicitud...' : isEngland ? 'Tell us about your property or EPC assessment requirements.' : 'Tell us about your property or BER assessment requirements.',
         sending: isSpanish ? 'Enviando...' : isEngland ? 'Sending...' : 'Submitting...',
-        sendMessage: isSpanish ? 'Enviar Mensaje' : isEngland ? 'Send Message' : 'Submit Enquiry',
+        sendMessage: isSpanish ? 'Enviar Mensaje' : isEngland ? 'Submit Enquiry' : 'Submit Enquiry',
         toastSuccess: isSpanish ? '¡Mensaje enviado correctamente! Nos pondremos en contacto en breve.' : 'Message sent successfully! We will be in touch shortly.',
         toastError: isSpanish ? 'Error al enviar el mensaje. Por favor, inténtalo de nuevo.' : 'Failed to send message. Please try again.',
     };
@@ -146,16 +146,29 @@ const Contact = () => {
                 title={tr.seoTitle}
                 description={tr.seoDesc}
                 canonical="/contact-us"
-                jsonLd={{
-                    '@context': 'https://schema.org',
-                    '@type': 'Organization',
-                    name: tenant === 'england' ? 'EPC Cert' : 'The Berman',
-                    url: tenant === 'england' ? 'https://epccert.com' : 'https://theberman.eu',
-                    logo: tenant === 'england' ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
-                    sameAs: tenant === 'england'
-                        ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
-                        : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
-                }}
+                jsonLd={[
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'BreadcrumbList',
+                        itemListElement: isEngland ? [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.epccert.com/' },
+                            { '@type': 'ListItem', position: 2, name: 'Contact Us', item: 'https://www.epccert.com/contact-us' },
+                        ] : [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.theberman.eu/' },
+                            { '@type': 'ListItem', position: 2, name: 'Contact Us', item: 'https://www.theberman.eu/contact-us' },
+                        ],
+                    },
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'Organization',
+                        name: tenant === 'england' ? 'EPC Cert' : 'The Berman',
+                        url: tenant === 'england' ? 'https://epccert.com' : 'https://theberman.eu',
+                        logo: tenant === 'england' ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
+                        sameAs: tenant === 'england'
+                            ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
+                            : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
+                    },
+                ]}
             />
 
             {/* 1. COMPACT HERO */}
@@ -186,7 +199,13 @@ const Contact = () => {
 
                         {/* UNIFIED CONTACT INFO CARD */}
                         <div className="lg:w-1/3 w-full bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 border border-gray-100 shadow-sm group hover:border-green-100 transition-all h-full">
-                            <h3 className="text-xl font-black text-gray-900 mb-8 uppercase tracking-tight">{tr.ourDetails}</h3>
+                            <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">{tr.ourDetails}</h3>
+                            {!isSpanish && !isEngland && (
+                                <p className="text-sm text-gray-500 font-medium mb-6 leading-relaxed">
+                                    Supporting property owners across all 26 counties in Ireland.<br />
+                                    Typical response within 1 business day.
+                                </p>
+                            )}
 
                             <div className="space-y-6">
                                 {c('contact_details', 'phone', '') && (
@@ -351,6 +370,11 @@ const Contact = () => {
                                     <input type="text" tabIndex={-1} autoComplete="off" {...register('bot_check')} />
                                 </div>
 
+                                {!isSpanish && !isEngland && (
+                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-widest text-center">
+                                        1,000+ Assessments Completed • 100+ Qualified Assessors • Nationwide Coverage
+                                    </p>
+                                )}
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}

@@ -98,14 +98,14 @@ const NewsPage = () => {
         toastError: 'Verifique a sua ligação ou email.',
         locale: 'pt-PT' as const,
     } : isEngland ? {
-        seoTitle: 'News',
-        seoDesc: 'Stay informed with the latest energy updates, grants, and industry news from EPC Cert.',
+        seoTitle: 'EPC Regulation Updates England | Industry News & Changes',
+        seoDesc: 'Follow the latest EPC regulation updates, compliance changes, government announcements and industry news across England',
         loading: 'Loading latest news...',
         comingSoonH: 'Coming Soon',
-        comingSoonP: "We're currently preparing the latest updates on energy grants and sustainability. Check back shortly for fresh content.",
+        comingSoonP: "We're currently preparing the latest updates on energy performance certificates and sustainability. Check back shortly for fresh content.",
         returnHome: 'Return Home',
-        heading: 'News & Updates',
-        subheading: 'Latest from EPC Cert on Energy, Grants and community',
+        heading: 'EPC Regulation Updates & Industry News England',
+        subheading: 'Stay up to date with EPC regulations, energy efficiency advice, property compliance changes and industry insights for property owners across England',
         noArticles: 'No articles found in this category.',
         viewAllNews: 'View All News',
         activeOffersH: 'Active Retrofit Offers',
@@ -120,14 +120,14 @@ const NewsPage = () => {
         toastError: 'Check your internet or email.',
         locale: 'en-GB' as const,
     } : {
-        seoTitle: 'News',
-        seoDesc: 'Stay informed with the latest energy updates, grants, and industry news from The Berman.',
+        seoTitle: 'BER News Ireland | Energy Efficiency Tips & Property Insights',
+        seoDesc: 'Read the latest BER news, energy efficiency advice, property compliance updates, and expert insights for homeowners and landlords across Ireland',
         loading: 'Loading latest news...',
         comingSoonH: 'Coming Soon',
         comingSoonP: "We're currently preparing the latest updates on energy grants and sustainability. Check back shortly for fresh content.",
         returnHome: 'Return Home',
-        heading: 'News & Updates',
-        subheading: 'Latest from The Berman on Energy, Grants and community',
+        heading: 'BER News, Energy Efficiency Tips & Property Insights Ireland',
+        subheading: 'Explore expert insights on BER Certificates, energy ratings, home energy upgrades, retrofit planning, and property efficiency in Ireland',
         noArticles: 'No articles found in this category.',
         viewAllNews: 'View All News',
         activeOffersH: 'Active Retrofit Offers',
@@ -221,16 +221,29 @@ const NewsPage = () => {
                 title={tr.seoTitle}
                 description={tr.seoDesc}
                 canonical="/news"
-                jsonLd={{
-                    '@context': 'https://schema.org',
-                    '@type': 'Organization',
-                    name: tenant === 'england' ? 'EPC Cert' : 'The Berman',
-                    url: tenant === 'england' ? 'https://epccert.com' : 'https://theberman.eu',
-                    logo: tenant === 'england' ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
-                    sameAs: tenant === 'england'
-                        ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
-                        : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
-                }}
+                jsonLd={[
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'BreadcrumbList',
+                        itemListElement: isEngland ? [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.epccert.com/' },
+                            { '@type': 'ListItem', position: 2, name: 'News', item: 'https://www.epccert.com/news' },
+                        ] : [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.theberman.eu/' },
+                            { '@type': 'ListItem', position: 2, name: 'News', item: 'https://www.theberman.eu/news' },
+                        ],
+                    },
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'Organization',
+                        name: tenant === 'england' ? 'EPC Cert' : 'The Berman',
+                        url: tenant === 'england' ? 'https://epccert.com' : 'https://theberman.eu',
+                        logo: tenant === 'england' ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
+                        sameAs: tenant === 'england'
+                            ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
+                            : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
+                    },
+                ]}
             />
 
 
@@ -328,6 +341,7 @@ const NewsPage = () => {
                                         src={article.image_url}
                                         alt={article.title}
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        loading="lazy"
                                     />
                                 </div>
                                 <h3 className="text-xl font-bold text-gray-900 mb-3 leading-snug group-hover:underline decoration-1 underline-offset-2">

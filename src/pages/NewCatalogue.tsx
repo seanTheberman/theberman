@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useLocation } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Search, MapPin, Star, Loader2, ChevronDown, Zap, Sparkles, ArrowRight, Building2, HardHat } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
@@ -10,9 +11,9 @@ import { getCountiesForTenant } from '../lib/tenantData';
 type CatalogueViewType = 'businesses' | 'assessors';
 
 const HERO_SLIDES = [
-    { image: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=1600' },
-    { image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=1600' },
-    { image: 'https://images.unsplash.com/photo-1613665813446-82a78c468a1d?q=80&w=1600' }
+    { image: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=1600&fm=webp' },
+    { image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=1600&fm=webp' },
+    { image: 'https://images.unsplash.com/photo-1613665813446-82a78c468a1d?q=80&w=1600&fm=webp' }
 ];
 
 
@@ -76,9 +77,16 @@ const NewCatalogue = () => {
     const [selectedLocation, setSelectedLocation] = useState<string>('');
     const [selectedCounty, setSelectedCounty] = useState<string>(searchParams.get('county') || '');
     const [sortBy, setSortBy] = useState('Featured');
-    
+
+    const location = useLocation();
+    const pathView = (location.pathname.endsWith('/ber-assessors') || location.pathname.endsWith('/epc-assessors')) ? 'assessors' : (location.pathname.endsWith('/businesses') || location.pathname.endsWith('/epc-businesses')) ? 'businesses' : null;
+
     // View toggle - Businesses vs BER Assessors
-    const [activeView, setActiveView] = useState<CatalogueViewType>('businesses');
+    const [activeView, setActiveView] = useState<CatalogueViewType>(pathView || 'businesses');
+
+    useEffect(() => {
+        if (pathView) setActiveView(pathView);
+    }, [pathView]);
 
     // Carousel State
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -132,9 +140,9 @@ const NewCatalogue = () => {
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
     const t = {
-        catalogueBadge: isSpanish ? 'El Catálogo' : isEngland ? 'The Catalogue' : isFrance ? 'Le Catalogue' : isPortugal ? 'O Catálogo' : 'Home Energy Upgrade Services',
-        heroLine1: isSpanish ? 'Catálogo de Negocios de' : isEngland ? 'EPC Cert' : isFrance ? 'Catalogue des Entreprises' : isPortugal ? 'Catálogo de Empresas' : 'Home Energy Upgrade',
-        heroLine2: isSpanish ? 'Eficiencia Energética.' : isEngland ? 'Energy Experts Catalogue.' : isFrance ? 'd\'Efficacité Énergétique.' : isPortugal ? 'de Eficiência Energética.' : 'Services Directory.',
+        catalogueBadge: isSpanish ? 'El Catálogo' : isEngland ? 'The Catalogue' : isFrance ? 'Le Catalogue' : isPortugal ? 'O Catálogo' : 'Home Energy Professionals Directory',
+        heroLine1: isSpanish ? 'Catálogo de Negocios de' : isEngland ? "England's EPC" : isFrance ? 'Catalogue des Entreprises' : isPortugal ? 'Catálogo de Empresas' : "Ireland's Home Energy",
+        heroLine2: isSpanish ? 'Eficiencia Energética.' : isEngland ? 'Assessors Directory' : isFrance ? 'd\'Efficacité Énergétique.' : isPortugal ? 'de Eficiência Energética.' : 'Professionals Directory',
         upgradeType: isSpanish ? 'Tipo de Mejora' : isFrance ? 'Type d\'Amélioration' : isPortugal ? 'Tipo de Melhoria' : 'Upgrade Type',
         selectUpgrade: isSpanish ? 'Seleccionar Mejora...' : isFrance ? 'Sélectionner...' : isPortugal ? 'Selecionar Melhoria...' : 'Select Upgrade...',
         location: isSpanish ? 'Ubicación' : isFrance ? 'Localisation' : isPortugal ? 'Localização' : 'Location',
@@ -144,9 +152,9 @@ const NewCatalogue = () => {
         viewProfile: isSpanish ? 'Ver Perfil' : isFrance ? 'Voir le Profil' : isPortugal ? 'Ver Perfil' : 'View Profile',
         businesses: isSpanish ? 'Negocios' : isFrance ? 'Entreprises' : isPortugal ? 'Empresas' : 'Businesses',
         berAssessors: isSpanish ? 'Certificadores Energéticos' : isEngland ? 'EPC Assessors' : isFrance ? 'Diagnostiqueurs DPE' : isPortugal ? 'Peritos Certificados' : 'BER Assessors',
-        businessesHeading: isSpanish ? 'Negocios y Consultores Energéticos' : isFrance ? 'Entreprises et Conseillers Énergétiques' : isPortugal ? 'Empresas e Consultores Energéticos' : 'Home Energy Upgrade Services Directory',
-        businessesSub: isSpanish ? 'Encuentra Negocios y Consultores Energéticos en tu Zona Hoy' : isFrance ? 'Trouvez des Entreprises et Conseillers Énergétiques près de chez vous' : isPortugal ? 'Encontre Empresas e Consultores Energéticos na sua Zona' : 'Find Trusted Home Energy Upgrade Services Across Ireland, Including Insulation, Solar, and Heating Upgrades',
-        assessorsSub: isSpanish ? 'Encuentra Certificadores Energéticos Acreditados en tu Zona Hoy' : isEngland ? 'Find Certified EPC Assessors in Your Local Area Today' : isFrance ? 'Trouvez des Diagnostiqueurs Certifiés près de chez vous' : isPortugal ? 'Encontre Peritos Certificados na sua Zona' : 'Find Certified BER Assessors in Your Local Area Today',
+        businessesHeading: isSpanish ? 'Negocios y Consultores Energéticos' : isEngland ? 'Home Energy Service Providers England' : isFrance ? 'Entreprises et Conseillers Énergétiques' : isPortugal ? 'Empresas e Consultores Energéticos' : "Ireland's Home Energy Professionals Directory",
+        businessesSub: isSpanish ? 'Encuentra Negocios y Consultores Energéticos en tu Zona Hoy' : isEngland ? 'Connect with home energy professionals across England, including EPC assessors, energy consultants and property energy specialists' : isFrance ? 'Trouvez des Entreprises et Conseillers Énergétiques près de chez vous' : isPortugal ? 'Encontre Empresas e Consultores Energéticos na sua Zona' : 'Browse businesses offering BER assessments, insulation solutions, solar energy installations, heat pump services, retrofit consultancy, ventilation systems, and other energy-efficiency improvements',
+        assessorsSub: isSpanish ? 'Encuentra Certificadores Energéticos Acreditados en tu Zona Hoy' : isEngland ? 'EPC Assessors Across England' : isFrance ? 'Trouvez des Diagnostiqueurs Certifiés près de chez vous' : isPortugal ? 'Encontre Peritos Certificados na sua Zona' : 'Find Certified BER Assessors in Your Local Area Today',
         sortBy: isSpanish ? 'Ordenar Por:' : isFrance ? 'Trier Par:' : isPortugal ? 'Ordenar Por:' : 'Sort By:',
         loadingPartners: isSpanish ? 'Cargando Socios...' : isFrance ? 'Chargement des Partenaires...' : isPortugal ? 'A Carregar Parceiros...' : 'Loading Partners...',
         featured: isSpanish ? 'Destacado' : isFrance ? 'En Vedette' : isPortugal ? 'Destaque' : 'Featured',
@@ -155,8 +163,8 @@ const NewCatalogue = () => {
         resetSearch: isSpanish ? 'Restablecer Búsqueda' : isFrance ? 'Réinitialiser' : isPortugal ? 'Reiniciar Pesquisa' : 'Reset Search',
         hireAgent: isSpanish ? 'Contrata un Asesor Energético Gratis' : isFrance ? 'Embauchez un Conseiller Énergétique Gratuitement' : isPortugal ? 'Contrate um Consultor Energético Grátis' : 'Hire An Energy Agent For Free',
         defaultLocation: isSpanish ? 'España' : isEngland ? 'England' : isFrance ? 'France' : isPortugal ? 'Portugal' : 'Ireland',
-        seoTitle: isSpanish ? 'Catálogo de Negocios' : isEngland ? 'Business Catalogue' : isFrance ? 'Catalogue d\'Entreprises' : isPortugal ? 'Catálogo de Empresas' : 'Home Energy Upgrade Services Directory',
-        seoDescription: isSpanish ? 'Explora el catálogo de negocios de eficiencia energética verificados. Encuentra aislamiento, bombas de calor, energía solar y más.' : isEngland ? "Browse EPC Cert's catalogue of verified home energy businesses. Find insulation, heat pumps, solar, and more." : isFrance ? 'Parcourez le catalogue des entreprises d\'efficacité énergétique vérifiées. Trouvez isolation, pompes à chaleur, solaire et plus.' : isPortugal ? 'Explore o catálogo de empresas de eficiência energética verificadas. Encontre isolamento, bombas de calor, solar e mais.' : 'Find Trusted Home Energy Upgrade Services Across Ireland, Including Insulation, Solar, and Heating Upgrades. Compare Providers and Get Quotes Today',
+        seoTitle: isSpanish ? 'Catálogo de Negocios' : isEngland ? 'EPC Assessors Directory England | EPC Cert' : isFrance ? 'Catalogue d\'Entreprises' : isPortugal ? 'Catálogo de Empresas' : 'Home Energy Professionals Directory Ireland | The BER Man',
+        seoDescription: isSpanish ? 'Explora el catálogo de negocios de eficiencia energética verificados. Encuentra aislamiento, bombas de calor, energía solar y más.' : isEngland ? 'Browse accredited EPC assessors across England. Search by location, property type and assessment requirements to find qualified professionals' : isFrance ? 'Parcourez le catalogue des entreprises d\'efficacité énergétique vérifiées. Trouvez isolation, pompes à chaleur, solaire et plus.' : isPortugal ? 'Explore o catálogo de empresas de eficiência energética verificadas. Encontre isolamento, bombas de calor, solar e mais.' : 'Find Trusted BER Assessors, Retrofit Specialists, Insulation Contractors, Solar Installers, and Energy Consultants Across Ireland',
         consideringSolar: isSpanish ? '¿Interesado en Paneles Solares?' : isFrance ? 'Intéressé par le Solaire?' : isPortugal ? 'Interessado em Painéis Solares?' : 'Considering Solar?',
         viewAll: isSpanish ? 'Ver Todo' : isFrance ? 'Voir Tout' : isPortugal ? 'Ver Tudo' : 'View All',
     };
@@ -308,20 +316,46 @@ const NewCatalogue = () => {
 
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen pt-28 md:pt-24 pb-12">
+            <Helmet>
+                <link rel="preload" as="image" href={HERO_SLIDES[0].image} />
+            </Helmet>
             <SEOHead
-                title={t.seoTitle}
-                description={t.seoDescription}
-                canonical="/catalogue"
-                jsonLd={{
-                    '@context': 'https://schema.org',
-                    '@type': 'Organization',
-                    name: isEngland ? 'EPC Cert' : 'The Berman',
-                    url: isEngland ? 'https://epccert.com' : 'https://theberman.eu',
-                    logo: isEngland ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
-                    sameAs: isEngland
-                        ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
-                        : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
-                }}
+                title={isEngland
+                    ? (activeView === 'assessors' ? 'Find EPC Assessors Across England | EPC Cert' : activeView === 'businesses' ? 'Home Energy Professionals England | EPC Cert Directory' : t.seoTitle)
+                    : (activeView === 'assessors' && !isSpanish && !isFrance && !isPortugal
+                        ? 'BER Assessors Directory Ireland | The BER Man'
+                        : activeView === 'businesses' && !isSpanish && !isFrance && !isPortugal
+                            ? 'Home Energy Upgrade Companies Ireland | The BER Man'
+                            : t.seoTitle)}
+                description={isEngland
+                    ? (activeView === 'assessors' ? 'Directory of accredited EPC assessors across England covering residential and commercial Energy Performance Certificate assessments' : activeView === 'businesses' ? 'Connect with home energy professionals across England, including EPC assessors, energy consultants and property energy specialists' : t.seoDescription)
+                    : t.seoDescription}
+                canonical={isEngland
+                    ? (activeView === 'assessors' ? '/catalogue/epc-assessors' : activeView === 'businesses' ? '/catalogue/epc-businesses' : '/catalogue')
+                    : (activeView === 'assessors' ? '/catalogue/ber-assessors' : activeView === 'businesses' ? '/catalogue/businesses' : '/catalogue')}
+                jsonLd={[
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'BreadcrumbList',
+                        itemListElement: isEngland ? [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.epccert.com/' },
+                            { '@type': 'ListItem', position: 2, name: 'EPC Assessors Directory', item: 'https://www.epccert.com/catalogue' },
+                        ] : [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.theberman.eu/' },
+                            { '@type': 'ListItem', position: 2, name: 'Catalogue', item: 'https://www.theberman.eu/catalogue' },
+                        ],
+                    },
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'Organization',
+                        name: isEngland ? 'EPC Cert' : 'The Berman',
+                        url: isEngland ? 'https://epccert.com' : 'https://theberman.eu',
+                        logo: isEngland ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
+                        sameAs: isEngland
+                            ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
+                            : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
+                    },
+                ]}
             />
 
             <section className="relative min-h-[70vh] md:min-h-[80vh] overflow-hidden flex items-center md:m-10 md:rounded-2xl">
@@ -426,9 +460,10 @@ const NewCatalogue = () => {
                                 <div className="flex items-center gap-4 w-full md:contents">
                                     <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl overflow-hidden border-2 border-white/20 shadow-lg shrink-0 bg-white/10">
                                         <img
-                                            src={spotlight.logo_url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=200'}
+                                            src={spotlight.logo_url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=200&fm=webp'}
                                             alt={spotlight.company_name || spotlight.name}
                                             className="w-full h-full object-cover"
+                                            loading="lazy"
                                         />
                                     </div>
                                     <div className="flex items-center gap-2 bg-yellow-400/15 backdrop-blur-sm border border-yellow-400/30 px-4 py-1.5 rounded-full shrink-0 md:hidden">
@@ -494,11 +529,27 @@ const NewCatalogue = () => {
                 <div className="flex flex-col md:flex-row justify-between items-center my-8 md:my-12 gap-6 md:gap-8">
                     <div className="text-center md:text-left">
                         <h2 className="text-2xl md:text-4xl font-black text-gray-900 uppercase tracking-tight mb-2">
-                            {activeView === 'businesses' ? t.businessesHeading : t.berAssessors}
+                            {activeView === 'businesses'
+                                ? (!isSpanish && !isEngland && !isFrance && !isPortugal && location.pathname.endsWith('/businesses')
+                                    ? 'Home Energy Upgrade Companies Ireland'
+                                    : t.businessesHeading)
+                                : (!isSpanish && !isEngland && !isFrance && !isPortugal && location.pathname.endsWith('/ber-assessors')
+                                    ? 'BER Assessors Directory Ireland'
+                                    : t.berAssessors)}
                         </h2>
                         <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] md:text-xs">
                             {activeView === 'businesses' ? t.businessesSub : t.assessorsSub}
                         </p>
+                        {!isSpanish && !isEngland && !isFrance && !isPortugal && activeView === 'businesses' && (
+                            <p className="text-gray-600 font-medium text-sm mt-4 max-w-2xl leading-relaxed normal-case tracking-normal">
+                                The BER Man Home Energy Catalogue helps homeowners, landlords, and property professionals connect with qualified energy upgrade providers across Ireland. Browse businesses offering BER assessments, insulation solutions, solar energy installations, heat pump services, retrofit consultancy, ventilation systems, and other energy-efficiency improvements. Use the directory to explore providers by service type and location, compare options, and find professionals that support your property's energy performance goals.
+                            </p>
+                        )}
+                        {isEngland && activeView === 'assessors' && (
+                            <p className="text-gray-600 font-medium text-sm mt-4 max-w-2xl leading-relaxed normal-case tracking-normal">
+                                The EPC Cert Directory helps homeowners, landlords, estate agents, and businesses connect with accredited EPC assessors across England. Browse professionals providing domestic EPC certificates, commercial EPC assessments, and property energy performance services. Search by location, property type, or assessment requirement to find qualified assessors serving your area.
+                            </p>
+                        )}
                     </div>
 
                     <div className="relative group/sort min-w-[200px]">
@@ -538,9 +589,10 @@ const NewCatalogue = () => {
                                 >
                                     <div className="relative aspect-[4/5] md:aspect-square lg:aspect-[4/5] overflow-hidden border border-gray-100 transform transition-transform duration-300 ease-out hover:-translate-y-2">
                                         <img
-                                            src={listing.banner_url || listing.logo_url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=400'}
+                                            src={listing.banner_url || listing.logo_url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=400&fm=webp'}
                                             alt={listing.company_name || listing.name}
                                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700"
+                                            loading="lazy"
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                                         <div className="absolute top-6 left-6 flex flex-col gap-2">

@@ -12,11 +12,11 @@ const NAV_LINKS = [
     { label: 'Home', path: '/' },
     { label: 'About', path: '/about-us' },
     { label: 'Home Energy Upgrade Catalogue', path: '/catalogue' },
-    { label: 'Speak to an Energy Advisor', path: '/hire-agent' },
-    { label: 'Book Ber Assessors', path: '/contact-us' },
+    { label: 'Speak to an Energy Advisor', path: '/hire-agent', hideForEngland: true },
+    { label: 'Book Ber Assessors', path: '/contact-us', hideForEngland: true },
     { label: 'Our News', path: '/news' },
     { label: 'Blog', path: '/blog' },
-    { label: 'FAQ', path: '/ber-faqs/' },
+    { label: 'FAQ', path: '/ber-faqs/', englandPath: '/epc-faq' },
     { label: 'Location', path: '/locations' },
     { label: 'Contact', path: '/contact-us' },
 ];
@@ -141,7 +141,11 @@ const Layout = () => {
         }
         if (tenant === 'england') {
             const map: Record<string, string> = {
+                'About': 'About Us',
                 'Book Ber Assessors': 'Book EPC Assessors',
+                'Our News': 'News',
+                'FAQ': 'FAQs',
+                'Location': 'Locations',
             };
             return map[label] || label;
         }
@@ -368,7 +372,31 @@ const Layout = () => {
                                                 </button>
                                                 {isLocationsOpen && (
                                                     <div className="bg-gray-50 border-b border-gray-100">
-                                                        {Object.keys(PROVINCES).map((province) => (
+                                                        {tenant === 'england' ? (
+                                                            <>
+                                                                {[
+                                                                    { name: 'London', slug: 'epc-assessment-london' },
+                                                                    { name: 'Manchester', slug: 'epc-assessment-manchester' },
+                                                                    { name: 'Birmingham', slug: 'epc-assessment-birmingham' },
+                                                                ].map(city => (
+                                                                    <Link
+                                                                        key={city.slug}
+                                                                        to={`/${city.slug}/`}
+                                                                        onClick={closeMenu}
+                                                                        className="block pl-8 pr-5 py-2.5 text-xs text-gray-600 hover:text-[#007EA7] hover:bg-gray-100 font-bold uppercase tracking-wide transition-colors"
+                                                                    >
+                                                                        {city.name}
+                                                                    </Link>
+                                                                ))}
+                                                                <Link
+                                                                    to="/locations"
+                                                                    onClick={closeMenu}
+                                                                    className="block pl-8 pr-5 py-2.5 text-xs text-[#007F00] hover:text-[#006400] hover:bg-gray-100 font-bold uppercase tracking-wide transition-colors border-t border-gray-200"
+                                                                >
+                                                                    View All Locations We Cover
+                                                                </Link>
+                                                            </>
+                                                        ) : Object.keys(PROVINCES).map((province) => (
                                                             <div key={province}>
                                                                 <button
                                                                     onClick={() => setExpandedProvince(expandedProvince === province ? null : province)}
@@ -399,7 +427,7 @@ const Layout = () => {
                                         ) : (
                                             <Link
                                                 key={link.label}
-                                                to={link.path}
+                                                to={tenant === 'england' && link.englandPath ? link.englandPath : link.path}
                                                 onClick={closeMenu}
                                                 className="block px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 uppercase tracking-wide border-b border-gray-100"
                                             >
@@ -408,7 +436,7 @@ const Layout = () => {
                                         )
                                     ))}
 
-                                    <button
+                                    {tenant !== 'england' && <button
                                         onClick={() => {
                                             closeMenu();
                                             if (window.location.pathname === '/') {
@@ -421,7 +449,7 @@ const Layout = () => {
                                         className="w-full px-5 py-3 text-left text-sm font-semibold text-gray-700 hover:bg-gray-50 uppercase tracking-wide border-b border-gray-100"
                                     >
                                         {isSpanish ? 'Suscribirse a Noticias' : 'Subscribe to News'}
-                                    </button>
+                                    </button>}
 
                                     <div className="border-t border-gray-200 mt-2 pt-2">
                                         {!user ? (

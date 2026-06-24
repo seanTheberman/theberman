@@ -109,24 +109,26 @@ const BlogPage = () => {
         newBadge: 'Novo',
         locale: 'pt-PT' as const,
     } : isEngland ? {
-        seoTitle: 'Blog',
-        seoDesc: 'Expert guides on EPC certificates, energy grants, home upgrades, and more from EPC Cert.',
+        seoTitle: 'EPC Insights & Energy Efficiency Guides England | EPC Cert',
+        seoDesc: 'Explore EPC guides, energy efficiency advice, property energy insights and expert resources to help homeowners, landlords and businesses across England',
         loading: 'Loading blog...',
-        latest: 'Latest Articles',
+        latest: 'EPC Insights & Energy Efficiency Guides England',
         showing: (n: number, t: number) => `Showing ${n} of ${t} articles`,
         searchPlaceholder: 'Search articles...',
         categories: 'Categories',
-        quickQuote: 'Quick Quote',
+        quickQuote: 'Quick EPC Quote',
         quickQuoteP: 'Get EPC quotes while you read.',
         getQuotes: 'Get Quotes',
         noArticlesSearch: (q: string) => `No articles found for "${q}"`,
         noArticlesCategory: 'No articles found in this category.',
+        viewAllPosts: 'View All Posts',
+        newBadge: 'New',
         locale: 'en-GB' as const,
     } : {
-        seoTitle: 'BER Blog Ireland | The BER Man',
-        seoDesc: 'Stay Updated with the BER Blog from The BER Man. Discover Expert Insights on Building Energy Ratings, Home Efficiency, and Sustainable Living in Ireland',
+        seoTitle: 'BER Insights & Home Energy Guides Ireland | The BER Man',
+        seoDesc: 'Explore BER Certificate Guides, Energy Rating Advice, Home Energy Upgrade Insights, and Property Efficiency Tips for Homeowners Across Ireland',
         loading: 'Loading blog...',
-        latest: 'BER Blog Ireland',
+        latest: 'BER Insights & Home Energy Guides Ireland',
         showing: (n: number, t: number) => `Showing ${n} of ${t} articles`,
         searchPlaceholder: 'Search articles...',
         categories: 'Categories',
@@ -206,16 +208,29 @@ const BlogPage = () => {
                 title={tr.seoTitle}
                 description={tr.seoDesc}
                 canonical="/blog"
-                jsonLd={{
-                    '@context': 'https://schema.org',
-                    '@type': 'Organization',
-                    name: tenant === 'england' ? 'EPC Cert' : 'The Berman',
-                    url: tenant === 'england' ? 'https://epccert.com' : 'https://theberman.eu',
-                    logo: tenant === 'england' ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
-                    sameAs: tenant === 'england'
-                        ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
-                        : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
-                }}
+                jsonLd={[
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'BreadcrumbList',
+                        itemListElement: isEngland ? [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.epccert.com/' },
+                            { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://www.epccert.com/blog' },
+                        ] : [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.theberman.eu/' },
+                            { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://www.theberman.eu/blog' },
+                        ],
+                    },
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'Organization',
+                        name: tenant === 'england' ? 'EPC Cert' : 'The Berman',
+                        url: tenant === 'england' ? 'https://epccert.com' : 'https://theberman.eu',
+                        logo: tenant === 'england' ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
+                        sameAs: tenant === 'england'
+                            ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
+                            : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
+                    },
+                ]}
             />
 
             {/* Header */}
@@ -231,7 +246,12 @@ const BlogPage = () => {
                             </h1>
                             {!isSpanish && !isEngland && (
                                 <p className="text-gray-600 font-medium tracking-wide text-sm max-w-xl mb-2">
-                                    Explore expert insights and guides on Building Energy Ratings, home efficiency, and sustainable living in Ireland.
+                                    Stay informed with expert insights on BER Certificates, energy ratings, home energy upgrades, retrofit planning, and property efficiency in Ireland. Explore practical guides, industry updates, and advice designed to help homeowners make informed energy decisions.
+                                </p>
+                            )}
+                            {isEngland && (
+                                <p className="text-gray-600 font-medium tracking-wide text-sm max-w-xl mb-2">
+                                    Stay informed with expert insights on Energy Performance Certificates, energy efficiency, property energy ratings and home improvement opportunities across England. Explore practical guides, industry updates and professional advice designed to help homeowners, landlords and businesses make informed property energy decisions.
                                 </p>
                             )}
                             <p className="text-gray-500 font-medium tracking-wide text-sm">
@@ -366,6 +386,7 @@ const BlogPage = () => {
                                                     src={article.image_url}
                                                     alt={article.title}
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                    loading="lazy"
                                                 />
                                                 {article.show_badge && (
                                                     <div className="absolute top-3 left-3 bg-[#007F00] text-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded">

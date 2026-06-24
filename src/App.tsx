@@ -46,9 +46,13 @@ import MembershipPayment from './pages/MembershipPayment';
 import LocationPage from './pages/LocationPage';
 import ThankYou from './pages/ThankYou';
 import ReferralTracker from './components/ReferralTracker';
-
-
 import ScrollToTop from './components/ScrollToTop';
+import { getTenantFromDomain } from './lib/tenant';
+
+const FaqRedirect = () => {
+    const tenant = getTenantFromDomain();
+    return <Navigate to={tenant === 'england' ? '/epc-faq' : '/ber-faqs/'} replace />;
+};
 
 function App() {
     return (
@@ -79,6 +83,10 @@ function App() {
                         <Route path="pricing" element={<Pricing />} />
                         <Route path="contact-us" element={<Contact />} />
                         <Route path="catalogue" element={<Catalogue />} />
+                        <Route path="catalogue/businesses" element={<Catalogue />} />
+                        <Route path="catalogue/ber-assessors" element={<Catalogue />} />
+                        <Route path="catalogue/epc-assessors" element={<Catalogue />} />
+                        <Route path="catalogue/epc-businesses" element={<Catalogue />} />
                         <Route path="catalogue/:slug" element={<ListingDetail />} />
                         <Route path="locations" element={<Locations />} />
                         <Route path="region" element={<RegionPage />} />
@@ -91,9 +99,11 @@ function App() {
                         <Route path="login" element={<Login />} />
                         <Route path="secure-admin-login" element={<AdminLogin />} />
                         <Route path="signup" element={<SignUp />} />
-                        <Route path="faq" element={<Navigate to="/ber-faqs/" replace />} />
+                        <Route path="faq" element={<FaqRedirect />} />
                         <Route path="ber-faqs" element={<FAQ />} />
                         <Route path="ber-faqs/*" element={<FAQ />} />
+                        <Route path="epc-faq" element={<FAQ />} />
+                        <Route path="epc-faq/*" element={<FAQ />} />
                         <Route path="news" element={<News />} />
                         <Route path="news/:id" element={<NewsDetail />} />
                         <Route path="blog" element={<Blog />} />

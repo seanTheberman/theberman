@@ -70,14 +70,14 @@ const FAQ = () => {
         loading: 'Loading FAQ...',
         comingSoonH: 'FAQ Coming Soon',
         comingSoonP: "We're currently preparing our frequently asked questions. Check back shortly.",
-        seoTitle: 'Frequently Asked Questions',
-        seoDesc: 'Find answers to common questions about EPC assessments, energy ratings, costs, and home energy upgrades in England.',
+        seoTitle: 'EPC Certificate FAQ England | EPC Assessor',
+        seoDesc: 'Find Answers to Common EPC Certificate Questions, Including Costs, Timelines, and Legal Requirements for Property Owners Across England',
         needHelp: 'Need immediate help?',
         emailUs: `Email ${tenantEmail}`,
         getQuote: 'Get a Quote Now',
         sidebarLabel: 'EPC FAQ',
         consultantsH: "England's Leading EPC Consultants",
-        consultantsP: 'Trusted by 10,000+ homeowners across the country.',
+        consultantsP: 'Trusted by homeowners, landlords and property professionals across England.',
         emailLine: `Email: ${tenantEmail}`,
     } : {
         loading: 'Loading FAQ...',
@@ -158,8 +158,19 @@ const FAQ = () => {
             <SEOHead
                 title={tr.seoTitle}
                 description={tr.seoDesc}
-                canonical={isEngland ? '/faq' : isSpanish ? '/faq' : '/ber-faqs/'}
+                canonical={isEngland ? '/epc-faq' : isSpanish ? '/faq' : '/ber-faqs/'}
                 jsonLd={[
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'BreadcrumbList',
+                        itemListElement: isEngland ? [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.epccert.com/' },
+                            { '@type': 'ListItem', position: 2, name: 'EPC Certificate FAQs', item: 'https://www.epccert.com/epc-faq' },
+                        ] : [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.theberman.eu/' },
+                            { '@type': 'ListItem', position: 2, name: 'BER Certificate FAQs', item: 'https://www.theberman.eu/ber-faqs/' },
+                        ],
+                    },
                     {
                         '@context': 'https://schema.org',
                         '@type': 'FAQPage',
@@ -168,7 +179,7 @@ const FAQ = () => {
                             name: item.title.charAt(0).toUpperCase() + item.title.slice(1),
                             acceptedAnswer: {
                                 '@type': 'Answer',
-                                text: item.title.charAt(0).toUpperCase() + item.title.slice(1)
+                                text: item.content || item.title
                             }
                         }))
                     },
@@ -189,9 +200,15 @@ const FAQ = () => {
                     {/* Main Content (Left) */}
                     <div className="lg:col-span-8 order-2 lg:order-1 animate-in fade-in slide-in-from-bottom-4 duration-500 min-w-0 overflow-hidden">
                         <div className="max-w-3xl">
-                            <h2 className="text-3xl md:text-4xl font-black text-[#007F00] mb-8 leading-tight uppercase tracking-tight">
-                                {activeItem.title.charAt(0).toUpperCase() + activeItem.title.slice(1)}
+                            <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4 leading-tight uppercase tracking-tight">
+                                {isSpanish ? 'Preguntas Frecuentes' : isEngland ? 'Frequently Asked Questions About EPC Certificates' : 'BER Certificate FAQs'}
+                            </h1>
+                            <h2 className="text-xl md:text-2xl font-black text-[#007F00] mb-8 leading-tight uppercase tracking-tight">
+                                {isSpanish ? 'Preguntas Frecuentes sobre Certificados Energéticos' : isEngland ? 'Frequently Asked Questions About EPC Certificates' : 'Frequently Asked Questions About BER Certificates'}
                             </h2>
+                            <h3 className="text-2xl md:text-3xl font-black text-[#007F00] mb-6 leading-tight uppercase tracking-tight">
+                                {activeItem.title.charAt(0).toUpperCase() + activeItem.title.slice(1)}
+                            </h3>
                             <div
                                 className="prose prose-lg max-w-none text-gray-700 leading-relaxed font-medium space-y-6 faq-content-body"
                                 dangerouslySetInnerHTML={{ __html: activeItem.content }}
