@@ -249,9 +249,9 @@ const Layout = () => {
                     {/* Logo */}
                     <Link to="/" onClick={closeMenu}>
                         {isSpanish ? (
-                            <img src="/LOGO_Certificado-removebg-preview.png" alt="Certificado Energético Logo" className="h-10 w-auto relative z-10" />
+                            <img src="/LOGO_Certificado-removebg-preview.png" alt="Certificado Energético Logo" className="h-18 w-auto relative z-10" />
                         ) : tenant === 'england' ? (
-                            <img src="/EPCLOGO-removebg-preview.png" alt="EPC Cert Logo" className="h-10 w-auto relative z-10" />
+                            <img src="/EPCLOGO-removebg-preview.png" alt="EPC Cert Logo" className="h-18 w-auto relative z-10" />
                         ) : (
                             <img src="/logo.svg" alt={`${tenantDisplayName} Logo`} className="h-18 w-auto relative z-10" />
                         )}
