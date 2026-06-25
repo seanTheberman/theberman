@@ -234,7 +234,7 @@ const About = () => {
             </section>
 
             {/* 4. FAQ SECTION */}
-            <section id="faq" className="py-24 bg-[#007F00]">
+            {(isSpanish || isEngland || isFrance || isPortugal) && <section id="faq" className="py-24 bg-[#007F00]">
                 <div className="container mx-auto px-6 max-w-4xl">
                     <div className="text-center mb-12">
                         <h2 className="text-3xl font-black text-white mb-4 uppercase tracking-tight">{tr.faqH}</h2>
@@ -246,7 +246,7 @@ const About = () => {
                         ))}
                     </div>
                 </div>
-            </section>
+            </section>}
 
             {/* 5. FINISH CTA SECTION */}
             <section className="py-2">
