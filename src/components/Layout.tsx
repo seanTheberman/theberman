@@ -249,16 +249,9 @@ const Layout = () => {
                     {/* Logo */}
                     <Link to="/" onClick={closeMenu}>
                         {isSpanish ? (
-                            <div className="flex flex-col">
-                                <span className="flex items-center text-white text-lg md:text-[1.75rem] italic font-bold" style={{ fontFamily: "'Georgia', 'Times New Roman', serif", letterSpacing: '0.5px', lineHeight: 1.2 }}>
-                                    Certificado Energético.EU
-                                </span>
-                                <span className="text-[10px] text-white/50 tracking-wider mt-0.5">Powered by The Berman</span>
-                            </div>
+                            <img src="/LOGO_Certificado-removebg-preview.png" alt="Certificado Energético Logo" className="h-10 w-auto relative z-10" />
                         ) : tenant === 'england' ? (
-                            <span style={{ fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif", fontSize: '1.75rem', color: 'white', letterSpacing: '1px', lineHeight: 1.2, fontWeight: 900 }}>
-                                EPC Cert
-                            </span>
+                            <img src="/EPCLOGO-removebg-preview.png" alt="EPC Cert Logo" className="h-10 w-auto relative z-10" />
                         ) : (
                             <img src="/logo.svg" alt={`${tenantDisplayName} Logo`} className="h-18 w-auto relative z-10" />
                         )}
