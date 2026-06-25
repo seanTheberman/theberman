@@ -46,7 +46,7 @@ const Subscribe = () => {
         instantDownload: 'Instant Download',
     };
 
-    const baseUrl = isEngland ? 'https://epccert.com' : isSpanish ? 'https://certificadoenergético.eu' : 'https://www.theberman.eu';
+    const baseUrl = isEngland ? 'https://www.epccert.com' : isSpanish ? 'https://certificadoenergético.eu' : 'https://www.theberman.eu';
     const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : 'The BER Man';
 
     return (

@@ -267,6 +267,7 @@ const HireAgent = () => {
                 title={tr.seoTitle}
                 description={tr.seoDesc}
                 canonical="/hire-agent"
+                skipSiteNameSuffix={isEngland}
                 jsonLd={[
                     {
                         '@context': 'https://schema.org',
@@ -283,8 +284,8 @@ const HireAgent = () => {
                         '@context': 'https://schema.org',
                         '@type': 'Organization',
                         name: isEngland ? 'EPC Cert' : 'The BER Man',
-                        url: isEngland ? 'https://epccert.com' : 'https://www.theberman.eu',
-                        logo: isEngland ? 'https://epccert.com/logo.png' : 'https://www.theberman.eu/logo.svg',
+                        url: isEngland ? 'https://www.epccert.com' : 'https://www.theberman.eu',
+                        logo: isEngland ? 'https://www.epccert.com/logo.png' : 'https://www.theberman.eu/logo.svg',
                         sameAs: isEngland
                             ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
                             : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],

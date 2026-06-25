@@ -155,15 +155,15 @@ const Contact = () => {
                             { '@type': 'ListItem', position: 2, name: 'Contact Us', item: 'https://www.epccert.com/contact-us' },
                         ] : [
                             { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.theberman.eu/' },
-                            { '@type': 'ListItem', position: 2, name: 'Contact Us', item: 'https://www.theberman.eu/contact-us' },
+                            { '@type': 'ListItem', position: 2, name: 'contact us', item: 'https://www.theberman.eu/contact-us' },
                         ],
                     },
                     {
                         '@context': 'https://schema.org',
                         '@type': 'Organization',
                         name: tenant === 'england' ? 'EPC Cert' : 'The BER Man',
-                        url: tenant === 'england' ? 'https://epccert.com' : 'https://www.theberman.eu',
-                        logo: tenant === 'england' ? 'https://epccert.com/logo.png' : 'https://www.theberman.eu/logo.svg',
+                        url: tenant === 'england' ? 'https://www.epccert.com' : 'https://www.theberman.eu',
+                        logo: tenant === 'england' ? 'https://www.epccert.com/logo.png' : 'https://www.theberman.eu/logo.svg',
                         sameAs: tenant === 'england'
                             ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
                             : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],

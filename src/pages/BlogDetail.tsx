@@ -229,7 +229,7 @@ const BlogDetail = () => {
                 </header>
 
                 <div className="aspect-[21/9] mb-12 rounded-sm overflow-hidden bg-gray-100 border border-gray-100">
-                    <img src={article.image_url} alt={article.title} className="w-full h-full object-cover" />
+                    <img src={article.image_url} alt={`${article.title} - ${tenantName}`} className="w-full h-full object-cover" />
                 </div>
 
                 {/* Table of Contents */}

@@ -258,7 +258,7 @@ const Layout = () => {
                         {isSpanish ? (
                             <img src="/certificado-logo-trimmed.png" alt="Certificado Energético Logo" style={{ height: '4rem', width: 'auto' }} className="relative z-10" />
                         ) : tenant === 'england' ? (
-                            <img src="/epc-logo-trimmed.png" alt="EPC Cert Logo" style={{ height: '4rem', width: 'auto' }} className="relative z-10" />
+                            <img src="/epc-logo-trimmed.png" alt="EPC Certificate England which provides a rating from A to G" style={{ height: '4rem', width: 'auto' }} className="relative z-10" />
                         ) : (
                             <img src="/logo.svg" alt={tenant === 'ireland' ? 'The BER Man - BER Cert Ireland Specialists' : `${tenantDisplayName} Logo`} style={{ height: '4.5rem', width: 'auto' }} className="relative z-10" />
                         )}

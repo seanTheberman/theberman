@@ -123,7 +123,7 @@ const About = () => {
         cta: isEngland ? 'Get a Free Quote' : 'Get My BER Quote',
     };
 
-    const baseUrl = tenant === 'england' ? 'https://epccert.com' : isSpanish ? 'https://certificadoenerg\u00e9tico.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://www.theberman.eu';
+    const baseUrl = tenant === 'england' ? 'https://www.epccert.com' : isSpanish ? 'https://certificadoenerg\u00e9tico.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://www.theberman.eu';
 
     const orgSchema = {
         '@context': 'https://schema.org',

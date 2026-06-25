@@ -72,10 +72,10 @@ const HomePage = () => {
                         '@context': 'https://schema.org',
                         '@type': 'WebSite',
                         name: brandName,
-                        url: tenant === 'england' ? 'https://epccert.com' : isSpanish ? 'https://certificadoenergético.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://www.theberman.eu',
+                        url: tenant === 'england' ? 'https://www.epccert.com' : isSpanish ? 'https://certificadoenergético.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://www.theberman.eu',
                         potentialAction: {
                             '@type': 'SearchAction',
-                            target: tenant === 'england' ? 'https://epccert.com/catalogue?q={search_term_string}' : isSpanish ? 'https://certificadoenergético.eu/catalogue?q={search_term_string}' : tenant === 'france' ? 'https://dpefrance.eu/catalogue?q={search_term_string}' : tenant === 'portugal' ? 'https://certificadopt.eu/catalogue?q={search_term_string}' : 'https://www.theberman.eu/catalogue?q={search_term_string}',
+                            target: tenant === 'england' ? 'https://www.epccert.com/catalogue?q={search_term_string}' : isSpanish ? 'https://certificadoenergético.eu/catalogue?q={search_term_string}' : tenant === 'france' ? 'https://dpefrance.eu/catalogue?q={search_term_string}' : tenant === 'portugal' ? 'https://certificadopt.eu/catalogue?q={search_term_string}' : 'https://www.theberman.eu/catalogue?q={search_term_string}',
                             'query-input': 'required name=search_term_string',
                         },
                     },
@@ -83,8 +83,8 @@ const HomePage = () => {
                         '@context': 'https://schema.org',
                         '@type': 'Organization',
                         name: brandName,
-                        url: tenant === 'england' ? 'https://epccert.com' : isSpanish ? 'https://certificadoenergético.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://www.theberman.eu',
-                        logo: tenant === 'england' ? 'https://epccert.com/logo.png' : isSpanish ? 'https://certificadoenergético.eu/logo.png' : tenant === 'france' ? 'https://dpefrance.eu/logo.png' : tenant === 'portugal' ? 'https://certificadopt.eu/logo.png' : 'https://www.theberman.eu/logo.svg',
+                        url: tenant === 'england' ? 'https://www.epccert.com' : isSpanish ? 'https://certificadoenergético.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://www.theberman.eu',
+                        logo: tenant === 'england' ? 'https://www.epccert.com/logo.png' : isSpanish ? 'https://certificadoenergético.eu/logo.png' : tenant === 'france' ? 'https://dpefrance.eu/logo.png' : tenant === 'portugal' ? 'https://certificadopt.eu/logo.png' : 'https://www.theberman.eu/logo.svg',
                         sameAs: tenant === 'england' ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert'] : isSpanish ? ['https://www.facebook.com/certificadoenergetico', 'https://www.instagram.com/certificadoenergetico'] : tenant === 'france' ? ['https://www.facebook.com/dpefrance', 'https://www.instagram.com/dpefrance'] : tenant === 'portugal' ? ['https://www.facebook.com/certificadoenergeticopt', 'https://www.instagram.com/certificadoenergeticopt'] : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
                         contactPoint: { '@type': 'ContactPoint', email: tenant === 'england' ? 'hello@epccert.com' : isSpanish ? 'info@certificadoenergético.eu' : tenant === 'france' ? 'contact@dpefrance.eu' : tenant === 'portugal' ? 'contact@certificadopt.eu' : 'hello@theberman.eu', contactType: 'customer service', areaServed: tenant === 'england' ? 'GB' : isSpanish ? 'ES' : tenant === 'france' ? 'FR' : tenant === 'portugal' ? 'PT' : 'IE' }
                     },
@@ -93,7 +93,7 @@ const HomePage = () => {
                         '@type': 'LocalBusiness',
                         name: brandName,
                         description: `${country}'s largest ${ratingName} website. Fast, reliable, and hassle-free ${ratingName} assessments.`,
-                        url: tenant === 'england' ? 'https://epccert.com' : isSpanish ? 'https://certificadoenergético.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://www.theberman.eu',
+                        url: tenant === 'england' ? 'https://www.epccert.com' : isSpanish ? 'https://certificadoenergético.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://www.theberman.eu',
                         address: { '@type': 'PostalAddress', addressCountry: tenant === 'england' ? 'GB' : isSpanish ? 'ES' : tenant === 'france' ? 'FR' : tenant === 'portugal' ? 'PT' : 'IE', addressLocality: tenant === 'england' ? 'London' : isSpanish ? 'Madrid' : tenant === 'france' ? 'Paris' : tenant === 'portugal' ? 'Lisboa' : 'Dublin' },
                         priceRange: tenant === 'england' ? '££' : '€€'
                     }

@@ -692,7 +692,7 @@ export const CMS_PAGES: PageDefinition[] = [
                 defaults: {
                     ireland: { badge: 'Get In Touch', heading_line1: 'Book a BER', heading_line2: 'Assessment in Ireland', subtitle: 'Contact The BER Man to book a BER assessment, connect with qualified BER assessors, or get support with your enquiry.' },
                     spain: { badge: 'Ponte en Contacto', heading_line1: '¿En qué podemos', heading_line2: 'ayudarte?', subtitle: '¿Tienes alguna pregunta sobre certificaciones energéticas? Nuestro equipo está aquí para ayudarte.' },
-                    england: { badge: 'Get In Touch', heading_line1: 'How can we', heading_line2: 'help?', subtitle: 'Have a question about EPC assessments? Our team is here to provide the support you need.' },
+                    england: { badge: 'Get In Touch', heading_line1: 'Book an EPC Assessment', heading_line2: 'in England', subtitle: 'Compare quotes from accredited EPC assessors across England and arrange your EPC assessment with confidence.' },
                     france: { badge: 'Get In Touch', heading_line1: 'How can we', heading_line2: 'help?', subtitle: 'Have a question about DPE assessments? Our team is here to provide the support you need.' },
                     portugal: { badge: 'Get In Touch', heading_line1: 'How can we', heading_line2: 'help?', subtitle: 'Have a question about Certificado Energético assessments? Our team is here to provide the support you need.' },
                 },

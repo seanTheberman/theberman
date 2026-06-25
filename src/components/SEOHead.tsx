@@ -10,6 +10,7 @@ interface SEOHeadProps {
     jsonLd?: Record<string, unknown> | Record<string, unknown>[];
     noindex?: boolean;
     breadcrumb?: { name: string; url: string }[];
+    skipSiteNameSuffix?: boolean;
 }
 
 const TENANT_CONFIG: Record<string, { siteName: string; baseUrl: string; ogImage: string; locale: string; currency: string }> = {
@@ -22,8 +23,8 @@ const TENANT_CONFIG: Record<string, { siteName: string; baseUrl: string; ogImage
     },
     england: {
         siteName: 'EPC Cert',
-        baseUrl: 'https://epccert.com',
-        ogImage: 'https://epccert.com/logo.png',
+        baseUrl: 'https://www.epccert.com',
+        ogImage: 'https://www.epccert.com/logo.png',
         locale: 'en_GB',
         currency: 'GBP',
     },
@@ -84,6 +85,7 @@ const SEOHead = ({
     jsonLd,
     noindex = false,
     breadcrumb,
+    skipSiteNameSuffix = false,
 }: SEOHeadProps) => {
     const tenantCfg = getTenantConfig();
     const siteName = tenantCfg.siteName;
@@ -92,7 +94,7 @@ const SEOHead = ({
     const ogLocale = tenantCfg.locale;
     const resolvedOgImage = ogImage || defaultOgImage;
 
-    const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
+    const fullTitle = skipSiteNameSuffix || title.includes(siteName) ? title : `${title} | ${siteName}`;
     const canonicalUrl = canonical ? `${baseUrl}${canonical}` : undefined;
 
     // Merge BreadcrumbList with any existing jsonLd (skip if already present)

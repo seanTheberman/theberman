@@ -121,7 +121,7 @@ export function getTenantWebsiteUrl(tenant: string): string {
   if (tenant === 'england') {
     const host = getCurrentHostname();
     if (host && host.includes('epccert')) return `https://${host}`;
-    return 'https://epccert.com';
+    return 'https://www.epccert.com';
   }
   if (tenant === 'france') {
     const host = getCurrentHostname();
