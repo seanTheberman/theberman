@@ -81,8 +81,11 @@ const NewCatalogue = () => {
     const location = useLocation();
     const pathView = (location.pathname.endsWith('/ber-assessors') || location.pathname.endsWith('/epc-assessors')) ? 'assessors' : (location.pathname.endsWith('/businesses') || location.pathname.endsWith('/epc-businesses')) ? 'businesses' : null;
 
+    const _initTenant = getTenantFromDomain();
+    const _isEngland = _initTenant === 'england';
+
     // View toggle - Businesses vs BER Assessors
-    const [activeView, setActiveView] = useState<CatalogueViewType>(pathView || 'businesses');
+    const [activeView, setActiveView] = useState<CatalogueViewType>(pathView || (_isEngland ? 'assessors' : 'businesses'));
 
     useEffect(() => {
         if (pathView) setActiveView(pathView);
@@ -141,8 +144,14 @@ const NewCatalogue = () => {
     const isPortugal = tenant === 'portugal';
     const t = {
         catalogueBadge: isSpanish ? 'El Catálogo' : isEngland ? 'The Catalogue' : isFrance ? 'Le Catalogue' : isPortugal ? 'O Catálogo' : 'Home Energy Professionals Directory',
-        heroLine1: isSpanish ? 'Catálogo de Negocios de' : isEngland ? "England's EPC" : isFrance ? 'Catalogue des Entreprises' : isPortugal ? 'Catálogo de Empresas' : "Ireland's Home Energy",
-        heroLine2: isSpanish ? 'Eficiencia Energética.' : isEngland ? 'Assessors Directory' : isFrance ? 'd\'Efficacité Énergétique.' : isPortugal ? 'de Eficiência Energética.' : 'Professionals Directory',
+        heroLine1: isSpanish ? 'Catálogo de Negocios de' : isFrance ? 'Catalogue des Entreprises' : isPortugal ? 'Catálogo de Empresas' : "Ireland's Home Energy",
+        heroLine2: isSpanish ? 'Eficiencia Energética.' : isFrance ? 'd\'Efficacité Énergétique.' : isPortugal ? 'de Eficiência Energética.' : 'Professionals Directory',
+        engHeroLine1Assessors: 'EPC Assessors',
+        engHeroLine2Assessors: 'Across England',
+        engHeroLine1Businesses: 'Home Energy Service',
+        engHeroLine2Businesses: 'Providers England',
+        engHeroLine1Default: "England's EPC",
+        engHeroLine2Default: 'Assessors Directory',
         upgradeType: isSpanish ? 'Tipo de Mejora' : isFrance ? 'Type d\'Amélioration' : isPortugal ? 'Tipo de Melhoria' : 'Upgrade Type',
         selectUpgrade: isSpanish ? 'Seleccionar Mejora...' : isFrance ? 'Sélectionner...' : isPortugal ? 'Selecionar Melhoria...' : 'Select Upgrade...',
         location: isSpanish ? 'Ubicación' : isFrance ? 'Localisation' : isPortugal ? 'Localização' : 'Location',
@@ -376,8 +385,12 @@ const NewCatalogue = () => {
                         {t.catalogueBadge}
                     </span>
                     <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight">
-                        {t.heroLine1} <br />
-                        <span className="text-[#9ACD32]">{t.heroLine2}</span>
+                        {isEngland
+                            ? (activeView === 'assessors' ? t.engHeroLine1Assessors : activeView === 'businesses' ? t.engHeroLine1Businesses : t.engHeroLine1Default)
+                            : t.heroLine1} <br />
+                        <span className="text-[#9ACD32]">{isEngland
+                            ? (activeView === 'assessors' ? t.engHeroLine2Assessors : activeView === 'businesses' ? t.engHeroLine2Businesses : t.engHeroLine2Default)
+                            : t.heroLine2}</span>
                     </h1>
                    
 

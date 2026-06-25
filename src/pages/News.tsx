@@ -183,9 +183,18 @@ const NewsPage = () => {
         fetchArticles();
     }, []);
 
+    const seoHead = (
+        <SEOHead
+            title={tr.seoTitle}
+            description={tr.seoDesc}
+            canonical="/news"
+        />
+    );
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center pt-32 bg-white">
+                {seoHead}
                 <div className="flex flex-col items-center gap-4">
                     <div className="w-12 h-12 border-4 border-[#007F00]/20 border-t-[#007F00] rounded-full animate-spin"></div>
                     <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">{tr.loading}</p>
@@ -197,6 +206,7 @@ const NewsPage = () => {
     if (articles.length === 0) {
         return (
             <div className="min-h-screen pt-32 bg-white flex flex-col items-center justify-center p-6 text-center">
+                {seoHead}
                 <h1 className="text-4xl font-black text-gray-900 mb-4 uppercase tracking-tight italic">{tr.comingSoonH}</h1>
                 <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
                     {tr.comingSoonP}

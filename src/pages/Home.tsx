@@ -104,8 +104,8 @@ const HomePage = () => {
                         </div>
 
                         <h1 className={`font-black mb-6 md:mb-8 leading-[1.1] tracking-tight ${isSpanish ? 'text-4xl md:text-5xl lg:text-6xl' : 'text-5xl md:text-7xl lg:text-8xl'}`} style={{ color: c('hero', 'heading_color', '#111827') }}>
-                            {c('hero', 'heading', isSpanish ? '¿Necesitas un' : (tenant === 'england' ? 'EPC Certificates Across' : 'BER Cert Ireland – Get Quotes from'))}{' '}
-                            <span style={{ color: c('hero', 'highlight_color', '#007F00') }}>{c('hero', 'heading_highlight', isSpanish ? 'Certificado Energético?' : (tenant === 'england' ? 'England for Homes & Businesses' : 'Registered Assessors'))}</span>
+                            {isEngland ? 'EPC Certificates Across' : c('hero', 'heading', isSpanish ? '¿Necesitas un' : 'BER Cert Ireland – Get Quotes from')}{' '}
+                            <span style={{ color: c('hero', 'highlight_color', '#007F00') }}>{isEngland ? 'England for Homes & Businesses' : c('hero', 'heading_highlight', isSpanish ? 'Certificado Energético?' : 'Registered Assessors')}</span>
                         </h1>
 
                         <p className={`text-gray-600 max-w-2xl mx-auto leading-relaxed font-medium ${isSpanish ? 'text-base md:text-lg mb-6 md:mb-8' : 'text-lg md:text-2xl mb-10 md:mb-12'}`}>

@@ -172,8 +172,8 @@ const About = () => {
                         {c('hero', 'tag', tr.missionTag)}
                     </span>
                     <h1 className="text-4xl md:text-6xl font-black text-gray-900 mb-6 leading-tight">
-                        {c('hero', 'heading_line1', tr.title1)} <br className="hidden md:block" />
-                        <span className="text-[#007F00]">{c('hero', 'heading_line2', tr.title2)}</span>
+                        {isEngland ? tr.title1 : c('hero', 'heading_line1', tr.title1)} <br className="hidden md:block" />
+                        <span className="text-[#007F00]">{isEngland ? tr.title2 : c('hero', 'heading_line2', tr.title2)}</span>
                     </h1>
                     <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
                         {c('hero', 'description', tr.heroP)}

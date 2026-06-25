@@ -178,7 +178,7 @@ const Contact = () => {
                         {c('hero', 'badge', tr.badge)}
                     </span>
                     <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 leading-tight">
-                        {c('hero', 'heading_line1', tr.title1)} <br className="md:hidden" /> <span className="text-[#007F00]">{c('hero', 'heading_line2', tr.title2)}</span>
+                        {isEngland ? tr.title1 : c('hero', 'heading_line1', tr.title1)} <br className="md:hidden" /> <span className="text-[#007F00]">{isEngland ? tr.title2 : c('hero', 'heading_line2', tr.title2)}</span>
                     </h1>
                     <p className="text-base md:text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
                         {c('hero', 'subtitle', tr.subtitle)}
