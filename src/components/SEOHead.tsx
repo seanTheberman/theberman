@@ -29,8 +29,8 @@ const TENANT_CONFIG: Record<string, { siteName: string; baseUrl: string; ogImage
     },
     ireland: {
         siteName: 'The BER Man',
-        baseUrl: 'https://theberman.eu',
-        ogImage: 'https://theberman.eu/logo.png',
+        baseUrl: 'https://www.theberman.eu',
+        ogImage: 'https://www.theberman.eu/logo.svg',
         locale: 'en_IE',
         currency: 'EUR',
     },
@@ -95,8 +95,11 @@ const SEOHead = ({
     const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
     const canonicalUrl = canonical ? `${baseUrl}${canonical}` : undefined;
 
-    // Merge BreadcrumbList with any existing jsonLd
-    const breadcrumbSchema = generateBreadcrumbList(canonical || '', tenantCfg, breadcrumb);
+    // Merge BreadcrumbList with any existing jsonLd (skip if already present)
+    const hasBreadcrumb = Array.isArray(jsonLd)
+        ? jsonLd.some(s => s && s['@type'] === 'BreadcrumbList')
+        : jsonLd && jsonLd['@type'] === 'BreadcrumbList';
+    const breadcrumbSchema = hasBreadcrumb ? null : generateBreadcrumbList(canonical || '', tenantCfg, breadcrumb);
     let mergedJsonLd: Record<string, unknown> | Record<string, unknown>[] | undefined = jsonLd;
     if (breadcrumbSchema) {
         if (Array.isArray(jsonLd)) {

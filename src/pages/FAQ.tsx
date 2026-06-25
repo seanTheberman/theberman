@@ -25,7 +25,7 @@ const FAQ = () => {
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
     const tenantEmail = getTenantEmail(tenant);
-    const { content: cms } = usePageContent('faq');
+    const { content: cms, loading: cmsLoading } = usePageContent('faq');
     const c = (section: string, key: string, fallback: string) => cmsValue(cms, section, key, fallback);
     const tr = isSpanish ? {
         loading: 'Cargando FAQ...',
@@ -186,15 +186,19 @@ const FAQ = () => {
                     {
                         '@context': 'https://schema.org',
                         '@type': 'Organization',
-                        name: isEngland ? 'EPC Cert' : 'The Berman',
-                        url: isEngland ? 'https://epccert.com' : 'https://theberman.eu',
-                        logo: isEngland ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
+                        name: isEngland ? 'EPC Cert' : 'The BER Man',
+                        url: isEngland ? 'https://epccert.com' : 'https://www.theberman.eu',
+                        logo: isEngland ? 'https://epccert.com/logo.png' : 'https://www.theberman.eu/logo.svg',
                         sameAs: isEngland
                             ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
                             : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
                     }
                 ]}
             />
+            {cmsLoading ? (
+                <div className="min-h-screen bg-white" />
+            ) : (
+            <>
             <div className="container mx-auto px-6 max-w-7xl">
                 <div className="grid lg:grid-cols-12 gap-16 items-start">
                     {/* Main Content (Left) */}
@@ -264,6 +268,8 @@ const FAQ = () => {
                     </div>
                 </div>
             </div>
+            </>
+            )}
         </div>
     );
 };

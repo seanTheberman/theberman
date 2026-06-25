@@ -27,8 +27,8 @@
         siteName = "EPC Cert";
         baseUrl = "https://epccert.com";
         ogImage = "https://epccert.com/logo.png";
-        title = "EPC Cert – England's Leading EPC Platform | EPC Certificates & Energy Ratings";
-        desc = "England's leading EPC platform. Get fast, reliable EPC certificates from accredited assessors nationwide. Compare quotes and book online instantly.";
+        title = "EPC Certificate England | Domestic & Commercial EPC";
+        desc = "Book Accredited EPC Assessments Across England. Fast Domestic and Commercial EPC Certificates with Competitive Pricing and Nationwide Coverage";
         locale = "en_GB";
       } else if (isEsp) {
         siteName = "Certificado Energético";
@@ -63,47 +63,43 @@
       document.title = title;
       document.documentElement.lang = isEsp ? 'es' : isEng ? 'en' : isFra ? 'fr' : isPor ? 'pt' : 'en';
 
-      function setMeta(sel, attr, val) {
-        var el = document.querySelector(sel);
-        if (el) el.setAttribute(attr, val);
+      // Create Helmet-tracked (data-rh) default tags so non-JS crawlers get
+      // tenant-correct values, and react-helmet-async REPLACES them in place
+      // (instead of duplicating) once it mounts per-page.
+      function rhMeta(keyAttr, key, val) {
+        var m = document.createElement('meta');
+        m.setAttribute(keyAttr, key);
+        m.setAttribute('content', val);
+        m.setAttribute('data-rh', 'true');
+        document.head.appendChild(m);
       }
-      setMeta('meta[name="description"]', 'content', desc);
-      setMeta('meta[property="og:title"]', 'content', title);
-      setMeta('meta[property="og:description"]', 'content', desc);
-      setMeta('meta[property="og:site_name"]', 'content', siteName);
-      setMeta('meta[property="og:url"]', 'content', baseUrl + '/');
-      setMeta('meta[property="og:image"]', 'content', ogImage);
-      setMeta('meta[property="og:locale"]', 'content', locale);
-      setMeta('meta[name="twitter:title"]', 'content', title);
-      setMeta('meta[name="twitter:description"]', 'content', desc);
-      setMeta('meta[name="twitter:image"]', 'content', ogImage);
-      setMeta('link[rel="canonical"]', 'href', baseUrl + '/');
-      setMeta('meta[name="author"]', 'content', siteName);
+      rhMeta('name', 'description', desc);
+      rhMeta('name', 'author', siteName);
+      rhMeta('property', 'og:type', 'website');
+      rhMeta('property', 'og:title', title);
+      rhMeta('property', 'og:description', desc);
+      rhMeta('property', 'og:site_name', siteName);
+      rhMeta('property', 'og:url', baseUrl + '/');
+      rhMeta('property', 'og:image', ogImage);
+      rhMeta('property', 'og:locale', locale);
+      rhMeta('name', 'twitter:card', 'summary_large_image');
+      rhMeta('name', 'twitter:title', title);
+      rhMeta('name', 'twitter:description', desc);
+      rhMeta('name', 'twitter:image', ogImage);
+      var canon = document.createElement('link');
+      canon.setAttribute('rel', 'canonical');
+      canon.setAttribute('href', baseUrl + '/');
+      canon.setAttribute('data-rh', 'true');
+      document.head.appendChild(canon);
     })();
   </script>
 
-  <!-- Primary Meta Tags (defaults, overridden per-page by react-helmet-async) -->
+  <!-- Fallback title (overridden by inline script + react-helmet-async per-page). -->
+  <!-- SEO meta tags (description, canonical, Open Graph, Twitter) are created with
+       data-rh by the inline script above and managed per-page by react-helmet-async. -->
   <title>Energy Rating Certificates & Assessments</title>
-  <meta name="description" content="Get fast, reliable energy rating certificates from registered assessors. Compare quotes and book online instantly." />
   <meta name="keywords" content="energy certificate, energy rating, building energy rating, assessor, home energy, energy assessment" />
-  <meta name="author" content="" />
   <meta name="theme-color" content="#007F00" />
-  <!-- canonical managed per-page by react-helmet-async -->
-
-  <!-- Open Graph / Facebook (defaults) -->
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="" />
-  <meta property="og:title" content="Energy Rating Certificates & Assessments" />
-  <meta property="og:description" content="Get fast, reliable energy rating certificates from registered assessors. Compare quotes and book online." />
-  <meta property="og:url" content="" />
-  <meta property="og:image" content="" />
-  <meta property="og:locale" content="en_GB" />
-
-  <!-- Twitter Card (defaults) -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Energy Rating Certificates & Assessments" />
-  <meta name="twitter:description" content="Get fast, reliable energy rating certificates from registered assessors." />
-  <meta name="twitter:image" content="" />
 
   <!-- Preconnect to image CDN -->
   <link rel="preconnect" href="https://images.unsplash.com" crossorigin>

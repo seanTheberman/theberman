@@ -42,6 +42,7 @@ import Locations from './pages/Locations';
 import News from './pages/News';
 import NewsDetail from './pages/NewsDetail';
 import HireAgent from './pages/HireAgent';
+import Subscribe from './pages/Subscribe';
 import MembershipPayment from './pages/MembershipPayment';
 import LocationPage from './pages/LocationPage';
 import ThankYou from './pages/ThankYou';
@@ -90,6 +91,8 @@ function App() {
                         <Route path="catalogue/:slug" element={<ListingDetail />} />
                         <Route path="locations" element={<Locations />} />
                         <Route path="region" element={<RegionPage />} />
+                        <Route path="epc-assessment-:county" element={<LocationPage />} />
+                        <Route path="epc-assessment-:county/:town" element={<LocationPage />} />
                         <Route path=":county" element={<LocationPage />} />
                         <Route path=":county/:town" element={<LocationPage />} />
                         <Route path="privacy" element={<PrivacyPolicy />} />
@@ -109,6 +112,7 @@ function App() {
                         <Route path="blog" element={<Blog />} />
                         <Route path="blog/:slug" element={<BlogDetail />} />
                         <Route path="hire-agent" element={<HireAgent />} />
+                        <Route path="subscribe" element={<Subscribe />} />
                         <Route path="registration-pending" element={<RegistrationPending />} />
                     </Route>
 

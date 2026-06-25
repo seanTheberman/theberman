@@ -11,9 +11,9 @@ const About = () => {
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
     const isEngland = tenant === 'england';
-    const brand = isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Cert' : isFrance ? 'DPE France' : isPortugal ? 'Certificado Energético' : 'The Berman';
+    const brand = isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Cert' : isFrance ? 'DPE France' : isPortugal ? 'Certificado Energético' : 'The BER Man';
 
-    const { content: cms } = usePageContent('about');
+    const { content: cms, loading: cmsLoading } = usePageContent('about');
     const c = (section: string, key: string, fallback: string) => cmsValue(cms, section, key, fallback);
 
     const tr = isSpanish ? {
@@ -65,8 +65,8 @@ const About = () => {
         missionTag: 'Who We Are',
         title1: isEngland ? 'Helping Property Owners' : 'About The BER',
         title2: isEngland ? 'Arrange EPC Assessments Across England' : 'Man',
-        heroP: isEngland ? 'Helping homeowners, landlords and businesses across England arrange EPC assessments with confidence. Compare quotes from accredited assessors and receive a compliant Energy Performance Certificate at a competitive price.' : "The BER Man helps property owners connect with qualified BER assessors through a simple and transparent process. Our platform makes arranging BER assessments easier while helping users make informed energy decisions.",
-        storyH: isEngland ? 'Connecting Property Owners with Accredited EPC Assessors' : 'Connecting Property Owners with Qualified BER Assessors',
+        heroP: isEngland ? 'Expand to homeowners, landlords and businesses' : "The BER Man helps property owners connect with qualified BER assessors through a simple and transparent process. Our platform makes arranging BER assessments easier while helping users make informed energy decisions.",
+        storyH: isEngland ? 'Our Story' : 'Connecting Property Owners with Qualified BER Assessors',
         story: isEngland ? [
             `${brand} was established to make Energy Performance Certificate (EPC) assessments easier to access for property owners, landlords, estate agents and businesses across England. We understand that obtaining an EPC is often a necessary part of selling, renting or managing a property, yet finding a qualified assessor and arranging an appointment can be time-consuming. Our platform was created to simplify the process by connecting customers with accredited EPC assessors through a trusted nationwide network.`,
             `From residential homes and rental properties to commercial buildings, ${brand} helps customers access professional EPC assessment services with greater convenience and confidence. We focus on providing a straightforward booking experience, flexible appointment availability and access to qualified assessors who operate in accordance with current EPC regulations and industry standards.`,
@@ -81,7 +81,7 @@ const About = () => {
         stats: isEngland ? [
             { n: '1k+', l1: 'Completed', l2: 'EPC Assessments' },
             { n: '100+', l1: 'Accredited EPC Assessors', l2: 'Across England' },
-            { n: 'EPC', l1: 'Level 3 Qualified', l2: 'Energy Assessors' },
+            { n: 'Level 3', l1: 'Qualified', l2: 'Energy Assessors' },
         ] : [
             { n: '1,000+', l1: 'BER Assessments', l2: 'Completed' },
             { n: '100+', l1: 'Qualified', l2: 'Assessors' },
@@ -123,14 +123,14 @@ const About = () => {
         cta: isEngland ? 'Get a Free Quote' : 'Get My BER Quote',
     };
 
-    const baseUrl = tenant === 'england' ? 'https://epccert.com' : isSpanish ? 'https://certificadoenerg\u00e9tico.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://theberman.eu';
+    const baseUrl = tenant === 'england' ? 'https://epccert.com' : isSpanish ? 'https://certificadoenerg\u00e9tico.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://www.theberman.eu';
 
     const orgSchema = {
         '@context': 'https://schema.org',
         '@type': 'Organization',
         name: brand,
         url: baseUrl,
-        logo: `${baseUrl}/logo.png`,
+        logo: `${baseUrl}/logo.svg`,
         description: tr.seoDesc,
         sameAs: tenant === 'england'
             ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
@@ -165,6 +165,10 @@ const About = () => {
                 ]}
             />
 
+            {cmsLoading ? (
+                <div className="min-h-screen bg-white" />
+            ) : (
+            <>
             {/* 1. SIMPLE CENTERED HERO */}
             <section className="pt-32 pb-16 bg-white">
                 <div className="container mx-auto px-6 text-center max-w-4xl">
@@ -266,6 +270,8 @@ const About = () => {
                     </div>
                 </div>
             </section>
+            </>
+            )}
         </div>
     );
 };

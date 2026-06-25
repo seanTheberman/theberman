@@ -29,7 +29,7 @@ const NewsPage = () => {
     const isEngland = tenant === 'england';
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
-    const { content: cms } = usePageContent('news');
+    const { content: cms, loading: cmsLoading } = usePageContent('news');
     const c = (section: string, key: string, fallback: string) => cmsValue(cms, section, key, fallback);
     const tr = isSpanish ? {
         seoTitle: 'Noticias',
@@ -246,9 +246,9 @@ const NewsPage = () => {
                     {
                         '@context': 'https://schema.org',
                         '@type': 'Organization',
-                        name: tenant === 'england' ? 'EPC Cert' : 'The Berman',
-                        url: tenant === 'england' ? 'https://epccert.com' : 'https://theberman.eu',
-                        logo: tenant === 'england' ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
+                        name: tenant === 'england' ? 'EPC Cert' : 'The BER Man',
+                        url: tenant === 'england' ? 'https://epccert.com' : 'https://www.theberman.eu',
+                        logo: tenant === 'england' ? 'https://epccert.com/logo.png' : 'https://www.theberman.eu/logo.svg',
                         sameAs: tenant === 'england'
                             ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
                             : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
@@ -256,7 +256,10 @@ const NewsPage = () => {
                 ]}
             />
 
-
+            {cmsLoading ? (
+                <div className="min-h-screen bg-white" />
+            ) : (
+            <>
 
             {/* News Header & Categories */}
             <section className="bg-white pt-8 pb-4">
@@ -450,6 +453,8 @@ const NewsPage = () => {
                     scrollbar-width: none;
                 }
             `}</style>
+            </>
+            )}
         </div>
     );
 };

@@ -179,7 +179,7 @@ const NewCatalogue = () => {
         hireAgent: isSpanish ? 'Contrata un Asesor Energético Gratis' : isFrance ? 'Embauchez un Conseiller Énergétique Gratuitement' : isPortugal ? 'Contrate um Consultor Energético Grátis' : 'Hire An Energy Agent For Free',
         defaultLocation: isSpanish ? 'España' : isEngland ? 'England' : isFrance ? 'France' : isPortugal ? 'Portugal' : 'Ireland',
         seoTitle: isSpanish ? 'Catálogo de Negocios' : isEngland ? 'EPC Assessors Directory England | EPC Cert' : isFrance ? 'Catalogue d\'Entreprises' : isPortugal ? 'Catálogo de Empresas' : 'Home Energy Professionals Directory Ireland | The BER Man',
-        seoDescription: isSpanish ? 'Explora el catálogo de negocios de eficiencia energética verificados. Encuentra aislamiento, bombas de calor, energía solar y más.' : isEngland ? 'Browse accredited EPC assessors across England. Search by location, property type and assessment requirements to find qualified professionals' : isFrance ? 'Parcourez le catalogue des entreprises d\'efficacité énergétique vérifiées. Trouvez isolation, pompes à chaleur, solaire et plus.' : isPortugal ? 'Explore o catálogo de empresas de eficiência energética verificadas. Encontre isolamento, bombas de calor, solar e mais.' : 'Find Trusted BER Assessors, Retrofit Specialists, Insulation Contractors, Solar Installers, and Energy Consultants Across Ireland',
+        seoDescription: isSpanish ? 'Explora el catálogo de negocios de eficiencia energética verificados. Encuentra aislamiento, bombas de calor, energía solar y más.' : isEngland ? 'Browse accredited EPC assessors across England. Search by location, property type and assessment requirements to find qualified professional' : isFrance ? 'Parcourez le catalogue des entreprises d\'efficacité énergétique vérifiées. Trouvez isolation, pompes à chaleur, solaire et plus.' : isPortugal ? 'Explore o catálogo de empresas de eficiência energética verificadas. Encontre isolamento, bombas de calor, solar e mais.' : 'Find Trusted BER Assessors, Retrofit Specialists, Insulation Contractors, Solar Installers, and Energy Consultants Across Ireland',
         consideringSolar: isSpanish ? '¿Interesado en Paneles Solares?' : isFrance ? 'Intéressé par le Solaire?' : isPortugal ? 'Interessado em Painéis Solares?' : 'Considering Solar?',
         viewAll: isSpanish ? 'Ver Todo' : isFrance ? 'Voir Tout' : isPortugal ? 'Ver Tudo' : 'View All',
     };
@@ -342,7 +342,9 @@ const NewCatalogue = () => {
                         : t.seoTitle}
                 description={isEngland
                     ? (pathView === null ? t.seoDescription : pathView === 'assessors' ? 'Directory of accredited EPC assessors across England covering residential and commercial Energy Performance Certificate assessments' : 'Connect with home energy professionals across England, including EPC assessors, energy consultants and property energy specialists')
-                    : t.seoDescription}
+                    : (!isSpanish && !isFrance && !isPortugal)
+                        ? (pathView === null ? t.seoDescription : pathView === 'assessors' ? 'Browse Certified BER Assessors Across Ireland and Connect with Professionals for Property Energy Ratings and BER Certificates' : 'Browse Home Energy Upgrade Companies, Retrofit Contractors, Insulation Specialists, Solar Installers, and Energy Consultants Across Ireland')
+                        : t.seoDescription}
                 canonical={isEngland
                     ? (pathView === null ? '/catalogue' : pathView === 'assessors' ? '/catalogue/epc-assessors' : '/catalogue/epc-businesses')
                     : (pathView === null ? '/catalogue' : pathView === 'assessors' ? '/catalogue/ber-assessors' : '/catalogue/businesses')}
@@ -353,17 +355,33 @@ const NewCatalogue = () => {
                         itemListElement: isEngland ? [
                             { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.epccert.com/' },
                             { '@type': 'ListItem', position: 2, name: 'EPC Assessors Directory', item: 'https://www.epccert.com/catalogue' },
-                        ] : [
-                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.theberman.eu/' },
-                            { '@type': 'ListItem', position: 2, name: 'Catalogue', item: 'https://www.theberman.eu/catalogue' },
-                        ],
+                        ] : (!isSpanish && !isFrance && !isPortugal)
+                            ? (pathView === null
+                                ? [
+                                    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.theberman.eu/' },
+                                    { '@type': 'ListItem', position: 2, name: 'Catalogue', item: 'https://www.theberman.eu/catalogue' },
+                                ]
+                                : pathView === 'assessors'
+                                    ? [
+                                        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.theberman.eu/' },
+                                        { '@type': 'ListItem', position: 2, name: 'Catalogue', item: 'https://www.theberman.eu/catalogue' },
+                                        { '@type': 'ListItem', position: 3, name: 'BER Assessors', item: 'https://www.theberman.eu/catalogue/ber-assessors' },
+                                    ]
+                                    : [
+                                        { '@type': 'ListItem', position: 1, name: 'Catalogue', item: 'https://www.theberman.eu/catalogue' },
+                                        { '@type': 'ListItem', position: 2, name: 'Business', item: 'https://www.theberman.eu/catalogue/businesses' },
+                                    ])
+                            : [
+                                { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.theberman.eu/' },
+                                { '@type': 'ListItem', position: 2, name: 'Catalogue', item: 'https://www.theberman.eu/catalogue' },
+                            ],
                     },
                     {
                         '@context': 'https://schema.org',
                         '@type': 'Organization',
-                        name: isEngland ? 'EPC Cert' : 'The Berman',
-                        url: isEngland ? 'https://epccert.com' : 'https://theberman.eu',
-                        logo: isEngland ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
+                        name: isEngland ? 'EPC Cert' : 'The BER Man',
+                        url: isEngland ? 'https://epccert.com' : 'https://www.theberman.eu',
+                        logo: isEngland ? 'https://epccert.com/logo.png' : 'https://www.theberman.eu/logo.svg',
                         sameAs: isEngland
                             ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
                             : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],

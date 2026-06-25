@@ -26,17 +26,55 @@ const LocationPage = () => {
 
     // Get the correct location data based on tenant
     const locationData = getTownsForTenant(tenant);
-    const rawCountyName = county ? county.replace(/-/g, ' ') : '';
+    const rawCountyName = county ? county.replace(/^epc-assessment-/, '').replace(/-/g, ' ') : '';
+
+    // Map popular England city slugs to their actual county names in the data
+    const englandCityMap: Record<string, string> = {
+        'london': 'Greater London',
+        'manchester': 'Greater Manchester',
+        'birmingham': 'West Midlands',
+        'leeds': 'West Yorkshire',
+        'liverpool': 'Merseyside',
+        'sheffield': 'South Yorkshire',
+        'nottingham': 'Nottinghamshire',
+        'leicester': 'Leicestershire',
+        'newcastle': 'Northumberland',
+        'southampton': 'Hampshire',
+        'oxford': 'Oxfordshire',
+    };
+    const mappedCountyName = isEngland && englandCityMap[rawCountyName.toLowerCase()]
+        ? englandCityMap[rawCountyName.toLowerCase()]
+        : rawCountyName;
+
     const townName = town
         ? town.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
         : '';
 
     // Case-insensitive county matching
-    const countyKey = rawCountyName
-        ? Object.keys(locationData).find(k => k.toLowerCase() === rawCountyName.toLowerCase())
+    const countyKey = mappedCountyName
+        ? Object.keys(locationData).find(k => k.toLowerCase() === mappedCountyName.toLowerCase())
         : undefined;
-    const countyName = countyKey || rawCountyName;
+    const countyName = countyKey || mappedCountyName;
     const townsInCounty = countyKey ? (locationData[countyKey] || []) : [];
+
+    // Display name for England popular cities (show 'London' not 'Greater London')
+    // Maps from the URL slug to the friendly display name
+    const englandDisplayMap: Record<string, string> = {
+        'london': 'London',
+        'manchester': 'Manchester',
+        'birmingham': 'Birmingham',
+        'leeds': 'Leeds',
+        'liverpool': 'Liverpool',
+        'sheffield': 'Sheffield',
+        'nottingham': 'Nottingham',
+        'leicester': 'Leicester',
+        'newcastle': 'Newcastle',
+        'southampton': 'Southampton',
+        'oxford': 'Oxford',
+    };
+    const displayName = isEngland && !townName && englandDisplayMap[rawCountyName.toLowerCase()]
+        ? englandDisplayMap[rawCountyName.toLowerCase()]
+        : countyName;
 
     // Load custom location page content from DB
     useEffect(() => {
@@ -76,11 +114,11 @@ const LocationPage = () => {
     // Generate meta title and description (use custom data if available)
     const defaultPageTitle = townName
         ? `${labels.assessor} ${labels.in} ${townName}, ${countyName} | ${isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Certificates' : 'BER Certificates'}`
-        : `${labels.assessor} ${labels.in} ${countyName} | ${isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Certificates' : 'BER Certificates'}`;
+        : `${labels.assessor} ${labels.in} ${displayName} | ${isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Certificates' : 'BER Certificates'}`;
 
     const defaultPageDescription = townName
         ? `Find ${labels.assessor.toLowerCase()} ${labels.in} ${townName}, ${countyName}. ${isSpanish ? 'Obtenga su certificado de eficiencia energética con técnicos certificados locales.' : 'Get your energy certificate with local certified assessors.'}`
-        : `Find ${labels.assessor.toLowerCase()} ${labels.in} ${countyName}. ${isSpanish ? 'Obtenga su certificado de eficiencia energética con técnicos certificados locales.' : 'Get your energy certificate with local certified assessors.'}`;
+        : `Find ${labels.assessor.toLowerCase()} ${labels.in} ${displayName}. ${isSpanish ? 'Obtenga su certificado de eficiencia energética con técnicos certificados locales.' : 'Get your energy certificate with local certified assessors.'}`;
 
     const pageTitle = customData?.seo_title || defaultPageTitle;
     const pageDescription = customData?.seo_description || defaultPageDescription;
@@ -91,17 +129,17 @@ const LocationPage = () => {
         document.querySelector('meta[name="description"]')?.setAttribute('content', pageDescription);
     }, [pageTitle, pageDescription]);
 
-    const heroTitle = customData?.hero_title || `${labels.assessor} ${labels.in} ${townName || countyName}`;
+    const heroTitle = customData?.hero_title || `${labels.assessor} ${labels.in} ${townName || displayName}`;
     const heroSubtitle = customData?.hero_subtitle || (isSpanish
         ? `Su Certificado de Eficiencia Energética en ${countyName}.`
         : (townName
             ? `Find ${labels.assessor.toLowerCase()} ${labels.in} ${townName}, ${countyName}. Certified assessors ready to help with your energy certificate.`
-            : `Find ${labels.assessor.toLowerCase()} ${labels.in} ${countyName}. Certified assessors ready to help with your energy certificate.`)
+            : `Find ${labels.assessor.toLowerCase()} ${labels.in} ${displayName}. Certified assessors ready to help with your energy certificate.`)
     );
 
     const introText = customData?.intro_text || (isSpanish
         ? `Su Certificado de Eficiencia Energética en ${countyName}.`
-        : `${brandName} connects homeowners with ${isEngland ? 'certified assessors' : 'BER assessors'} in ${townName || countyName}. Our expert assessors are ready to provide high-quality ${isEngland ? 'Energy Performance Certificates' : 'Building Energy Ratings'}.`
+        : `${brandName} connects homeowners with ${isEngland ? 'certified assessors' : 'BER assessors'} in ${townName || displayName}. Our expert assessors are ready to provide high-quality ${isEngland ? 'Energy Performance Certificates' : 'Building Energy Ratings'}.`
     );
 
     return (

@@ -157,6 +157,13 @@ const Layout = () => {
         tenant === 'france' ? PROVINCES_FRANCE :
         tenant === 'portugal' ? PROVINCES_PORTUGAL :
         PROVINCES_IRELAND;
+    // Filter out tenant-hidden links, then apply tenant-specific ordering.
+    const visibleNavLinks = NAV_LINKS.filter(link => !(tenant === 'england' && link.hideForEngland));
+    const orderedNavLinks = tenant === 'england'
+        ? (['Home', 'About', 'Location', 'Home Energy Upgrade Catalogue', 'Our News', 'Blog', 'FAQ', 'Contact']
+            .map(label => visibleNavLinks.find(l => l.label === label))
+            .filter((l): l is typeof NAV_LINKS[number] => Boolean(l)))
+        : visibleNavLinks;
     const [locations, setLocations] = useState<any[]>([]);
     const [isLocationsOpen, setIsLocationsOpen] = useState(false);
     const [expandedProvince, setExpandedProvince] = useState<string | null>(null);
@@ -253,7 +260,7 @@ const Layout = () => {
                         ) : tenant === 'england' ? (
                             <img src="/epc-logo-trimmed.png" alt="EPC Cert Logo" style={{ height: '4rem', width: 'auto' }} className="relative z-10" />
                         ) : (
-                            <img src="/logo.svg" alt={`${tenantDisplayName} Logo`} style={{ height: '4.5rem', width: 'auto' }} className="relative z-10" />
+                            <img src="/logo.svg" alt={tenant === 'ireland' ? 'The BER Man - BER Cert Ireland Specialists' : `${tenantDisplayName} Logo`} style={{ height: '4.5rem', width: 'auto' }} className="relative z-10" />
                         )}
                     </Link>
 
@@ -352,7 +359,7 @@ const Layout = () => {
                         {isMenuOpen && (
                             <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white rounded-lg shadow-xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden max-h-[80vh] overflow-y-auto">
                                 <div className="py-2">
-                                    {NAV_LINKS.map((link) => (
+                                    {orderedNavLinks.map((link) => (
                                         link.label === 'Location' ? (
                                             <div key={link.label}>
                                                 <button
@@ -382,7 +389,7 @@ const Layout = () => {
                                                                     </Link>
                                                                 ))}
                                                                 <Link
-                                                                    to="/locations"
+                                                                    to="/locations/"
                                                                     onClick={closeMenu}
                                                                     className="block pl-8 pr-5 py-2.5 text-xs text-[#007F00] hover:text-[#006400] hover:bg-gray-100 font-bold uppercase tracking-wide transition-colors border-t border-gray-200"
                                                                 >

@@ -127,7 +127,7 @@ const HireAgent = () => {
         ],
         speakClose: 'The goal is to provide clear guidance, verified technical input, and access to competitive pricing, ensuring upgrades are completed as smartly and economically as possible.',
         badge1: 'Independent from contractors',
-        badge2: 'Accredited EPC expertise',
+        badge2: 'Technical input & certification',
         ourDetails: 'Our details',
         emailUs: 'Email Us',
         website: 'Website',
@@ -282,9 +282,9 @@ const HireAgent = () => {
                     {
                         '@context': 'https://schema.org',
                         '@type': 'Organization',
-                        name: isEngland ? 'EPC Cert' : 'The Berman',
-                        url: isEngland ? 'https://epccert.com' : 'https://theberman.eu',
-                        logo: isEngland ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
+                        name: isEngland ? 'EPC Cert' : 'The BER Man',
+                        url: isEngland ? 'https://epccert.com' : 'https://www.theberman.eu',
+                        logo: isEngland ? 'https://epccert.com/logo.png' : 'https://www.theberman.eu/logo.svg',
                         sameAs: isEngland
                             ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
                             : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],

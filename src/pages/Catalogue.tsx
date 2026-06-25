@@ -3,6 +3,7 @@ import { ArrowRight, Zap, Thermometer, Sun, Wind, Droplets } from 'lucide-react'
 import { Link } from 'react-router-dom';
 import SEOHead from '../components/SEOHead';
 import { usePageContent, cmsValue } from '../hooks/usePageContent';
+import { getTenantFromDomain } from '../lib/tenant';
 
 const CATEGORIES = [
     {
@@ -42,16 +43,22 @@ const CATEGORIES = [
 ];
 
 const Catalogue = () => {
-    const { content: cms } = usePageContent('catalogue');
+    const tenant = getTenantFromDomain();
+    const isEngland = tenant === 'england';
+    const { content: cms, loading: cmsLoading } = usePageContent('catalogue');
     const c = (section: string, key: string, fallback: string) => cmsValue(cms, section, key, fallback);
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen">
             <SEOHead
-                title="Energy Upgrade Catalogue"
-                description="Explore our curated collection of home energy upgrades. Professional solutions for thermal comfort and efficiency."
+                title={isEngland ? 'EPC Assessors Directory England | EPC Cert' : 'Energy Upgrade Catalogue'}
+                description={isEngland ? 'Browse accredited EPC assessors across England. Search by location, property type and assessment requirements to find qualified professional' : 'Explore our curated collection of home energy upgrades. Professional solutions for thermal comfort and efficiency.'}
                 canonical="/catalogue"
             />
 
+            {cmsLoading ? (
+                <div className="min-h-screen bg-white" />
+            ) : (
+            <>
             {/* HERO */}
             <section className="pt-28 pb-10 md:pt-32 md:pb-16 bg-white">
                 <div className="container mx-auto px-4 sm:px-6 text-center max-w-3xl">
@@ -59,11 +66,11 @@ const Catalogue = () => {
                         {c('hero', 'badge', 'The Catalogue')}
                     </span>
                     <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-gray-900 mb-4 md:mb-6 leading-tight">
-                        {c('hero', 'heading', 'Home Energy')} <br />
-                        <span className="text-[#007F00]">{c('hero', 'heading_highlight', 'Upgrades.')}</span>
+                        {isEngland ? "England's EPC Assessors Directory" : (<>{c('hero', 'heading', 'Home Energy')} <br />
+                        <span className="text-[#007F00]">{c('hero', 'heading_highlight', 'Upgrades.')}</span></>)}
                     </h1>
                     <p className="text-base md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
-                        {c('hero', 'subtitle', 'Explore the best solutions for a warmer home. We help you navigate grants, installers, and the latest technology.')}
+                        {isEngland ? 'The EPC Cert Directory helps homeowners, landlords, estate agents, and businesses connect with accredited EPC assessors across England. Browse professionals providing domestic EPC certificates, commercial EPC assessments, and property energy performance services. Search by location, property type, or assessment requirement to find qualified assessors serving your area.' : c('hero', 'subtitle', 'Explore the best solutions for a warmer home. We help you navigate grants, installers, and the latest technology.')}
                     </p>
                 </div>
             </section>
@@ -133,6 +140,8 @@ const Catalogue = () => {
                     </div>
                 </div>
             </section>
+            </>
+            )}
         </div>
     );
 };

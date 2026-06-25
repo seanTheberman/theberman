@@ -47,7 +47,7 @@ const Contact = () => {
     const townsByCounty = getTownsForTenant(tenant);
     const tenantEmail = getTenantEmail(tenant);
     const tenantDomain = getTenantDomain(tenant);
-    const { content: cms } = usePageContent('contact');
+    const { content: cms, loading: cmsLoading } = usePageContent('contact');
     const c = (section: string, key: string, fallback: string) => cmsValue(cms, section, key, fallback);
     const tr = {
         seoTitle: isSpanish ? 'Contacto' : isEngland ? 'Book EPC Assessment England | Contact EPC Cert' : 'Book a BER Assessment in Ireland | Contact The BER Man',
@@ -161,9 +161,9 @@ const Contact = () => {
                     {
                         '@context': 'https://schema.org',
                         '@type': 'Organization',
-                        name: tenant === 'england' ? 'EPC Cert' : 'The Berman',
-                        url: tenant === 'england' ? 'https://epccert.com' : 'https://theberman.eu',
-                        logo: tenant === 'england' ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
+                        name: tenant === 'england' ? 'EPC Cert' : 'The BER Man',
+                        url: tenant === 'england' ? 'https://epccert.com' : 'https://www.theberman.eu',
+                        logo: tenant === 'england' ? 'https://epccert.com/logo.png' : 'https://www.theberman.eu/logo.svg',
                         sameAs: tenant === 'england'
                             ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
                             : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
@@ -171,6 +171,10 @@ const Contact = () => {
                 ]}
             />
 
+            {cmsLoading ? (
+                <div className="min-h-screen bg-white" />
+            ) : (
+            <>
             {/* 1. COMPACT HERO */}
             <section className="pt-32 pb-8 bg-white">
                 <div className="container mx-auto px-6 text-center max-w-4xl">
@@ -397,6 +401,8 @@ const Contact = () => {
                     </div>
                 </div>
             </section>
+            </>
+            )}
         </div>
     );
 };

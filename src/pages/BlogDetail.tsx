@@ -20,6 +20,8 @@ interface BlogArticle {
     read_time: string;
     content: string;
     slug?: string;
+    seo_title?: string;
+    seo_description?: string;
 }
 
 interface TocItem {
@@ -182,8 +184,8 @@ const BlogDetail = () => {
             </div>
 
             <SEOHead
-                title={`${article.title} | ${tenantName} Blog`}
-                description={article.excerpt || article.title}
+                title={article.seo_title || `${article.title} | ${tenantName} Blog`}
+                description={article.seo_description || article.excerpt || article.title}
                 canonical={`/blog/${article.slug || article.id}`}
                 ogType="article"
                 ogImage={article.image_url || undefined}

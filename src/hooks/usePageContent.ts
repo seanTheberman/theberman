@@ -25,7 +25,7 @@ function getDefaultContentForPage(page: string, tenant: string): PageContentMap 
 
 export function usePageContent(page: string): { content: PageContentMap; loading: boolean } {
     const tenant = getTenantFromDomain();
-    const [content, setContent] = useState<PageContentMap>(() => getDefaultContentForPage(page, tenant));
+    const [content, setContent] = useState<PageContentMap>({});
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -54,6 +54,9 @@ export function usePageContent(page: string): { content: PageContentMap; loading
                 }
             } catch (err) {
                 console.error('Failed to load page content:', err);
+                if (!cancelled) {
+                    setContent(getDefaultContentForPage(page, tenant));
+                }
             }
             if (!cancelled) setLoading(false);
         };

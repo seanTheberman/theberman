@@ -90,7 +90,7 @@ export const CMS_PAGES: PageDefinition[] = [
                         heading: 'BER Cert Ireland – Get Quotes from',
                         heading_highlight: 'Registered Assessors',
                         subheading: 'The fastest, most reliable way to get your official Building Energy Rating. Compare competing quotes from local, SEAI-registered assessors today.',
-                        cta_line: 'Get the Best Quotes from local BER Assessors today.',
+                        cta_line: 'Get competitive quotes from SEAI-registered local BER Assessors Today',
                         cta_button_text: 'Get a Free Quote',
                         cta_button_url: '/get-quote',
                         benefit_1: '100+ Assessors Nationwide',
@@ -191,9 +191,9 @@ export const CMS_PAGES: PageDefinition[] = [
                     ireland: {
                         tag: 'Simple Process', heading: 'How to Get Your BER Certificate',
                         step1_title: 'Select Date', step1_desc: 'Tell us your preferred date & time for assessment.',
-                        step2_title: 'Post Details', step2_desc: 'Share your property info in less than 1 minute.',
-                        step3_title: 'Get Quotes', step3_desc: 'Receive competitive prices from local assessors.',
-                        step4_title: 'Book Online', step4_desc: 'Choose your favorite quote and confirm instantly.',
+                        step2_title: 'Property Details', step2_desc: 'Tell us about your property.',
+                        step3_title: 'Receive Quotes', step3_desc: 'Receive competitive prices from local BER assessors.',
+                        step4_title: 'Book Assessment', step4_desc: 'Confirm and arrange your assessment.',
                         bg_color: '#f9fafb',
                     },
                     spain: {
@@ -331,7 +331,7 @@ export const CMS_PAGES: PageDefinition[] = [
                 ],
                 defaults: {
                     ireland: {
-                        heading: 'Excellent', subheading: 'Based on 1,000 Verified Customer Ratings',
+                        heading: 'What homeowners say about The Berman', subheading: 'Based on 1,000+ verified customer reviews and ratings',
                         review1_author: 'Michael Byrne', review1_location: 'Dublin', review1_quote: 'Used the platform twice now. Both times I got several quotes within an hour and the assessor was super professional. Saved about €30 vs other sites.',
                         review2_author: "Sarah O'Toole", review2_location: 'Cork', review2_quote: 'Extremely easy to use. I loved that I could see the SEAI registration numbers and reviews for the assessors before booking. Highly recommended for landlords.',
                         review3_author: 'James Murphy', review3_location: 'Galway', review3_quote: 'Fast turnaround and competitive pricing. The portal makes it very simple to manage everything and the certificate was issued within 24 hours of inspection.',
@@ -376,7 +376,7 @@ export const CMS_PAGES: PageDefinition[] = [
                     { key: 'cta_url', label: 'Button URL', type: 'url', group: 'Content' },
                 ],
                 defaults: {
-                    ireland: { heading: 'Are You a BER Assessor?', description: 'Register with theberman.eu and receive local job leads, straight to your phone.', cta_text: 'Register as an Assessor', cta_url: '/signup?role=contractor' },
+                    ireland: { heading: 'Are You a BER Assessor?', description: 'SEAI-registered assessors can join our nationwide network and connect with property owners looking for BER assessments in their area.', cta_text: 'Register as an Assessor', cta_url: '/signup?role=contractor' },
                     spain: { heading: '¿Eres Certificador Energético?', description: 'Regístrate y recibe leads de trabajo locales, directamente en tu teléfono.', cta_text: 'Únete Ahora', cta_url: '/signup?role=contractor' },
                     england: { heading: 'Are You a Domestic Energy Assessor?', description: 'Register with epccert.com and receive local EPC job leads, straight to your phone.', cta_text: 'Join Now', cta_url: '/signup?role=contractor' },
                     france: { heading: 'Êtes-vous Diagnostiqueur DPE?', description: 'Inscrivez-vous sur dpefrance.eu et recevez des leads locaux.', cta_text: 'Rejoindre', cta_url: '/signup?role=contractor' },
@@ -458,11 +458,11 @@ export const CMS_PAGES: PageDefinition[] = [
                 defaults: {
                     ireland: {
                         tag: 'Knowledge Base', heading: 'Frequently Asked Questions',
-                        faq1_q: 'What is a BER Certificate?', faq1_a: 'A Building Energy Rating (BER) tells you how energy efficient your home is, rated from A (most efficient) to G (least efficient).',
-                        faq2_q: 'Why do I need a BER?', faq2_a: "It's legally required to sell or rent a property. It's also needed for SEAI energy upgrade grants.",
-                        faq3_q: 'How much does it cost?', faq3_a: 'Prices vary based on property size. Our platform ensures you get the most competitive quotes from local assessors.',
-                        faq4_q: 'How long is it valid for?', faq4_a: "A BER certificate is valid for up to 10 years, unless there are major changes to the property's energy performance.",
-                        cta_heading: 'Ready to get your BER Certificate?', cta_description: 'Join over 1,000 satisfied homeowners. Get competitive quotes from trusted local assessors in seconds.',
+                        faq1_q: 'What Is a BER Certificate?', faq1_a: 'A BER Certificate shows the energy efficiency of a property using a rating from A to G.',
+                        faq2_q: 'When Do I Need a BER Certificate?', faq2_a: 'A BER Certificate is usually required when selling or renting a property in Ireland.',
+                        faq3_q: 'How Much Does a BER Assessment Cost?', faq3_a: 'The cost depends on the size, type, and location of the property.',
+                        faq4_q: 'How Long Is a BER Certificate Valid?', faq4_a: 'Most BER Certificates remain valid for up to 10 years.',
+                        cta_heading: 'Ready to Get Your BER Certificate?', cta_description: 'Compare quotes from qualified assessors and arrange your assessment online.',
                         cta_button: 'Get a Quote Online',
                     },
                     spain: {
@@ -569,7 +569,7 @@ export const CMS_PAGES: PageDefinition[] = [
                 defaults: {
                     ireland: { tag: 'Who We Are', heading_line1: 'About The BER', heading_line2: 'Man', description: "The BER Man helps property owners connect with qualified BER assessors through a simple and transparent process. Our platform makes arranging BER assessments easier while helping users make informed energy decisions." },
                     spain: { tag: 'Nuestra Misión', heading_line1: 'Precisión en cada', heading_line2: 'Certificación.', description: 'le ayudamos a entender, mejorar y ahorrar dinero con una certificación de eficiencia energética que le será explicada por los mejores profesionales del sector.' },
-                    england: { tag: 'Our Mission', heading_line1: 'Precision in every', heading_line2: 'Assessment.', description: "Helping homeowners across England understand, improve, and certify their property's energy performance." },
+                    england: { tag: 'Who We Are', heading_line1: 'Helping Property Owners', heading_line2: 'Arrange EPC Assessments Across England', description: 'Expand to homeowners, landlords and businesses' },
                     france: { tag: 'Our Mission', heading_line1: 'Precision in every', heading_line2: 'Assessment.', description: "Helping homeowners across France understand, improve, and certify their property's energy performance." },
                     portugal: { tag: 'Our Mission', heading_line1: 'Precision in every', heading_line2: 'Assessment.', description: "Helping homeowners across Portugal understand, improve, and certify their property's energy performance." },
                 },
@@ -617,12 +617,12 @@ export const CMS_PAGES: PageDefinition[] = [
                     },
                     england: {
                         heading: 'Our Story',
-                        paragraph1: "EPC Cert was founded with a singular objective: to bring professional clarity and technical rigor to England's energy performance certificate industry.",
-                        paragraph2: "What began as a small team in London has grown into a nationwide network of accredited Domestic Energy Assessors.",
-                        paragraph3: "Today, EPC Cert stands as a trusted platform for energy assessments across England. We have successfully facilitated thousands of EPCs.",
-                        paragraph4: "As we look toward the future, our focus continues to be on innovation, compliance, and helping homeowners meet the latest EPC regulations.",
+                        paragraph1: "EPC Cert was established to make Energy Performance Certificate (EPC) assessments easier for property owners, landlords, estate agents and businesses across England.\n\nWe understand that obtaining an EPC is often a necessary part of selling, renting or managing a property, yet finding a qualified assessor and arranging an appointment can be time-consuming. Our platform was created to simplify the process by connecting customers with accredited EPC assessors through a trusted nationwide network.",
+                        paragraph2: "From residential homes and rental properties to commercial buildings, EPC Cert helps customers access professional EPC assessment services with greater convenience and confidence. We focus on providing a straightforward booking experience, flexible appointment availability and access to qualified assessors who operate in accordance with current EPC regulations and industry standards.",
+                        paragraph3: "As energy efficiency continues to play an important role in the property sector, our commitment remains the same: helping customers across England access reliable EPC assessment services while making the process clear, efficient and stress-free.",
+                        paragraph4: "",
                         stat1_value: '1k+', stat1_label: 'Completed EPC Assessments',
-                        stat2_value: '100+', stat2_label: 'Accredited DEAs Nationwide',
+                        stat2_value: '100+', stat2_label: 'Accredited EPC Assessors Across England',
                         stat3_value: 'Level 3', stat3_label: 'Qualified Energy Assessors',
                     },
                     france: {
@@ -663,7 +663,7 @@ export const CMS_PAGES: PageDefinition[] = [
                 defaults: {
                     ireland: { heading: 'Ready to Arrange Your', heading_highlight: 'BER Assessment?', description: 'Connect with qualified BER assessors and compare options for your property through one simple platform.', button_text: 'Get My BER Quote' },
                     spain: { heading: 'Únete a la familia', heading_highlight: 'Certificado Energético', description: '¿Preparado para tu certificación energética profesional? Nuestro equipo nacional está listo para ayudarte hoy mismo.', button_text: 'Pedir mi Presupuesto' },
-                    england: { heading: 'Join', heading_highlight: 'EPC Cert', description: 'Ready for a professional EPC assessment? Our nationwide network of accredited DEAs is ready to help you today.', button_text: 'Get My EPC Quote' },
+                    england: { heading: 'Need an EPC Certificate?', heading_highlight: '', description: 'Compare quotes from accredited EPC assessors serving homeowners, landlords and businesses across England.', button_text: 'Get a Free Quote' },
                     france: { heading: 'Join', heading_highlight: 'DPE Cert', description: 'Ready for a professional DPE assessment? Our nationwide network of accredited DPEs is ready to help you today.', button_text: 'Get My DPE Quote' },
                     portugal: { heading: 'Join', heading_highlight: 'Certificado Energético Cert', description: 'Ready for a professional Certificado Energético assessment? Our nationwide network of accredited Peritos is ready to help you today.', button_text: 'Get My Certificado Energético Quote' },
                 },
@@ -690,7 +690,7 @@ export const CMS_PAGES: PageDefinition[] = [
                     { key: 'subtitle', label: 'Subtitle', type: 'textarea', group: 'Content' },
                 ],
                 defaults: {
-                    ireland: { badge: 'Get In Touch', heading_line1: 'Book a BER', heading_line2: 'Assessment in Ireland', subtitle: 'Book a BER Assessment in Ireland or Contact the BER Man for Support. Connect with Qualified BER Assessors and Get Assistance with Your Enquiry' },
+                    ireland: { badge: 'Get In Touch', heading_line1: 'Book a BER', heading_line2: 'Assessment in Ireland', subtitle: 'Contact The BER Man to book a BER assessment, connect with qualified BER assessors, or get support with your enquiry.' },
                     spain: { badge: 'Ponte en Contacto', heading_line1: '¿En qué podemos', heading_line2: 'ayudarte?', subtitle: '¿Tienes alguna pregunta sobre certificaciones energéticas? Nuestro equipo está aquí para ayudarte.' },
                     england: { badge: 'Get In Touch', heading_line1: 'How can we', heading_line2: 'help?', subtitle: 'Have a question about EPC assessments? Our team is here to provide the support you need.' },
                     france: { badge: 'Get In Touch', heading_line1: 'How can we', heading_line2: 'help?', subtitle: 'Have a question about DPE assessments? Our team is here to provide the support you need.' },

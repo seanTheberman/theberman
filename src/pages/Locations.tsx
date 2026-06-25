@@ -67,9 +67,9 @@ const Locations = () => {
                     {
                         '@context': 'https://schema.org',
                         '@type': 'Organization',
-                        name: tenant === 'england' ? 'EPC Cert' : 'The Berman',
-                        url: tenant === 'england' ? 'https://epccert.com' : 'https://theberman.eu',
-                        logo: tenant === 'england' ? 'https://epccert.com/logo.png' : 'https://theberman.eu/logo.png',
+                        name: tenant === 'england' ? 'EPC Cert' : 'The BER Man',
+                        url: tenant === 'england' ? 'https://epccert.com' : 'https://www.theberman.eu',
+                        logo: tenant === 'england' ? 'https://epccert.com/logo.png' : 'https://www.theberman.eu/logo.svg',
                         sameAs: tenant === 'england'
                             ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
                             : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
