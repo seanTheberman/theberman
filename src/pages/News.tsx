@@ -267,7 +267,7 @@ const NewsPage = () => {
                                 {c('hero', 'badge', isSpanish ? 'Últimas Noticias' : 'Latest Updates')}
                             </span>
                             <h1 className="text-4xl md:text-5xl font-black text-gray-900 uppercase tracking-tighter italic mb-2">
-                                {c('hero', 'heading', tr.heading)}
+                                {tr.heading}
                             </h1>
                             <p className="text-gray-500 font-medium tracking-wide text-sm">
                                 {c('hero', 'subtitle', tr.subheading)}

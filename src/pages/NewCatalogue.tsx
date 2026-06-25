@@ -152,6 +152,12 @@ const NewCatalogue = () => {
         engHeroLine2Businesses: 'Providers England',
         engHeroLine1Default: "England's EPC",
         engHeroLine2Default: 'Assessors Directory',
+        irHeroLine1Assessors: 'BER Assessors',
+        irHeroLine2Assessors: 'Directory Ireland',
+        irHeroLine1Businesses: 'Home Energy Upgrade',
+        irHeroLine2Businesses: 'Companies Ireland',
+        irHeroLine1Default: "Ireland's Home Energy",
+        irHeroLine2Default: 'Professionals Directory',
         upgradeType: isSpanish ? 'Tipo de Mejora' : isFrance ? 'Type d\'Amélioration' : isPortugal ? 'Tipo de Melhoria' : 'Upgrade Type',
         selectUpgrade: isSpanish ? 'Seleccionar Mejora...' : isFrance ? 'Sélectionner...' : isPortugal ? 'Selecionar Melhoria...' : 'Select Upgrade...',
         location: isSpanish ? 'Ubicación' : isFrance ? 'Localisation' : isPortugal ? 'Localização' : 'Location',
@@ -330,18 +336,16 @@ const NewCatalogue = () => {
             </Helmet>
             <SEOHead
                 title={isEngland
-                    ? (activeView === 'assessors' ? 'Find EPC Assessors Across England | EPC Cert' : activeView === 'businesses' ? 'Home Energy Professionals England | EPC Cert Directory' : t.seoTitle)
-                    : (activeView === 'assessors' && !isSpanish && !isFrance && !isPortugal
-                        ? 'BER Assessors Directory Ireland | The BER Man'
-                        : activeView === 'businesses' && !isSpanish && !isFrance && !isPortugal
-                            ? 'Home Energy Upgrade Companies Ireland | The BER Man'
-                            : t.seoTitle)}
+                    ? (pathView === null ? t.seoTitle : pathView === 'assessors' ? 'Find EPC Assessors Across England | EPC Cert' : 'Home Energy Professionals England | EPC Cert Directory')
+                    : (!isSpanish && !isFrance && !isPortugal)
+                        ? (pathView === null ? 'Home Energy Professionals Directory Ireland | The BER Man' : pathView === 'assessors' ? 'BER Assessors Directory Ireland | The BER Man' : 'Home Energy Upgrade Companies Ireland | The BER Man')
+                        : t.seoTitle}
                 description={isEngland
-                    ? (activeView === 'assessors' ? 'Directory of accredited EPC assessors across England covering residential and commercial Energy Performance Certificate assessments' : activeView === 'businesses' ? 'Connect with home energy professionals across England, including EPC assessors, energy consultants and property energy specialists' : t.seoDescription)
+                    ? (pathView === null ? t.seoDescription : pathView === 'assessors' ? 'Directory of accredited EPC assessors across England covering residential and commercial Energy Performance Certificate assessments' : 'Connect with home energy professionals across England, including EPC assessors, energy consultants and property energy specialists')
                     : t.seoDescription}
                 canonical={isEngland
-                    ? (activeView === 'assessors' ? '/catalogue/epc-assessors' : activeView === 'businesses' ? '/catalogue/epc-businesses' : '/catalogue')
-                    : (activeView === 'assessors' ? '/catalogue/ber-assessors' : activeView === 'businesses' ? '/catalogue/businesses' : '/catalogue')}
+                    ? (pathView === null ? '/catalogue' : pathView === 'assessors' ? '/catalogue/epc-assessors' : '/catalogue/epc-businesses')
+                    : (pathView === null ? '/catalogue' : pathView === 'assessors' ? '/catalogue/ber-assessors' : '/catalogue/businesses')}
                 jsonLd={[
                     {
                         '@context': 'https://schema.org',
@@ -386,11 +390,15 @@ const NewCatalogue = () => {
                     </span>
                     <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight">
                         {isEngland
-                            ? (activeView === 'assessors' ? t.engHeroLine1Assessors : activeView === 'businesses' ? t.engHeroLine1Businesses : t.engHeroLine1Default)
-                            : t.heroLine1} <br />
+                            ? (pathView === null ? t.engHeroLine1Default : pathView === 'assessors' ? t.engHeroLine1Assessors : t.engHeroLine1Businesses)
+                            : (!isSpanish && !isFrance && !isPortugal)
+                                ? (pathView === null ? t.irHeroLine1Default : pathView === 'assessors' ? t.irHeroLine1Assessors : t.irHeroLine1Businesses)
+                                : t.heroLine1} <br />
                         <span className="text-[#9ACD32]">{isEngland
-                            ? (activeView === 'assessors' ? t.engHeroLine2Assessors : activeView === 'businesses' ? t.engHeroLine2Businesses : t.engHeroLine2Default)
-                            : t.heroLine2}</span>
+                            ? (pathView === null ? t.engHeroLine2Default : pathView === 'assessors' ? t.engHeroLine2Assessors : t.engHeroLine2Businesses)
+                            : (!isSpanish && !isFrance && !isPortugal)
+                                ? (pathView === null ? t.irHeroLine2Default : pathView === 'assessors' ? t.irHeroLine2Assessors : t.irHeroLine2Businesses)
+                                : t.heroLine2}</span>
                     </h1>
                    
 

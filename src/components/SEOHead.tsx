@@ -28,7 +28,7 @@ const TENANT_CONFIG: Record<string, { siteName: string; baseUrl: string; ogImage
         currency: 'GBP',
     },
     ireland: {
-        siteName: 'The Berman',
+        siteName: 'The BER Man',
         baseUrl: 'https://theberman.eu',
         ogImage: 'https://theberman.eu/logo.png',
         locale: 'en_IE',

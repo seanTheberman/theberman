@@ -242,7 +242,7 @@ const BlogPage = () => {
                                 {c('hero', 'badge', isSpanish ? 'Consejos' : 'Insights')}
                             </span>
                             <h1 className="text-4xl md:text-5xl font-black text-gray-900 uppercase tracking-tighter italic mb-2">
-                                {isEngland ? tr.latest : c('hero', 'heading', tr.latest)}
+                                {(isEngland || !isSpanish) ? tr.latest : c('hero', 'heading', tr.latest)}
                             </h1>
                             {!isSpanish && !isEngland && (
                                 <p className="text-gray-600 font-medium tracking-wide text-sm max-w-xl mb-2">
