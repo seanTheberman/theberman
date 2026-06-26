@@ -147,7 +147,7 @@ const HomePage = () => {
                                 { icon: <Clock size={20} />, text: c('hero', 'benefit_3', isSpanish ? 'Elige tu Fecha y Hora' : 'Choose Your Date & Time') }
                             ].map((item, i) => (
                                 <div key={i} className="flex items-center gap-2 text-gray-500 font-bold text-sm tracking-wide uppercase">
-                                    <span className="text-[#007F00]">{item.icon}</span>
+                                    <span className="text-[#007F00] flex-shrink-0 w-5 h-5 inline-flex items-center justify-center">{item.icon}</span>
                                     {item.text}
                                 </div>
                             ))}
