@@ -254,7 +254,7 @@ const Layout = () => {
                 <div className="container mx-auto px-6 h-20 flex justify-between items-center">
 
                     {/* Logo */}
-                    <Link to="/" onClick={closeMenu}>
+                    <Link to="/" onClick={() => { closeMenu(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
                         {isSpanish ? (
                             <img src="/certificado-logo-trimmed.png" alt="Certificado Energético Logo" style={{ height: '4rem', width: 'auto' }} className="relative z-10" />
                         ) : tenant === 'england' ? (
@@ -638,12 +638,6 @@ const Layout = () => {
                                     <Mail className="text-[#9ACD32] mt-0.5" size={16} />
                                     <a href={`mailto:${tenantEmail}`} className="hover:text-white transition">{tenantEmail}</a>
                                 </li>
-                                {isSpanish && (
-                                    <li className="flex items-start gap-3 text-gray-400 text-sm">
-                                        <Mail className="text-[#9ACD32] mt-0.5" size={16} />
-                                        <a href="mailto:info@certificadoenergético.eu" className="hover:text-white transition">info@certificadoenergético.eu</a>
-                                    </li>
-                                )}
                                 <li className="flex items-start gap-3 text-gray-400 text-sm">
                                     <Globe className="text-[#9ACD32] mt-0.5" size={16} />
                                     <a href={tenantWebsiteUrl} target="_blank" className="hover:text-white transition">{tenantDomain}</a>

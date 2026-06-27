@@ -81,7 +81,7 @@ export function getTenantFromDomain(): string {
 
 export function getTenantDisplayName(tenant: string): string {
   const map: Record<string, string> = {
-    'ireland': 'The Berman',
+    'ireland': 'The BER Man',
     'spain': 'Certificado Energético',
     'england': 'EPC Cert',
     'france': 'DPE France',
@@ -133,7 +133,7 @@ export function getTenantWebsiteUrl(tenant: string): string {
     if (host && host.includes('pt')) return `https://${host}`;
     return 'https://certificadopt.eu';
   }
-  return 'https://theberman.eu';
+  return 'https://www.theberman.eu';
 }
 
 export function getTenantEmail(tenant: string): string {

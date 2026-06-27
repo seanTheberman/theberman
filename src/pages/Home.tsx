@@ -92,7 +92,7 @@ const HomePage = () => {
                         '@context': 'https://schema.org',
                         '@type': 'LocalBusiness',
                         name: brandName,
-                        description: `${country}'s largest ${ratingName} website. Fast, reliable, and hassle-free ${ratingName} assessments.`,
+                        description: tenant === 'england' ? `${country}'s largest ${ratingName} website. Fast, reliable, and hassle-free ${ratingName} assessments.` : "Need a BER Cert in Ireland? The BER Man Connects You with Local, SEAI-Registered Assessors Nationwide. Get a Free Quote Online Today!",
                         url: tenant === 'england' ? 'https://www.epccert.com' : isSpanish ? 'https://certificadoenergético.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://www.theberman.eu',
                         address: { '@type': 'PostalAddress', addressCountry: tenant === 'england' ? 'GB' : isSpanish ? 'ES' : tenant === 'france' ? 'FR' : tenant === 'portugal' ? 'PT' : 'IE', addressLocality: tenant === 'england' ? 'London' : isSpanish ? 'Madrid' : tenant === 'france' ? 'Paris' : tenant === 'portugal' ? 'Lisboa' : 'Dublin' },
                         priceRange: tenant === 'england' ? '££' : '€€'
@@ -110,7 +110,7 @@ const HomePage = () => {
                     <div className="max-w-4xl mx-auto text-center">
                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-100 rounded-full mb-8 animate-fade-in">
                             <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span className="text-sm font-bold text-green-700">{c('hero', 'badge_text', isSpanish ? 'La Mayor Plataforma de Certificados Energéticos' : "Trusted by 1,000+ Irish homeowners")}</span>
+                            <p className="text-sm font-bold text-green-700">{c('hero', 'badge_text', isSpanish ? 'La Mayor Plataforma de Certificados Energéticos' : "Trusted by 1,000+ Irish homeowners")}</p>
                         </div>
 
                         <h1 className={`font-black mb-6 md:mb-8 leading-[1.1] tracking-tight ${isSpanish ? 'text-4xl md:text-5xl lg:text-6xl' : 'text-5xl md:text-7xl lg:text-8xl'}`} style={{ color: c('hero', 'heading_color', '#111827') }}>
@@ -236,7 +236,7 @@ const HomePage = () => {
                                             <CheckCircle2 size={16} />
                                         </div>
                                         <div>
-                                            <h4 className="text-lg font-bold text-gray-900">{benefit.title}</h4>
+                                            <h3 className="text-lg font-bold text-gray-900">{benefit.title}</h3>
                                             <p className="text-gray-500 font-medium">{benefit.desc}</p>
                                         </div>
                                     </div>
@@ -280,7 +280,7 @@ const HomePage = () => {
                     <div className="text-center mb-16">
                         <div className="flex items-center justify-center gap-2 mb-4">
                             <Star className="text-green-500 fill-green-500" size={32} />
-                            <span className="text-3xl font-black">{c('reviews', 'heading', isSpanish ? 'Excelente' : 'What homeowners say about The Berman')}</span>
+                            <h2 className="text-3xl font-black">{c('reviews', 'heading', isSpanish ? 'Excelente' : 'What homeowners say about The Berman')}</h2>
                         </div>
                         <p className="text-gray-500 font-bold uppercase tracking-widest text-sm">{c('reviews', 'subheading', isSpanish ? 'Basado en 1.000 valoraciones verificadas de clientes' : 'Based on 1,000+ verified customer reviews and ratings')}</p>
                     </div>
@@ -329,7 +329,7 @@ const HomePage = () => {
             {/* ASSESSOR CTA SECTION */}
             <aside className="py-20 bg-gray-50 border-b border-gray-100">
                 <div className="container mx-auto px-6 text-center">
-                    <h2 className="text-3xl md:text-4xl font-black text-[#007F00] mb-4">{c('assessor_cta', 'heading', isSpanish ? '¿Eres Certificador Energético?' : 'Are You a BER Assessor?')}</h2>
+                    <p className="text-3xl md:text-4xl font-black text-[#007F00] mb-4">{c('assessor_cta', 'heading', isSpanish ? '¿Eres Certificador Energético?' : 'Are You a BER Assessor?')}</p>
                     <p className="text-gray-600 font-medium mb-8 max-w-2xl mx-auto">
                         {c('assessor_cta', 'description', isSpanish
                             ? 'Regístrate y recibe leads de trabajo locales, directamente en tu teléfono.'
@@ -461,7 +461,7 @@ const HomePage = () => {
                                 { q: c('faq', 'faq4_q', isSpanish ? "¿Cuánto tiempo es válido?" : "How Long Is a BER Certificate Valid?"), a: c('faq', 'faq4_a', isSpanish ? "Un Certificado Energético tiene una validez de hasta 10 años, salvo que se realicen cambios importantes que alteren el rendimiento energético de la propiedad." : "Most BER Certificates remain valid for up to 10 years.") }
                             ].map((faq, i) => (
                                 <div key={i} className="group cursor-pointer">
-                                    <h4 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-[#007F00] transition-colors">{faq.q}</h4>
+                                    <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-[#007F00] transition-colors">{faq.q}</h3>
                                     <p className="text-gray-500 text-sm font-medium leading-relaxed">{faq.a}</p>
                                 </div>
                             ))}
