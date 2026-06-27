@@ -1,6 +1,5 @@
 import { Globe, ArrowRight, Shield, Zap, Euro, Clock, CheckCircle, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import FaqItem from '../components/FaqItem';
 import SEOHead from '../components/SEOHead';
 import { getTenantFromDomain } from '../lib/tenant';
 import { usePageContent, cmsValue } from '../hooks/usePageContent';
@@ -65,13 +64,14 @@ const About = () => {
         missionTag: 'Who We Are',
         title1: isEngland ? 'Helping Property Owners' : 'About The BER',
         title2: isEngland ? 'Arrange EPC Assessments Across England' : 'Man',
-        heroP: isEngland ? 'Expand to homeowners, landlords and businesses' : "The BER Man helps property owners connect with qualified BER assessors through a simple and transparent process. Our platform makes arranging BER assessments easier while helping users make informed energy decisions.",
+        heroSubheading: isEngland ? 'Nationwide, Fast, Hassle-Free' : '',
+        heroP: isEngland ? 'We help homeowners, landlords and businesses arrange Energy Performance Certificates across England with speed and transparency.' : "The BER Man helps property owners connect with qualified BER assessors through a simple and transparent process. Our platform makes arranging BER assessments easier while helping users make informed energy decisions.",
         storyH: isEngland ? 'Our Story' : 'Connecting Property Owners with Qualified BER Assessors',
         story: isEngland ? [
-            `${brand} was established to make Energy Performance Certificate (EPC) assessments easier to access for property owners, landlords, estate agents and businesses across England. We understand that obtaining an EPC is often a necessary part of selling, renting or managing a property, yet finding a qualified assessor and arranging an appointment can be time-consuming. Our platform was created to simplify the process by connecting customers with accredited EPC assessors through a trusted nationwide network.`,
-            `From residential homes and rental properties to commercial buildings, ${brand} helps customers access professional EPC assessment services with greater convenience and confidence. We focus on providing a straightforward booking experience, flexible appointment availability and access to qualified assessors who operate in accordance with current EPC regulations and industry standards.`,
-            `As energy efficiency continues to play an important role in the property sector, our commitment remains the same: helping customers across England access reliable EPC assessment services while making the process clear, efficient and stress-free.`,
-            ``,
+            "EPC Cert was established to receive Energy Performance Certificate (EPC) assessments easier for property owners, landlords, estate agents and businesses across England.",
+            "We understand that obtaining an EPC is often a necessary part of selling, renting or managing a property, yet finding a qualified assessor and arranging an appointment can be time-consuming. Our platform was created to simplify the process by connecting customers with accredited EPC assessors through a trusted nationwide network.",
+            "From residential homes and rental properties to commercial buildings, EPC Cert helps customers access professional EPC assessment services with greater convenience and confidence. We focus on providing a straightforward booking experience, flexible appointment availability and access to qualified assessors who operate in accordance with current EPC regulations and industry standards.",
+            "As energy efficiency continues to play an important role in the property sector, our commitment remains the same: helping customers across England access reliable EPC assessment services while making the process clear, efficient and stress-free.",
         ] : [
             "The BER Man was created to make arranging BER assessments simpler, more transparent, and easier to manage for property owners.",
             "What started as a specialist service has grown into a trusted network of SEAI-registered BER Assessors, helping homeowners, landlords, estate agents, and businesses access professional energy rating services through one convenient platform.",
@@ -179,8 +179,13 @@ const About = () => {
                         {isEngland ? tr.title1 : c('hero', 'heading_line1', tr.title1)} <br className="hidden md:block" />
                         <span className="text-[#007F00]">{isEngland ? tr.title2 : c('hero', 'heading_line2', tr.title2)}</span>
                     </h1>
+                    {isEngland && tr.heroSubheading && (
+                        <p className="text-sm md:text-base font-black text-[#007F00] uppercase tracking-widest mb-4">
+                            {tr.heroSubheading}
+                        </p>
+                    )}
                     <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
-                        {c('hero', 'description', tr.heroP)}
+                        {isEngland ? tr.heroP : c('hero', 'description', tr.heroP)}
                     </p>
                 </div>
             </section>
@@ -194,26 +199,26 @@ const About = () => {
                             <div className="mb-8">
                                 <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight">{c('story', 'heading', tr.storyH)}</h2>
                             </div>
-                            <p>{c('story', 'paragraph1', tr.story[0])}</p>
-                            <p>{c('story', 'paragraph2', tr.story[1])}</p>
-                            <p>{c('story', 'paragraph3', tr.story[2])}</p>
-                            <p>{c('story', 'paragraph4', tr.story[3])}</p>
+                            <p>{isEngland ? tr.story[0] : c('story', 'paragraph1', tr.story[0])}</p>
+                            <p>{isEngland ? tr.story[1] : c('story', 'paragraph2', tr.story[1])}</p>
+                            <p>{isEngland ? tr.story[2] : c('story', 'paragraph3', tr.story[2])}</p>
+                            <p>{isEngland ? tr.story[3] : c('story', 'paragraph4', tr.story[3])}</p>
                         </div>
 
                         {/* Right Side: Stats / Impact */}
                         <div className="lg:col-span-4 lg:pl-12 lg:border-l border-gray-200">
                             <div className="sticky top-12 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-8 lg:space-y-12">
                                 <div>
-                                    <p className="text-4xl md:text-5xl font-black text-[#007F00] mb-2">{c('story', 'stat1_value', tr.stats[0].n)}</p>
-                                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-tight">{c('story', 'stat1_label', `${tr.stats[0].l1} ${tr.stats[0].l2}`)}</p>
+                                    <p className="text-4xl md:text-5xl font-black text-[#007F00] mb-2">{isEngland ? tr.stats[0].n : c('story', 'stat1_value', tr.stats[0].n)}</p>
+                                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-tight">{isEngland ? `${tr.stats[0].l1} ${tr.stats[0].l2}` : c('story', 'stat1_label', `${tr.stats[0].l1} ${tr.stats[0].l2}`)}</p>
                                 </div>
                                 <div>
-                                    <p className="text-4xl md:text-5xl font-black text-[#007F00] mb-2">{c('story', 'stat2_value', tr.stats[1].n)}</p>
-                                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-tight">{c('story', 'stat2_label', `${tr.stats[1].l1} ${tr.stats[1].l2}`)}</p>
+                                    <p className="text-4xl md:text-5xl font-black text-[#007F00] mb-2">{isEngland ? tr.stats[1].n : c('story', 'stat2_value', tr.stats[1].n)}</p>
+                                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-tight">{isEngland ? `${tr.stats[1].l1} ${tr.stats[1].l2}` : c('story', 'stat2_label', `${tr.stats[1].l1} ${tr.stats[1].l2}`)}</p>
                                 </div>
                                 <div>
-                                    <p className="text-4xl md:text-5xl font-black text-[#007F00] mb-2">{c('story', 'stat3_value', tr.stats[2].n)}</p>
-                                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-tight">{c('story', 'stat3_label', `${tr.stats[2].l1} ${tr.stats[2].l2}`)}</p>
+                                    <p className="text-4xl md:text-5xl font-black text-[#007F00] mb-2">{isEngland ? tr.stats[2].n : c('story', 'stat3_value', tr.stats[2].n)}</p>
+                                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-tight">{isEngland ? `${tr.stats[2].l1} ${tr.stats[2].l2}` : c('story', 'stat3_label', `${tr.stats[2].l1} ${tr.stats[2].l2}`)}</p>
                                 </div>
                             </div>
                         </div>
@@ -268,39 +273,24 @@ const About = () => {
 
                     <div className="grid md:grid-cols-3 gap-8">
                         {tr.values.map((v, i) => (
-                            <ValueItem key={i} icon={v.icon} title={v.title} description={v.desc} />
+                            <ValueItem key={i} icon={v.icon} title={isEngland ? v.title : c('values', `value${i}_title`, v.title)} description={isEngland ? v.desc : c('values', `value${i}_desc`, v.desc)} />
                         ))}
                     </div>
                 </div>
             </section>
-
-            {/* 4. FAQ SECTION */}
-            {(isSpanish || isEngland || isFrance || isPortugal) && <section id="faq" className="py-24 bg-[#007F00]">
-                <div className="container mx-auto px-6 max-w-4xl">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl font-black text-white mb-4 uppercase tracking-tight">{tr.faqH}</h2>
-                        <p className="text-green-50 text-xs font-black uppercase tracking-widest">{tr.faqSub}</p>
-                    </div>
-                    <div className="space-y-6">
-                        {tr.faqs.map((f, i) => (
-                            <FaqItem key={i} question={f.q} answer={f.a} />
-                        ))}
-                    </div>
-                </div>
-            </section>}
 
             {/* 5. FINISH CTA SECTION */}
             <section className="py-2">
                 <div className="container max-w-full">
                     <div className="bg-gray-50 p-12 md:p-20 text-center relative overflow-hidden border border-gray-100">
                         <div className="relative z-10">
-                            <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 uppercase tracking-tight">{c('cta', 'heading', tr.joinH)} <br />{c('cta', 'heading_highlight', tr.joinH2)}</h2>
+                            <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-6 uppercase tracking-tight">{isEngland ? tr.joinH : c('cta', 'heading', tr.joinH)} <br />{isEngland ? tr.joinH2 : c('cta', 'heading_highlight', tr.joinH2)}</h2>
                             <p className="text-gray-500 text-lg mb-10 max-w-xl mx-auto font-medium">
-                                {c('cta', 'description', tr.joinP)}
+                                {isEngland ? tr.joinP : c('cta', 'description', tr.joinP)}
                             </p>
-                            <Link to={c('cta', 'button_url', '/contact-us')}>
+                            <Link to="/contact-us">
                                 <button className="bg-[#007F00] text-white font-black px-12 py-5 rounded-2xl hover:bg-[#006400] transition-all shadow-xl flex items-center gap-3 mx-auto transform hover:-translate-y-1 active:translate-y-0">
-                                    {c('cta', 'button_text', tr.cta)} <ArrowRight size={20} />
+                                    {isEngland ? 'Get a Free Quote' : c('cta', 'button_text', tr.cta)} <ArrowRight size={20} />
                                 </button>
                             </Link>
                         </div>

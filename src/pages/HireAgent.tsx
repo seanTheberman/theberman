@@ -161,7 +161,7 @@ const HireAgent = () => {
         message: 'Message',
         messagePh: 'Tell us about your home energy goals...',
         sending: 'Sending...',
-        hireBtn: 'Hire Energy Agent',
+        hireBtn: 'Get Started',
         toastSuccess: 'Your inquiry has been sent! An Energy Advisor will contact you shortly.',
         toastError: 'Failed to send message. Please try again.',
     } : {

@@ -266,7 +266,12 @@ const Contact = () => {
 
                         {/* FORM COLUMN */}
                         <div className="lg:w-2/3 w-full bg-gray-50 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 border border-gray-100 shadow-sm transition-all hover:shadow-md">
-                            <h3 className="text-lg md:text-xl font-black text-gray-900 mb-6 text-center uppercase tracking-tight px-4">{tr.sendDetailed}</h3>
+                            {isEngland && (
+                                <h2 className="text-lg md:text-xl font-black text-gray-900 mb-6 text-center uppercase tracking-tight px-4">Get in Touch with EPC Cert</h2>
+                            )}
+                            {!isEngland && (
+                                <h3 className="text-lg md:text-xl font-black text-gray-900 mb-6 text-center uppercase tracking-tight px-4">{tr.sendDetailed}</h3>
+                            )}
 
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                                 <div className="grid md:grid-cols-2 gap-4">

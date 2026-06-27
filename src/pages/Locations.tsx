@@ -87,6 +87,9 @@ const Locations = () => {
 
             {/* Counties Grid */}
             <div className="container mx-auto px-6 max-w-7xl">
+                {isEngland && (
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 text-center">Browse EPC Assessment Locations by Region</h2>
+                )}
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     {counties.map((county) => (
                         <Link

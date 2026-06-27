@@ -99,7 +99,7 @@ const NewsPage = () => {
         locale: 'pt-PT' as const,
     } : isEngland ? {
         seoTitle: 'EPC Regulation Updates England | Industry News & Changes',
-        seoDesc: 'Follow the latest EPC regulation updates, compliance changes, government announcements and industry news across England',
+        seoDesc: 'Stay informed on EPC regulation updates, industry changes and government energy efficiency news affecting properties across England',
         loading: 'Loading latest news...',
         comingSoonH: 'Coming Soon',
         comingSoonP: "We're currently preparing the latest updates on energy performance certificates and sustainability. Check back shortly for fresh content.",
@@ -208,9 +208,9 @@ const NewsPage = () => {
         return (
             <div className="min-h-screen pt-32 bg-white flex flex-col items-center justify-center p-6 text-center">
                 {seoHead}
-                <h1 className="text-4xl font-black text-gray-900 mb-4 uppercase tracking-tight italic">{tr.comingSoonH}</h1>
+                <h1 className="text-4xl font-black text-gray-900 mb-4 uppercase tracking-tight italic">{tr.heading}</h1>
                 <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
-                    {tr.comingSoonP}
+                    {tr.subheading}
                 </p>
                 <Link to="/" className="mt-8 bg-gray-900 text-white px-8 py-3 font-bold text-xs uppercase tracking-widest hover:bg-gray-800 transition-all">
                     {tr.returnHome}

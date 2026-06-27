@@ -188,7 +188,7 @@ export const AddToCatalogueView = ({
                                             <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">Live Preview — How it looks on the catalogue</p>
                                             <div className="relative w-[160px] aspect-[4/5] overflow-hidden border border-gray-100 rounded-lg shadow-md">
                                                 <img
-                                                    src={catalogueFormData.bannerUrl || catalogueFormData.logoUrl || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=400'}
+                                                    src={catalogueFormData.bannerUrl || catalogueFormData.logoUrl || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=400&fm=webp'}
                                                     alt="Preview"
                                                     className="absolute inset-0 w-full h-full object-cover"
                                                 />

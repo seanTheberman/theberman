@@ -114,20 +114,24 @@ const HomePage = () => {
                         </div>
 
                         <h1 className={`font-black mb-6 md:mb-8 leading-[1.1] tracking-tight ${isSpanish ? 'text-4xl md:text-5xl lg:text-6xl' : 'text-5xl md:text-7xl lg:text-8xl'}`} style={{ color: c('hero', 'heading_color', '#111827') }}>
-                            {c('hero', 'heading', isSpanish ? '¿Necesitas un' : 'BER Cert Ireland – Get Quotes from')}{' '}
-                            <span style={{ color: c('hero', 'highlight_color', '#007F00') }}>{c('hero', 'heading_highlight', isSpanish ? 'Certificado Energético?' : 'Registered Assessors')}</span>
+                            {c('hero', 'heading', isSpanish ? '¿Necesitas un' : (tenant === 'england' ? 'EPC Certificates Across England for Homes &' : 'BER Cert Ireland – Get Quotes from'))}{' '}
+                            <span style={{ color: c('hero', 'highlight_color', '#007F00') }}>{c('hero', 'heading_highlight', isSpanish ? 'Certificado Energético?' : (tenant === 'england' ? 'Businesses' : 'Registered Assessors'))}</span>
                         </h1>
 
                         <p className={`text-gray-600 max-w-2xl mx-auto leading-relaxed font-medium ${isSpanish ? 'text-base md:text-lg mb-6 md:mb-8' : 'text-lg md:text-2xl mb-10 md:mb-12'}`}>
                             {c('hero', 'subheading', isSpanish
                                 ? 'La forma más rápida y fiable de obtener tu Certificado Energético. Los mejores precios garantizados de más de 1000 certificadores en toda España.'
-                                : 'The fastest, most reliable way to get your official Building Energy Rating. Compare competing quotes from local, SEAI-registered assessors today.')}
+                                : (tenant === 'england'
+                                    ? 'Need an Energy Performance Certificate for a residential or commercial property? EPC Cert helps homeowners, landlords, estate agents, and businesses compare quotes from accredited assessors across England. Arrange a fast EPC assessment, choose a convenient appointment time, and receive a compliant certificate from an accredited assessor.'
+                                    : 'The fastest, most reliable way to get your official Building Energy Rating. Compare competing quotes from local, SEAI-registered assessors today.'))}
                         </p>
 
                         <p className={`font-bold animate-fade-in ${isSpanish ? 'my-4 text-lg md:text-xl' : 'my-6 text-2xl md:text-3xl'}`} style={{ color: c('hero', 'highlight_color', '#007F00') }}>
                             {c('hero', 'cta_line', isSpanish
                                 ? 'Obtén los mejores presupuestos de certificadores locales hoy mismo.'
-                                : 'Get competitive quotes from SEAI-registered local BER Assessors Today')}
+                                : (tenant === 'england'
+                                    ? 'Arrange Your EPC Assessment with Accredited Assessors Across England'
+                                    : 'Get competitive quotes from SEAI-registered local BER Assessors Today'))}
                         </p>
                         {/* Dual Primary CTAs */}
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-2xl mx-auto mb-16 px-4">
@@ -142,9 +146,9 @@ const HomePage = () => {
                         {/* Fast Benefits Row */}
                         <div className="flex flex-wrap justify-center gap-x-12 gap-y-6">
                             {[
-                                { icon: <Users size={20} />, text: c('hero', 'benefit_1', isSpanish ? '1000+ Certificadores en Toda España' : '100+ Assessors Nationwide') },
-                                { icon: <ShieldCheck size={20} />, text: c('hero', 'benefit_2', isSpanish ? 'SOLO CERTIFICADORES ACREDITADOS' : 'SEAI REGISTERED ASSESSORS ONLY') },
-                                { icon: <Clock size={20} />, text: c('hero', 'benefit_3', isSpanish ? 'Elige tu Fecha y Hora' : 'Choose Your Date & Time') }
+                                { icon: <Users size={20} />, text: c('hero', 'benefit_1', isSpanish ? '1000+ Certificadores en Toda España' : (tenant === 'england' ? '100+ Accredited EPC Assessors' : '100+ Assessors Nationwide')) },
+                                { icon: <ShieldCheck size={20} />, text: c('hero', 'benefit_2', isSpanish ? 'SOLO CERTIFICADORES ACREDITADOS' : (tenant === 'england' ? 'ACCREDITED EPC ASSESSORS ONLY' : 'SEAI REGISTERED ASSESSORS ONLY')) },
+                                { icon: <Clock size={20} />, text: c('hero', 'benefit_3', isSpanish ? 'Elige tu Fecha y Hora' : (tenant === 'england' ? 'Choose Your Appointment Time' : 'Choose Your Date & Time')) }
                             ].map((item, i) => (
                                 <div key={i} className="flex items-center gap-2 text-gray-500 font-bold text-sm tracking-wide uppercase">
                                     <span className="text-[#007F00] flex-shrink-0 w-5 h-5 inline-flex items-center justify-center">{item.icon}</span>
@@ -162,6 +166,11 @@ const HomePage = () => {
                     <div className="text-center mb-20">
                         <span className="text-[#007F00] font-bold uppercase tracking-widest text-sm mb-4 block">{c('how_it_works', 'tag', isSpanish ? 'Proceso Sencillo' : 'Simple Process')}</span>
                         <h2 className="text-4xl md:text-5xl font-black text-gray-900">{c('how_it_works', 'heading', isSpanish ? 'Cómo Funciona' : (tenant === 'england' ? 'How to Arrange an EPC Assessment in England' : 'How to Get Your BER Certificate'))}</h2>
+                        {tenant === 'england' && (
+                            <p className="text-gray-600 mt-4 max-w-2xl mx-auto font-medium">
+                                EPC Cert helps property owners, landlords, and businesses compare quotes from accredited EPC assessors across England. Once you submit your details, you&apos;ll receive quotes from qualified professionals, so you can choose the right assessor and book your EPC assessment online in minutes.
+                            </p>
+                        )}
                         {tenant !== 'england' && !isSpanish && (
                             <p className="text-gray-600 mt-4 max-w-2xl mx-auto font-medium">
                                 The BER Man helps property owners find and compare trusted BER assessors. Once you submit your details, you&apos;ll receive quotes from qualified professionals, so you can choose the right assessor and book your assessment online in minutes.
@@ -177,26 +186,26 @@ const HomePage = () => {
                             {
                                 step: "01",
                                 icon: <Clock size={32} />,
-                                title: c('how_it_works', 'step1_title', isSpanish ? "Elige Fecha" : "Select Date"),
-                                desc: c('how_it_works', 'step1_desc', isSpanish ? "Indícanos tu fecha y hora preferida para la visita al inmueble." : "Tell us your preferred date & time for assessment.")
+                                title: c('how_it_works', 'step1_title', isSpanish ? "Elige Fecha" : (tenant === 'england' ? "Choose Your EPC Assessment Date" : "Select Date")),
+                                desc: c('how_it_works', 'step1_desc', isSpanish ? "Indícanos tu fecha y hora preferida para la visita al inmueble." : (tenant === 'england' ? "Select a convenient date and time for your EPC assessment." : "Tell us your preferred date & time for assessment."))
                             },
                             {
                                 step: "02",
                                 icon: <ClipboardList size={32} />,
-                                title: c('how_it_works', 'step2_title', isSpanish ? "Envía Detalles" : "Property Details"),
-                                desc: c('how_it_works', 'step2_desc', isSpanish ? "Comparte la información de tu propiedad en menos de 1 minuto." : "Tell us about your property.")
+                                title: c('how_it_works', 'step2_title', isSpanish ? "Envía Detalles" : (tenant === 'england' ? "Provide Property Details" : "Property Details")),
+                                desc: c('how_it_works', 'step2_desc', isSpanish ? "Comparte la información de tu propiedad en menos de 1 minuto." : (tenant === 'england' ? "Share key details about your property so assessors can provide accurate quotes." : "Tell us about your property."))
                             },
                             {
                                 step: "03",
                                 icon: <TrendingUp size={32} />,
-                                title: c('how_it_works', 'step3_title', isSpanish ? "Recibe Presupuestos" : "Receive Quotes"),
-                                desc: c('how_it_works', 'step3_desc', isSpanish ? "Recibe precios competitivos de certificadores locales." : "Receive competitive prices from local BER assessors.")
+                                title: c('how_it_works', 'step3_title', isSpanish ? "Recibe Presupuestos" : (tenant === 'england' ? "Compare Accredited EPC Quotes" : "Receive Quotes")),
+                                desc: c('how_it_works', 'step3_desc', isSpanish ? "Recibe precios competitivos de certificadores locales." : (tenant === 'england' ? "Receive competitive quotes from accredited EPC assessors in your area." : "Receive competitive prices from local BER assessors."))
                             },
                             {
                                 step: "04",
                                 icon: <CheckCircle2 size={32} />,
-                                title: c('how_it_works', 'step4_title', isSpanish ? "Reserva Online" : "Book Assessment"),
-                                desc: c('how_it_works', 'step4_desc', isSpanish ? "Elige tu presupuesto favorito y confirma al instante." : "Confirm and arrange your assessment.")
+                                title: c('how_it_works', 'step4_title', isSpanish ? "Reserva Online" : (tenant === 'england' ? "Confirm Your EPC Appointment" : "Book Assessment")),
+                                desc: c('how_it_works', 'step4_desc', isSpanish ? "Elige tu presupuesto favorito y confirma al instante." : (tenant === 'england' ? "Choose your preferred assessor and confirm your EPC appointment online." : "Confirm and arrange your assessment."))
                             }
                         ].map((item, i) => (
                             <div key={i} className="relative z-10 bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all group overflow-hidden cursor-pointer">
@@ -221,15 +230,15 @@ const HomePage = () => {
                         <div className="flex-1">
                             <span className="text-[#007F00] font-bold uppercase tracking-widest text-sm mb-4 block">{c('benefits', 'tag', isSpanish ? 'La Ventaja' : 'The Advantage')}</span>
                             <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-8 leading-tight">
-                                {c('benefits', 'heading', isSpanish ? 'Razones para' : 'Why Homeowners Trust')} <br />
-                                <span className="text-[#007F00]">{c('benefits', 'heading_highlight', isSpanish ? 'confiar en nosotros' : 'The BER Man')}</span>
+                                {c('benefits', 'heading', isSpanish ? 'Razones para' : (tenant === 'england' ? 'Why Property Owners Across England Trust' : 'Why Homeowners Trust'))} <br />
+                                <span className="text-[#007F00]">{c('benefits', 'heading_highlight', isSpanish ? 'confiar en nosotros' : (tenant === 'england' ? 'EPC Cert' : 'The BER Man'))}</span>
                             </h2>
                             <div className="space-y-6">
                                 {[
-                                    { title: c('benefits', 'benefit1_title', isSpanish ? "Visita Presencial Profesional" : "Compare Multiple Quotes"), desc: c('benefits', 'benefit1_desc', isSpanish ? "No realizamos visitas virtuales, solo hacemos certificaciones tras una visita exhaustiva y profesional. Además nuestros colaboradores les asesoran y les darán los mejores consejos para mejorar la Eficiencia Energética de su propiedad." : "Receive quotes from trusted assessors and find the option that suits your needs.") },
-                                    { title: c('benefits', 'benefit2_title', isSpanish ? "Solo Certificadores Acreditados" : "SEAI-registered BER Assessors"), desc: c('benefits', 'benefit2_desc', isSpanish ? "Todos los certificadores están plenamente acreditados y verificados." : "Every assessor is verified to help maintain high service standards.") },
-                                    { title: c('benefits', 'benefit3_title', isSpanish ? "Garantía de Devolución" : "Book with Confidence"), desc: c('benefits', 'benefit3_desc', isSpanish ? "Te aseguramos un servicio profesional o te devolvemos tu dinero." : "We're committed to helping property owners connect with trusted professionals.") },
-                                    { title: c('benefits', 'benefit4_title', isSpanish ? "Reserva Online Instantánea" : "Quick Online Booking"), desc: c('benefits', 'benefit4_desc', isSpanish ? "Sin llamadas de teléfono de ida y vuelta. Reserva todo en tiempo real." : "Choose an appointment time that fits your schedule.") }
+                                    { title: c('benefits', 'benefit1_title', isSpanish ? "Visita Presencial Profesional" : (tenant === 'england' ? "Compare Multiple Quotes and Save" : "Compare Multiple Quotes")), desc: c('benefits', 'benefit1_desc', isSpanish ? "No realizamos visitas virtuales, solo hacemos certificaciones tras una visita exhaustiva y profesional. Además nuestros colaboradores les asesoran y les darán los mejores consejos para mejorar la Eficiencia Energética de su propiedad." : (tenant === 'england' ? "Receive quotes from accredited EPC assessors and choose the option that best suits your property and budget." : "Receive quotes from trusted assessors and find the option that suits your needs.")) },
+                                    { title: c('benefits', 'benefit2_title', isSpanish ? "Solo Certificadores Acreditados" : (tenant === 'england' ? "Accredited EPC Assessors Only" : "SEAI-registered BER Assessors")), desc: c('benefits', 'benefit2_desc', isSpanish ? "Todos los certificadores están plenamente acreditados y verificados." : (tenant === 'england' ? "All assessors are accredited, vetted and qualified to issue Energy Performance Certificates in England." : "Every assessor is verified to help maintain high service standards.")) },
+                                    { title: c('benefits', 'benefit3_title', isSpanish ? "Garantía de Devolución" : (tenant === 'england' ? "Local Assessors, National Coverage" : "Book with Confidence")), desc: c('benefits', 'benefit3_desc', isSpanish ? "Te aseguramos un servicio profesional o te devolvemos tu dinero." : (tenant === 'england' ? "Connect with accredited EPC assessors serving your local area and across England." : "We're committed to helping property owners connect with trusted professionals.")) },
+                                    { title: c('benefits', 'benefit4_title', isSpanish ? "Reserva Online Instantánea" : (tenant === 'england' ? "Book Your EPC Assessment Online" : "Quick Online Booking")), desc: c('benefits', 'benefit4_desc', isSpanish ? "Sin llamadas de teléfono de ida y vuelta. Reserva todo en tiempo real." : (tenant === 'england' ? "Request quotes, review assessor details and confirm your EPC assessment online at your convenience." : "Choose an appointment time that fits your schedule.")) }
                                 ].map((benefit, i) => (
                                     <div key={i} className="flex gap-4">
                                         <div className="mt-1 flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-[#007F00]">
@@ -280,7 +289,7 @@ const HomePage = () => {
                     <div className="text-center mb-16">
                         <div className="flex items-center justify-center gap-2 mb-4">
                             <Star className="text-green-500 fill-green-500" size={32} />
-                            <h2 className="text-3xl font-black">{c('reviews', 'heading', isSpanish ? 'Excelente' : 'What homeowners say about The Berman')}</h2>
+                            <h2 className="text-3xl font-black">{c('reviews', 'heading', isSpanish ? 'Excelente' : (tenant === 'england' ? 'Trusted by Property Owners Across England' : 'What homeowners say about The Berman'))}</h2>
                         </div>
                         <p className="text-gray-500 font-bold uppercase tracking-widest text-sm">{c('reviews', 'subheading', isSpanish ? 'Basado en 1.000 valoraciones verificadas de clientes' : 'Based on 1,000+ verified customer reviews and ratings')}</p>
                     </div>
@@ -329,15 +338,15 @@ const HomePage = () => {
             {/* ASSESSOR CTA SECTION */}
             <aside className="py-20 bg-gray-50 border-b border-gray-100">
                 <div className="container mx-auto px-6 text-center">
-                    <p className="text-3xl md:text-4xl font-black text-[#007F00] mb-4">{c('assessor_cta', 'heading', isSpanish ? '¿Eres Certificador Energético?' : 'Are You a BER Assessor?')}</p>
+                    <p className="text-3xl md:text-4xl font-black text-[#007F00] mb-4">{c('assessor_cta', 'heading', isSpanish ? '¿Eres Certificador Energético?' : (tenant === 'england' ? 'Join Our Network of Accredited EPC Assessors' : 'Are You a BER Assessor?'))}</p>
                     <p className="text-gray-600 font-medium mb-8 max-w-2xl mx-auto">
                         {c('assessor_cta', 'description', isSpanish
                             ? 'Regístrate y recibe leads de trabajo locales, directamente en tu teléfono.'
-                            : 'SEAI-registered assessors can join our nationwide network and connect with property owners looking for BER assessments in their area.')}
+                            : (tenant === 'england' ? 'Expand your reach by joining our network of accredited EPC assessors. Receive local assessment opportunities and connect with property owners across England.' : 'SEAI-registered assessors can join our nationwide network and connect with property owners looking for BER assessments in their area.'))}
                     </p>
                     <Link to={c('assessor_cta', 'cta_url', '/signup?role=contractor')}>
                         <button className="px-12 py-4 border-2 border-[#007F00] text-[#007F00] hover:bg-[#007F00] hover:text-white font-black rounded-xl transition-all shadow-sm hover:shadow-lg transform hover:-translate-y-0.5 cursor-pointer">
-                            {c('assessor_cta', 'cta_text', isSpanish ? 'Únete Ahora' : 'Register as an Assessor')}
+                            {c('assessor_cta', 'cta_text', isSpanish ? 'Únete Ahora' : (tenant === 'england' ? 'Join Now' : 'Register as an Assessor'))}
                         </button>
                     </Link>
                 </div>
@@ -387,15 +396,15 @@ const HomePage = () => {
                 <div className="container mx-auto px-6 relative z-10">
                     <div className="flex flex-col lg:flex-row items-center gap-16">
                         <div className="flex-1">
-                            <span className="inline-block px-4 py-1.5 rounded-full bg-[#007F00]/10 text-[#007F00] text-xs font-black uppercase tracking-widest mb-6">{c('catalogue_promo', 'tag', isSpanish ? 'Explora Nuestra Red' : 'Explore Our Network')}</span>
+                            <span className="inline-block px-4 py-1.5 rounded-full bg-[#007F00]/10 text-[#007F00] text-xs font-black uppercase tracking-widest mb-6">{c('catalogue_promo', 'tag', isSpanish ? 'Explora Nuestra Red' : (tenant === 'england' ? 'Explore Our Network' : 'Explore Our Network'))}</span>
                             <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-8 leading-tight">
-                                {c('catalogue_promo', 'heading', isSpanish ? 'Encuentra los Mejores' : 'Home Energy Upgrade Services Across Ireland')} <br />
+                                {c('catalogue_promo', 'heading', isSpanish ? 'Encuentra los Mejores' : (tenant === 'england' ? 'Improve Your EPC Rating with Trusted Energy Efficiency Specialists' : 'Home Energy Upgrade Services Across Ireland'))} <br />
                                 <span className="text-[#007F00]">{c('catalogue_promo', 'heading_highlight', isSpanish ? 'Colaboradores de Eficiencia Energética.' : '')}</span>
                             </h2>
                             <p className="text-lg md:text-xl text-gray-500 font-medium leading-relaxed mb-10 max-w-2xl">
                                 {c('catalogue_promo', 'description', isSpanish
                                     ? 'Accede a nuestro catálogo seleccionado de empresas certificadas de eficiencia energética. Desde instaladores de paneles solares hasta especialistas en aislamiento, encuentra el colaborador adecuado para el camino de tu hogar hacia la eficiencia.'
-                                    : "Access our curated catalogue of certified home energy businesses. From solar panel installers to insulation specialists, find the right partner for your home's journey to efficiency.")}
+                                    : (tenant === 'england' ? "Access our curated network of trusted home energy specialists. From solar panel installers to insulation experts, find the right partner to improve your property's energy efficiency and support better EPC performance." : "Access our curated catalogue of certified home energy businesses. From solar panel installers to insulation specialists, find the right partner for your home's journey to efficiency."))}
                             </p>
                             <div className="flex flex-wrap gap-4">
                                 <Link to="/catalogue">
@@ -420,7 +429,7 @@ const HomePage = () => {
                             <div className="relative aspect-square bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-gray-100 group">
                                 <img
                                     src={c('catalogue_promo', 'image_url', 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=800&fm=webp')}
-                                    alt="Home Energy Upgrades"
+                                    alt={tenant === 'england' ? 'Residential EPC assessment showing energy efficiency rating recommendations for a property owner - EPC Cert' : 'Home Energy Upgrades'}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                                     loading="lazy"
                                 />
@@ -455,10 +464,10 @@ const HomePage = () => {
                         <h2 className="text-4xl font-black mb-8 text-gray-900 leading-tight">{c('faq', 'heading', isSpanish ? 'Preguntas Frecuentes' : 'Frequently Asked Questions')}</h2>
                         <div className="space-y-6">
                             {[
-                                { q: c('faq', 'faq1_q', isSpanish ? "¿Qué es un Certificado Energético?" : "What Is a BER Certificate?"), a: c('faq', 'faq1_a', isSpanish ? "El Certificado de Eficiencia Energética indica el nivel de eficiencia energética de tu propiedad, calificada de la A (más eficiente) a la G (menos eficiente)." : "A BER Certificate shows the energy efficiency of a property using a rating from A to G.") },
-                                { q: c('faq', 'faq2_q', isSpanish ? "¿Por qué necesito un Certificado Energético?" : "When Do I Need a BER Certificate?"), a: c('faq', 'faq2_a', isSpanish ? "Es obligatorio por ley para vender o alquilar una propiedad. También es necesario para acceder a subvenciones de rehabilitación energética." : "A BER Certificate is usually required when selling or renting a property in Ireland.") },
-                                { q: c('faq', 'faq3_q', isSpanish ? "¿Cuánto cuesta?" : "How Much Does a BER Assessment Cost?"), a: c('faq', 'faq3_a', isSpanish ? "Cada presupuesto es personalizado acorde a las necesidades de nuestros clientes y el tipo de propiedad." : "The cost depends on the size, type, and location of the property.") },
-                                { q: c('faq', 'faq4_q', isSpanish ? "¿Cuánto tiempo es válido?" : "How Long Is a BER Certificate Valid?"), a: c('faq', 'faq4_a', isSpanish ? "Un Certificado Energético tiene una validez de hasta 10 años, salvo que se realicen cambios importantes que alteren el rendimiento energético de la propiedad." : "Most BER Certificates remain valid for up to 10 years.") }
+                                { q: c('faq', 'faq1_q', isSpanish ? "¿Qué es un Certificado Energético?" : (tenant === 'england' ? "What is an EPC Certificate?" : "What Is a BER Certificate?")), a: c('faq', 'faq1_a', isSpanish ? "El Certificado de Eficiencia Energética indica el nivel de eficiencia energética de tu propiedad, calificada de la A (más eficiente) a la G (menos eficiente)." : (tenant === 'england' ? "An EPC Certificate shows the energy efficiency of a property using a rating from A to G." : "A BER Certificate shows the energy efficiency of a property using a rating from A to G.")) },
+                                { q: c('faq', 'faq2_q', isSpanish ? "¿Por qué necesito un Certificado Energético?" : (tenant === 'england' ? "When Do I Need an EPC Certificate in England?" : "When Do I Need a BER Certificate?")), a: c('faq', 'faq2_a', isSpanish ? "Es obligatorio por ley para vender o alquilar una propiedad. También es necesario para acceder a subvenciones de rehabilitación energética." : (tenant === 'england' ? "An EPC Certificate is usually required when selling or renting a property in England." : "A BER Certificate is usually required when selling or renting a property in Ireland.")) },
+                                { q: c('faq', 'faq3_q', isSpanish ? "¿Cuánto cuesta?" : (tenant === 'england' ? "How Much Does an EPC Assessment Cost?" : "How Much Does a BER Assessment Cost?")), a: c('faq', 'faq3_a', isSpanish ? "Cada presupuesto es personalizado acorde a las necesidades de nuestros clientes y el tipo de propiedad." : (tenant === 'england' ? "The cost depends on the size, type, and location of the property." : "The cost depends on the size, type, and location of the property.")) },
+                                { q: c('faq', 'faq4_q', isSpanish ? "¿Cuánto tiempo es válido?" : (tenant === 'england' ? "How Quickly Can I Get an EPC Certificate?" : "How Long Is a BER Certificate Valid?")), a: c('faq', 'faq4_a', isSpanish ? "Un Certificado Energético tiene una validez de hasta 10 años, salvo que se realicen cambios importantes que alteren el rendimiento energético de la propiedad." : (tenant === 'england' ? "Most EPC assessments can be booked quickly, with certificates often issued shortly after the assessment is completed." : "Most BER Certificates remain valid for up to 10 years.")) }
                             ].map((faq, i) => (
                                 <div key={i} className="group cursor-pointer">
                                     <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-[#007F00] transition-colors">{faq.q}</h3>
@@ -476,9 +485,9 @@ const HomePage = () => {
 
                     <div className="bg-gray-900 text-white p-12 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white/5 blur-3xl"></div>
-                        <h3 className="text-3xl font-black mb-6">{c('faq', 'cta_heading', isSpanish ? '¿Listo para tu Certificado Energético?' : 'Ready to Get Your BER Certificate?')}</h3>
+                        <h3 className="text-3xl font-black mb-6">{c('faq', 'cta_heading', isSpanish ? '¿Listo para tu Certificado Energético?' : (tenant === 'england' ? 'Ready to Get Your EPC Certificate?' : 'Ready to Get Your BER Certificate?'))}</h3>
                         <p className="text-gray-400 mb-10 text-lg leading-relaxed">
-                            {c('faq', 'cta_description', isSpanish ? 'Únete a más de 10000 clientes satisfechos. Obtén presupuestos competitivos de certificadores locales de confianza en segundos.' : 'Compare quotes from qualified assessors and arrange your assessment online.')}
+                            {c('faq', 'cta_description', isSpanish ? 'Únete a más de 10000 clientes satisfechos. Obtén presupuestos competitivos de certificadores locales de confianza en segundos.' : (tenant === 'england' ? 'Compare quotes from accredited EPC assessors and arrange your assessment online.' : 'Compare quotes from qualified assessors and arrange your assessment online.'))}
                         </p>
                         <div className="space-y-6 mb-12">
 
