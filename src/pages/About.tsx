@@ -1,4 +1,4 @@
-import { Globe, ArrowRight, Shield, Zap } from 'lucide-react';
+import { Globe, ArrowRight, Shield, Zap, Euro, Clock, CheckCircle, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import FaqItem from '../components/FaqItem';
 import SEOHead from '../components/SEOHead';
@@ -221,8 +221,45 @@ const About = () => {
                 </div>
             </section>
 
-            {/* 3. CORE VALUES GRID */}
-            <section className="py-24 bg-white">
+            {/* 3. WHY CHOOSE THE BERMAN - moved from homepage */}
+            {!isSpanish && !isEngland && !isFrance && !isPortugal && (
+                <section className="py-24 bg-white">
+                    <div className="container mx-auto px-6 max-w-7xl">
+                        <div className="text-center mb-16">
+                            <h2 className="text-3xl md:text-5xl font-black text-[#007F00] mb-6 uppercase tracking-tight">Why Choose The Berman?</h2>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                            {[
+                                { icon: <Euro size={28} />, title: 'Best Value Rates' },
+                                { icon: <Zap size={28} />, title: 'Quick Results' },
+                                { icon: <ShieldCheck size={28} />, title: 'SEAI Certified Experts' },
+                                { icon: <CheckCircle size={28} />, title: 'Smooth & Stress-Free' },
+                                { icon: <Shield size={28} />, title: 'Satisfaction Guaranteed' },
+                                { icon: <Clock size={28} />, title: 'Pick Your Schedule' },
+                            ].map((item, i) => (
+                                <div key={i} className="p-8 bg-white rounded-3xl border border-gray-100 hover:border-green-200 transition-all hover:shadow-lg text-center group">
+                                    <div className="w-16 h-16 mx-auto rounded-2xl bg-green-50 text-[#007F00] flex items-center justify-center group-hover:bg-[#007F00] group-hover:text-white transition-all transform group-hover:scale-110 mb-6 shadow-sm">
+                                        {item.icon}
+                                    </div>
+                                    <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">{item.title}</h3>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="text-center">
+                            <Link to="/get-quote">
+                                <button className="px-12 py-5 bg-[#007F00] text-white font-black text-sm uppercase tracking-widest rounded-full hover:bg-[#006400] transition-all shadow-xl shadow-green-100 transform hover:-translate-y-1 active:translate-y-0 cursor-pointer">
+                                    Get BER Quotes Now
+                                </button>
+                            </Link>
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {/* 4. CORE VALUES GRID */}
+            <section className="py-24 bg-gray-50">
                 <div className="container mx-auto px-6 max-w-7xl">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl font-black text-gray-900 mb-2 uppercase tracking-tight">{tr.howH}</h2>
