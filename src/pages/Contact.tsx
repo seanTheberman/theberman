@@ -185,7 +185,7 @@ const Contact = () => {
                         {isEngland ? tr.title1 : c('hero', 'heading_line1', tr.title1)} <br className="md:hidden" /> <span className="text-[#007F00]">{isEngland ? tr.title2 : c('hero', 'heading_line2', tr.title2)}</span>
                     </h1>
                     <p className="text-base md:text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
-                        {c('hero', 'subtitle', tr.subtitle)}
+                        {isEngland ? tr.subtitle : c('hero', 'subtitle', tr.subtitle)}
                     </p>
                     {!isSpanish && !isEngland && tr.trustStrip && (
                         <p className="mt-4 text-sm font-bold text-[#007F00] uppercase tracking-widest">

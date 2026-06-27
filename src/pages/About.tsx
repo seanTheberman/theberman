@@ -64,8 +64,7 @@ const About = () => {
         missionTag: 'Who We Are',
         title1: isEngland ? 'Helping Property Owners' : 'About The BER',
         title2: isEngland ? 'Arrange EPC Assessments Across England' : 'Man',
-        heroSubheading: isEngland ? 'Nationwide, Fast, Hassle-Free' : '',
-        heroP: isEngland ? 'We help homeowners, landlords and businesses arrange Energy Performance Certificates across England with speed and transparency.' : "The BER Man helps property owners connect with qualified BER assessors through a simple and transparent process. Our platform makes arranging BER assessments easier while helping users make informed energy decisions.",
+        heroP: isEngland ? 'Expand to homeowners, landlords and businesses' : "The BER Man helps property owners connect with qualified BER assessors through a simple and transparent process. Our platform makes arranging BER assessments easier while helping users make informed energy decisions.",
         storyH: isEngland ? 'Our Story' : 'Connecting Property Owners with Qualified BER Assessors',
         story: isEngland ? [
             "EPC Cert was established to receive Energy Performance Certificate (EPC) assessments easier for property owners, landlords, estate agents and businesses across England.",
@@ -179,11 +178,6 @@ const About = () => {
                         {isEngland ? tr.title1 : c('hero', 'heading_line1', tr.title1)} <br className="hidden md:block" />
                         <span className="text-[#007F00]">{isEngland ? tr.title2 : c('hero', 'heading_line2', tr.title2)}</span>
                     </h1>
-                    {isEngland && tr.heroSubheading && (
-                        <p className="text-sm md:text-base font-black text-[#007F00] uppercase tracking-widest mb-4">
-                            {tr.heroSubheading}
-                        </p>
-                    )}
                     <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
                         {isEngland ? tr.heroP : c('hero', 'description', tr.heroP)}
                     </p>

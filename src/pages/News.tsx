@@ -99,7 +99,7 @@ const NewsPage = () => {
         locale: 'pt-PT' as const,
     } : isEngland ? {
         seoTitle: 'EPC Regulation Updates England | Industry News & Changes',
-        seoDesc: 'Stay informed on EPC regulation updates, industry changes and government energy efficiency news affecting properties across England',
+        seoDesc: 'Follow the latest EPC regulation updates, compliance changes, government announcements and industry news across England',
         loading: 'Loading latest news...',
         comingSoonH: 'Coming Soon',
         comingSoonP: "We're currently preparing the latest updates on energy performance certificates and sustainability. Check back shortly for fresh content.",

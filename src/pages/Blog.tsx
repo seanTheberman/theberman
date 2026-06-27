@@ -109,10 +109,10 @@ const BlogPage = () => {
         newBadge: 'Novo',
         locale: 'pt-PT' as const,
     } : isEngland ? {
-        seoTitle: 'EPC Certificate Blog | Insights for Property Owners Across England',
-        seoDesc: 'Discover practical EPC tips, energy efficiency guides and property insights for homeowners and landlords across England',
+        seoTitle: 'EPC Insights & Energy Efficiency Guides England | EPC Cert',
+        seoDesc: 'Explore EPC guides, energy efficiency advice, property energy insights and expert resources to help homeowners, landlords and businesses across England',
         loading: 'Loading blog...',
-        latest: 'EPC Certificate Blog | Insights for Property Owners Across England',
+        latest: 'EPC Insights & Energy Efficiency Guides England',
         showing: (n: number, t: number) => `Showing ${n} of ${t} articles`,
         searchPlaceholder: 'Search articles...',
         categories: 'Categories',

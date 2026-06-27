@@ -338,7 +338,11 @@ const HomePage = () => {
             {/* ASSESSOR CTA SECTION */}
             <aside className="py-20 bg-gray-50 border-b border-gray-100">
                 <div className="container mx-auto px-6 text-center">
-                    <p className="text-3xl md:text-4xl font-black text-[#007F00] mb-4">{c('assessor_cta', 'heading', isSpanish ? '¿Eres Certificador Energético?' : (tenant === 'england' ? 'Join Our Network of Accredited EPC Assessors' : 'Are You a BER Assessor?'))}</p>
+                    {tenant === 'england' ? (
+                        <h3 className="text-3xl md:text-4xl font-black text-[#007F00] mb-4">Join Your Network of Accredited EPC Assessors</h3>
+                    ) : (
+                        <p className="text-3xl md:text-4xl font-black text-[#007F00] mb-4">{c('assessor_cta', 'heading', isSpanish ? '¿Eres Certificador Energético?' : 'Are You a BER Assessor?')}</p>
+                    )}
                     <p className="text-gray-600 font-medium mb-8 max-w-2xl mx-auto">
                         {c('assessor_cta', 'description', isSpanish
                             ? 'Regístrate y recibe leads de trabajo locales, directamente en tu teléfono.'
