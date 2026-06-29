@@ -14,6 +14,7 @@ interface Props {
     onDeleteJob?: (id: string) => void;
     onCreateJob?: () => void;
     loading?: boolean;
+    selectedTenant?: string;
 }
 
 type JobTab = 'live' | 'expired' | 'no_buyer_response' | 'no_assessor_quotes' | 'all';
@@ -97,7 +98,8 @@ export const JobsView: React.FC<Props> = ({
     onExpireJob,
     onDeleteJob,
     onCreateJob,
-    loading = false
+    loading = false,
+    selectedTenant
 }) => {
     const [activeTab, setActiveTab] = useState<JobTab>('live');
     const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
@@ -591,7 +593,7 @@ export const JobsView: React.FC<Props> = ({
                                                                                             <td className="py-2 px-3 text-gray-600">{quote.contractor?.phone || '-'}</td>
                                                                                             <td className="py-2 px-3 text-gray-600">{quote.contractor?.seai_number || '-'}</td>
                                                                                             <td className="py-2 px-3 font-black text-gray-900">
-                                                                                                {new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' }).format(quote.price)}
+                                                                                                {formatCurrency(quote.price, selectedTenant)}
                                                                                             </td>
                                                                                             <td className="py-2 px-3">
                                                                                                 <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
@@ -735,7 +737,7 @@ export const JobsView: React.FC<Props> = ({
                                                                 <div className="text-xs text-gray-500">
                                                                     {quote.contractor?.company_name && <div>{quote.contractor.company_name}</div>}
                                                                     <div className="font-black text-gray-900 text-sm mt-1">
-                                                                        {formatCurrency(quote.price)}
+                                                                        {formatCurrency(quote.price, selectedTenant)}
                                                                     </div>
                                                                     <div className="mt-1">{formatDate(quote.created_at)}</div>
                                                                 </div>

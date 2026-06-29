@@ -118,6 +118,7 @@ const ContractorOnboarding = () => {
         vatRegistered: false,
         assessorTypes: [] as string[],
         serviceAreas: [] as string[],
+        preferredTowns: [] as string[],
         isCompany: false,
         companyName: '',
         bio: '',
@@ -178,9 +179,26 @@ const ContractorOnboarding = () => {
         setFormData(prev => {
             const areas = [...prev.serviceAreas];
             if (areas.includes(county)) {
-                return { ...prev, serviceAreas: areas.filter(c => c !== county) };
+                // Remove county and its towns
+                const townsToRemove = new Set(TOWNS_DATA[county] || []);
+                return {
+                    ...prev,
+                    serviceAreas: areas.filter(c => c !== county),
+                    preferredTowns: prev.preferredTowns.filter(t => !townsToRemove.has(t))
+                };
             } else {
                 return { ...prev, serviceAreas: [...areas, county] };
+            }
+        });
+    };
+
+    const handlePreferredTownToggle = (town: string) => {
+        setFormData(prev => {
+            const towns = [...prev.preferredTowns];
+            if (towns.includes(town)) {
+                return { ...prev, preferredTowns: towns.filter(t => t !== town) };
+            } else {
+                return { ...prev, preferredTowns: [...towns, town] };
             }
         });
     };
@@ -251,6 +269,7 @@ const ContractorOnboarding = () => {
                     vat_registered: formData.vatRegistered,
                     assessor_type: formData.assessorTypes.length === 2 ? 'Both' : formData.assessorTypes.join(' & '),
                     preferred_counties: formData.serviceAreas,
+                    preferred_towns: formData.preferredTowns,
                     company_name: formData.companyName,
                     website_url: formData.website,
                 })
@@ -615,6 +634,57 @@ const ContractorOnboarding = () => {
                             </div>
                             <p className="text-xs text-gray-500 mt-2 text-right">{formData.serviceAreas.length} {isSpanish ? 'comunidades seleccionadas' : 'counties selected'}</p>
                         </div>
+
+                        {/* Preferred Towns (optional) */}
+                        {formData.serviceAreas.length > 0 && (
+                            <div className="pt-6">
+                                <label className="block text-lg font-bold text-gray-900 mb-4">
+                                    {isSpanish ? 'Ciudades Preferidas (Opcional)' : 'Preferred Towns (Optional)'}
+                                </label>
+                                <p className="text-sm text-gray-500 mb-4">{isSpanish ? 'Selecciona ciudades específicas dentro de tus comunidades para recibir trabajos más localizados.' : 'Select specific towns within your counties to receive more targeted jobs.'}</p>
+                                {formData.serviceAreas.map(county => {
+                                    const towns = TOWNS_DATA[county];
+                                    if (!towns || towns.length === 0) return null;
+                                    const selectedTowns = formData.preferredTowns.filter(t => towns.includes(t));
+                                    return (
+                                        <div key={county} className="mb-4">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="text-sm font-bold text-gray-700">{county}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (selectedTowns.length === towns.length) {
+                                                            setFormData(prev => ({ ...prev, preferredTowns: prev.preferredTowns.filter(t => !towns.includes(t)) }));
+                                                        } else {
+                                                            setFormData(prev => ({ ...prev, preferredTowns: [...new Set([...prev.preferredTowns, ...towns])] }));
+                                                        }
+                                                    }}
+                                                    className="text-xs text-[#007F00] font-bold hover:underline"
+                                                >
+                                                    {selectedTowns.length === towns.length ? (isSpanish ? 'Quitar todas' : 'Clear all') : (isSpanish ? 'Seleccionar todas' : 'Select all')}
+                                                </button>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {towns.map(town => (
+                                                    <div
+                                                        key={town}
+                                                        onClick={() => handlePreferredTownToggle(town)}
+                                                        className={`cursor-pointer px-3 py-1.5 rounded-lg border text-sm font-medium transition-all select-none ${
+                                                            formData.preferredTowns.includes(town)
+                                                                ? 'bg-green-50 border-[#007F00] text-[#007F00]'
+                                                                : 'bg-white border-gray-200 hover:border-green-300 text-gray-600'
+                                                        }`}
+                                                    >
+                                                        {town}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                                <p className="text-xs text-gray-500 mt-2 text-right">{formData.preferredTowns.length} {isSpanish ? 'ciudades seleccionadas' : 'towns selected'}</p>
+                            </div>
+                        )}
 
                         <div className="pt-8">
                             <button

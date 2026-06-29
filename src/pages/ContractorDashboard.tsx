@@ -2146,7 +2146,7 @@ const ContractorDashboard = () => {
                                                 <p className="text-sm text-center font-bold text-gray-600">
                                                     You will receive: {formatCurrency(quotePrice ? (parseInt(quotePrice) - ((profile?.completed_jobs_count || 0) % 11 === 10 ? 0 : 25)) : 0)} (direct from customer)
                                                 </p>
-                                                <p className="text-xs text-gray-400 text-center">Eg. 170, no euro sign or cents.</p>
+                                                <p className="text-xs text-gray-400 text-center">Eg. 170, no currency symbol or cents.</p>
 
                                                 <div className="flex items-start gap-2 mt-4">
                                                     <input

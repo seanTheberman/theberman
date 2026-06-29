@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
-import { ArrowLeft, MapPin, Home, Calendar, Clock, Euro, Mail, Phone, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Home, Calendar, Clock, Euro, PoundSterling, Mail, Phone, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { getTenantFromDomain } from '../lib/tenant';
 
 interface Assessment {
     id: string;
@@ -362,10 +363,12 @@ const QuickQuotePage = () => {
                         <form onSubmit={handleQuoteSubmit}>
                             <div className="mb-6">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Quote Price (€) *
+                                    Quote Price ({getTenantFromDomain() === 'england' ? '£' : '€'}) *
                                 </label>
                                 <div className="relative">
-                                    <Euro className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                    {getTenantFromDomain() === 'england'
+                                        ? <PoundSterling className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                        : <Euro className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />}
                                     <input
                                         type="number"
                                         required

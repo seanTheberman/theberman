@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Payment } from '../../../types/admin';
+import { formatCurrency } from '../../../lib/tenant';
 
 interface Props {
     payments: Payment[];
@@ -56,7 +57,7 @@ export const PaymentsView = React.memo(({ payments, handleExportPayments, select
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 font-bold text-gray-900">
-                                    {new Intl.NumberFormat('en-IE', { style: 'currency', currency: payment.currency }).format(payment.amount)}
+                                    {formatCurrency(payment.amount, selectedTenant)}
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="font-medium text-gray-900">{payment.profiles?.full_name || 'Unknown User'}</div>

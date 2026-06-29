@@ -2205,6 +2205,7 @@ const Admin = () => {
                             onDeleteJob={(id) => handleDeleteClick(id, 'assessment')}
                             onCreateJob={() => setShowCreateJobModal(true)}
                             loading={loading}
+                            selectedTenant={selectedTenant}
                         />
                     ) : view === 'homeowners' || view === 'assessors' ? (
                         <UsersView

@@ -1040,7 +1040,7 @@ const UserDashboard = () => {
                         userId: user?.id
                     }}
                     title="Secure Booking Deposit"
-                    description={`Pay €${bookingDepositAmount.toFixed(2)} deposit to book your assessment. The remaining balance of €${paymentQuote.balance?.toFixed(2)} will be payable directly to the assessor.`}
+                    description={`Pay ${formatCurrency(bookingDepositAmount)} deposit to book your assessment. The remaining balance of ${formatCurrency(paymentQuote.balance)} will be payable directly to the assessor.`}
                 />
             )}
 
@@ -1174,7 +1174,7 @@ const UserDashboard = () => {
                         <div className="space-y-6">
                             <div className="flex justify-between items-center group">
                                 <span className="text-gray-500 font-medium text-sm">Quote</span>
-                                <span className="text-gray-900 font-black text-lg">€{selectedDetailsQuote.price + bookingDepositAmount}</span>
+                                <span className="text-gray-900 font-black text-lg">{formatCurrency(selectedDetailsQuote.price + bookingDepositAmount)}</span>
                             </div>
 
                             <div className="flex justify-between items-center">
@@ -1220,7 +1220,7 @@ const UserDashboard = () => {
                                 }}
                                 className="flex-[1.5] py-3 bg-[#007F00] text-white rounded-lg font-black text-sm hover:bg-[#006600]  transition-all shadow-sm active:scale-95"
                             >
-                                Accept €{selectedDetailsQuote.price + bookingDepositAmount} Quote
+                                Accept {formatCurrency(selectedDetailsQuote.price + bookingDepositAmount)} Quote
                             </button>
                         </div>
                     </div>
