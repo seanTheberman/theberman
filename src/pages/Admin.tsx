@@ -1033,7 +1033,7 @@ const Admin = () => {
                 subscription_start_date: startDate.toISOString(),
                 subscription_end_date: endDate.toISOString(),
                 is_active: true,
-                registration_status: 'active',
+                registration_status: userToUpdate?.registration_status === 'pending' ? 'completed' : (userToUpdate?.registration_status || 'completed'),
                 stripe_payment_id: userToUpdate?.stripe_payment_id || 'MANUAL_BY_ADMIN'
             };
 
@@ -1182,7 +1182,7 @@ const Admin = () => {
                 updateData.registration_status = 'pending';
             } else {
                 updateData.stripe_payment_id = 'MANUAL_BY_ADMIN';
-                updateData.registration_status = 'active';
+                updateData.registration_status = 'completed';
             }
 
             const { error } = await supabase.from('profiles').update(updateData).eq('id', itemToSuspend.id);
@@ -1194,7 +1194,7 @@ const Admin = () => {
             const profileUpdates = {
                 is_active: !itemToSuspend.currentStatus,
                 stripe_payment_id: isSuspending ? 'SUSPENDED' : 'MANUAL_BY_ADMIN',
-                registration_status: (isSuspending ? 'pending' : 'active') as 'pending' | 'active',
+                registration_status: (isSuspending ? 'pending' : 'completed') as 'pending' | 'completed',
             };
             setUsersList(prev => prev.map(u => u.id === itemToSuspend.id ? { ...u, ...profileUpdates } : u));
             setListings(prev => prev.map(l => (l.user_id === itemToSuspend.id || l.owner_id === itemToSuspend.id) ? { ...l, is_active: !itemToSuspend.currentStatus } : l));
