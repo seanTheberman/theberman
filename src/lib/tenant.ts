@@ -19,6 +19,8 @@ const DOMAIN_TO_TENANT: Record<string, string> = {
   'www.certificadosenergetico.eu': 'spain',
   'certificadosenergetico.es': 'spain',
   'www.certificadosenergetico.es': 'spain',
+  'certificadosenergeticos.eu': 'spain',
+  'www.certificadosenergeticos.eu': 'spain',
   // England
   'epccert.com': 'england',
   'www.epccert.com': 'england',
