@@ -126,6 +126,19 @@ const SignUp = () => {
             const referralCode = params.get('ref');
             const redirectParam = params.get('redirect');
 
+            // Check for duplicate phone number (if provided)
+            if (data.phone && data.phone.trim().length >= 7) {
+                const { data: existingPhone } = await supabase
+                    .from('profiles')
+                    .select('id, email')
+                    .eq('phone', data.phone.trim())
+                    .maybeSingle();
+                if (existingPhone) {
+                    toast.error('This phone number is already associated with another account. Please use a different number.');
+                    return;
+                }
+            }
+
             const { error, data: authData } = await signUp(
                 data.email.trim(),
                 data.password,

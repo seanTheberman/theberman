@@ -865,6 +865,20 @@ const Admin = () => {
                 return;
             }
 
+            // Check for duplicate phone number
+            if (newUserFormData.phone && newUserFormData.phone.trim().length >= 7) {
+                const { data: existingPhone } = await supabase
+                    .from('profiles')
+                    .select('id, email')
+                    .eq('phone', newUserFormData.phone.trim())
+                    .maybeSingle();
+                if (existingPhone) {
+                    toast.error(`Phone number ${newUserFormData.phone} is already used by ${existingPhone.email}. Please use a different number.`);
+                    setIsUpdating(false);
+                    return;
+                }
+            }
+
             // Create a timeout promise (60 seconds for business creation)
             const timeoutPromise = new Promise((_, reject) => 
                 setTimeout(() => reject(new Error('Request timeout - please try again')), 60000)

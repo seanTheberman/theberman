@@ -231,6 +231,22 @@ const ContractorOnboarding = () => {
             return;
         }
 
+        // Check for duplicate phone number
+        if (formData.phone && formData.phone.trim().length >= 7) {
+            const { data: existingPhone } = await supabase
+                .from('profiles')
+                .select('id, email')
+                .eq('phone', formData.phone.trim())
+                .neq('id', user?.id || '')
+                .maybeSingle();
+            if (existingPhone) {
+                toast.error(isSpanish
+                    ? 'Este número de teléfono ya está asociado a otra cuenta. Por favor usa un número diferente.'
+                    : 'This phone number is already associated with another account. Please use a different number.');
+                return;
+            }
+        }
+
         setLoading(true);
         try {
             // Fetch coordinates silently

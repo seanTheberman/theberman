@@ -142,6 +142,20 @@ const BusinessOnboarding = () => {
             return;
         }
 
+        // Check for duplicate phone number
+        if (formData.phone && formData.phone.trim().length >= 7) {
+            const { data: existingPhone } = await supabase
+                .from('profiles')
+                .select('id, email')
+                .eq('phone', formData.phone.trim())
+                .neq('id', user.id)
+                .maybeSingle();
+            if (existingPhone) {
+                toast.error('This phone number is already associated with another account. Please use a different number.');
+                return;
+            }
+        }
+
         try {
             // Store all registration data for payment finalization
             const registrationData = {
