@@ -134,6 +134,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const signUp = async (email: string, password: string, fullName: string, role: 'user' | 'contractor' | 'homeowner' | 'business', phone?: string, seaiNumber?: string) => {
         const currentTenant = getTenantFromDomain();
+        const websiteUrl = getTenantWebsiteUrl(currentTenant);
         return await supabase.auth.signUp({
             email,
             password,
@@ -146,6 +147,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     tenant: currentTenant,
                     registration_status: (role === 'business' || role === 'contractor') ? 'pending' : 'active',
                 },
+                emailRedirectTo: websiteUrl,
             },
         });
     };
