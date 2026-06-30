@@ -22,7 +22,7 @@ const tenant = getTenantFromDomain();
 const isEngland = tenant === 'england';
 const isSpanish = tenant === 'spain';
 const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : 'The Berman';
-const regNumberLabel = isEngland ? 'Accreditation #' : isSpanish ? 'CEE #' : 'SEAI #';
+const regNumberLabel = isEngland ? 'Assessor ID' : isSpanish ? 'CEE #' : 'SEAI #';
 
 const PublicAssessorProfile = () => {
     const { id } = useParams();

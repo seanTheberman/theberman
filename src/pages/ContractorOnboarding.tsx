@@ -21,7 +21,7 @@ const REGISTRATION_NUMBER_LABELS: Record<string, { label: string; placeholder: s
         sinceLabel: 'Certificado desde'
     },
     england: {
-        label: 'Accreditation #',
+        label: 'Assessor ID',
         placeholder: 'e.g. ELH123456',
         sinceLabel: 'Accredited since'
     }
@@ -44,8 +44,9 @@ const ONBOARDING_LABELS: Record<string, Record<string, string>> = {
         insuranceDesc: 'Do you hold valid professional indemnity insurance?',
         vatRegistered: 'VAT Registered', yes: 'Yes', no: 'No',
         proceed: 'Proceed', savingProfile: 'Saving Profile...',
-        requiredFields: 'Please fill in all required fields including Assessor Type',
+        requiredFields: 'Please fill in all required fields including Assessor Type and Registration Number',
         serviceAreaRequired: 'Please select at least one service area',
+        regNumberRequired: 'Please enter your registration number',
         registrationSubmitted: 'Registration submitted! Your account is pending admin approval.',
         failedToProcess: 'Failed to process information. Please try again.',
     },
@@ -65,8 +66,9 @@ const ONBOARDING_LABELS: Record<string, Record<string, string>> = {
         insuranceDesc: '¿Tienes seguro de responsabilidad civil profesional vigente?',
         vatRegistered: 'Autónomo / Empresa Registrada', yes: 'Sí', no: 'No',
         proceed: 'Continuar', savingProfile: 'Guardando perfil...',
-        requiredFields: 'Por favor completa todos los campos obligatorios incluyendo el Tipo de Certificador',
+        requiredFields: 'Por favor completa todos los campos obligatorios incluyendo el Tipo de Certificador y el Número de Registro',
         serviceAreaRequired: 'Por favor selecciona al menos una zona de servicio',
+        regNumberRequired: 'Por favor introduce tu número de registro',
         registrationSubmitted: '¡Registro enviado! Tu cuenta está pendiente de aprobación por el administrador.',
         failedToProcess: 'Error al procesar la información. Por favor inténtalo de nuevo.',
     },
@@ -223,6 +225,11 @@ const ContractorOnboarding = () => {
 
         if (!formData.phone || !formData.homeCounty || !formData.homeTown || formData.assessorTypes.length === 0) {
             toast.error(lbl.requiredFields);
+            return;
+        }
+
+        if (!formData.seaiNumber || formData.seaiNumber.trim() === '') {
+            toast.error(lbl.regNumberRequired);
             return;
         }
 
@@ -391,11 +398,12 @@ const ContractorOnboarding = () => {
                             </div>
 
                             <div>
-                                <label htmlFor="seaiNumber" className="block text-sm font-bold text-gray-700 mb-1">{regLabels.label} <span className="text-gray-400 font-normal">{lbl.optional}</span></label>
+                                <label htmlFor="seaiNumber" className="block text-sm font-bold text-gray-700 mb-1">{regLabels.label} <span className="text-red-500">*</span></label>
                                 <input
                                     type="text"
                                     name="seaiNumber"
                                     id="seaiNumber"
+                                    required
                                     placeholder={regLabels.placeholder}
                                     className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
                                     value={formData.seaiNumber}

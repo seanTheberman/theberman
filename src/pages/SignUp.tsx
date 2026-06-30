@@ -15,7 +15,7 @@ import { getTenantFromDomain } from '../lib/tenant';
 const REGISTRATION_NUMBER_LABELS: Record<string, { label: string; placeholder: string }> = {
     ireland: { label: 'SEAI Registration #', placeholder: 'e.g. 10XXX' },
     spain: { label: 'CEE Registration #', placeholder: 'e.g. 123456' },
-    england: { label: 'Accreditation #', placeholder: 'e.g. ELH123456' },
+    england: { label: 'Assessor ID', placeholder: 'e.g. ELH123456' },
     france: { label: 'DPE Diagnostiqueur #', placeholder: 'e.g. 12345' },
     portugal: { label: 'ADENE Registration #', placeholder: 'e.g. 12345' }
 };
@@ -27,10 +27,18 @@ const signupSchema = z.object({
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z.string(),
     role: z.enum(['user', 'contractor', 'business']),
-    seaiNumber: z.string().optional(),
+    seaiNumber: z.string().min(1, 'Registration number is required'),
 }).refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
+}).refine((data) => {
+    if (data.role === 'contractor' && (!data.seaiNumber || data.seaiNumber.trim().length < 1)) {
+        return false;
+    }
+    return true;
+}, {
+    message: "Registration number is required for assessors",
+    path: ["seaiNumber"],
 }).refine((data) => {
     if (data.role === 'user' && (!data.phone || data.phone.length < 7)) {
         return false;
@@ -306,13 +314,14 @@ const SignUp = () => {
 
                         {activeRole === 'contractor' && (
                             <div className="space-y-1 text-left">
-                                <label className="text-sm font-bold text-gray-700 ml-1">{regLabels.label} <span className="text-gray-400 font-normal">(optional)</span></label>
+                                <label className="text-sm font-bold text-gray-700 ml-1">{regLabels.label} <span className="text-red-500">*</span></label>
                                 <input
                                     {...register('seaiNumber')}
                                     type="text"
                                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
                                     placeholder={regLabels.placeholder}
                                 />
+                                {errors.seaiNumber && <p className="text-red-500 text-xs mt-1 font-medium ml-1">{errors.seaiNumber.message}</p>}
                             </div>
                         )}
 
