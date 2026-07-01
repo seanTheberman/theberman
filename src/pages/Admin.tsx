@@ -1109,7 +1109,10 @@ const Admin = () => {
     }, []);
 
     const handleResendCredentials = useCallback(async (u: Profile) => {
-        const toastId = toast.loading('Resending login credentials...');
+        if (!window.confirm(`This will RESET the password for ${u.full_name || u.email} and email them new credentials. Are you sure?`)) {
+            return;
+        }
+        const toastId = toast.loading('Resetting password & sending new credentials...');
         try {
             const tenantForEmail = u.tenant || selectedTenant;
             const websiteUrl = getTenantWebsiteUrl(tenantForEmail).replace(/\/$/, '');
@@ -1145,8 +1148,28 @@ const Admin = () => {
         }
     }, [selectedTenant, logAudit]);
 
+    const handleSendPasswordReset = useCallback(async (u: Profile) => {
+        const toastId = toast.loading('Sending password reset link...');
+        try {
+            const tenantForEmail = u.tenant || selectedTenant;
+            const websiteUrl = getTenantWebsiteUrl(tenantForEmail).replace(/\/$/, '');
+            const { error } = await supabase.auth.resetPasswordForEmail(u.email, {
+                redirectTo: `${websiteUrl}/update-password`,
+            });
+            if (error) throw error;
+            toast.success('Password reset link sent! The assessor will receive an email to set their own password.', { id: toastId });
+            await logAudit('send_password_reset', 'user', u.id, { email: u.email });
+        } catch (error: any) {
+            console.error('Send password reset error:', error);
+            toast.error(error.message || 'Failed to send password reset email', { id: toastId });
+        }
+    }, [selectedTenant, logAudit]);
+
     const handleResendBusinessOnboarding = useCallback(async (u: Profile) => {
-        const toastId = toast.loading('Resending onboarding email...');
+        if (!window.confirm(`This will RESET the password for ${u.full_name || u.email} and email them new onboarding credentials. Are you sure?`)) {
+            return;
+        }
+        const toastId = toast.loading('Resetting password & sending onboarding email...');
         try {
             const tenantForEmail = u.tenant || selectedTenant;
             const websiteUrl = getTenantWebsiteUrl(tenantForEmail).replace(/\/$/, '');
@@ -2235,6 +2258,7 @@ const Admin = () => {
                             setNewUserRole={setNewUserRole} setShowAddUserModal={setShowAddUserModal}
                             handleDeleteClick={handleDeleteClick}
                             onResendOnboarding={handleResendCredentials}
+                            onSendPasswordReset={handleSendPasswordReset}
                         />
                     ) : view === 'businesses' ? (
                         <BusinessesView

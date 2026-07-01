@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, TrendingUp, Briefcase, Home, Eye, AlertTriangle, Mail, Send, Edit2, Plus, CheckCircle2, X, Trash2 } from 'lucide-react';
+import { Search, TrendingUp, Briefcase, Home, Eye, AlertTriangle, Mail, Send, Edit2, Plus, CheckCircle2, X, Trash2, KeyRound } from 'lucide-react';
 import { Filter as FilterIcon } from 'lucide-react';
 import type { Profile, Assessment, AdminView, CatalogueListing } from '../../../types/admin';
 import { StatusCell, PaymentStatusBadge } from '../StatusBadges';
@@ -24,6 +24,7 @@ interface Props {
     setShowAddUserModal: (v: boolean) => void;
     handleDeleteClick: (id: string, type: 'user') => void;
     onResendOnboarding?: (u: Profile) => void;
+    onSendPasswordReset?: (u: Profile) => void;
 }
 
 
@@ -33,7 +34,7 @@ export const UsersView = React.memo(({
     isUpdating, handleSendRenewalReminder, handleOpenCatalogueView,
     updateRegistrationStatus, setSelectedUser, setItemToSuspend,
     setShowSuspendModal, setNewUserRole, setShowAddUserModal,
-    handleDeleteClick, onResendOnboarding
+    handleDeleteClick, onResendOnboarding, onSendPasswordReset
 }: Props) => {
     const isAssessors = view === 'assessors';
     const [typeFilter, setTypeFilter] = useState('');
@@ -296,9 +297,13 @@ export const UsersView = React.memo(({
                                                 {u.role === 'contractor' && u.subscription_status !== 'active' && (
                                                     <button onClick={() => handleSendRenewalReminder(u)} title="Send subscription reminder" className="p-1.5 text-amber-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all"><Mail size={14} /></button>
                                                 )}
-                                                {/* Resend onboarding email for assessors */}
+                                                {/* Send password reset link (does NOT change password) */}
+                                                {isAssessors && onSendPasswordReset && (
+                                                    <button onClick={() => onSendPasswordReset(u)} title="Send password reset link" className="p-1.5 text-blue-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><KeyRound size={14} /></button>
+                                                )}
+                                                {/* Reset password & resend credentials for assessors */}
                                                 {isAssessors && onResendOnboarding && (
-                                                    <button onClick={() => onResendOnboarding(u)} title="Resend onboarding email" className="p-1.5 text-green-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"><Send size={14} /></button>
+                                                    <button onClick={() => onResendOnboarding(u)} title="Reset password & send new credentials" className="p-1.5 text-green-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"><Send size={14} /></button>
                                                 )}
                                                 <button onClick={() => setSelectedUser(u)} title="View details" className="p-1.5 text-gray-300 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"><Eye size={14} /></button>
                                                 <button
