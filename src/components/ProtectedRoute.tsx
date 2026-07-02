@@ -39,13 +39,11 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         return <Navigate to="/dashboard/user" replace />;
     }
 
-    // Stage 1 Gating: Redirect pending businesses to membership payment if they haven't paid
+    // Stage 1 Gating: Redirect pending businesses to onboarding
     if (role === 'business' && profile?.registration_status === 'pending' &&
         location.pathname !== '/business-onboarding' &&
-        location.pathname !== '/assessor-onboarding' &&
-        location.pathname !== '/membership-payment' &&
-        location.pathname !== '/registration-pending') {
-        return <Navigate to="/membership-payment" replace />;
+        location.pathname !== '/assessor-onboarding') {
+        return <Navigate to="/business-onboarding" replace />;
     }
 
     // If role is business but registration status is NOT pending/active, send to onboarding

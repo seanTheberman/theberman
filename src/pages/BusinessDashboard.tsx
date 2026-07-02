@@ -401,10 +401,9 @@ const BusinessDashboard = () => {
 
     // Suspended or Pending — show website-style blocking page instead of dashboard
     const isSuspended = profile?.stripe_payment_id === 'SUSPENDED';
-    const hasPaid = !!profile?.stripe_payment_id && profile.stripe_payment_id !== 'SUSPENDED';
 
-    // Business pending + no payment yet → redirect to onboarding
-    if (profile?.registration_status === 'pending' && !hasPaid) {
+    // Business pending → redirect to onboarding
+    if (profile?.registration_status === 'pending') {
         navigate('/business-onboarding', { replace: true });
         return null;
     }
@@ -569,34 +568,6 @@ const BusinessDashboard = () => {
                     </div>
                 </div>
             </header>
-
-            {/* Subscription Expired Overlay (active accounts only) */}
-            {(profile?.subscription_status === 'expired' || profile?.is_active === false) &&
-                profile?.registration_status === 'active' &&
-                profile?.stripe_payment_id !== 'MANUAL_BY_ADMIN' && (
-                <div className="fixed inset-0 z-[10001] bg-[#0c121d]/95 backdrop-blur-2xl flex items-center justify-center p-6 text-center">
-                    <div className="max-w-md w-full bg-white rounded-3xl p-10 shadow-2xl border-t-8 border-red-500">
-                        <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <AlertCircle size={40} className="text-red-500 animate-pulse" />
-                        </div>
-                        <h2 className="text-2xl font-black text-gray-900 mb-2">{isSpanish ? 'Suscripción Expirada' : 'Subscription Expired'}</h2>
-                        <p className="text-gray-500 mb-8 font-medium">
-                            {isSpanish
-                                ? 'Tu suscripción ha terminado y tu cuenta está actualmente desactivada. Renueva tu suscripción para reactivar tu listado y acceder al portal.'
-                                : 'Your subscription has ended and your account is currently disabled. Please renew your subscription to reactivate your listing and access the portal.'}
-                        </p>
-                        <Link
-                            to="/pricing"
-                            className="block w-full bg-red-600 text-white py-4 rounded-2xl font-black uppercase tracking-wider text-sm hover:bg-red-700 transition-all mb-4 shadow-lg shadow-red-500/20"
-                        >
-                            {isSpanish ? 'Renovar Suscripción' : 'Renew Subscription'}
-                        </Link>
-                        <button onClick={handleSignOut} className="w-full text-gray-400 hover:text-gray-600 font-bold uppercase tracking-widest text-[10px] transition-colors">
-                            {isSpanish ? 'Cerrar Sesión' : 'Sign Out'}
-                        </button>
-                    </div>
-                </div>
-            )}
 
             {/* Main Content */}
             <main className="flex-grow pt-20">

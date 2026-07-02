@@ -292,21 +292,21 @@ const Admin = () => {
     }, [setLeads, setLoading, selectedTenant]);
 
     const checkAndDisableExpiredSubscriptions = useCallback(async (users: Profile[]) => {
-        const now = new Date();
-        const expiredUserIds = users
-            .filter(u => (u.role === 'business' || u.role === 'contractor') &&
-                u.is_active !== false &&
-                u.subscription_end_date &&
-                new Date(u.subscription_end_date) < now)
-            .map(u => u.id);
-
-        if (expiredUserIds.length > 0) {
-            // Silently disable expired accounts without showing any notification
-            await supabase
-                .from('profiles')
-                .update({ is_active: false, subscription_status: 'expired' })
-                .in('id', expiredUserIds);
-        }
+        // Auto-expire disabled — subscriptions no longer gate dashboard access
+        // const now = new Date();
+        // const expiredUserIds = users
+        //     .filter(u => (u.role === 'business' || u.role === 'contractor') &&
+        //         u.is_active !== false &&
+        //         u.subscription_end_date &&
+        //         new Date(u.subscription_end_date) < now)
+        //     .map(u => u.id);
+        //
+        // if (expiredUserIds.length > 0) {
+        //     await supabase
+        //         .from('profiles')
+        //         .update({ is_active: false, subscription_status: 'expired' })
+        //         .in('id', expiredUserIds);
+        // }
     }, []);
 
     const fetchUsers = useCallback(async () => {

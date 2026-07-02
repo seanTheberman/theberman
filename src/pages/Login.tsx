@@ -7,7 +7,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
 import { supabase } from '../lib/supabase';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Eye, EyeOff, Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { checkRateLimit, recordFailedAttempt, recordSuccessfulLogin } from '../lib/rateLimiter';
 import { getTenantFromDomain } from '../lib/tenant';
@@ -29,6 +29,8 @@ const Login = () => {
     const location = useLocation();
     const [activeTab, setActiveTab] = useState<'homeowner' | 'assessor' | 'business'>('homeowner');
     const [showPassword, setShowPassword] = useState(false);
+    const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null);
+    const [resending, setResending] = useState(false);
     // Prevents useEffect from redirecting mid-submission while role check is running
     const signingIn = React.useRef(false);
 
@@ -52,16 +54,11 @@ const Login = () => {
                 supabase.auth.updateUser({ data: { requires_password_change: false } });
             }
 
-            // Handle Blocked / Expired users (Exclude admins)
+            // Handle pending registration users (Exclude admins)
             if (role === 'contractor' || role === 'business') {
                 if (profile.registration_status === 'pending') {
                     const path = role === 'contractor' ? '/assessor-onboarding' : '/business-onboarding';
                     navigate(path, { replace: true });
-                    return;
-                }
-
-                if (profile.subscription_status === 'expired' || profile.is_active === false) {
-                    navigate('/pricing', { replace: true });
                     return;
                 }
             }
@@ -117,10 +114,11 @@ const Login = () => {
                 
                 const errorMessage = error.message.toLowerCase();
                 if (errorMessage.includes('email not confirmed')) {
-                    throw new Error('Please confirm your email address before logging in.');
+                    setUnconfirmedEmail(email);
+                    throw new Error('Please confirm your email address before logging in. Check your inbox and spam folder.');
                 }
                 if (error.status === 400 || errorMessage.includes('invalid credentials')) {
-                    throw new Error('Invalid email or password. Please try again or use "Forgot password".');
+                    throw new Error('Due to a recent technical update, your password may need to be reset. Please click "Forgot Password" to create a new password and try again.');
                 }
                 throw error;
             }
@@ -138,14 +136,12 @@ const Login = () => {
 
                 const userRole = profile?.role || 'user';
                 const regStatus = profile?.registration_status;
-                const subStatus = profile?.subscription_status;
-                const isActive = profile?.is_active;
 
                 // Role validation based on active tab — MUST happen first
                 if (activeTab === 'homeowner') {
                     if (userRole === 'contractor') {
                         await signOut();
-                        throw new Error('This account is registered as a BER Assessor. Please use the "BER Assessor" tab to log in.');
+                        throw new Error(`This account is registered as a ${assessorLabel}. Please use the "${assessorLabel}" tab to log in.`);
                     }
                     if (userRole === 'business') {
                         await signOut();
@@ -175,18 +171,12 @@ const Login = () => {
                     await supabase.auth.updateUser({ data: { requires_password_change: false } });
                 }
 
-                // Handle Blocked / Expired users (Redirect them to payment/pricing)
+                // Handle pending registration users
                 if (userRole === 'contractor' || userRole === 'business') {
                     if (regStatus === 'pending') {
                         // Redirect to onboarding to complete registration
                         const path = userRole === 'contractor' ? '/assessor-onboarding' : '/business-onboarding';
                         navigate(path, { replace: true });
-                        return;
-                    }
-
-                    if (subStatus === 'expired' || isActive === false) {
-                        // Redirect to renewal page
-                        navigate('/pricing', { replace: true });
                         return;
                     }
                 }
@@ -209,6 +199,26 @@ const Login = () => {
             toast.error(err.message || 'Failed to login');
         } finally {
             signingIn.current = false;
+        }
+    };
+
+    const handleResendConfirmation = async () => {
+        if (!unconfirmedEmail) return;
+        setResending(true);
+        try {
+            const websiteUrl = window.location.origin;
+            const { error } = await supabase.auth.resend({
+                type: 'signup',
+                email: unconfirmedEmail,
+                options: { emailRedirectTo: websiteUrl }
+            });
+            if (error) throw error;
+            toast.success('Confirmation email resent! Please check your inbox and spam folder.');
+            setUnconfirmedEmail(null);
+        } catch (err: any) {
+            toast.error(err.message || 'Failed to resend confirmation email');
+        } finally {
+            setResending(false);
         }
     };
 
@@ -290,7 +300,20 @@ const Login = () => {
                         {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
                     </div>
 
-                    <div className="text-right">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            {unconfirmedEmail && (
+                                <button
+                                    type="button"
+                                    onClick={handleResendConfirmation}
+                                    disabled={resending}
+                                    className="text-sm font-bold text-blue-600 hover:underline flex items-center gap-1"
+                                >
+                                    {resending ? <Loader2 size={14} className="animate-spin" /> : <Mail size={14} />}
+                                    {isSpanish ? 'Reenviar confirmación' : 'Resend confirmation email'}
+                                </button>
+                            )}
+                        </div>
                         <Link to="/forgot-password" className="text-sm font-bold text-[#007F00] hover:underline">
                             {isSpanish ? '¿Olvidaste tu Contraseña?' : 'Forgot Password?'}
                         </Link>

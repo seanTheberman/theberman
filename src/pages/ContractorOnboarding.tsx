@@ -267,7 +267,7 @@ const ContractorOnboarding = () => {
                 longitude = coords.longitude;
             }
 
-            // Store registration data in sessionStorage for later persistence (after payment)
+            // Store registration data in sessionStorage for later persistence
             const registrationData = {
                 ...formData,
                 latitude,

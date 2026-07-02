@@ -157,7 +157,7 @@ const BusinessOnboarding = () => {
         }
 
         try {
-            // Store all registration data for payment finalization
+            // Store all registration data
             const registrationData = {
                 ...formData,
                 user_id: user.id,
@@ -182,44 +182,41 @@ const BusinessOnboarding = () => {
                 console.error('Failed to update initial profile:', profileUpdateError);
             }
 
-            // Check if user is already marked as paid (manual activation)
-            const { data: currentProfile } = await supabase
+            // Auto-activate the business profile (no payment required)
+            await supabase
                 .from('profiles')
-                .select('stripe_payment_id, registration_status')
-                .eq('id', user.id)
-                .single();
+                .update({
+                    registration_status: 'completed',
+                    is_active: true,
+                    subscription_status: 'active',
+                    stripe_payment_id: 'FREE_BUSINESS',
+                })
+                .eq('id', user.id);
 
-            if (currentProfile?.stripe_payment_id === 'MANUAL_BY_ADMIN') {
-                // Check if listing already exists before creating
-                const { data: existingListing } = await supabase
-                    .from('catalogue_listings')
-                    .select('id')
-                    .eq('owner_id', user.id)
-                    .maybeSingle();
+            // Check if listing already exists before creating
+            const { data: existingListing } = await supabase
+                .from('catalogue_listings')
+                .select('id')
+                .eq('owner_id', user.id)
+                .maybeSingle();
 
-                if (!existingListing) {
-                    // Refresh session to ensure valid JWT before calling edge function
-                    await supabase.auth.refreshSession();
-                    const { error: fnError } = await supabase.functions.invoke('confirm-business-registration', {
-                        body: { registrationData, paymentIntentId: 'MANUAL_BY_ADMIN' }
-                    });
-                    if (fnError) {
-                        console.error('Edge function error:', fnError);
-                        toast.error('Failed to create business profile. Please try again.');
-                        setLoading(false);
-                        return;
-                    }
+            if (!existingListing) {
+                await supabase.auth.refreshSession();
+                const { error: fnError } = await supabase.functions.invoke('confirm-business-registration', {
+                    body: { registrationData, paymentIntentId: 'FREE_BUSINESS' }
+                });
+                if (fnError) {
+                    console.error('Edge function error:', fnError);
+                    toast.error('Failed to create business profile. Please try again.');
+                    setLoading(false);
+                    return;
                 }
-
-                await refreshProfile();
-                toast.success('Business profile created! Your account is active.');
-                navigate('/dashboard/business', { replace: true });
-                return;
             }
 
-            toast.success('Information saved! Please complete your registration payment.');
             await refreshProfile();
-            navigate('/membership-payment', { replace: true });
+            toast.success('Business profile created! Your account is active.');
+            navigate('/dashboard/business', { replace: true });
+            return;
         } catch (error: unknown) {
             console.error('Onboarding data saving error:', error);
             toast.error('Failed to save registration data');

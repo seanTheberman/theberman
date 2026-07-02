@@ -657,7 +657,7 @@ const ContractorDashboard = () => {
                             <p className="text-gray-400 text-sm mb-8">
                                 {suspended
                                     ? (isSpanish ? 'Si crees que esto es un error, por favor contacta con nuestro equipo de soporte.' : 'If you believe this is a mistake, please contact our support team.')
-                                    : (isSpanish ? 'Una vez aprobado, recibirás una suscripción gratuita y acceso completo al Portal del Certificador.' : 'Once approved, you will receive a free subscription and full access to the Assessor Portal.')}
+                                    : (isSpanish ? 'Una vez aprobado, tendrás acceso completo al Portal del Certificador.' : 'Once approved, you will receive full access to the Assessor Portal.')}
                             </p>
                             <div className={`border rounded-xl p-4 mb-8 text-left ${suspended ? 'bg-red-50 border-red-100' : 'bg-green-50 border-green-100'}`}>
                                 <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${suspended ? 'text-red-600' : 'text-[#007F00]'}`}>
@@ -764,35 +764,6 @@ const ContractorDashboard = () => {
                     </div>
                 </div>
             </header>
-
-            {/* Subscription Expired Blocker Overlay */}
-            {(profile?.subscription_status === 'expired' || profile?.is_active === false) &&
-                profile?.registration_status === 'active' &&
-                profile?.stripe_payment_id !== 'MANUAL_BY_ADMIN' ? (
-                <div className="fixed inset-0 z-[10001] bg-[#0c121d]/95 backdrop-blur-2xl flex items-center justify-center p-6 text-center">
-                    <div className="max-w-md w-full bg-white rounded-3xl p-10 shadow-2xl border-t-8 border-red-500">
-                        <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <AlertCircle size={40} className="text-red-500 animate-pulse" />
-                        </div>
-                        <h2 className="text-2xl font-black text-gray-900 mb-2">{isSpanish ? 'Suscripción Caducada' : 'Subscription Expired'}</h2>
-                        <p className="text-gray-500 mb-8 font-medium">
-                            {isSpanish ? 'Tu suscripción ha finalizado y tu cuenta está actualmente desactivada. Por favor, renueva tu suscripción para reactivar tu ficha y acceder al portal.' : 'Your subscription has ended and your account is currently disabled. Please renew your subscription to reactivate your listing and access the portal.'}
-                        </p>
-                        <Link
-                            to="/pricing"
-                            className="block w-full bg-red-600 text-white py-4 rounded-2xl font-black uppercase tracking-wider text-sm hover:bg-red-700 transition-all mb-4 shadow-lg shadow-red-500/20"
-                        >
-                            {isSpanish ? 'Renovar Suscripción' : 'Renew Subscription'}
-                        </Link>
-                        <button
-                            onClick={handleSignOut}
-                            className="w-full text-gray-400 hover:text-gray-600 font-bold uppercase tracking-widest text-[10px] transition-colors"
-                        >
-                            Sign Out
-                        </button>
-                    </div>
-                </div>
-            ) : null}
 
             <main className="w-full px-4 md:px-6 py-6">
                 {/* Live Jobs Section - BerCert Style */}
