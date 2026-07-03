@@ -291,7 +291,7 @@ const Admin = () => {
         }
     }, [setLeads, setLoading, selectedTenant]);
 
-    const checkAndDisableExpiredSubscriptions = useCallback(async (users: Profile[]) => {
+    const checkAndDisableExpiredSubscriptions = useCallback(async (_users: Profile[]) => {
         // Auto-expire disabled — subscriptions no longer gate dashboard access
         // const now = new Date();
         // const expiredUserIds = users
