@@ -3,6 +3,7 @@ import { Mail, ArrowRight, RefreshCw, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
 import { getTenantFromDomain } from '../lib/tenant';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface EmailVerificationProps {
     email: string;
@@ -12,6 +13,7 @@ interface EmailVerificationProps {
 }
 
 const EmailVerification = ({ email, assessmentId, onVerified, onBack }: EmailVerificationProps) => {
+    const { isSpanish } = useTranslation();
     const [code, setCode] = useState(['', '', '', '', '', '']);
     const [isVerifying, setIsVerifying] = useState(false);
     const [isResending, setIsResending] = useState(false);
@@ -48,16 +50,16 @@ const EmailVerification = ({ email, assessmentId, onVerified, onBack }: EmailVer
 
             if (error) {
                 console.error('Send OTP error:', error);
-                toast.error('Failed to send verification code');
+                toast.error(isSpanish ? 'No se pudo enviar el código de verificación' : 'Failed to send verification code');
                 return;
             }
 
             if (data?.success) {
-                toast.success('Verification code sent to your email!');
+                toast.success(isSpanish ? '¡Código de verificación enviado a tu correo!' : 'Verification code sent to your email!');
             }
         } catch (error) {
             console.error('Send OTP error:', error);
-            toast.error('Failed to send verification code');
+            toast.error(isSpanish ? 'No se pudo enviar el código de verificación' : 'Failed to send verification code');
         } finally {
             setIsSendingInitial(false);
         }
@@ -104,7 +106,7 @@ const EmailVerification = ({ email, assessmentId, onVerified, onBack }: EmailVer
     const handleVerify = async () => {
         const fullCode = code.join('').trim();
         if (fullCode.length !== 6) {
-            toast.error('Please enter the complete 6-digit code');
+            toast.error(isSpanish ? 'Introduce el código completo de 6 dígitos' : 'Please enter the complete 6-digit code');
             return;
         }
 
@@ -117,7 +119,7 @@ const EmailVerification = ({ email, assessmentId, onVerified, onBack }: EmailVer
 
             if (error) {
                 console.error('Verify OTP error:', error);
-                let errorMessage = 'Failed to verify code. Please try again.';
+                let errorMessage = isSpanish ? 'No se pudo verificar el código. Inténtalo de nuevo.' : 'Failed to verify code. Please try again.';
 
                 try {
                     // FunctionsHttpError has a context with a response body
@@ -133,7 +135,7 @@ const EmailVerification = ({ email, assessmentId, onVerified, onBack }: EmailVer
                 }
 
                 if (errorMessage === 'Incorrect password') {
-                    errorMessage = 'Incorrect OTP';
+                    errorMessage = isSpanish ? 'Código incorrecto' : 'Incorrect OTP';
                 }
 
                 toast.error(errorMessage, { duration: 4000 });
@@ -141,17 +143,17 @@ const EmailVerification = ({ email, assessmentId, onVerified, onBack }: EmailVer
             }
 
             if (data?.success) {
-                toast.success('Email verified successfully!');
+                toast.success(isSpanish ? '¡Correo verificado con éxito!' : 'Email verified successfully!');
                 onVerified();
             } else {
-                const errorMsg = data?.error || 'Invalid verification code. Please try again.';
+                const errorMsg = data?.error || (isSpanish ? 'Código de verificación no válido. Inténtalo de nuevo.' : 'Invalid verification code. Please try again.');
                 toast.error(errorMsg, { duration: 4000 });
                 setCode(['', '', '', '', '', '']);
                 inputRefs.current[0]?.focus();
             }
         } catch (error) {
             console.error('Verification error:', error);
-            toast.error('An unexpected error occurred. Please try again.');
+            toast.error(isSpanish ? 'Ha ocurrido un error inesperado. Inténtalo de nuevo.' : 'An unexpected error occurred. Please try again.');
         } finally {
             setIsVerifying(false);
         }
@@ -170,7 +172,7 @@ const EmailVerification = ({ email, assessmentId, onVerified, onBack }: EmailVer
             if (inputRefs.current[0]) inputRefs.current[0].focus();
         } catch (error) {
             console.error('Resend error:', error);
-            toast.error('Failed to resend code. Please try again.');
+            toast.error(isSpanish ? 'No se pudo reenviar el código. Inténtalo de nuevo.' : 'Failed to resend code. Please try again.');
         } finally {
             setIsResending(false);
         }
@@ -186,7 +188,7 @@ const EmailVerification = ({ email, assessmentId, onVerified, onBack }: EmailVer
         return (
             <div className="text-center py-12">
                 <RefreshCw size={48} className="animate-spin text-green-500 mx-auto mb-4" />
-                <p className="text-gray-600">Sending verification code...</p>
+                <p className="text-gray-600">{isSpanish ? 'Enviando código de verificación...' : 'Sending verification code...'}</p>
             </div>
         );
     }
@@ -204,11 +206,11 @@ const EmailVerification = ({ email, assessmentId, onVerified, onBack }: EmailVer
                 </div>
 
                 <h2 className="text-2xl md:text-4xl font-black text-gray-900 mb-2 md:mb-4 tracking-tight leading-tight">
-                    Verify Your <br className="hidden md:block" /> Email
+                    {isSpanish ? 'Verifica tu' : 'Verify Your'} <br className="hidden md:block" /> {isSpanish ? 'Correo' : 'Email'}
                 </h2>
 
                 <div className="space-y-2 md:space-y-4">
-                    <p className="text-gray-500 font-medium text-xs md:text-sm">We've sent a 6-digit code to</p>
+                    <p className="text-gray-500 font-medium text-xs md:text-sm">{isSpanish ? 'Hemos enviado un código de 6 dígitos a' : 'We\'ve sent a 6-digit code to'}</p>
                     <div className="inline-block px-3 py-1.5 md:px-4 md:py-2 bg-[#007F00]/5 rounded-xl border border-[#007F00]/10">
                         <p className="text-[#007F00] font-black text-xs md:text-sm tracking-wide">
                             {maskEmail(email)}
@@ -262,11 +264,11 @@ const EmailVerification = ({ email, assessmentId, onVerified, onBack }: EmailVer
                         {isVerifying ? (
                             <>
                                 <RefreshCw size={24} className="animate-spin" />
-                                <span className="tracking-wide">Verifying...</span>
+                                <span className="tracking-wide">{isSpanish ? 'Verificando...' : 'Verifying...'}</span>
                             </>
                         ) : (
                             <>
-                                <span className="tracking-wide text-xs md:text-sm uppercase">Accept Quote</span>
+                                <span className="tracking-wide text-xs md:text-sm uppercase">{isSpanish ? 'Aceptar Presupuesto' : 'Accept Quote'}</span>
                                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                             </>
                         )}
@@ -283,12 +285,12 @@ const EmailVerification = ({ email, assessmentId, onVerified, onBack }: EmailVer
                                 className="group flex items-center gap-2 text-[#007F00] font-black text-xs uppercase tracking-widest hover:bg-green-50 px-4 py-2 rounded-full transition-all"
                             >
                                 <RefreshCw size={14} className="group-hover:rotate-180 transition-transform duration-500" />
-                                <span>Resend Code</span>
+                                <span>{isSpanish ? 'Reenviar Código' : 'Resend Code'}</span>
                             </button>
                         ) : (
                             <div className="flex items-center gap-2 text-gray-400 font-bold bg-gray-50 px-4 py-2 rounded-full border border-gray-100 text-[10px] uppercase tracking-tighter">
                                 <Clock size={12} className="text-gray-400" />
-                                <span>Resend ready in <span className="text-[#007F00]">{countdown}s</span></span>
+                                <span>{isSpanish ? 'Reenviar en' : 'Resend ready in'} <span className="text-[#007F00]">{countdown}s</span></span>
                             </div>
                         )}
                     </div>
@@ -300,7 +302,7 @@ const EmailVerification = ({ email, assessmentId, onVerified, onBack }: EmailVer
                         <div className="w-4 h-4 rounded-full border border-gray-200 flex items-center justify-center group-hover:border-gray-400">
                             ←
                         </div>
-                        <span>Go back and change details</span>
+                        <span>{isSpanish ? 'Volver y cambiar los datos' : 'Go back and change details'}</span>
                     </button>
                 </div>
             </div>

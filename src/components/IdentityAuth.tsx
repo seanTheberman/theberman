@@ -47,7 +47,7 @@ const IdentityAuth = ({ email, fullName, phone, isExternalSubmitting = false, on
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!password) {
-            toast.error('Please enter a password');
+            toast.error(isSpanish ? 'Por favor, introduce una contraseña' : 'Please enter a password');
             return;
         }
 
@@ -56,16 +56,16 @@ const IdentityAuth = ({ email, fullName, phone, isExternalSubmitting = false, on
             if (isExistingUser) {
                 const { error } = await signIn(email, password);
                 if (error) throw error;
-                toast.success('Signed in successfully!');
+                toast.success(isSpanish ? '¡Sesión iniciada con éxito!' : 'Signed in successfully!');
             } else {
                 const { error } = await signUp(email, password, fullName, 'user', phone, undefined);
                 if (error) throw error;
-                toast.success('Account created successfully!');
+                toast.success(isSpanish ? '¡Cuenta creada con éxito!' : 'Account created successfully!');
             }
             onAuthenticated();
         } catch (error: any) {
             console.error('Auth error:', error);
-            toast.error(error.message || 'Authentication failed. Please try again.');
+            toast.error(error.message || (isSpanish ? 'La autenticación ha fallado. Inténtalo de nuevo.' : 'Authentication failed. Please try again.'));
         } finally {
             setIsSubmitting(false);
         }
@@ -75,7 +75,7 @@ const IdentityAuth = ({ email, fullName, phone, isExternalSubmitting = false, on
         return (
             <div className="text-center py-12">
                 <RefreshCw size={48} className="animate-spin text-green-500 mx-auto mb-4" />
-                <p className="text-gray-600">Verifying account status...</p>
+                <p className="text-gray-600">{isSpanish ? 'Verificando el estado de la cuenta...' : 'Verifying account status...'}</p>
             </div>
         );
     }

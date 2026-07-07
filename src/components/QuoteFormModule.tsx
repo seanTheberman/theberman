@@ -882,7 +882,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                             />
                             {onClose && (
                                 <button onClick={onClose} className="mt-8 w-full bg-gray-900 text-white font-bold py-4 rounded-xl">
-                                    Close & Go to Dashboard
+                                    {isSpanish ? 'Cerrar e Ir al Panel' : 'Close & Go to Dashboard'}
                                 </button>
                             )}
                         </div>
@@ -1029,7 +1029,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                             />
                             {onClose && (
                                 <button onClick={onClose} className="mt-8 w-full bg-gray-900 text-white font-bold py-4 rounded-xl">
-                                    Close & Go to Dashboard
+                                    {isSpanish ? 'Cerrar e Ir al Panel' : 'Close & Go to Dashboard'}
                                 </button>
                             )}
                         </div>
@@ -1189,7 +1189,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                             />
                             {onClose && (
                                 <button onClick={onClose} className="mt-8 w-full bg-gray-900 text-white font-bold py-4 rounded-xl">
-                                    Close & Go to Dashboard
+                                    {isSpanish ? 'Cerrar e Ir al Panel' : 'Close & Go to Dashboard'}
                                 </button>
                             )}
                         </div>
@@ -1267,7 +1267,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                         <button onClick={handleNext} disabled={!canProceed()}
                             className={`px-10 py-4 rounded-xl font-bold transition-all flex items-center gap-2 ${canProceed() ? 'bg-green-500 text-white shadow-lg shadow-green-100 hover:bg-green-600' : 'bg-gray-200 text-gray-400'}`}
                         >
-                            {currentStep === LAST_FORM_STEP ? (isSubmitting ? t('loading') : t('get_quotes', 'Get Quotes')) : t('next')}
+                            {currentStep === LAST_FORM_STEP ? (isSubmitting ? t('loading') : t('get_quotes')) : t('next')}
                             {currentStep < LAST_FORM_STEP && <ChevronRight size={18} />}
                         </button>
                     )}

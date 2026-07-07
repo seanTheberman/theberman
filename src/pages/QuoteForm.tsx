@@ -5,7 +5,7 @@ import { useTranslation } from '../hooks/useTranslation';
 
 const QuoteForm = () => {
     const navigate = useNavigate();
-    const { isSpanish, tenant } = useTranslation();
+    const { t, isSpanish, tenant } = useTranslation();
     const ratingName = isSpanish ? 'Certificado Energético' : tenant === 'england' ? 'EPC' : tenant === 'france' ? 'DPE' : tenant === 'portugal' ? 'Certificado Energético' : 'BER';
     const assessorDesc = isSpanish ? 'certificadores acreditados' : tenant === 'england' ? 'accredited EPC assessors' : tenant === 'france' ? 'diagnostiqueurs certifiés' : tenant === 'portugal' ? 'peritos certificados' : 'SEAI registered BER assessors';
 
@@ -19,7 +19,7 @@ const QuoteForm = () => {
                     <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-green-50 group-hover:text-[#007F00] transition-all border border-gray-100 group-hover:border-green-100">
                         <ArrowLeft size={20} />
                     </div>
-                    <span className="font-black text-xs uppercase tracking-widest">Back</span>
+                    <span className="font-black text-xs uppercase tracking-widest">{t('back')}</span>
                 </button>
 
                 <div className="text-center mb-12">

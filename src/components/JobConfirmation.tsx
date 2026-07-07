@@ -18,6 +18,7 @@ const JobConfirmation = ({ customerName, county, email, emailError, hideNavigati
     const brandDomain = isEngland ? 'epccert.com' : isSpanish ? 'certificadoenergético.eu' : 'theberman.eu';
     const ratingName = isEngland ? 'EPC' : isSpanish ? 'CEE' : 'BER';
     const country = isEngland ? 'England' : isSpanish ? 'Spain' : 'Ireland';
+    const countryLocalized = isEngland ? 'England' : isSpanish ? 'España' : 'Ireland';
     const isSolar = jobType === 'Solar';
     const professionalTitle = isSolar ? 'Solar Installers' : (isEngland ? 'EPC Assessors' : (isSpanish ? 'Certificadores' : 'BER Assessors'));
     const professionalSingular = isSolar ? 'Installer' : (isEngland ? 'EPC Assessor' : (isSpanish ? 'Certificador' : 'Assessor'));
@@ -35,10 +36,10 @@ const JobConfirmation = ({ customerName, county, email, emailError, hideNavigati
             {/* Main Heading */}
             <div>
                 <h1 className="text-4xl md:text-5xl font-light text-gray-800 mb-4">
-                    Your Job is Live!
+                    {isSpanish ? '¡Tu Trabajo está Publicado!' : 'Your Job is Live!'}
                 </h1>
                 <p className="text-xl text-gray-600 max-w-lg mx-auto">
-                    Hi {customerName}, your {jobTitle} is now live on TheBerman.eu
+                    {isSpanish ? `Hola ${customerName}, tu ${jobTitle} ya está publicado en ${brandDomain}` : `Hi ${customerName}, your ${jobTitle} is now live on ${brandDomain}`}
                 </p>
             </div>
 
@@ -49,10 +50,9 @@ const JobConfirmation = ({ customerName, county, email, emailError, hideNavigati
                         <AlertCircle size={20} className="text-amber-600" />
                     </div>
                     <div>
-                        <h4 className="font-semibold text-amber-800">Email Notification Pending</h4>
+                        <h4 className="font-semibold text-amber-800">{isSpanish ? 'Notificación por Correo Pendiente' : 'Email Notification Pending'}</h4>
                         <p className="text-amber-700 text-sm">
-                            We couldn't send the confirmation email right now: <span className="font-mono">{emailError}</span>.
-                            Don't worry, your job is active and {professionalTitle.toLowerCase()} can still see it.
+                            {isSpanish ? `No hemos podido enviar el correo de confirmación ahora: ${emailError}. No te preocupes, tu trabajo está activo y los ${professionalTitle.toLowerCase()} aún pueden verlo.` : `We couldn't send the confirmation email right now: ${emailError}. Don't worry, your job is active and ${professionalTitle.toLowerCase()} can still see it.`}
                         </p>
                     </div>
                 </div>
@@ -65,9 +65,9 @@ const JobConfirmation = ({ customerName, county, email, emailError, hideNavigati
                     <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
                         <Mail size={24} className="text-blue-600" />
                     </div>
-                    <h3 className="font-semibold text-gray-800 mb-2">{isSolar ? 'Installers' : 'Assessors'} Notified</h3>
+                    <h3 className="font-semibold text-gray-800 mb-2">{isSolar ? (isSpanish ? 'Instaladores Notificados' : 'Installers Notified') : (isSpanish ? 'Certificadores Notificados' : 'Assessors Notified')}</h3>
                     <p className="text-gray-500 text-sm">
-                        We've notified all registered {professionalTitle} in <span className="font-semibold text-gray-700">{county}</span>
+                        {isSpanish ? `Hemos notificado a todos los ${professionalTitle} registrados en ${county}` : `We've notified all registered ${professionalTitle} in ${county}`}
                     </p>
                 </div>
 
@@ -76,9 +76,9 @@ const JobConfirmation = ({ customerName, county, email, emailError, hideNavigati
                     <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
                         <Clock size={24} className="text-green-600" />
                     </div>
-                    <h3 className="font-semibold text-gray-800 mb-2">Quotes Incoming</h3>
+                    <h3 className="font-semibold text-gray-800 mb-2">{isSpanish ? 'Presupuestos en Camino' : 'Quotes Incoming'}</h3>
                     <p className="text-gray-500 text-sm">
-                        {professionalTitle} can now submit quotes. We'll email you when quotes arrive.
+                        {isSpanish ? `Los ${professionalTitle} ya pueden enviar presupuestos. Te avisaremos por correo cuando lleguen.` : `${professionalTitle} can now submit quotes. We'll email you when quotes arrive.`}
                     </p>
                 </div>
 
@@ -88,13 +88,13 @@ const JobConfirmation = ({ customerName, county, email, emailError, hideNavigati
                         <Mail size={24} className={emailError ? 'text-amber-600' : 'text-purple-600'} />
                     </div>
                     <h3 className="font-semibold text-gray-800 mb-2">
-                        {emailError ? 'Email Issues' : 'Check Your Email'}
+                        {emailError ? (isSpanish ? 'Problemas con el Correo' : 'Email Issues') : (isSpanish ? 'Revisa tu Correo' : 'Check Your Email')}
                     </h3>
                     <p className="text-gray-500 text-sm">
                         {emailError ? (
-                            `Failed to send to ${email}`
+                            isSpanish ? `No se pudo enviar a ${email}` : `Failed to send to ${email}`
                         ) : (
-                            <>Confirmation sent to <span className="font-semibold text-gray-700">{email}</span></>
+                            <>{isSpanish ? 'Confirmación enviada a' : 'Confirmation sent to'} <span className="font-semibold text-gray-700">{email}</span></>
                         )}
                     </p>
                 </div>
@@ -102,19 +102,19 @@ const JobConfirmation = ({ customerName, county, email, emailError, hideNavigati
 
             {/* What Happens Next */}
             <div className="bg-green-50 rounded-xl p-8 max-w-2xl mx-auto">
-                <h3 className="font-semibold text-green-800 text-lg mb-4">What Happens Next?</h3>
+                <h3 className="font-semibold text-green-800 text-lg mb-4">{isSpanish ? '¿Qué Sigue?' : 'What Happens Next?'}</h3>
                 <ol className="text-left text-green-700 space-y-3">
                     <li className="flex gap-3">
                         <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-200 text-green-800 flex items-center justify-center text-sm font-bold">1</span>
-                        <span>{professionalTitle} in your area will review your job and submit quotes</span>
+                        <span>{isSpanish ? `Los ${professionalTitle} de tu zona revisarán tu trabajo y enviarán presupuestos` : `${professionalTitle} in your area will review your job and submit quotes`}</span>
                     </li>
                     <li className="flex gap-3">
                         <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-200 text-green-800 flex items-center justify-center text-sm font-bold">2</span>
-                        <span>You'll receive an email when each quote arrives</span>
+                        <span>{isSpanish ? 'Recibirás un correo cuando llegue cada presupuesto' : 'You\'ll receive an email when each quote arrives'}</span>
                     </li>
                     <li className="flex gap-3">
                         <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-200 text-green-800 flex items-center justify-center text-sm font-bold">3</span>
-                        <span>Compare quotes and choose the best {professionalSingular.toLowerCase()} for you within 5 days. After 5 days, the job will expire.</span>
+                        <span>{isSpanish ? `Compara los presupuestos y elige el mejor ${professionalSingular.toLowerCase()} para ti en 5 días. Pasados 5 días, el trabajo caducará.` : `Compare quotes and choose the best ${professionalSingular.toLowerCase()} for you within 5 days. After 5 days, the job will expire.`}</span>
                     </li>
                 </ol>
             </div>
@@ -126,14 +126,14 @@ const JobConfirmation = ({ customerName, county, email, emailError, hideNavigati
                         <Link to="/dashboard/user">
                             <button className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-4 rounded-lg transition-all shadow-lg hover:shadow-xl">
                                 <Home size={20} />
-                                Return to Dashboard
+                                {isSpanish ? 'Volver al Panel' : 'Return to Dashboard'}
                             </button>
                         </Link>
                     </div>
 
                     {/* Footer Note */}
                     <p className="text-gray-400 text-sm">
-                        Thanks for using {brandDomain} — {country}'s largest {ratingName} website
+                        {isSpanish ? `Gracias por usar ${brandDomain} — el mayor portal de ${ratingName} de ${countryLocalized}` : `Thanks for using ${brandDomain} — ${country}'s largest ${ratingName} website`}
                     </p>
                 </>
             )}

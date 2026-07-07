@@ -136,6 +136,7 @@ const TRANSLATIONS: Record<string, Record<string, string>> = {
     ber_rating: 'Calificación Energética',
     // Quote Form
     get_quote: 'Solicitar Presupuesto Gratis',
+    get_quotes: 'Solicitar Presupuestos',
     book_assessment: 'Solicitar tu Certificado Energético',
     your_details: 'Tus Datos',
     property_details: 'Datos de la Propiedad',
