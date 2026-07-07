@@ -38,6 +38,11 @@ class CustomSmtpClient {
     private reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
     private encoder = new TextEncoder();
     private decoder = new TextDecoder();
+    private domain: string;
+
+    constructor(domain: string = 'localhost') {
+        this.domain = domain;
+    }
 
     async connect(hostname: string, port: number) {
         console.log(`[SMTP] Connecting to ${hostname}:${port}...`);
@@ -45,7 +50,7 @@ class CustomSmtpClient {
         this.reader = this.conn.readable.getReader();
         await this.readResponse();
 
-        await this.command("EHLO localhost");
+        await this.command(`EHLO ${this.domain}`);
 
         if (port !== 465) {
             console.log("[SMTP] Issuing STARTTLS...");
@@ -55,7 +60,7 @@ class CustomSmtpClient {
             const tlsConn = await Deno.startTls(this.conn, { hostname });
             this.conn = tlsConn;
             this.reader = this.conn.readable.getReader();
-            await this.command("EHLO localhost");
+            await this.command(`EHLO ${this.domain}`);
         }
     }
 

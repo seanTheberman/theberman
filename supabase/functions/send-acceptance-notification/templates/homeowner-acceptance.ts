@@ -1,4 +1,5 @@
-export const generateHomeownerAcceptanceEmail = (customerName: string, contractorName: string, price: number, websiteUrl: string = "https://theberman.eu", promoHtml: string = "") => {
+export const generateHomeownerAcceptanceEmail = (customerName: string, contractorName: string, price: number, websiteUrl: string = "https://theberman.eu", promoHtml: string = "", tenant: string = 'ireland') => {
+    const isSpanish = tenant === 'spain';
     const dashboardUrl = `${websiteUrl}/dashboard/user`;
 
     return `
@@ -27,46 +28,48 @@ export const generateHomeownerAcceptanceEmail = (customerName: string, contracto
 <body>
     <div class="container">
         <div class="header">
-            <h1>Booking Confirmed!</h1>
+            <h1>${isSpanish ? '¡Reserva Confirmada!' : 'Booking Confirmed!'}</h1>
         </div>
         <div class="content">
-            <div class="greeting">Hi ${customerName},</div>
+            <div class="greeting">${isSpanish ? 'Hola' : 'Hi'} ${customerName},</div>
             <div class="message">
-                Great news! Your BER assessment booking has been confirmed with <strong>${contractorName}</strong>.
+                ${isSpanish ? `¡Buenas noticias! Tu reserva para el certificado energético ha sido confirmada con <strong>${contractorName}</strong>.` : `Great news! Your BER assessment booking has been confirmed with <strong>${contractorName}</strong>.`}
             </div>
-            
+
             <div class="highlight-box">
                 <div class="highlight-item">
-                    <span class="highlight-label">Assessor</span>
+                    <span class="highlight-label">${isSpanish ? 'Certificador' : 'Assessor'}</span>
                     <span class="highlight-value">${contractorName}</span>
                 </div>
                 <div class="highlight-item">
-                    <span class="highlight-label">Agreed Price</span>
+                    <span class="highlight-label">${isSpanish ? 'Precio Acordado' : 'Agreed Price'}</span>
                     <span class="highlight-value">€${price}</span>
                 </div>
                 <div class="highlight-item">
-                    <span class="highlight-label">Payment Status</span>
-                    <span class="highlight-value">Deposit Pending / TBC</span>
+                    <span class="highlight-label">${isSpanish ? 'Estado del Pago' : 'Payment Status'}</span>
+                    <span class="highlight-value">${isSpanish ? 'Depósito Pendiente / Pdte.' : 'Deposit Pending / TBC'}</span>
                 </div>
             </div>
 
             <div class="message">
-                <strong>What happens next?</strong><br>
-                ${contractorName} will review your property details and contact you shortly to finalize the inspection date and time.
+                <strong>${isSpanish ? '¿Qué ocurre ahora?' : 'What happens next?'}</strong><br>
+                ${isSpanish ? `${contractorName} revisará los datos de tu propiedad y se pondrá en contacto contigo en breve para concretar la fecha y hora de la visita.` : `${contractorName} will review your property details and contact you shortly to finalize the inspection date and time.`}
             </div>
 
             <div class="button-container">
-                <a href="${dashboardUrl}" class="button">Manage Booking</a>
+                <a href="${dashboardUrl}" class="button">${isSpanish ? 'Gestionar Reserva' : 'Manage Booking'}</a>
             </div>
 
             <div class="guarantee">
-                Don't forget our <strong>100% NO-RISK MONEY-BACK GUARANTEE!</strong> If for any reason you wish to cancel before the assessor visits your home, we will refund your deposit in full.
+                ${isSpanish
+                    ? 'No olvides nuestra <strong>GARANTÍA DE DEVOLUCIÓN DEL 100% SIN RIESGO</strong>. Si por cualquier motivo deseas cancelar antes de que el certificador visite tu propiedad, te reembolsaremos el depósito íntegro.'
+                    : "Don't forget our <strong>100% NO-RISK MONEY-BACK GUARANTEE!</strong> If for any reason you wish to cancel before the assessor visits your home, we will refund your deposit in full."}
             </div>
         </div>
         <div class="footer">
             ${promoHtml}
             <div style="margin-top: 20px; text-align: center; font-size: 12px; color: #aaa;">
-                &copy; ${new Date().getFullYear()} TheBerman. All rights reserved.
+                &copy; ${new Date().getFullYear()} ${isSpanish ? 'TheBerman' : 'TheBerman'}. ${isSpanish ? 'Todos los derechos reservados.' : 'All rights reserved.'}
             </div>
         </div>
     </div>

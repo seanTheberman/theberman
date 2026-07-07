@@ -40,10 +40,56 @@ serve(async (req: Request) => {
         await client.connect(smtpHostname, smtpPort)
         await client.authenticate(smtpUsername, smtpPassword)
 
+        const isSpanish = tenant === 'spain';
         const paymentUrl = `${websiteUrl}/membership-payment`;
-        const roleName = role === 'business' ? 'Business Partner' : 'BER Assessor';
+        const roleName = isSpanish
+            ? (role === 'business' ? 'Socio Comercial' : 'Certificador Energético')
+            : (role === 'business' ? 'Business Partner' : 'BER Assessor');
 
-        const html = `
+        const html = isSpanish ? `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <img src="${websiteUrl}/logo.svg" alt="Certificado Energético" style="height: 40px; filter: grayscale(1) brightness(0.2);">
+                </div>
+                <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Renovación de Suscripción</h2>
+                <p style="font-size: 16px; color: #333;">Hola <strong>${fullName}</strong>,</p>
+                <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                    Este es un recordatorio automático de que tu suscripción como <strong>${roleName}</strong> en la plataforma Certificado Energético
+                    ${expiryDate ? `caducó o está a punto de caducar el <strong>${expiryDate}</strong>` : 'ha caducado'}.
+                </p>
+
+                <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                    Para mantener tu estado activo en nuestro catálogo y seguir recibiendo leads directos de certificados energéticos en España,
+                    renueva tu membresía a través del enlace seguro de abajo.
+                </p>
+
+                <div style="text-align: center; margin: 40px 0;">
+                    <a href="${paymentUrl}" target="_blank" style="display:inline-block;background-color:#2e7d32;color:#ffffff;padding:16px 35px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:18px;box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
+                        Renovar Mi Membresía Ahora
+                    </a>
+                </div>
+
+                <div style="background-color: #f0f7f0; padding: 20px; border-radius: 8px; border-left: 5px solid #2e7d32; margin-bottom: 30px;">
+                    <h3 style="margin-top: 0; font-size: 16px; color: #1b5e20;">Beneficios Activos:</h3>
+                    <ul style="padding-left: 20px; margin-top: 10px; margin-bottom: 0; font-size: 14px; color: #2e7d32; line-height: 1.7;">
+                        <li><strong>Permanece Visible:</strong> Mantén tu ficha de negocio presente para los propietarios.</li>
+                        <li><strong>Alertas de Trabajos:</strong> Notificaciones en tiempo real para solicitudes en tu zona.</li>
+                        <li><strong>Estado Verificado:</strong> Conserva tu distintivo como socio de confianza.</li>
+                    </ul>
+                </div>
+
+                <p style="color: #666; font-size: 14px; text-align: center;">
+                    Si el botón no funciona, copia y pega este enlace:<br>
+                    <a href="${paymentUrl}" style="color: #2e7d32; word-break: break-all;">${paymentUrl}</a>
+                </p>
+
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                <p style="font-size: 12px; color: #999; text-align: center; line-height: 1.5;">
+                    &copy; ${new Date().getFullYear()} Certificado Energético.<br>
+                    Apoyando certificaciones energéticas sostenibles en España.
+                </p>
+            </div>
+        ` : `
             <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
                 <div style="text-align: center; margin-bottom: 25px;">
                     <img src="${websiteUrl}/logo.svg" alt="The Berman" style="height: 40px; filter: grayscale(1) brightness(0.2);">
@@ -91,7 +137,7 @@ serve(async (req: Request) => {
         await client.send(
             smtpFrom,
             email,
-            "Action Required: Your Berman Subscription Status",
+            isSpanish ? "Acción Requerida: Estado de tu Suscripción" : "Action Required: Your Berman Subscription Status",
             html
         )
 

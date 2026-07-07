@@ -1,4 +1,5 @@
-export const generateContractorBookingEmail = (contractorName: string, customerName: string, customerAddress: string, price: number, websiteUrl: string = "https://theberman.eu", promoHtml: string = "") => {
+export const generateContractorBookingEmail = (contractorName: string, customerName: string, customerAddress: string, price: number, websiteUrl: string = "https://theberman.eu", promoHtml: string = "", tenant: string = 'ireland') => {
+    const isSpanish = tenant === 'spain';
     const dashboardUrl = `${websiteUrl}/dashboard/contractor`;
 
     return `
@@ -26,47 +27,46 @@ export const generateContractorBookingEmail = (contractorName: string, customerN
 <body>
     <div class="container">
         <div class="header">
-            <h1>You've Been Hired!</h1>
+            <h1>${isSpanish ? '¡Tienes un Nuevo Cliente!' : "You've Been Hired!"}</h1>
         </div>
         <div class="content">
-            <div class="greeting">Hi ${contractorName},</div>
+            <div class="greeting">${isSpanish ? 'Hola' : 'Hi'} ${contractorName},</div>
             <div class="message">
-                Congratulations! <strong>${customerName}</strong> has accepted your quote for a BER assessment.
+                ${isSpanish ? `¡Enhorabuena! <strong>${customerName}</strong> ha aceptado tu presupuesto para un certificado energético.` : `Congratulations! <strong>${customerName}</strong> has accepted your quote for a BER assessment.`}
             </div>
-            
+
             <div class="highlight-box">
                 <div class="highlight-item">
-                    <span class="highlight-label">Customer</span>
+                    <span class="highlight-label">${isSpanish ? 'Cliente' : 'Customer'}</span>
                     <span class="highlight-value">${customerName}</span>
                 </div>
                 <div class="highlight-item">
-                    <span class="highlight-label">Property Address</span>
+                    <span class="highlight-label">${isSpanish ? 'Dirección de la Propiedad' : 'Property Address'}</span>
                     <span class="highlight-value">${customerAddress}</span>
                 </div>
                 <div class="highlight-item">
-                    <span class="highlight-label">Price</span>
+                    <span class="highlight-label">${isSpanish ? 'Precio' : 'Price'}</span>
                     <span class="highlight-value">€${price}</span>
                 </div>
             </div>
 
             <div class="message">
-                <strong>Next Step:</strong><br>
-                Please log in to your dashboard to view the full contact details and schedule the inspection date with the client.
+                <strong>${isSpanish ? 'Siguiente Paso:' : 'Next Step:'}</strong><br>
+                ${isSpanish ? 'Inicia sesión en tu panel para ver los datos de contacto completos y acordar la fecha de la visita con el cliente.' : 'Please log in to your dashboard to view the full contact details and schedule the inspection date with the client.'}
             </div>
 
             <div class="button-container">
-                <a href="${dashboardUrl}" class="button">Go to Dashboard</a>
+                <a href="${dashboardUrl}" class="button">${isSpanish ? 'Ir al Panel' : 'Go to Dashboard'}</a>
             </div>
 
             <div class="message">
-                Best Regards,<br>
-                TheBerman Team
+                ${isSpanish ? 'Un saludo,<br>El Equipo de TheBerman' : 'Best Regards,<br>TheBerman Team'}
             </div>
         </div>
         <div class="footer">
             ${promoHtml}
             <div style="margin-top: 20px; text-align: center; font-size: 12px; color: #aaa;">
-                &copy; ${new Date().getFullYear()} TheBerman. All rights reserved.
+                &copy; ${new Date().getFullYear()} TheBerman. ${isSpanish ? 'Todos los derechos reservados.' : 'All rights reserved.'}
             </div>
         </div>
     </div>

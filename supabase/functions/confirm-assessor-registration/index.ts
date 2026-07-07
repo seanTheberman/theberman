@@ -156,12 +156,46 @@ serve(async (req: Request) => {
             }
         }
 
-        // 4. Send Confirmation Email
-        const dateOptions: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-        const startDateStr = startDate.toLocaleDateString('en-IE', dateOptions);
-        const endDateStr = endDate.toLocaleDateString('en-IE', dateOptions);
+        // Load tenant config before building localized email
+        const config = await getTenantConfig(supabase, tenant);
+        const smtpHostname = config.smtp_hostname;
+        const smtpPort = config.smtp_port;
+        const smtpUsername = config.smtp_username;
+        const smtpPassword = config.smtp_password;
+        const smtpFrom = config.smtp_from;
+        const websiteUrl = config.website_url || 'https://theberman.eu';
+        const isSpanish = tenant === 'spain';
+        const brandName = isSpanish ? 'Certificado Energético' : 'The Berman';
 
-        const emailHtml = `
+        const dateOptions: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+        const locale = isSpanish ? 'es-ES' : 'en-IE';
+        const startDateStr = startDate.toLocaleDateString(locale, dateOptions);
+        const endDateStr = endDate.toLocaleDateString(locale, dateOptions);
+
+        const emailHtml = isSpanish ? `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; rounded-lg: 1rem;">
+                <h1 style="color: #007F00; text-align: center;">¡Registro Completado!</h1>
+                <p>Hola ${user_full_name},</p>
+                <p>¡Enhorabuena! Tu registro como Certificador Energético en la plataforma ${brandName} ya está completo y tu membresía está activa.</p>
+
+                <div style="background-color: #f9fafb; padding: 15px; border-radius: 0.5rem; margin: 20px 0;">
+                    <h2 style="font-size: 1.1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">Detalles de la Membresía</h2>
+                    <p><strong>Estado:</strong> Activo</p>
+                    <p><strong>Fecha de Inicio:</strong> ${startDateStr}</p>
+                    <p><strong>Válida Hasta:</strong> ${endDateStr}</p>
+                </div>
+
+                <p>Ya puedes iniciar sesión en tu panel para gestionar tu perfil y ver las notificaciones de trabajos.</p>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${websiteUrl}/login" style="background-color: #007F00; color: white; padding: 12px 24px; text-decoration: none; border-radius: 0.5rem; font-weight: bold;">Ir al Panel</a>
+                </div>
+
+                <p style="margin-top: 40px; font-size: 0.8rem; color: #6b7280; text-align: center;">
+                    Si tienes alguna pregunta, contáctanos en ${smtpFrom}
+                </p>
+            </div>
+        ` : `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; rounded-lg: 1rem;">
                 <h1 style="color: #007F00; text-align: center;">Registration Successful!</h1>
                 <p>Hello ${user_full_name},</p>
@@ -186,15 +220,6 @@ serve(async (req: Request) => {
             </div>
         `;
 
-        // 4. Send Confirmation Email
-        const config = await getTenantConfig(supabase, tenant);
-        const smtpHostname = config.smtp_hostname;
-        const smtpPort = config.smtp_port;
-        const smtpUsername = config.smtp_username;
-        const smtpPassword = config.smtp_password;
-        const smtpFrom = config.smtp_from;
-        const websiteUrl = config.website_url || 'https://theberman.eu';
-
         const client = new CustomSmtpClient(config.domain);
         try {
             await client.connect(smtpHostname, smtpPort);
@@ -207,12 +232,36 @@ serve(async (req: Request) => {
             await client.send(
                 smtpFrom,
                 user_email,
-                'Registration Successful - Assessor Membership Active',
+                isSpanish ? 'Registro Completado - Membresía de Certificador Activa' : 'Registration Successful - Assessor Membership Active',
                 emailHtml
             );
 
             // Email 2: To Admin (Notification)
-            const adminEmailHtml = `
+            const adminEmailHtml = isSpanish ? `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
+                    <h1 style="color: #4F46E5; text-align: center;">Nuevo Registro de Certificador</h1>
+                    <p>Un nuevo Certificador Energético se ha registrado y pagado correctamente en ${brandName}.</p>
+
+                    <div style="background-color: #f3f4f6; padding: 15px; border-radius: 0.5rem; margin: 20px 0;">
+                        <h2 style="font-size: 1.1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">Detalles del Certificador</h2>
+                        <p><strong>Nombre:</strong> ${user_full_name}</p>
+                        <p><strong>Correo:</strong> ${user_email}</p>
+                        <p><strong>Teléfono:</strong> ${phone}</p>
+                        <p><strong>Número SEAI:</strong> ${seaiNumber}</p>
+                        <p><strong>Tipos:</strong> ${assessorTypes.join(', ')}</p>
+                    </div>
+
+                    <div style="background-color: #ebf5ff; padding: 15px; border-radius: 0.5rem; margin: 20px 0;">
+                        <h2 style="font-size: 1.1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">Confirmación de Pago</h2>
+                        <p><strong>ID de Pago Stripe:</strong> <code style="background: #fff; padding: 2px 4px; border-radius: 4px;">${paymentIntentId}</code></p>
+                        <p><strong>Estado:</strong> Pagado y Activo</p>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 30px;">
+                        <p style="color: #6b7280; font-size: 0.9rem;">Inicia sesión en tu panel de administración para revisar este registro.</p>
+                    </div>
+                </div>
+            ` : `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
                     <h1 style="color: #4F46E5; text-align: center;">New Assessor Registration</h1>
                     <p>A new BER Assessor has successfully registered and paid on The Berman.</p>
@@ -235,11 +284,12 @@ serve(async (req: Request) => {
                     <div style="text-align: center; margin-top: 30px;">
                         <p style="color: #6b7280; font-size: 0.9rem;">Please log in to your admin dashboard to review this registration.</p>
                     </div>
+                </div>
             `;
             await client.send(
                 smtpFrom,
                 adminEmail,
-                `NOTIFICATION: New Assessor Signup - ${user_full_name} `,
+                isSpanish ? `NOTIFICACIÓN: Nuevo registro de certificador - ${user_full_name}` : `NOTIFICATION: New Assessor Signup - ${user_full_name} `,
                 adminEmailHtml
             );
 

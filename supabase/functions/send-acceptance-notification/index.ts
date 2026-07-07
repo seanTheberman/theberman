@@ -80,15 +80,18 @@ Deno.serve(async (req: Request) => {
             const { data: sponsors } = await supabase.from('sponsors').select('*').eq('is_active', true).eq('tenant', tenant).limit(3);
             const promoHtml = generatePromoHtml(sponsors || []);
 
+            const isSpanish = tenant === 'spain';
+
             // 2. Notify Homeowner
             const homeownerHtml = generateHomeownerAcceptanceEmail(
                 assessment.contact_name,
                 contractor.full_name,
                 quote.price,
                 websiteUrl,
-                promoHtml
+                promoHtml,
+                tenant
             );
-            await client.send(smtpFrom, assessment.contact_email, `Booking Confirmed - ${websiteUrl.replace('https://', '')}`, homeownerHtml);
+            await client.send(smtpFrom, assessment.contact_email, isSpanish ? `Reserva Confirmada - ${websiteUrl.replace('https://', '')}` : `Booking Confirmed - ${websiteUrl.replace('https://', '')}`, homeownerHtml);
             console.log(`[send-acceptance-notification] Notified homeowner: ${assessment.contact_email} (tenant: ${tenant})`);
 
             // 3. Notify Contractor
@@ -98,16 +101,21 @@ Deno.serve(async (req: Request) => {
                 assessment.property_address,
                 quote.price,
                 websiteUrl,
-                promoHtml
+                promoHtml,
+                tenant
             );
-            await client.send(smtpFrom, contractor.email, 'New Booking Confirmed!', contractorHtml);
+            await client.send(smtpFrom, contractor.email, isSpanish ? '¡Nueva Reserva Confirmada!' : 'New Booking Confirmed!', contractorHtml);
             console.log(`[send-acceptance-notification] Notified contractor: ${contractor.email} (tenant: ${tenant})`);
 
             // SMS to homeowner
-            await trySendSms(assessment.contact_phone, `Hi ${assessment.contact_name}, your BER booking with ${contractor.full_name} is confirmed! Amount: EUR ${quote.price}. View details at ${websiteUrl}`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
+            await trySendSms(assessment.contact_phone, isSpanish
+                ? `Hola ${assessment.contact_name}, tu reserva de certificado energético con ${contractor.full_name} está confirmada. Importe: EUR ${quote.price}. Ver detalles en ${websiteUrl}`
+                : `Hi ${assessment.contact_name}, your BER booking with ${contractor.full_name} is confirmed! Amount: EUR ${quote.price}. View details at ${websiteUrl}`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
 
             // SMS to contractor
-            await trySendSms(contractor.phone, `Hi ${contractor.full_name}, new booking confirmed! Customer: ${assessment.contact_name}, Address: ${assessment.property_address}. Log in to ${websiteUrl.replace('https://', '')} for details.`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
+            await trySendSms(contractor.phone, isSpanish
+                ? `Hola ${contractor.full_name}, ¡nueva reserva confirmada! Cliente: ${assessment.contact_name}, Dirección: ${assessment.property_address}. Inicia sesión en ${websiteUrl.replace('https://', '')} para más detalles.`
+                : `Hi ${contractor.full_name}, new booking confirmed! Customer: ${assessment.contact_name}, Address: ${assessment.property_address}. Log in to ${websiteUrl.replace('https://', '')} for details.`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
 
             await client.close();
             return new Response(JSON.stringify({ success: true, message: 'Acceptance notifications sent (email + SMS)', tenant }), { headers: responseHeaders });

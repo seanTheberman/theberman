@@ -68,11 +68,13 @@ Deno.serve(async (req: Request) => {
             const { data: sponsors } = await supabase.from('sponsors').select('*').eq('is_active', true).eq('tenant', tenant).limit(3);
             const promoHtml = generatePromoHtml(sponsors || []);
 
+            const isSpanish = tenant === 'spain';
+
             // 3. Generate Email HTML for homeowner
-            const emailHtml = generateHomeownerQuoteEmail(assessment.contact_name, websiteUrl, promoHtml);
+            const emailHtml = generateHomeownerQuoteEmail(assessment.contact_name, websiteUrl, promoHtml, tenant);
 
             // 4. Send Email to homeowner
-            await client.send(smtpFrom, assessment.contact_email, 'BER quote received.', emailHtml);
+            await client.send(smtpFrom, assessment.contact_email, isSpanish ? 'Has recibido un presupuesto.' : 'BER quote received.', emailHtml);
 
             // 4b. Send email to job poster (business or admin) if not posted by homeowner
             if (assessment.posted_by && assessment.posted_by !== 'homeowner') {
@@ -97,13 +99,13 @@ Deno.serve(async (req: Request) => {
                             .maybeSingle();
                         if (appSetting?.support_email) {
                             posterEmail = appSetting.support_email;
-                            posterName = 'Admin';
+                            posterName = isSpanish ? 'Administrador' : 'Admin';
                         }
                     }
 
                     if (posterEmail) {
-                        const posterHtml = generatePosterQuoteEmail(posterName, websiteUrl, promoHtml);
-                        await client.send(smtpFrom, posterEmail, 'New quote on your posted job.', posterHtml);
+                        const posterHtml = generatePosterQuoteEmail(posterName, websiteUrl, promoHtml, tenant);
+                        await client.send(smtpFrom, posterEmail, isSpanish ? 'Nuevo presupuesto en tu trabajo publicado.' : 'New quote on your posted job.', posterHtml);
                         console.log(`[send-quote-notification] Copied poster (${assessment.posted_by}): ${posterEmail} (tenant: ${tenant})`);
                     }
                 } catch (posterErr) {
@@ -112,7 +114,9 @@ Deno.serve(async (req: Request) => {
             }
 
             // SMS to homeowner
-            await trySendSms(assessment.contact_phone, `Hi ${assessment.contact_name}, great news! You've received a new BER quote on ${websiteUrl.replace('https://', '')}. Log in to review and compare prices: ${websiteUrl}`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
+            await trySendSms(assessment.contact_phone, isSpanish
+                ? `Hola ${assessment.contact_name}, ¡buenas noticias! Has recibido un nuevo presupuesto en ${websiteUrl.replace('https://', '')}. Inicia sesión para revisarlo y comparar precios: ${websiteUrl}`
+                : `Hi ${assessment.contact_name}, great news! You've received a new BER quote on ${websiteUrl.replace('https://', '')}. Log in to review and compare prices: ${websiteUrl}`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
 
             await client.close();
             console.log(`[send-quote-notification] SUCCESS: Notification sent to ${assessment.contact_email} (tenant: ${tenant})`);

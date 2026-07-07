@@ -138,7 +138,32 @@ serve(async (req: Request) => {
             }
         }
 
-        const userEmailHtml = `
+        const isSpanish = tenant === 'spain';
+        const brandName = isSpanish ? 'Certificado Energético' : 'The Berman';
+
+        const userEmailHtml = isSpanish ? `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
+                <h1 style="color: #007F00; text-align: center;">¡Bienvenido a ${brandName}!</h1>
+                <p>Hola ${user_full_name},</p>
+                <p>Tu registro de negocio está completo y tu ficha ya está activa en nuestro Catálogo de Eficiencia Energética.</p>
+
+                <div style="background-color: #f9fafb; padding: 15px; border-radius: 0.5rem; margin: 20px 0;">
+                    <h2 style="font-size: 1.1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">Detalles de la Ficha</h2>
+                    <p><strong>Empresa:</strong> ${companyName}</p>
+                    <p><strong>Estado:</strong> Activa y Verificada</p>
+                </div>
+
+                <p>Ya puedes iniciar sesión para gestionar tu perfil y ver los leads en tu panel.</p>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${websiteUrl}/login" style="background-color: #007F00; color: white; padding: 12px 24px; text-decoration: none; border-radius: 0.5rem; font-weight: bold;">Ir al Panel</a>
+                </div>
+
+                <p style="margin-top: 40px; font-size: 0.8rem; color: #6b7280; text-align: center;">
+                    Si tienes alguna pregunta, contáctanos en ${smtpFrom}
+                </p>
+            </div>
+        ` : `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
                 <h1 style="color: #007F00; text-align: center;">Welcome to The Berman!</h1>
                 <p>Hello ${user_full_name},</p>
@@ -184,12 +209,36 @@ serve(async (req: Request) => {
             await client.send(
                 smtpFrom,
                 user_email,
-                'Registration Successful - Business Profile Active',
+                isSpanish ? 'Registro Completado - Perfil de Negocio Activo' : 'Registration Successful - Business Profile Active',
                 userEmailHtml
             );
 
             // Email 2: To Admin (Notification)
-            const adminEmailHtml = `
+            const adminEmailHtml = isSpanish ? `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
+                    <h1 style="color: #4F46E5; text-align: center;">Nuevo Registro de Negocio</h1>
+                    <p>Un nuevo negocio se ha registrado y pagado correctamente en ${brandName}.</p>
+
+                    <div style="background-color: #f3f4f6; padding: 15px; border-radius: 0.5rem; margin: 20px 0;">
+                        <h2 style="font-size: 1.1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">Detalles del Negocio</h2>
+                        <p><strong>Empresa:</strong> ${companyName}</p>
+                        <p><strong>Contacto:</strong> ${user_full_name}</p>
+                        <p><strong>Correo:</strong> ${user_email}</p>
+                        <p><strong>Teléfono:</strong> ${phone}</p>
+                        <p><strong>Comunidad Autónoma:</strong> ${county}</p>
+                    </div>
+
+                    <div style="background-color: #ebf5ff; padding: 15px; border-radius: 0.5rem; margin: 20px 0;">
+                        <h2 style="font-size: 1.1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">Confirmación de Pago</h2>
+                        <p><strong>ID de Pago Stripe:</strong> <code style="background: #fff; padding: 2px 4px; border-radius: 4px;">${paymentIntentId}</code></p>
+                        <p><strong>Estado:</strong> Pagado y Activo</p>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 30px;">
+                        <p style="color: #6b7280; font-size: 0.9rem;">Inicia sesión en tu panel de administración para revisar este registro.</p>
+                    </div>
+                </div>
+            ` : `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
                     <h1 style="color: #4F46E5; text-align: center;">New Business Registration</h1>
                     <p>A new business has successfully registered and paid on The Berman.</p>
@@ -218,7 +267,7 @@ serve(async (req: Request) => {
             await client.send(
                 smtpFrom,
                 adminEmail,
-                `NOTIFICATION: New Business Signup - ${companyName}`,
+                isSpanish ? `NOTIFICACIÓN: Nuevo registro de negocio - ${companyName}` : `NOTIFICATION: New Business Signup - ${companyName}`,
                 adminEmailHtml
             );
 

@@ -40,17 +40,18 @@ serve(async (req: Request) => {
         const client = new CustomSmtpClient(config.domain);
         console.log(`[send-admin-message] Tenant=${tenant}, sending to ${to}`);
 
+        const isSpanish = tenant === 'spain';
         const htmlBody = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#333;line-height:1.6;">
             <div style="border-bottom:2px solid #007F00;padding-bottom:16px;margin-bottom:24px;">
                 <h2 style="margin:0;color:#007F00;font-weight:700;">${config.display_name}</h2>
-                <p style="margin:4px 0 0 0;font-size:13px;color:#666;">Platform Update</p>
+                <p style="margin:4px 0 0 0;font-size:13px;color:#666;">${isSpanish ? 'Actualización de la Plataforma' : 'Platform Update'}</p>
             </div>
             <div style="white-space:pre-wrap;font-size:15px;">${body.replace(/\n/g, '<br>')}</div>
             <div style="margin-top:32px;padding-top:16px;border-top:1px solid #eee;font-size:13px;color:#888;">
-                <p style="margin:0;">Best regards,</p>
-                <p style="margin:4px 0 0 0;font-weight:600;">The ${config.display_name} Team</p>
+                <p style="margin:0;">${isSpanish ? 'Un saludo,' : 'Best regards,'}</p>
+                <p style="margin:4px 0 0 0;font-weight:600;">${isSpanish ? 'El Equipo de' : 'The'} ${config.display_name} ${isSpanish ? '' : 'Team'}</p>
                 <p style="margin:4px 0 0 0;"><a href="${config.website_url}" style="color:#007F00;text-decoration:none;">${config.website_url}</a></p>
-                <p style="margin:4px 0 0 0;">Email: <a href="mailto:${config.smtp_from}" style="color:#007F00;text-decoration:none;">${config.smtp_from}</a></p>
+                <p style="margin:4px 0 0 0;">${isSpanish ? 'Correo:' : 'Email:'} <a href="mailto:${config.smtp_from}" style="color:#007F00;text-decoration:none;">${config.smtp_from}</a></p>
             </div>
         </div>`;
 

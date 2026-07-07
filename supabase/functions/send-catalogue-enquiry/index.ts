@@ -44,14 +44,16 @@ Deno.serve(async (req: Request) => {
         await client.connect(smtpHostname, smtpPort)
         await client.authenticate(smtpUsername, smtpPassword)
 
+        const isSpanish = tenant === 'spain';
+
         // 1. Send notification to the business
-        const businessHtml = generateBusinessEmail(record, businessName || 'Service Provider')
-        await client.send(smtpFrom!, businessEmail, `New Enquiry: ${record.name}`, businessHtml)
+        const businessHtml = generateBusinessEmail(record, businessName || 'Service Provider', tenant)
+        await client.send(smtpFrom!, businessEmail, isSpanish ? `Nueva Consulta: ${record.name}` : `New Enquiry: ${record.name}`, businessHtml)
         console.log(`[send-catalogue-enquiry] Notified business: ${businessEmail}`);
 
         // 2. Send confirmation to the customer
-        const customerHtml = generateCustomerConfirmationEmail(record, businessName || 'Service Provider')
-        await client.send(smtpFrom!, record.email, `Enquiry Confirmation: ${businessName || 'Service Provider'}`, customerHtml)
+        const customerHtml = generateCustomerConfirmationEmail(record, businessName || 'Service Provider', tenant)
+        await client.send(smtpFrom!, record.email, isSpanish ? `Confirmación de Consulta: ${businessName || 'Service Provider'}` : `Enquiry Confirmation: ${businessName || 'Service Provider'}`, customerHtml)
         console.log(`[send-catalogue-enquiry] Notified customer: ${record.email}`);
 
         await client.close()

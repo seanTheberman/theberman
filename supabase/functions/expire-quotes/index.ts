@@ -64,6 +64,7 @@ Deno.serve(async (req: Request) => {
         const smtpPassword = config.smtp_password;
         const smtpFrom = config.smtp_from;
         const websiteUrl = config.website_url;
+        const isSpanish = tenant === 'spain';
 
         let smtpClient: CustomSmtpClient | null = null;
 
@@ -110,7 +111,43 @@ Deno.serve(async (req: Request) => {
                         const town = quote.assessment?.town || 'Unknown';
                         const county = quote.assessment?.county || '';
 
-                        const emailHtml = `
+                        const emailHtml = isSpanish ? `
+                            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                                <div style="text-align: center; margin-bottom: 30px;">
+                                    <h1 style="color: #1a1a1a; font-size: 24px; margin: 0;">Presupuesto Caducado</h1>
+                                </div>
+
+                                <p style="color: #333; font-size: 16px; line-height: 1.6;">
+                                    Hola ${contractorName},
+                                </p>
+
+                                <p style="color: #555; font-size: 15px; line-height: 1.6;">
+                                    Tu presupuesto de <strong>€${quote.price + 10}</strong> para el certificado energético en
+                                    <strong>${town}${county ? ', ' + county : ''}</strong> ha caducado porque el propietario
+                                    no respondió dentro del plazo de 5 días.
+                                </p>
+
+                                <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 25px 0; border: 1px solid #e9ecef;">
+                                    <p style="color: #666; font-size: 14px; margin: 0;">
+                                        <strong>¿Qué ocurre ahora?</strong><br>
+                                        El trabajo se ha vuelto a publicar en la plataforma para que otros certificadores puedan presupuestar.
+                                        Puedes enviar un nuevo presupuesto si aún te interesa.
+                                    </p>
+                                </div>
+
+                                <div style="text-align: center; margin: 30px 0;">
+                                    <a href="${websiteUrl}/login"
+                                       style="display: inline-block; background: #007F00; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px;">
+                                        Ver Trabajos Disponibles
+                                    </a>
+                                </div>
+
+                                <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+                                <p style="color: #999; font-size: 12px; text-align: center;">
+                                    Esta es una notificación automática de ${config.display_name}
+                                </p>
+                            </div>
+                        ` : `
                             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                                 <div style="text-align: center; margin-bottom: 30px;">
                                     <h1 style="color: #1a1a1a; font-size: 24px; margin: 0;">Quote Expired</h1>
@@ -121,21 +158,21 @@ Deno.serve(async (req: Request) => {
                                 </p>
 
                                 <p style="color: #555; font-size: 15px; line-height: 1.6;">
-                                    Your quote of <strong>€${quote.price + 10}</strong> for the BER assessment in 
-                                    <strong>${town}${county ? ', ' + county : ''}</strong> has expired as the homeowner 
+                                    Your quote of <strong>€${quote.price + 10}</strong> for the BER assessment in
+                                    <strong>${town}${county ? ', ' + county : ''}</strong> has expired as the homeowner
                                     did not respond within the 5-day acceptance window.
                                 </p>
 
                                 <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 25px 0; border: 1px solid #e9ecef;">
                                     <p style="color: #666; font-size: 14px; margin: 0;">
                                         <strong>What happens next?</strong><br>
-                                        The job has been relisted on the platform so new assessors can quote. 
+                                        The job has been relisted on the platform so new assessors can quote.
                                         You're welcome to submit a new quote if you're still interested.
                                     </p>
                                 </div>
 
                                 <div style="text-align: center; margin: 30px 0;">
-                                    <a href="${websiteUrl}/login" 
+                                    <a href="${websiteUrl}/login"
                                        style="display: inline-block; background: #007F00; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px;">
                                         View Available Jobs
                                     </a>
@@ -151,7 +188,7 @@ Deno.serve(async (req: Request) => {
                         await smtpClient.send(
                             smtpFrom,
                             contractorEmail,
-                            `Quote Expired: BER Job in ${town}`,
+                            isSpanish ? `Presupuesto Caducado: Trabajo en ${town}` : `Quote Expired: BER Job in ${town}`,
                             emailHtml
                         );
                         console.log(`[expire-quotes] Notified assessor: ${contractorEmail}`);
