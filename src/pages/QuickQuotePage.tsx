@@ -37,6 +37,7 @@ const QuickQuotePage = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const isSpanish = getTenantFromDomain() === 'spain';
     
     // Phone pre-filled from SMS link — skip the contact step
     const phoneFromUrl = searchParams.get('phone') || '';
@@ -94,7 +95,7 @@ const QuickQuotePage = () => {
                 if (notOpenStatus || daysSince >= 7) setIsExpired(true);
             }
         } catch (error: any) {
-            toast.error('Failed to load job details');
+            toast.error(isSpanish ? 'No se pudieron cargar los detalles del trabajo' : 'Failed to load job details');
             console.error('Error fetching assessment:', error);
         } finally {
             setLoading(false);
@@ -105,7 +106,7 @@ const QuickQuotePage = () => {
         e.preventDefault();
         
         if (!quoteData.price || !quoteData.availability_date) {
-            toast.error('Please fill in all required fields');
+            toast.error(isSpanish ? 'Por favor, completa todos los campos obligatorios' : 'Please fill in all required fields');
             return;
         }
         
@@ -128,7 +129,7 @@ const QuickQuotePage = () => {
         e.preventDefault();
         
         if (!contactInfo.phone) {
-            toast.error('Please provide your phone number');
+            toast.error(isSpanish ? 'Por favor, indica tu número de teléfono' : 'Please provide your phone number');
             return;
         }
         
@@ -157,21 +158,21 @@ const QuickQuotePage = () => {
                 if (msg.includes('contractor_not_found')) {
                     setSearchResult({
                         found: false,
-                        message: 'No assessor account found for this phone number. Please register to submit your quote.'
+                        message: isSpanish ? 'No se encontró ninguna cuenta de certificador con este número de teléfono. Regístrate para enviar tu presupuesto.' : 'No assessor account found for this phone number. Please register to submit your quote.'
                     });
                     return;
                 }
                 if (msg.includes('already_quoted')) {
                     setSearchResult({
                         found: true,
-                        message: 'You have already submitted a quote for this job. Please log in to update it.'
+                        message: isSpanish ? 'Ya has enviado un presupuesto para este trabajo. Inicia sesión para actualizarlo.' : 'You have already submitted a quote for this job. Please log in to update it.'
                     });
                     return;
                 }
                 if (msg.includes('assessment_not_found')) {
                     setSearchResult({
                         found: false,
-                        message: 'This job is no longer available for quoting.'
+                        message: isSpanish ? 'Este trabajo ya no está disponible para presupuestar.' : 'This job is no longer available for quoting.'
                     });
                     return;
                 }
@@ -179,7 +180,7 @@ const QuickQuotePage = () => {
                     setIsExpired(true);
                     setSearchResult({
                         found: false,
-                        message: 'This job has expired and is no longer accepting quotes.'
+                        message: isSpanish ? 'Este trabajo ha caducado y ya no acepta presupuestos.' : 'This job has expired and is no longer accepting quotes.'
                     });
                     return;
                 }
@@ -191,16 +192,16 @@ const QuickQuotePage = () => {
                 found: true,
                 contractor: row ? { id: row.contractor_id, full_name: row.contractor_name } : undefined,
                 message: row?.contractor_name
-                    ? `Welcome back, ${row.contractor_name}! Your quote has been submitted and linked to your account.`
-                    : 'Your quote has been submitted and linked to your account.',
+                    ? (isSpanish ? `¡Bienvenido de nuevo, ${row.contractor_name}! Tu presupuesto ha sido enviado y vinculado a tu cuenta.` : `Welcome back, ${row.contractor_name}! Your quote has been submitted and linked to your account.`)
+                    : (isSpanish ? 'Tu presupuesto ha sido enviado y vinculado a tu cuenta.' : 'Your quote has been submitted and linked to your account.'),
             });
-            toast.success('Quote submitted successfully!');
+            toast.success(isSpanish ? '¡Presupuesto enviado con éxito!' : 'Quote submitted successfully!');
         } catch (err: any) {
             console.error('Quote submission error:', err);
-            toast.error('Failed to submit quote. Please try again.');
+            toast.error(isSpanish ? 'No se pudo enviar el presupuesto. Inténtalo de nuevo.' : 'Failed to submit quote. Please try again.');
             setSearchResult({
                 found: false,
-                message: 'Something went wrong submitting your quote. Please try again or log in.'
+                message: isSpanish ? 'Algo salió mal al enviar tu presupuesto. Inténtalo de nuevo o inicia sesión.' : 'Something went wrong submitting your quote. Please try again or log in.'
             });
         }
     };
@@ -233,13 +234,13 @@ const QuickQuotePage = () => {
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
                     <AlertCircle className="mx-auto text-red-500 mb-4" size={48} />
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Job Not Found</h2>
-                    <p className="text-gray-600 mb-4">This job may no longer be available.</p>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{isSpanish ? 'Trabajo No Encontrado' : 'Job Not Found'}</h2>
+                    <p className="text-gray-600 mb-4">{isSpanish ? 'Es posible que este trabajo ya no esté disponible.' : 'This job may no longer be available.'}</p>
                     <button
                         onClick={() => navigate('/')}
                         className="px-6 py-2 bg-[#007F00] text-white rounded-lg hover:bg-[#006600]"
                     >
-                        Go Home
+                        {isSpanish ? 'Ir al Inicio' : 'Go Home'}
                     </button>
                 </div>
             </div>
@@ -252,15 +253,15 @@ const QuickQuotePage = () => {
                 <div className="bg-white shadow-sm border-b">
                     <div className="max-w-4xl mx-auto px-4 py-4">
                         <button onClick={() => navigate('/')} className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
-                            <ArrowLeft size={20} /> Back to Home
+                            <ArrowLeft size={20} /> {isSpanish ? 'Volver al inicio' : 'Back to Home'}
                         </button>
                     </div>
                 </div>
                 <div className="max-w-4xl mx-auto px-4 py-16 text-center">
                     <AlertCircle className="mx-auto text-amber-500 mb-4" size={64} />
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">This Job Has Expired</h2>
-                    <p className="text-gray-600 mb-2">This job is no longer accepting new quotes.</p>
-                    <p className="text-sm text-gray-400">Jobs expire after 7 days of inactivity.</p>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{isSpanish ? 'Este Trabajo Ha Caducado' : 'This Job Has Expired'}</h2>
+                    <p className="text-gray-600 mb-2">{isSpanish ? 'Este trabajo ya no acepta nuevos presupuestos.' : 'This job is no longer accepting new quotes.'}</p>
+                    <p className="text-sm text-gray-400">{isSpanish ? 'Los trabajos caducan tras 7 días de inactividad.' : 'Jobs expire after 7 days of inactivity.'}</p>
                 </div>
             </div>
         );
@@ -276,7 +277,7 @@ const QuickQuotePage = () => {
                         className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
                     >
                         <ArrowLeft size={20} />
-                        Back to Home
+                        {isSpanish ? 'Volver al inicio' : 'Back to Home'}
                     </button>
                 </div>
             </div>
@@ -290,7 +291,7 @@ const QuickQuotePage = () => {
                         }`}>
                             1
                         </div>
-                        <span className="ml-2 text-sm font-medium">Quote Details</span>
+                        <span className="ml-2 text-sm font-medium">{isSpanish ? 'Detalles del Presupuesto' : 'Quote Details'}</span>
                     </div>
                     <div className={`w-16 h-1 mx-4 ${currentStep >= 2 ? 'bg-[#007F00]' : 'bg-gray-200'}`} />
                     <div className="flex items-center">
@@ -299,7 +300,7 @@ const QuickQuotePage = () => {
                         }`}>
                             2
                         </div>
-                        <span className="ml-2 text-sm font-medium">Contact Info</span>
+                        <span className="ml-2 text-sm font-medium">{isSpanish ? 'Datos de Contacto' : 'Contact Info'}</span>
                     </div>
                     <div className={`w-16 h-1 mx-4 ${currentStep >= 3 ? 'bg-[#007F00]' : 'bg-gray-200'}`} />
                     <div className="flex items-center">
@@ -308,21 +309,21 @@ const QuickQuotePage = () => {
                         }`}>
                             3
                         </div>
-                        <span className="ml-2 text-sm font-medium">Complete</span>
+                        <span className="ml-2 text-sm font-medium">{isSpanish ? 'Completado' : 'Complete'}</span>
                     </div>
                 </div>
 
                 {/* Job Details Card */}
                 <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-                    <h2 className="text-xl font-bold text-gray-900 mb-4">Job Details</h2>
+                    <h2 className="text-xl font-bold text-gray-900 mb-4">{isSpanish ? 'Detalles del Trabajo' : 'Job Details'}</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex items-start gap-3">
                             <MapPin className="text-gray-400 mt-1" size={18} />
                             <div>
                                 <p className="font-medium text-gray-900">{assessment.property_address}</p>
-                                <p className="text-sm text-gray-600">{assessment.town}, Co. {assessment.county}</p>
+                                <p className="text-sm text-gray-600">{assessment.town}, {isSpanish ? '' : 'Co. '}{assessment.county}</p>
                                 {assessment.eircode && (
-                                    <p className="text-sm text-green-600 font-medium">Eircode: {assessment.eircode}</p>
+                                    <p className="text-sm text-green-600 font-medium">{isSpanish ? 'Código Postal' : 'Eircode'}: {assessment.eircode}</p>
                                 )}
                             </div>
                         </div>
@@ -331,13 +332,13 @@ const QuickQuotePage = () => {
                             <div>
                                 <p className="font-medium text-gray-900">{assessment.property_type}</p>
                                 <p className="text-sm text-gray-600">{assessment.property_size}</p>
-                                <p className="text-sm text-gray-600">{assessment.bedrooms} bedrooms</p>
+                                <p className="text-sm text-gray-600">{assessment.bedrooms} {isSpanish ? 'habitaciones' : 'bedrooms'}</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
                             <Calendar className="text-gray-400 mt-1" size={18} />
                             <div>
-                                <p className="font-medium text-gray-900">Preferred Date</p>
+                                <p className="font-medium text-gray-900">{isSpanish ? 'Fecha Preferida' : 'Preferred Date'}</p>
                                 <p className="text-sm text-gray-600">{assessment.preferred_date || 'Flexible'}</p>
                                 {assessment.preferred_time && (
                                     <p className="text-sm text-gray-600">{assessment.preferred_time}</p>
@@ -347,9 +348,9 @@ const QuickQuotePage = () => {
                         <div className="flex items-start gap-3">
                             <Clock className="text-gray-400 mt-1" size={18} />
                             <div>
-                                <p className="font-medium text-gray-900">Posted</p>
+                                <p className="font-medium text-gray-900">{isSpanish ? 'Publicado' : 'Posted'}</p>
                                 <p className="text-sm text-gray-600">
-                                    {new Date(assessment.created_at).toLocaleDateString('en-IE')}
+                                    {new Date(assessment.created_at).toLocaleDateString(isSpanish ? 'es-ES' : 'en-IE')}
                                 </p>
                             </div>
                         </div>
@@ -359,11 +360,11 @@ const QuickQuotePage = () => {
                 {/* Step 1: Quote Form */}
                 {currentStep === 1 && (
                     <div className="bg-white rounded-xl shadow-sm p-6">
-                        <h2 className="text-xl font-bold text-gray-900 mb-6">Submit Your Quote</h2>
+                        <h2 className="text-xl font-bold text-gray-900 mb-6">{isSpanish ? 'Envía tu Presupuesto' : 'Submit Your Quote'}</h2>
                         <form onSubmit={handleQuoteSubmit}>
                             <div className="mb-6">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Quote Price ({getTenantFromDomain() === 'england' ? '£' : '€'}) *
+                                    {isSpanish ? 'Precio del Presupuesto' : 'Quote Price'} ({getTenantFromDomain() === 'england' ? '£' : '€'}) *
                                 </label>
                                 <div className="relative">
                                     {getTenantFromDomain() === 'england'
@@ -384,7 +385,7 @@ const QuickQuotePage = () => {
 
                             <div className="mb-6">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Availability Date *
+                                    {isSpanish ? 'Fecha de Disponibilidad' : 'Availability Date'} *
                                 </label>
                                 <input
                                     type="date"
@@ -397,30 +398,30 @@ const QuickQuotePage = () => {
 
                             <div className="mb-6">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Preferred Time
+                                    {isSpanish ? 'Hora Preferida' : 'Preferred Time'}
                                 </label>
                                 <select
                                     value={quoteData.availability_time}
                                     onChange={(e) => setQuoteData({ ...quoteData, availability_time: e.target.value })}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007F00]"
                                 >
-                                    <option value="">Select time</option>
-                                    <option value="Morning (9am-12pm)">Morning (9am-12pm)</option>
-                                    <option value="Afternoon (12pm-5pm)">Afternoon (12pm-5pm)</option>
-                                    <option value="Evening (5pm-7pm)">Evening (5pm-7pm)</option>
+                                    <option value="">{isSpanish ? 'Seleccionar hora' : 'Select time'}</option>
+                                    <option value="Morning (9am-12pm)">{isSpanish ? 'Mañana (9-12h)' : 'Morning (9am-12pm)'}</option>
+                                    <option value="Afternoon (12pm-5pm)">{isSpanish ? 'Tarde (12-17h)' : 'Afternoon (12pm-5pm)'}</option>
+                                    <option value="Evening (5pm-7pm)">{isSpanish ? 'Última hora (17-19h)' : 'Evening (5pm-7pm)'}</option>
                                 </select>
                             </div>
 
                             <div className="mb-6">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Additional Notes
+                                    {isSpanish ? 'Notas Adicionales' : 'Additional Notes'}
                                 </label>
                                 <textarea
                                     rows={4}
                                     value={quoteData.notes}
                                     onChange={(e) => setQuoteData({ ...quoteData, notes: e.target.value })}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007F00]"
-                                    placeholder="Any additional information or special requirements..."
+                                    placeholder={isSpanish ? 'Cualquier información adicional o requisitos especiales...' : 'Any additional information or special requirements...'}
                                 />
                             </div>
 
@@ -428,7 +429,7 @@ const QuickQuotePage = () => {
                                 type="submit"
                                 className="w-full py-3 bg-[#007F00] text-white font-bold rounded-lg hover:bg-[#006600] transition-colors"
                             >
-                                Continue to Contact Details
+                                {isSpanish ? 'Continuar a Datos de Contacto' : 'Continue to Contact Details'}
                             </button>
                         </form>
                     </div>
@@ -437,14 +438,14 @@ const QuickQuotePage = () => {
                 {/* Step 2: Email/Phone Collection */}
                 {currentStep === 2 && (
                     <div className="bg-white rounded-xl shadow-sm p-6">
-                        <h2 className="text-xl font-bold text-gray-900 mb-6">Your Contact Information</h2>
+                        <h2 className="text-xl font-bold text-gray-900 mb-6">{isSpanish ? 'Tus Datos de Contacto' : 'Your Contact Information'}</h2>
                         <p className="text-gray-600 mb-6">
-                            We need your email and phone number to link this quote to your account.
+                            {isSpanish ? 'Necesitamos tu correo y número de teléfono para vincular este presupuesto a tu cuenta.' : 'We need your email and phone number to link this quote to your account.'}
                         </p>
                         <form onSubmit={handleContactSubmit}>
                             <div className="mb-6">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Email Address *
+                                    {isSpanish ? 'Correo Electrónico' : 'Email Address'} *
                                 </label>
                                 <div className="relative">
                                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -461,7 +462,7 @@ const QuickQuotePage = () => {
 
                             <div className="mb-6">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Phone Number *
+                                    {isSpanish ? 'Número de Teléfono' : 'Phone Number'} *
                                 </label>
                                 <div className="relative">
                                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -482,7 +483,7 @@ const QuickQuotePage = () => {
                                     onClick={() => setCurrentStep(1)}
                                     className="flex-1 py-3 border border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-50"
                                 >
-                                    Back
+                                    {isSpanish ? 'Atrás' : 'Back'}
                                 </button>
                                 <button
                                     type="submit"
@@ -490,7 +491,7 @@ const QuickQuotePage = () => {
                                     className="flex-1 py-3 bg-[#007F00] text-white font-bold rounded-lg hover:bg-[#006600] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
                                     {submitting && <Loader2 className="animate-spin" size={18} />}
-                                    Submit Quote
+                                    {isSpanish ? 'Enviar Presupuesto' : 'Submit Quote'}
                                 </button>
                             </div>
                         </form>
@@ -503,35 +504,35 @@ const QuickQuotePage = () => {
                         {searchResult.found ? (
                             <div className="text-center">
                                 <CheckCircle2 className="mx-auto text-green-500 mb-4" size={64} />
-                                <h2 className="text-2xl font-bold text-gray-900 mb-2">Quote Submitted!</h2>
+                                <h2 className="text-2xl font-bold text-gray-900 mb-2">{isSpanish ? '¡Presupuesto Enviado!' : 'Quote Submitted!'}</h2>
                                 <p className="text-gray-600 mb-6">{searchResult.message}</p>
                                 <p className="text-sm text-gray-500 mb-6">
-                                    We've sent a login link to your email. You can view and manage your quotes after logging in.
+                                    {isSpanish ? 'Puedes ver y gestionar tus presupuestos iniciando sesión en tu cuenta.' : "We've sent a login link to your email. You can view and manage your quotes after logging in."}
                                 </p>
                                 <button
                                     onClick={handleLogin}
                                     className="px-6 py-2 bg-[#007F00] text-white font-bold rounded-lg hover:bg-[#006600]"
                                 >
-                                    Login to Your Account
+                                    {isSpanish ? 'Iniciar Sesión en tu Cuenta' : 'Login to Your Account'}
                                 </button>
                             </div>
                         ) : (
                             <div className="text-center">
                                 <AlertCircle className="mx-auto text-amber-500 mb-4" size={64} />
-                                <h2 className="text-2xl font-bold text-gray-900 mb-2">Account Required</h2>
+                                <h2 className="text-2xl font-bold text-gray-900 mb-2">{isSpanish ? 'Cuenta Requerida' : 'Account Required'}</h2>
                                 <p className="text-gray-600 mb-6">{searchResult.message}</p>
                                 <div className="space-y-3">
                                     <button
                                         onClick={handleRegister}
                                         className="w-full py-3 bg-[#007F00] text-white font-bold rounded-lg hover:bg-[#006600]"
                                     >
-                                        Register as Contractor
+                                        {isSpanish ? 'Registrarse como Certificador' : 'Register as Contractor'}
                                     </button>
                                     <button
                                         onClick={() => setCurrentStep(2)}
                                         className="w-full py-3 border border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-50"
                                     >
-                                        Try Different Email/Phone
+                                        {isSpanish ? 'Probar con Otro Correo/Teléfono' : 'Try Different Email/Phone'}
                                     </button>
                                 </div>
                             </div>

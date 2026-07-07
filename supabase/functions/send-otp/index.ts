@@ -65,6 +65,8 @@ Deno.serve(async (req: Request) => {
 
         console.log(`[send-otp] Attempting SMTP connection to ${smtpHostname}:${smtpPort}...`);
         const client = new CustomSmtpClient(config.domain);
+        const isSpanish = tenant === 'spain';
+        const brandName = config.display_name || (isSpanish ? 'Certificado Energético' : 'The Berman');
 
         try {
             await client.connect(smtpHostname, smtpPort);
@@ -77,11 +79,11 @@ Deno.serve(async (req: Request) => {
                 <html>
                 <head>
                     <meta charset="utf-8">
-                    <title>Verification Code</title>
+                    <title>${isSpanish ? 'Código de Verificación' : 'Verification Code'}</title>
                 </head>
                 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 0; margin: 0; background-color: #f9f9f9; width: 100% !important;">
                     <div style="display: none; max-height: 0px; overflow: hidden;">
-                        Your 6-digit verification code is ${code}.
+                        ${isSpanish ? `Tu código de verificación de 6 dígitos es ${code}.` : `Your 6-digit verification code is ${code}.`}
                     </div>
                     <center>
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f9f9f9; padding: 40px 0;">
@@ -91,20 +93,20 @@ Deno.serve(async (req: Request) => {
                                         <!-- Header -->
                                         <tr>
                                             <td style="padding: 40px 40px 20px 40px; text-align: center;">
-                                                <h2 style="color: #007F00; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">The Berman</h2>
+                                                <h2 style="color: #007F00; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">${brandName}</h2>
                                             </td>
                                         </tr>
                                         <!-- Content -->
                                         <tr>
                                             <td style="padding: 0 40px 40px 40px; text-align: center;">
                                                 <p style="color: #4A4A4A; font-size: 16px; line-height: 24px; margin: 0 0 30px 0;">
-                                                    Please use the following verification code to complete your login.
+                                                    ${isSpanish ? 'Usa el siguiente código de verificación para completar tu inicio de sesión.' : 'Please use the following verification code to complete your login.'}
                                                 </p>
                                                 <div style="background-color: #f0fdf4; border-radius: 8px; padding: 25px; display: inline-block; border: 1px solid #dcfce7;">
                                                     <span style="font-family: 'Courier New', Courier, monospace; font-size: 42px; font-weight: bold; letter-spacing: 12px; color: #007F00; margin-left: 12px;">${code}</span>
                                                 </div>
                                                 <p style="color: #9B9B9B; font-size: 14px; margin: 30px 0 0 0;">
-                                                    This code will expire in <strong>10 minutes</strong>.
+                                                    ${isSpanish ? 'Este código expirará en <strong>10 minutos</strong>.' : 'This code will expire in <strong>10 minutes</strong>.'}
                                                 </p>
                                             </td>
                                         </tr>
@@ -112,11 +114,11 @@ Deno.serve(async (req: Request) => {
                                         <tr>
                                             <td style="padding: 20px 40px; background-color: #fcfcfc; border-top: 1px solid #eeeeee; text-align: center;">
                                                 <p style="color: #9B9B9B; font-size: 12px; line-height: 18px; margin: 0;">
-                                                    &copy; ${new Date().getFullYear()} The Berman. All rights reserved.<br>
-                                                    Building Energy Rating Specialists, Ireland.
+                                                    &copy; ${new Date().getFullYear()} ${brandName}. ${isSpanish ? 'Todos los derechos reservados.' : 'All rights reserved.'}<br>
+                                                    ${isSpanish ? 'Especialistas en Certificados de Eficiencia Energética.' : 'Building Energy Rating Specialists, Ireland.'}
                                                 </p>
                                                 <p style="color: #CCCCCC; font-size: 10px; margin: 10px 0 0 0; text-transform: uppercase; letter-spacing: 1px;">
-                                                    This is an automated security message. Please do not reply.
+                                                    ${isSpanish ? 'Este es un mensaje de seguridad automático. Por favor, no respondas.' : 'This is an automated security message. Please do not reply.'}
                                                 </p>
                                             </td>
                                         </tr>
@@ -130,7 +132,7 @@ Deno.serve(async (req: Request) => {
             `;
 
             console.log(`[send-otp] Sending email from ${authenticatedEmail} to ${email}...`);
-            await client.send(authenticatedEmail, email, 'Your Verification Code', emailHtml);
+            await client.send(authenticatedEmail, email, isSpanish ? 'Tu Código de Verificación' : 'Your Verification Code', emailHtml);
             console.log('[send-otp] Email sent successfully');
             await client.close();
 

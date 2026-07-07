@@ -13,22 +13,26 @@ import SEOHead from '../components/SEOHead';
 import { getTenantFromDomain, getTenantEmail, getTenantDomain } from '../lib/tenant';
 import { usePageContent, cmsValue } from '../hooks/usePageContent';
 
-const contactSchema = z.object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
-    email: z.string().email('Please enter a valid email address'),
-    phone: z.string().regex(/^\+?[0-9\s-]{9,15}$/, 'Please enter a valid phone number'),
-    county: z.string().min(1, 'Please select a county'),
-    town: z.string().min(2, 'Town/City is required'),
-    property_type: z.string().min(1, 'Please select a property type'),
-    purpose: z.string().min(1, 'Please select a purpose'),
-    message: z.string().min(10, 'Message is too short (min 10 chars)'),
+const getContactSchema = (isSpanish: boolean) => z.object({
+    name: z.string().min(2, isSpanish ? 'El nombre debe tener al menos 2 caracteres' : 'Name must be at least 2 characters'),
+    email: z.string().email(isSpanish ? 'Por favor, introduce una dirección de correo válida' : 'Please enter a valid email address'),
+    phone: z.string().regex(/^\+?[0-9\s-]{9,15}$/, isSpanish ? 'Por favor, introduce un número de teléfono válido' : 'Please enter a valid phone number'),
+    county: z.string().min(1, isSpanish ? 'Por favor, selecciona una comunidad autónoma' : 'Please select a county'),
+    town: z.string().min(2, isSpanish ? 'La ciudad es obligatoria' : 'Town/City is required'),
+    property_type: z.string().min(1, isSpanish ? 'Por favor, selecciona un tipo de propiedad' : 'Please select a property type'),
+    purpose: z.string().min(1, isSpanish ? 'Por favor, selecciona un propósito' : 'Please select a purpose'),
+    message: z.string().min(10, isSpanish ? 'El mensaje es demasiado corto (mínimo 10 caracteres)' : 'Message is too short (min 10 chars)'),
     bot_check: z.string().optional(), // Honeypot field
 });
 
-type ContactFormData = z.infer<typeof contactSchema>;
+type ContactFormData = z.infer<ReturnType<typeof getContactSchema>>;
 
 const Contact = () => {
     const navigate = useNavigate();
+    const tenant = getTenantFromDomain();
+    const isSpanish = tenant === 'spain';
+    const isEngland = tenant === 'england';
+
     const {
         register,
         handleSubmit,
@@ -37,13 +41,9 @@ const Contact = () => {
         setValue,
         formState: { errors, isSubmitting },
     } = useForm<ContactFormData>({
-        resolver: zodResolver(contactSchema),
+        resolver: zodResolver(getContactSchema(isSpanish)),
     });
-
     const selectedCounty = watch('county');
-    const tenant = getTenantFromDomain();
-    const isSpanish = tenant === 'spain';
-    const isEngland = tenant === 'england';
     const townsByCounty = getTownsForTenant(tenant);
     const tenantEmail = getTenantEmail(tenant);
     const tenantDomain = getTenantDomain(tenant);

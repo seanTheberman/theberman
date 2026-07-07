@@ -10,15 +10,15 @@ import { Loader2, ArrowLeft, X, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getTenantFromDomain } from '../lib/tenant';
 
-const updatePasswordSchema = z.object({
-    password: z.string().min(6, 'Password must be at least 6 characters'),
+const getUpdatePasswordSchema = (isSpanish: boolean) => z.object({
+    password: z.string().min(6, isSpanish ? 'La contraseña debe tener al menos 6 caracteres' : 'Password must be at least 6 characters'),
     confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
+    message: isSpanish ? 'Las contraseñas no coinciden' : "Passwords don't match",
     path: ["confirmPassword"],
 });
 
-type UpdatePasswordFormData = z.infer<typeof updatePasswordSchema>;
+type UpdatePasswordFormData = z.infer<ReturnType<typeof getUpdatePasswordSchema>>;
 
 const UpdatePassword = () => {
     const { updateUserPassword, user, loading } = useAuth();
@@ -33,7 +33,7 @@ const UpdatePassword = () => {
     const [resetSuccess, setResetSuccess] = useState(false);
     const isSpanish = getTenantFromDomain() === 'spain';
     const isEngland = getTenantFromDomain() === 'england';
-    const brandName = isEngland ? 'EPC Cert' : 'The Berman';
+    const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : 'The Berman';
 
     // Detect custom token from email link (/update-password?token=xyz&email=abc)
     useEffect(() => {
@@ -107,6 +107,8 @@ const UpdatePassword = () => {
         }
     }, [user, navigate]);
 
+    const updatePasswordSchema = getUpdatePasswordSchema(isSpanish);
+
     const {
         register,
         handleSubmit,
@@ -163,7 +165,7 @@ const UpdatePassword = () => {
                     body: { token: customToken, email: customEmail, password: data.password }
                 });
                 if (error) throw error;
-                if (!result?.success) throw new Error(result?.error || 'Failed to reset password');
+                if (!result?.success) throw new Error(result?.error || (isSpanish ? 'No se pudo restablecer la contraseña' : 'Failed to reset password'));
 
                 toast.success(isSpanish ? '¡Contraseña actualizada!' : 'Password updated successfully!');
                 setResetSuccess(true);
@@ -179,7 +181,7 @@ const UpdatePassword = () => {
                 await new Promise(resolve => setTimeout(resolve, 500));
                 const { data: secondCheck } = await supabase.auth.getSession();
                 if (!secondCheck.session) {
-                    throw new Error('Authentication session not found. Please try logging in or click the link again.');
+                    throw new Error(isSpanish ? 'No se encontró la sesión de autenticación. Intenta iniciar sesión o haz clic en el enlace de nuevo.' : 'Authentication session not found. Please try logging in or click the link again.');
                 }
             }
 
@@ -224,7 +226,7 @@ const UpdatePassword = () => {
                 else navigate('/dashboard/user', { replace: true });
             }
         } catch (err: any) {
-            toast.error(err.message || 'Failed to update password');
+            toast.error(err.message || (isSpanish ? 'No se pudo actualizar la contraseña' : 'Failed to update password'));
         }
     };
 
@@ -256,8 +258,8 @@ const UpdatePassword = () => {
                 </div>
 
                 <div className="relative z-10 flex gap-6 text-green-200 text-sm font-medium">
-                    <span>Privacy Policy</span>
-                    <span>Terms of Service</span>
+                    <span>{isSpanish ? 'Política de Privacidad' : 'Privacy Policy'}</span>
+                    <span>{isSpanish ? 'Términos de Servicio' : 'Terms of Service'}</span>
                 </div>
             </div>
 

@@ -50,20 +50,22 @@ serve(async (req: Request) => {
             await client.connect(config.smtp_hostname, config.smtp_port);
             await client.authenticate(config.smtp_username, config.smtp_password);
 
-            // 1. Admin Notification
+            const isSpanish = tenant === 'spain';
+
+        // 1. Admin Notification
             await client.send(
                 config.smtp_from,
                 adminEmail,
-                `New Lead: ${record.name}`,
-                generateAdminEmail(record, sponsors || [], promoHtml)
+                isSpanish ? `Nueva Consulta: ${record.name}` : `New Lead: ${record.name}`,
+                generateAdminEmail(record, sponsors || [], promoHtml, tenant, config)
             );
 
             // 2. Customer Confirmation
             await client.send(
                 config.smtp_from,
                 record.email,
-                `Confirmation: We've received your inquiry`,
-                generateCustomerEmail(record, promoHtml)
+                isSpanish ? 'Confirmación: Hemos recibido tu consulta' : "Confirmation: We've received your inquiry",
+                generateCustomerEmail(record, promoHtml, tenant, config)
             );
 
             await client.close();

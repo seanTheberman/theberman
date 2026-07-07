@@ -1,19 +1,22 @@
 
 import { Link } from 'react-router-dom';
 import { Home, ArrowLeft } from 'lucide-react';
+import { getTenantFromDomain } from '../lib/tenant';
 
 const NotFound = () => {
+    const isSpanish = getTenantFromDomain() === 'spain';
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6 font-sans">
             <div className="max-w-lg w-full text-center">
                 <h1 className="text-[8rem] font-black text-gray-200 leading-none select-none">404</h1>
 
                 <h2 className="text-3xl font-serif font-bold text-gray-900 mb-4 -mt-6">
-                    Page Not Found
+                    {isSpanish ? 'Página No Encontrada' : 'Page Not Found'}
                 </h2>
 
                 <p className="text-gray-500 mb-10 leading-relaxed max-w-md mx-auto">
-                    The page you're looking for doesn't exist or has been moved. Let's get you back on track.
+                    {isSpanish ? 'La página que buscas no existe o ha sido movida. Vamos a volver al camino correcto.' : "The page you're looking for doesn't exist or has been moved. Let's get you back on track."}
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -22,14 +25,14 @@ const NotFound = () => {
                         className="inline-flex items-center gap-2 text-white bg-[#007F00] px-8 py-3.5 rounded-xl font-bold hover:bg-green-800 transition-all shadow-lg"
                     >
                         <Home size={18} />
-                        Go Home
+                        {isSpanish ? 'Ir al Inicio' : 'Go Home'}
                     </Link>
                     <button
                         onClick={() => window.history.back()}
                         className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium transition-colors cursor-pointer"
                     >
                         <ArrowLeft size={16} />
-                        Go Back
+                        {isSpanish ? 'Volver Atrás' : 'Go Back'}
                     </button>
                 </div>
             </div>

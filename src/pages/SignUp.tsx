@@ -14,22 +14,24 @@ import { getTenantFromDomain } from '../lib/tenant';
 // Tenant-specific registration number labels
 const REGISTRATION_NUMBER_LABELS: Record<string, { label: string; placeholder: string }> = {
     ireland: { label: 'SEAI Registration #', placeholder: 'e.g. 10XXX' },
-    spain: { label: 'CEE Registration #', placeholder: 'e.g. 123456' },
+    spain: { label: 'Nº de Registro CEE', placeholder: 'ej. 123456' },
     england: { label: 'Assessor ID', placeholder: 'e.g. ELH123456' },
     france: { label: 'DPE Diagnostiqueur #', placeholder: 'e.g. 12345' },
     portugal: { label: 'ADENE Registration #', placeholder: 'e.g. 12345' }
 };
 
+const IS_SPANISH_TENANT = getTenantFromDomain() === 'spain';
+
 const signupSchema = z.object({
-    fullName: z.string().min(2, 'Full name must be at least 2 characters'),
-    email: z.string().email('Invalid email address'),
+    fullName: z.string().min(2, IS_SPANISH_TENANT ? 'El nombre completo debe tener al menos 2 caracteres' : 'Full name must be at least 2 characters'),
+    email: z.string().email(IS_SPANISH_TENANT ? 'Dirección de correo no válida' : 'Invalid email address'),
     phone: z.string().optional(),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
+    password: z.string().min(6, IS_SPANISH_TENANT ? 'La contraseña debe tener al menos 6 caracteres' : 'Password must be at least 6 characters'),
     confirmPassword: z.string(),
     role: z.enum(['user', 'contractor', 'business']),
-    seaiNumber: z.string().min(1, 'Registration number is required'),
+    seaiNumber: z.string().min(1, IS_SPANISH_TENANT ? 'El número de registro es obligatorio' : 'Registration number is required'),
 }).refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
+    message: IS_SPANISH_TENANT ? 'Las contraseñas no coinciden' : "Passwords don't match",
     path: ["confirmPassword"],
 }).refine((data) => {
     if (data.role === 'contractor' && (!data.seaiNumber || data.seaiNumber.trim().length < 1)) {
@@ -37,7 +39,7 @@ const signupSchema = z.object({
     }
     return true;
 }, {
-    message: "Registration number is required for assessors",
+    message: IS_SPANISH_TENANT ? 'El número de registro es obligatorio para certificadores' : "Registration number is required for assessors",
     path: ["seaiNumber"],
 }).refine((data) => {
     if (data.role === 'user' && (!data.phone || data.phone.length < 7)) {
@@ -45,7 +47,7 @@ const signupSchema = z.object({
     }
     return true;
 }, {
-    message: "Phone number is required for homeowners",
+    message: IS_SPANISH_TENANT ? 'El número de teléfono es obligatorio para propietarios' : "Phone number is required for homeowners",
     path: ["phone"],
 });
 
@@ -142,7 +144,7 @@ const SignUp = () => {
                     .eq('phone', data.phone.trim())
                     .maybeSingle();
                 if (existingPhone) {
-                    toast.error('This phone number is already associated with another account. Please use a different number.');
+                    toast.error(isSpanish ? 'Este número de teléfono ya está asociado a otra cuenta. Por favor, usa un número diferente.' : 'This phone number is already associated with another account. Please use a different number.');
                     return;
                 }
             }
@@ -189,10 +191,10 @@ const SignUp = () => {
                             });
                         
                         if (!quoteError) {
-                            toast.success('Account created and quote submitted successfully!');
+                            toast.success(isSpanish ? '¡Cuenta creada y presupuesto enviado con éxito!' : 'Account created and quote submitted successfully!');
                             sessionStorage.removeItem('pendingQuote');
                         } else {
-                            toast.error('Account created but failed to submit quote. Please try again from your dashboard.');
+                            toast.error(isSpanish ? 'Cuenta creada, pero no se pudo enviar el presupuesto. Inténtalo de nuevo desde tu panel.' : 'Account created but failed to submit quote. Please try again from your dashboard.');
                         }
                     }
                 }
@@ -200,12 +202,12 @@ const SignUp = () => {
                 const isConfirmationRequired = !authData.session;
 
                 if (isConfirmationRequired) {
-                    toast.success('Account created! Please check your email to confirm your account before logging in.', {
+                    toast.success(isSpanish ? '¡Cuenta creada! Revisa tu correo para confirmar tu cuenta antes de iniciar sesión.' : 'Account created! Please check your email to confirm your account before logging in.', {
                         duration: 6000
                     });
                     navigate('/login');
                 } else {
-                    toast.success('Account created successfully!');
+                    toast.success(isSpanish ? '¡Cuenta creada con éxito!' : 'Account created successfully!');
                     if (data.role === 'business') {
                         navigate('/business-onboarding');
                     } else if (data.role === 'contractor') {
@@ -216,7 +218,7 @@ const SignUp = () => {
                 }
             }
         } catch (err: any) {
-            toast.error(err.message || 'Failed to create account');
+            toast.error(err.message || (isSpanish ? 'No se pudo crear la cuenta' : 'Failed to create account'));
         }
     };
 

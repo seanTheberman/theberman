@@ -18,7 +18,8 @@ type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 const ForgotPassword = () => {
     const tenant = getTenantFromDomain();
     const isEngland = tenant === 'england';
-    const brandName = isEngland ? 'EPC Cert' : 'The Berman';
+    const isSpanish = tenant === 'spain';
+    const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : 'The Berman';
     const [sent, setSent] = useState(false);
 
     const {
@@ -35,11 +36,11 @@ const ForgotPassword = () => {
                 body: { email: data.email, tenant }
             });
             if (error) throw error;
-            if (!result?.success) throw new Error(result?.error || 'Failed to send reset email');
-            toast.success('Password reset email sent! Check your inbox.');
+            if (!result?.success) throw new Error(result?.error || (isSpanish ? 'No se pudo enviar el correo de restablecimiento' : 'Failed to send reset email'));
+            toast.success(isSpanish ? '¡Correo de restablecimiento enviado! Revisa tu bandeja de entrada.' : 'Password reset email sent! Check your inbox.');
             setSent(true);
         } catch (err: any) {
-            toast.error(err.message || 'Failed to send reset email');
+            toast.error(err.message || (isSpanish ? 'No se pudo enviar el correo de restablecimiento' : 'Failed to send reset email'));
         }
     };
 
@@ -61,18 +62,18 @@ const ForgotPassword = () => {
 
                     <div className="mt-20">
                         <h1 className="text-5xl font-serif font-bold text-white leading-tight mb-6">
-                            Secure your <br />
-                            <span className="text-[#9ACD32]">Account.</span>
+                            {isSpanish ? 'Protege tu' : 'Secure your'} <br />
+                            <span className="text-[#9ACD32]">{isSpanish ? 'Cuenta.' : 'Account.'}</span>
                         </h1>
                         <p className="text-green-100 text-lg max-w-md leading-relaxed">
-                            It happens to the best of us. We'll help you get back into your account in no time.
+                            {isSpanish ? 'Nos pasa a todos. Te ayudaremos a recuperar el acceso a tu cuenta en un momento.' : "It happens to the best of us. We'll help you get back into your account in no time."}
                         </p>
                     </div>
                 </div>
 
                 <div className="relative z-10 flex gap-6 text-green-200 text-sm font-medium">
-                    <span>Privacy Policy</span>
-                    <span>Terms of Service</span>
+                    <span>{isSpanish ? 'Política de Privacidad' : 'Privacy Policy'}</span>
+                    <span>{isSpanish ? 'Términos de Servicio' : 'Terms of Service'}</span>
                 </div>
             </div>
 
@@ -87,15 +88,15 @@ const ForgotPassword = () => {
 
                 <div className="max-w-md w-full">
                     <Link to="/" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#007F00] transition-colors mb-4 font-medium">
-                        <ArrowLeft size={16} /> Back to Home
+                        <ArrowLeft size={16} /> {isSpanish ? 'Volver al inicio' : 'Back to Home'}
                     </Link>
 
                     <div className="mb-10">
                         <Link to="/login" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors mb-8">
-                            <ArrowLeft size={16} /> Back to Login
+                            <ArrowLeft size={16} /> {isSpanish ? 'Volver al inicio de sesión' : 'Back to Login'}
                         </Link>
-                        <h2 className="text-3xl font-serif font-bold text-gray-900 mb-3">Forgot Password?</h2>
-                        <p className="text-gray-500">Enter your email and we'll send you a link to reset your password.</p>
+                        <h2 className="text-3xl font-serif font-bold text-gray-900 mb-3">{isSpanish ? '¿Olvidaste tu contraseña?' : 'Forgot Password?'}</h2>
+                        <p className="text-gray-500">{isSpanish ? 'Introduce tu correo y te enviaremos un enlace para restablecer tu contraseña.' : "Enter your email and we'll send you a link to reset your password."}</p>
                     </div>
 
                     {sent ? (
@@ -103,21 +104,21 @@ const ForgotPassword = () => {
                             <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <CheckCircle className="text-[#007F00]" size={32} />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Check Your Email</h3>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">{isSpanish ? 'Revisa tu Correo' : 'Check Your Email'}</h3>
                             <p className="text-gray-500 mb-6">
-                                If this email address is associated with an account, we've sent a password reset link. Please check your inbox and spam folder.
+                                {isSpanish ? 'Si esta dirección de correo está asociada a una cuenta, hemos enviado un enlace de restablecimiento. Revisa tu bandeja de entrada y la carpeta de spam.' : "If this email address is associated with an account, we've sent a password reset link. Please check your inbox and spam folder."}
                             </p>
                             <Link
                                 to="/login"
                                 className="inline-flex items-center gap-2 text-[#007F00] font-bold hover:underline"
                             >
-                                <ArrowLeft size={16} /> Back to Login
+                                <ArrowLeft size={16} /> {isSpanish ? 'Volver al inicio de sesión' : 'Back to Login'}
                             </Link>
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                             <div className="space-y-1">
-                                <label className="text-sm font-bold text-gray-700">Email</label>
+                                <label className="text-sm font-bold text-gray-700">{isSpanish ? 'Correo electrónico' : 'Email'}</label>
                                 <input
                                     {...register('email')}
                                     type="email"
@@ -135,10 +136,10 @@ const ForgotPassword = () => {
                                 {isSubmitting ? (
                                     <>
                                         <Loader2 className="animate-spin" size={20} />
-                                        Sending Link...
+                                        {isSpanish ? 'Enviando enlace...' : 'Sending Link...'}
                                     </>
                                 ) : (
-                                    'Send Reset Link'
+                                    isSpanish ? 'Enviar Enlace de Restablecimiento' : 'Send Reset Link'
                                 )}
                             </button>
                         </form>

@@ -12,9 +12,11 @@ import toast from 'react-hot-toast';
 import { checkRateLimit, recordFailedAttempt, recordSuccessfulLogin } from '../lib/rateLimiter';
 import { getTenantFromDomain } from '../lib/tenant';
 
+const IS_SPANISH_TENANT = getTenantFromDomain() === 'spain';
+
 const loginSchema = z.object({
-    email: z.string().email('Invalid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
+    email: z.string().email(IS_SPANISH_TENANT ? 'Dirección de correo no válida' : 'Invalid email address'),
+    password: z.string().min(6, IS_SPANISH_TENANT ? 'La contraseña debe tener al menos 6 caracteres' : 'Password must be at least 6 characters'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -67,7 +69,7 @@ const Login = () => {
                 // Check if there's a pending quote to show
                 const pendingQuote = sessionStorage.getItem('pendingQuote');
                 if (pendingQuote) {
-                    toast.success('Login successful! Your quote has been submitted.');
+                    toast.success(isSpanish ? '¡Sesión iniciada! Tu presupuesto ha sido enviado.' : 'Login successful! Your quote has been submitted.');
                     sessionStorage.removeItem('pendingQuote');
                     navigate('/dashboard/ber-assessor', { replace: true });
                 } else {
@@ -101,9 +103,9 @@ const Login = () => {
             const rateLimitResult = checkRateLimit(email);
             if (!rateLimitResult.allowed) {
                 if (rateLimitResult.lockoutRemaining) {
-                    throw new Error(`Too many failed attempts. Account locked for ${rateLimitResult.lockoutRemaining} minutes.`);
+                    throw new Error(isSpanish ? `Demasiados intentos fallidos. Cuenta bloqueada durante ${rateLimitResult.lockoutRemaining} minutos.` : `Too many failed attempts. Account locked for ${rateLimitResult.lockoutRemaining} minutes.`);
                 }
-                throw new Error('Login temporarily blocked. Please try again later.');
+                throw new Error(isSpanish ? 'Inicio de sesión bloqueado temporalmente. Inténtalo más tarde.' : 'Login temporarily blocked. Please try again later.');
             }
             
             const { data: authData, error } = await signIn(email, data.password);
@@ -115,10 +117,10 @@ const Login = () => {
                 const errorMessage = error.message.toLowerCase();
                 if (errorMessage.includes('email not confirmed')) {
                     setUnconfirmedEmail(email);
-                    throw new Error('Please confirm your email address before logging in. Check your inbox and spam folder.');
+                    throw new Error(isSpanish ? 'Por favor, confirma tu dirección de correo antes de iniciar sesión. Revisa tu bandeja de entrada y la carpeta de spam.' : 'Please confirm your email address before logging in. Check your inbox and spam folder.');
                 }
                 if (error.status === 400 || errorMessage.includes('invalid credentials')) {
-                    throw new Error('Due to a recent technical update, your password may need to be reset. Please click "Forgot Password" to create a new password and try again.');
+                    throw new Error(isSpanish ? 'Debido a una actualización técnica reciente, puede que necesites restablecer tu contraseña. Haz clic en "¿Olvidaste tu Contraseña?" para crear una nueva e inténtalo de nuevo.' : 'Due to a recent technical update, your password may need to be reset. Please click "Forgot Password" to create a new password and try again.');
                 }
                 throw error;
             }
@@ -141,25 +143,25 @@ const Login = () => {
                 if (activeTab === 'homeowner') {
                     if (userRole === 'contractor') {
                         await signOut();
-                        throw new Error(`This account is registered as a ${assessorLabel}. Please use the "${assessorLabel}" tab to log in.`);
+                        throw new Error(isSpanish ? `Esta cuenta está registrada como ${assessorLabel}. Usa la pestaña "${assessorLabel}" para iniciar sesión.` : `This account is registered as a ${assessorLabel}. Please use the "${assessorLabel}" tab to log in.`);
                     }
                     if (userRole === 'business') {
                         await signOut();
-                        throw new Error('This account is registered as a Business. Please use the "Business" tab to log in.');
+                        throw new Error(isSpanish ? 'Esta cuenta está registrada como Negocio. Usa la pestaña "Negocio" para iniciar sesión.' : 'This account is registered as a Business. Please use the "Business" tab to log in.');
                     }
                 } else if (activeTab === 'assessor') {
                     if (userRole === 'user' || userRole === 'homeowner') {
                         await signOut();
-                        throw new Error('This account is registered as a Homeowner. Please use the "Homeowner" tab to log in.');
+                        throw new Error(isSpanish ? 'Esta cuenta está registrada como Propietario. Usa la pestaña "Zona Cliente" para iniciar sesión.' : 'This account is registered as a Homeowner. Please use the "Homeowner" tab to log in.');
                     }
                     if (userRole === 'business') {
                         await signOut();
-                        throw new Error('This account is registered as a Business. Please use the "Business" tab to log in.');
+                        throw new Error(isSpanish ? 'Esta cuenta está registrada como Negocio. Usa la pestaña "Negocio" para iniciar sesión.' : 'This account is registered as a Business. Please use the "Business" tab to log in.');
                     }
                 } else if (activeTab === 'business') {
                     if (userRole !== 'business') {
                         await signOut();
-                        throw new Error('This account is not registered as a Business.');
+                        throw new Error(isSpanish ? 'Esta cuenta no está registrada como Negocio.' : 'This account is not registered as a Business.');
                     }
                 }
 
@@ -196,7 +198,7 @@ const Login = () => {
             }
         } catch (err: any) {
             console.error('Login error:', err);
-            toast.error(err.message || 'Failed to login');
+            toast.error(err.message || (isSpanish ? 'No se pudo iniciar sesión' : 'Failed to login'));
         } finally {
             signingIn.current = false;
         }
@@ -213,10 +215,10 @@ const Login = () => {
                 options: { emailRedirectTo: websiteUrl }
             });
             if (error) throw error;
-            toast.success('Confirmation email resent! Please check your inbox and spam folder.');
+            toast.success(isSpanish ? '¡Correo de confirmación reenviado! Revisa tu bandeja de entrada y la carpeta de spam.' : 'Confirmation email resent! Please check your inbox and spam folder.');
             setUnconfirmedEmail(null);
         } catch (err: any) {
-            toast.error(err.message || 'Failed to resend confirmation email');
+            toast.error(err.message || (isSpanish ? 'No se pudo reenviar el correo de confirmación' : 'Failed to resend confirmation email'));
         } finally {
             setResending(false);
         }

@@ -5,23 +5,20 @@ import { supabase } from '../lib/supabase';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Loader2, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getTenantFromDomain } from '../lib/tenant';
+import { getCountiesForTenant } from '../lib/tenantData';
 
 interface Category {
     id: string;
     name: string;
 }
 
-const IRISH_COUNTIES = [
-    'Carlow', 'Cavan', 'Clare', 'Cork', 'Donegal', 'Dublin', 'Galway',
-    'Kerry', 'Kildare', 'Kilkenny', 'Laois', 'Leitrim', 'Limerick',
-    'Longford', 'Louth', 'Mayo', 'Meath', 'Monaghan', 'Offaly',
-    'Roscommon', 'Sligo', 'Tipperary', 'Waterford', 'Westmeath',
-    'Wexford', 'Wicklow'
-];
-
 const CERTIFICATIONS = ['SafePass', 'SEAI Registered', 'RECI Certified', 'NSAI Certified', 'FQAI Registered', 'Safe Electric'];
 
 const BusinessOnboarding = () => {
+    const tenant = getTenantFromDomain();
+    const isSpanish = tenant === 'spain';
+    const COUNTIES = getCountiesForTenant(tenant);
     const { user, profile, refreshProfile } = useAuth();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -133,12 +130,12 @@ const BusinessOnboarding = () => {
         if (!user) return;
 
         if (!formData.companyName.trim() || !formData.email.trim() || !formData.businessAddress.trim() || !formData.county) {
-            toast.error('Please fill in all required fields');
+            toast.error(isSpanish ? 'Por favor, completa todos los campos obligatorios' : 'Please fill in all required fields');
             return;
         }
 
         if (formData.selectedCategories.length === 0) {
-            toast.error('Please select at least one service category');
+            toast.error(isSpanish ? 'Por favor, selecciona al menos una categoría de servicio' : 'Please select at least one service category');
             return;
         }
 
@@ -151,7 +148,7 @@ const BusinessOnboarding = () => {
                 .neq('id', user.id)
                 .maybeSingle();
             if (existingPhone) {
-                toast.error('This phone number is already associated with another account. Please use a different number.');
+                toast.error(isSpanish ? 'Este número de teléfono ya está asociado a otra cuenta. Por favor, usa un número diferente.' : 'This phone number is already associated with another account. Please use a different number.');
                 return;
             }
         }
@@ -207,19 +204,19 @@ const BusinessOnboarding = () => {
                 });
                 if (fnError) {
                     console.error('Edge function error:', fnError);
-                    toast.error('Failed to create business profile. Please try again.');
+                    toast.error(isSpanish ? 'No se pudo crear el perfil de negocio. Inténtalo de nuevo.' : 'Failed to create business profile. Please try again.');
                     setLoading(false);
                     return;
                 }
             }
 
             await refreshProfile();
-            toast.success('Business profile created! Your account is active.');
+            toast.success(isSpanish ? '¡Perfil de negocio creado! Tu cuenta está activa.' : 'Business profile created! Your account is active.');
             navigate('/dashboard/business', { replace: true });
             return;
         } catch (error: unknown) {
             console.error('Onboarding data saving error:', error);
-            toast.error('Failed to save registration data');
+            toast.error(isSpanish ? 'No se pudieron guardar los datos de registro' : 'Failed to save registration data');
         } finally {
             setLoading(false);
         }
@@ -230,10 +227,10 @@ const BusinessOnboarding = () => {
             <div className="max-w-3xl mx-auto">
                 <div className="text-center mb-10">
                     <h1 className="text-3xl font-extrabold text-gray-900 font-serif">
-                        Business Registration
+                        {isSpanish ? 'Registro de Negocio' : 'Business Registration'}
                     </h1>
                     <p className="mt-2 text-gray-600">
-                        Complete your profile to appear in the Home Energy Catalogue.
+                        {isSpanish ? 'Completa tu perfil para aparecer en el Catálogo de Eficiencia Energética.' : 'Complete your profile to appear in the Home Energy Catalogue.'}
                     </p>
                 </div>
 
@@ -243,11 +240,11 @@ const BusinessOnboarding = () => {
                         {/* READ ONLY INFO */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-md border border-gray-100 mb-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Account Name</label>
+                                <label className="block text-sm font-medium text-gray-700">{isSpanish ? 'Nombre de la Cuenta' : 'Account Name'}</label>
                                 <div className="mt-1 text-gray-900 font-medium">{user?.user_metadata?.full_name || '-'}</div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Email Address</label>
+                                <label className="block text-sm font-medium text-gray-700">{isSpanish ? 'Correo Electrónico' : 'Email Address'}</label>
                                 <div className="mt-1 text-gray-900 font-medium">{user?.email}</div>
                             </div>
                         </div>
@@ -255,7 +252,7 @@ const BusinessOnboarding = () => {
                         {/* BUSINESS DETAILS */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label htmlFor="companyName" className="block text-sm font-bold text-gray-700">Full Business Name *</label>
+                                <label htmlFor="companyName" className="block text-sm font-bold text-gray-700">{isSpanish ? 'Nombre Comercial Completo' : 'Full Business Name'} *</label>
                                 <input
                                     type="text"
                                     id="companyName"
@@ -263,24 +260,24 @@ const BusinessOnboarding = () => {
                                     className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
                                     value={formData.companyName}
                                     onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                                    placeholder="Acme Energy Solutions"
+                                    placeholder={isSpanish ? 'Ej. Soluciones Energéticas Acme' : 'Acme Energy Solutions'}
                                 />
                             </div>
 
                             <div>
-                                <label htmlFor="tradingName" className="block text-sm font-bold text-gray-700">Trading Name <span className="text-gray-400 font-normal">(if different)</span></label>
+                                <label htmlFor="tradingName" className="block text-sm font-bold text-gray-700">{isSpanish ? 'Nombre Comercial' : 'Trading Name'} <span className="text-gray-400 font-normal">({isSpanish ? 'si es diferente' : 'if different'})</span></label>
                                 <input
                                     type="text"
                                     id="tradingName"
                                     className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
                                     value={formData.tradingName}
                                     onChange={(e) => setFormData({ ...formData, tradingName: e.target.value })}
-                                    placeholder="Acme Renewables"
+                                    placeholder={isSpanish ? 'Ej. Renovables Acme' : 'Acme Renewables'}
                                 />
                             </div>
 
                             <div>
-                                <label htmlFor="email" className="block text-sm font-bold text-gray-700">Business Email *</label>
+                                <label htmlFor="email" className="block text-sm font-bold text-gray-700">{isSpanish ? 'Correo del Negocio' : 'Business Email'} *</label>
                                 <input
                                     type="email"
                                     id="email"
@@ -288,24 +285,24 @@ const BusinessOnboarding = () => {
                                     className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    placeholder="info@acme.ie"
+                                    placeholder={isSpanish ? 'info@ejemplo.es' : 'info@acme.ie'}
                                 />
                             </div>
 
                             <div>
-                                <label htmlFor="phone" className="block text-sm font-bold text-gray-700">Phone Number</label>
+                                <label htmlFor="phone" className="block text-sm font-bold text-gray-700">{isSpanish ? 'Número de Teléfono' : 'Phone Number'}</label>
                                 <input
                                     type="tel"
                                     id="phone"
                                     className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                    placeholder="+353 1 234 5678"
+                                    placeholder={isSpanish ? '+34 600 123 456' : '+353 1 234 5678'}
                                 />
                             </div>
 
                             <div className="md:col-span-2">
-                                <label htmlFor="businessAddress" className="block text-sm font-bold text-gray-700">Business Address *</label>
+                                <label htmlFor="businessAddress" className="block text-sm font-bold text-gray-700">{isSpanish ? 'Dirección del Negocio' : 'Business Address'} *</label>
                                 <input
                                     type="text"
                                     id="businessAddress"
@@ -313,12 +310,12 @@ const BusinessOnboarding = () => {
                                     className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
                                     value={formData.businessAddress}
                                     onChange={(e) => setFormData({ ...formData, businessAddress: e.target.value })}
-                                    placeholder="123 Main Street, Town"
+                                    placeholder={isSpanish ? 'Calle Principal 123, Ciudad' : '123 Main Street, Town'}
                                 />
                             </div>
 
                             <div>
-                                <label htmlFor="county" className="block text-sm font-bold text-gray-700 mb-1">County *</label>
+                                <label htmlFor="county" className="block text-sm font-bold text-gray-700 mb-1">{isSpanish ? 'Comunidad Autónoma' : 'County'} *</label>
                                 <select
                                     id="county"
                                     required
@@ -326,32 +323,32 @@ const BusinessOnboarding = () => {
                                     value={formData.county}
                                     onChange={(e) => setFormData({ ...formData, county: e.target.value })}
                                 >
-                                    <option value="">Select County</option>
-                                    {IRISH_COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                    <option value="">{isSpanish ? 'Seleccionar comunidad autónoma' : 'Select County'}</option>
+                                    {COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                             </div>
 
                             <div>
-                                <label htmlFor="website" className="block text-sm font-bold text-gray-700">Website</label>
+                                <label htmlFor="website" className="block text-sm font-bold text-gray-700">{isSpanish ? 'Sitio Web' : 'Website'}</label>
                                 <input
                                     type="url"
                                     id="website"
                                     className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
                                     value={formData.website}
                                     onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                                    placeholder="https://www.acme.ie"
+                                    placeholder={isSpanish ? 'https://www.ejemplo.es' : 'https://www.acme.ie'}
                                 />
                             </div>
 
                             <div className="md:col-span-2">
-                                <label htmlFor="description" className="block text-sm font-bold text-gray-700">Business Description</label>
+                                <label htmlFor="description" className="block text-sm font-bold text-gray-700">{isSpanish ? 'Descripción del Negocio' : 'Business Description'}</label>
                                 <textarea
                                     id="description"
                                     rows={4}
                                     className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors resize-none"
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    placeholder="Describe your business and services..."
+                                    placeholder={isSpanish ? 'Describe tu negocio y servicios...' : 'Describe your business and services...'}
                                 />
                             </div>
                         </div>
@@ -359,11 +356,11 @@ const BusinessOnboarding = () => {
                         {/* COMPLIANCE DETAILS */}
                         <div className="pt-8 border-t border-gray-100">
                             <label className="block text-lg font-bold text-gray-900 mb-4">
-                                Compliance Details
+                                {isSpanish ? 'Datos de Cumplimiento' : 'Compliance Details'}
                             </label>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
-                                    <label htmlFor="companyNumber" className="block text-sm font-bold text-gray-700 mb-1">Company Number</label>
+                                    <label htmlFor="companyNumber" className="block text-sm font-bold text-gray-700 mb-1">{isSpanish ? 'Número de Empresa' : 'Company Number'}</label>
                                     <input
                                         type="text"
                                         id="companyNumber"
@@ -374,18 +371,18 @@ const BusinessOnboarding = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="vatNumber" className="block text-sm font-bold text-gray-700 mb-1">VAT Number</label>
+                                    <label htmlFor="vatNumber" className="block text-sm font-bold text-gray-700 mb-1">{isSpanish ? 'NIF / CIF' : 'VAT Number'}</label>
                                     <input
                                         type="text"
                                         id="vatNumber"
                                         className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
                                         value={formData.vatNumber}
                                         onChange={(e) => setFormData({ ...formData, vatNumber: e.target.value })}
-                                        placeholder="IE1234567A"
+                                        placeholder={isSpanish ? 'ES12345678A' : 'IE1234567A'}
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="insuranceExpiry" className="block text-sm font-bold text-gray-700 mb-1">Insurance Expiry</label>
+                                    <label htmlFor="insuranceExpiry" className="block text-sm font-bold text-gray-700 mb-1">{isSpanish ? 'Caducidad del Seguro' : 'Insurance Expiry'}</label>
                                     <input
                                         type="date"
                                         id="insuranceExpiry"
@@ -400,7 +397,7 @@ const BusinessOnboarding = () => {
 
                         {/* CERTIFICATIONS */}
                         <div className="pt-6">
-                            <label className="block text-sm font-bold text-gray-700 mb-3">Professional Certifications <span className="text-gray-400 font-normal">(optional)</span></label>
+                            <label className="block text-sm font-bold text-gray-700 mb-3">{isSpanish ? 'Certificaciones Profesionales' : 'Professional Certifications'} <span className="text-gray-400 font-normal">({isSpanish ? 'opcional' : 'optional'})</span></label>
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                 {CERTIFICATIONS.map(cert => (
                                     <div
@@ -423,9 +420,9 @@ const BusinessOnboarding = () => {
                         {/* SERVICE CATEGORIES */}
                         <div className="pt-8 border-t border-gray-100">
                             <label className="block text-lg font-bold text-gray-900 mb-2">
-                                Select the categories that best describe your services: *
+                                {isSpanish ? 'Selecciona las categorías que mejor describan tus servicios: *' : 'Select the categories that best describe your services: *'}
                             </label>
-                            <p className="text-sm text-gray-500 mb-6">These help customers find you in the catalogue.</p>
+                            <p className="text-sm text-gray-500 mb-6">{isSpanish ? 'Esto ayuda a los clientes a encontrarte en el catálogo.' : 'These help customers find you in the catalogue.'}</p>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                                 {categories.map(cat => (
                                     <div
@@ -443,12 +440,12 @@ const BusinessOnboarding = () => {
                                     </div>
                                 ))}
                             </div>
-                            <p className="text-xs text-gray-500 mt-2 text-right">{formData.selectedCategories.length} categor{formData.selectedCategories.length === 1 ? 'y' : 'ies'} selected</p>
+                            <p className="text-xs text-gray-500 mt-2 text-right">{formData.selectedCategories.length} {isSpanish ? (formData.selectedCategories.length === 1 ? 'categoría seleccionada' : 'categorías seleccionadas') : (formData.selectedCategories.length === 1 ? 'category selected' : 'categories selected')}</p>
                         </div>
 
                         {/* SOCIAL MEDIA */}
                         <div className="pt-6">
-                            <label className="block text-sm font-bold text-gray-700 mb-3">Social Media <span className="text-gray-400 font-normal">(optional)</span></label>
+                            <label className="block text-sm font-bold text-gray-700 mb-3">{isSpanish ? 'Redes Sociales' : 'Social Media'} <span className="text-gray-400 font-normal">({isSpanish ? 'opcional' : 'optional'})</span></label>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs text-gray-500 mb-1 ml-1">Facebook</label>
@@ -513,10 +510,10 @@ const BusinessOnboarding = () => {
                                 {loading ? (
                                     <>
                                         <Loader2 size={20} className="animate-spin mr-2" />
-                                        Creating Profile...
+                                        {isSpanish ? 'Creando Perfil...' : 'Creating Profile...'}
                                     </>
                                 ) : (
-                                    'Create Business Profile'
+                                    isSpanish ? 'Crear Perfil de Negocio' : 'Create Business Profile'
                                 )}
                             </button>
                         </div>

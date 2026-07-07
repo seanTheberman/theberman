@@ -4,6 +4,7 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 import { X, Lock, AlertTriangle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
+import { getTenantFromDomain } from '../lib/tenant';
 
 // Initialize Stripe outside component to avoid reloading
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
@@ -19,7 +20,7 @@ interface PaymentModalProps {
     description?: string;
 }
 
-const CheckoutForm = ({ onSuccess, amount }: { onSuccess: (id: string) => void, amount: number }) => {
+const CheckoutForm = ({ onSuccess, amount, isSpanish }: { onSuccess: (id: string) => void, amount: number, isSpanish: boolean }) => {
     const stripe = useStripe();
     const elements = useElements();
     const [message, setMessage] = useState<string | null>(null);
@@ -45,15 +46,15 @@ const CheckoutForm = ({ onSuccess, amount }: { onSuccess: (id: string) => void, 
 
         if (error) {
             if (error.type === "card_error" || error.type === "validation_error") {
-                setMessage(error.message || "An unexpected error occurred.");
+                setMessage(error.message || (isSpanish ? 'Ha ocurrido un error inesperado.' : 'An unexpected error occurred.'));
             } else {
-                setMessage("An unexpected error occurred.");
+                setMessage(isSpanish ? 'Ha ocurrido un error inesperado.' : 'An unexpected error occurred.');
             }
             setIsLoading(false);
         } else if (paymentIntent && paymentIntent.status === "succeeded") {
             onSuccess(paymentIntent.id);
         } else {
-            setMessage("Payment status: " + (paymentIntent?.status || 'unknown'));
+            setMessage((isSpanish ? 'Estado del pago: ' : 'Payment status: ') + (paymentIntent?.status || (isSpanish ? 'desconocido' : 'unknown')));
             setIsLoading(false);
         }
     };
@@ -76,12 +77,12 @@ const CheckoutForm = ({ onSuccess, amount }: { onSuccess: (id: string) => void, 
                 {isLoading ? (
                     <>
                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Processing...
+                        {isSpanish ? 'Procesando...' : 'Processing...'}
                     </>
                 ) : (
                     <>
                         <Lock size={18} />
-                        Pay Booking Deposit: €{amount.toFixed(2)}
+                        {isSpanish ? `Pagar Depósito de Reserva: €${amount.toFixed(2)}` : `Pay Booking Deposit: €${amount.toFixed(2)}`}
                     </>
                 )}
             </button>
@@ -89,7 +90,9 @@ const CheckoutForm = ({ onSuccess, amount }: { onSuccess: (id: string) => void, 
     );
 };
 
-const PaymentModal = ({ isOpen, onClose, amount, currency = 'eur', onSuccess, metadata, title = "Secure Payment", description }: PaymentModalProps) => {
+const PaymentModal = ({ isOpen, onClose, amount, currency = 'eur', onSuccess, metadata, title, description }: PaymentModalProps) => {
+    const tenant = getTenantFromDomain();
+    const isSpanish = tenant === 'spain';
     const [clientSecret, setClientSecret] = useState('');
     const [error, setError] = useState('');
 
@@ -108,8 +111,8 @@ const PaymentModal = ({ isOpen, onClose, amount, currency = 'eur', onSuccess, me
                     setClientSecret(data.clientSecret);
                 } catch (err: any) {
                     console.error('Error creating payment intent:', err);
-                    setError(err.message || 'Failed to initialize payment');
-                    toast.error('Could not initialize payment system');
+                    setError(err.message || (isSpanish ? 'No se pudo inicializar el pago' : 'Failed to initialize payment'));
+                    toast.error(isSpanish ? 'No se pudo inicializar el sistema de pagos' : 'Could not initialize payment system');
                 }
             };
 
@@ -128,7 +131,7 @@ const PaymentModal = ({ isOpen, onClose, amount, currency = 'eur', onSuccess, me
                 <div className="bg-white border-b border-gray-100 p-5 flex justify-between items-center">
                     <div>
                         <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                            {title}
+                            {title || (isSpanish ? 'Pago Seguro' : 'Secure Payment')}
                         </h3>
                         {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
                     </div>
@@ -143,28 +146,29 @@ const PaymentModal = ({ isOpen, onClose, amount, currency = 'eur', onSuccess, me
                 <div className="p-6">
                     {!import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ? (
                         <div className="bg-amber-50 text-amber-800 p-4 rounded-xl border border-amber-200">
-                            <strong>Configuration Missing:</strong> Stripe Publishable Key is not set in environment variables.
+                            <strong>{isSpanish ? 'Configuración Faltante:' : 'Configuration Missing:'}</strong> {isSpanish ? 'La clave publicable de Stripe no está configurada en las variables de entorno.' : 'Stripe Publishable Key is not set in environment variables.'}
                         </div>
                     ) : error ? (
                         <div className="text-center py-8">
                             <div className="bg-red-50 text-red-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <AlertTriangle />
                             </div>
-                            <p className="text-gray-900 font-bold mb-2">Initialization Failed</p>
+                            <p className="text-gray-900 font-bold mb-2">{isSpanish ? 'Error de Inicialización' : 'Initialization Failed'}</p>
                             <p className="text-gray-500 text-sm">{error}</p>
-                            <button onClick={onClose} className="mt-4 text-gray-500 underline font-medium">Close</button>
+                            <button onClick={onClose} className="mt-4 text-gray-500 underline font-medium">{isSpanish ? 'Cerrar' : 'Close'}</button>
                         </div>
                     ) : clientSecret ? (
                         <Elements key={clientSecret} options={{ clientSecret, appearance: { theme: 'stripe' } }} stripe={stripePromise}>
                             <CheckoutForm
                                 onSuccess={onSuccess}
                                 amount={amount}
+                                isSpanish={isSpanish}
                             />
                         </Elements>
                     ) : (
                         <div className="flex flex-col items-center justify-center py-12">
                             <div className="w-10 h-10 border-4 border-gray-100 border-t-green-600 rounded-full animate-spin mb-4"></div>
-                            <p className="text-gray-500 font-medium">Securing connection...</p>
+                            <p className="text-gray-500 font-medium">{isSpanish ? 'Asegurando conexión...' : 'Securing connection...'}</p>
                         </div>
                     )}
                 </div>
@@ -172,7 +176,7 @@ const PaymentModal = ({ isOpen, onClose, amount, currency = 'eur', onSuccess, me
                 <div className="bg-gray-50 p-4 text-center border-t border-gray-100">
                     <p className="text-[10px] text-gray-400 flex items-center justify-center gap-1">
                         <Lock size={10} />
-                        Payments processed securely by Stripe. We do not store your card details.
+                        {isSpanish ? 'Pagos procesados de forma segura por Stripe. No almacenamos los datos de tu tarjeta.' : 'Payments processed securely by Stripe. We do not store your card details.'}
                     </p>
                 </div>
             </div>
