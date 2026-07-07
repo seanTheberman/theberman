@@ -1247,7 +1247,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
                     {formData.jobType && currentStep > 0 && currentStep < 12 && (
                         <div className="mt-3 flex justify-center">
                             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isDomestic ? 'bg-blue-50 text-blue-600 border border-blue-100' : isTechnical ? 'bg-orange-50 text-orange-600 border border-orange-100' : 'bg-purple-50 text-purple-600 border border-purple-100'}`}>
-                                {isDomestic ? t('domestic_ber_tag', `Domestic ${certName}`) : isTechnical ? 'Technical Assessor' : t('commercial_ber_tag', `Commercial ${certName}`)}
+                                {isDomestic ? `${t('domestic')} ${certName}` : isTechnical ? t('technical_assessor') : `${t('commercial')} ${certName}`}
                             </span>
                         </div>
                     )}
