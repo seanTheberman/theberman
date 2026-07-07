@@ -14,13 +14,13 @@ serve(async (req: Request) => {
     }
 
     try {
-        const { email, code, subject, message } = await req.json()
+        const { email, code, subject, message, tenant = 'ireland' } = await req.json()
 
         const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
         const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
         const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-        const config = await getTenantConfig(supabase, 'ireland');
+        const config = await getTenantConfig(supabase, tenant);
 
         if (!config.smtp_hostname || !config.smtp_username || !config.smtp_password) {
             console.error('[send-admin-verification] SMTP not configured');

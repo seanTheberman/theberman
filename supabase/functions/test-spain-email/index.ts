@@ -29,36 +29,36 @@ serve(async (req: Request) => {
         endDate.setFullYear(startDate.getFullYear() + 1);
 
         const dateOptions: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-        const startDateStr = startDate.toLocaleDateString('en-IE', dateOptions);
-        const endDateStr = endDate.toLocaleDateString('en-IE', dateOptions);
+        const startDateStr = startDate.toLocaleDateString('es-ES', dateOptions);
+        const endDateStr = endDate.toLocaleDateString('es-ES', dateOptions);
 
         const emailHtml = `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
-                <h1 style="color: #007F00; text-align: center;">Registration Successful!</h1>
-                <p>Hello Test User,</p>
-                <p>Congratulations! Your registration as a BER Assessor on The Berman platform is now complete and your membership is active.</p>
+                <h1 style="color: #007F00; text-align: center;">¡Registro Completado!</h1>
+                <p>Hola Usuario de Prueba,</p>
+                <p>¡Enhorabuena! Tu registro como Certificador Energético en la plataforma Certificado Energético ya está completo y tu membresía está activa.</p>
 
                 <div style="background-color: #f9fafb; padding: 15px; border-radius: 0.5rem; margin: 20px 0;">
-                    <h2 style="font-size: 1.1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">Membership Details</h2>
-                    <p><strong>Status:</strong> Active</p>
-                    <p><strong>Start Date:</strong> ${startDateStr}</p>
-                    <p><strong>Valid Until:</strong> ${endDateStr}</p>
+                    <h2 style="font-size: 1.1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">Detalles de la Membresía</h2>
+                    <p><strong>Estado:</strong> Activo</p>
+                    <p><strong>Fecha de Inicio:</strong> ${startDateStr}</p>
+                    <p><strong>Válida Hasta:</strong> ${endDateStr}</p>
                 </div>
 
                 <div style="background-color: #e8f5e9; padding: 15px; border-radius: 0.5rem; margin: 20px 0; border: 1px solid #c8e6c9;">
-                    <h2 style="font-size: 1.1rem; border-bottom: 1px solid #c8e6c9; padding-bottom: 10px; color: #007F00;">Your Login Credentials</h2>
-                    <p><strong>Email:</strong> ${email}</p>
-                    <p><strong>Password:</strong> ${password || '(Use the password you set during registration)'}</p>
+                    <h2 style="font-size: 1.1rem; border-bottom: 1px solid #c8e6c9; padding-bottom: 10px; color: #007F00;">Tus Credenciales de Acceso</h2>
+                    <p><strong>Correo:</strong> ${email}</p>
+                    <p><strong>Contraseña:</strong> ${password || '(Usa la contraseña que estableciste durante el registro)'}</p>
                 </div>
 
-                <p>You can now log in to your dashboard to manage your profile and view job notifications.</p>
+                <p>Ya puedes iniciar sesión en tu panel para gestionar tu perfil y ver las notificaciones de trabajos.</p>
 
                 <div style="text-align: center; margin-top: 30px;">
-                    <a href="${websiteUrl}/login" style="background-color: #007F00; color: white; padding: 12px 24px; text-decoration: none; border-radius: 0.5rem; font-weight: bold;">Go to Dashboard</a>
+                    <a href="${websiteUrl}/login" style="background-color: #007F00; color: white; padding: 12px 24px; text-decoration: none; border-radius: 0.5rem; font-weight: bold;">Ir al Panel</a>
                 </div>
 
                 <p style="margin-top: 40px; font-size: 0.8rem; color: #6b7280; text-align: center;">
-                    If you have any questions, please contact us at ${config.smtp_from}
+                    Si tienes alguna pregunta, contáctanos en ${config.smtp_from}
                 </p>
             </div>
         `;
@@ -70,7 +70,7 @@ serve(async (req: Request) => {
         await client.send(
             config.smtp_from,
             email,
-            'Test Email - Spain Tenant',
+            'Correo de Prueba - Tenant España',
             emailHtml
         );
 

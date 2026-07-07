@@ -1,6 +1,8 @@
 // @ts-nocheck
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { CustomSmtpClient } from "../shared/smtp.ts";
+import { getTenantConfig } from "../shared/tenant.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -20,20 +22,25 @@ Deno.serve(async (req: Request) => {
     };
 
     try {
-        const { testEmail } = await req.json();
+        const { testEmail, tenant = 'ireland' } = await req.json();
 
         if (!testEmail) {
             throw new Error("testEmail is required in the body");
         }
 
-        const hostname = Deno.env.get('SMTP_HOSTNAME');
-        const port = parseInt(Deno.env.get('SMTP_PORT') || '587');
-        const username = Deno.env.get('SMTP_USERNAME');
-        const password = Deno.env.get('SMTP_PASSWORD');
-        const from = Deno.env.get('SMTP_FROM') || 'no-reply@theberman.eu';
-        const smtpDomain = (from.match(/<(.+)>/)?.[1] || from).split('@')[1] || 'theberman.eu';
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+        const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+        const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-        logger(`Diagnostic Start`);
+        const config = await getTenantConfig(supabase, tenant);
+        const hostname = config.smtp_hostname;
+        const port = parseInt(config.smtp_port || '587');
+        const username = config.smtp_username;
+        const password = config.smtp_password;
+        const from = config.smtp_from || `${config.display_name} <${username}>`;
+        const smtpDomain = config.domain;
+
+        logger(`Diagnostic Start (tenant: ${tenant})`);
         logger(`SMTP_HOSTNAME: ${hostname || 'MISSING'}`);
         logger(`SMTP_PORT: ${port}`);
         logger(`SMTP_USERNAME: ${username ? 'PRESENT' : 'MISSING'}`);
@@ -41,13 +48,10 @@ Deno.serve(async (req: Request) => {
         logger(`SMTP_FROM: ${from}`);
 
         if (!hostname || !username || !password) {
-            throw new Error("One or more SMTP environment variables are missing.");
+            throw new Error(`SMTP config missing for tenant ${tenant}.`);
         }
 
         const client = new CustomSmtpClient(smtpDomain);
-
-        // We need to patch the client or just use it and rely on its own logging if it has any, 
-        // but CustomSmtpClient logs to console.log which we can see in Supabase logs.
 
         logger(`Connecting...`);
         await client.connect(hostname, port);
@@ -61,8 +65,8 @@ Deno.serve(async (req: Request) => {
         await client.send(
             from,
             testEmail,
-            "Berman SMTP Diagnostic Test",
-            "<h1>SMTP Diagnostic</h1><p>If you see this, the SMTP relay is working correctly from the Supabase Edge Function.</p>"
+            "SMTP Diagnostic Test",
+            `<h1>SMTP Diagnostic</h1><p>If you see this, the SMTP relay is working correctly for tenant ${tenant} from the Supabase Edge Function.</p>`
         );
         logger(`Email sent signal received`);
 

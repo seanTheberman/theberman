@@ -1944,7 +1944,8 @@ const Admin = () => {
                             website: catalogueFormData.website || '',
                             catalogueUrl,
                             adminName,
-                            registrationAmount: catalogueFormData.registrationAmount || 0
+                            registrationAmount: catalogueFormData.registrationAmount || 0,
+                            tenant: selectedTenant
                         }
                     });
                     

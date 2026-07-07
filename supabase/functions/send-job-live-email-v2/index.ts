@@ -1,5 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getTenantConfig } from "../shared/tenant.ts";
+import { trySendSms } from "../shared/twilio.ts";
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -30,50 +32,19 @@ const isExpiredAssessment = (assessment: any, quotes: any[] = []) => {
     return daysSinceActivity >= EXPIRY_DAYS;
 };
 
-function formatPhoneE164(phone: string): string | null {
-    if (!phone) return null;
-    const digits = phone.replace(/[^\d+]/g, '');
-    if (digits.startsWith('+') && digits.length >= 10) return digits;
-    if (digits.startsWith('08') && digits.length === 10) return '+353' + digits.substring(1);
-    if (digits.startsWith('353') && digits.length >= 11) return '+' + digits;
-    if (digits.length >= 10 && !digits.startsWith('+')) return '+' + digits;
-    return null;
-}
-
-async function trySendSms(phone: string | null | undefined, message: string): Promise<boolean> {
-    if (!phone) return false;
-    const formatted = formatPhoneE164(phone);
-    if (!formatted) return false;
-    const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
-    const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-    const messagingServiceSid = Deno.env.get('TWILIO_MESSAGING_SERVICE_SID');
-    if (!accountSid || !authToken || !messagingServiceSid) return false;
-    try {
-        const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
-        const formData = new URLSearchParams();
-        formData.append('To', formatted);
-        formData.append('MessagingServiceSid', messagingServiceSid);
-        formData.append('Body', message);
-        const credentials = btoa(`${accountSid}:${authToken}`);
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Authorization': `Basic ${credentials}`, 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: formData.toString()
-        });
-        const result = await response.json();
-        if (response.ok) { console.log(`SMS sent to ${formatted}`); return true; }
-        else { console.error(`SMS failed:`, result.message); return false; }
-    } catch (err) { console.error(`SMS error:`, err); return false; }
-}
 
 Deno.serve(async (req: Request) => {
     if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
     const responseHeaders = { ...corsHeaders, 'Content-Type': 'application/json' };
 
     try {
-        const { email, customerName, county, town, assessmentId, customerPhone } = await req.json();
-        const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
-        const websiteUrl = Deno.env.get('PUBLIC_WEBSITE_URL') || 'https://theberman.eu';
+        const { email, customerName, county, town, assessmentId, customerPhone, tenant = 'ireland' } = await req.json();
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+        const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+        const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+        const config = await getTenantConfig(supabase, tenant);
+        const websiteUrl = (config.website_url || 'https://theberman.eu').replace(/\/$/, '');
 
         let smsSent = false;
 
@@ -119,7 +90,7 @@ Deno.serve(async (req: Request) => {
         const { data: asmnt } = await supabase.from('assessments').select('contact_phone').eq('id', assessmentId).single();
         const smsPhone = customerPhone || asmnt?.contact_phone || null;
         if (smsPhone) {
-            smsSent = await trySendSms(smsPhone, `Hi ${customerName}, your BER assessment request in ${town || county} is now live on TheBerman.eu!`);
+            smsSent = await trySendSms(smsPhone, `Hi ${customerName}, your BER assessment request in ${town || county} is now live on ${websiteUrl.replace('https://', '')}!`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
         }
 
         for (const c of relevant) {
@@ -127,7 +98,7 @@ Deno.serve(async (req: Request) => {
                 const loc = town || county;
                 const name = c.full_name || 'Assessor';
                 const link = `${websiteUrl}/quote/${assessmentId}?phone=${encodeURIComponent(c.phone)}`;
-                await trySendSms(c.phone, `Hi ${name}, new job in ${loc}! Quote here: ${link}`);
+                await trySendSms(c.phone, `Hi ${name}, new job in ${loc}! Quote here: ${link}`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
             }
         }
 
