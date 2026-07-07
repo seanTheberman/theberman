@@ -64,7 +64,7 @@ Deno.serve(async (req: Request) => {
         }
 
         console.log(`[send-otp] Attempting SMTP connection to ${smtpHostname}:${smtpPort}...`);
-        const client = new CustomSmtpClient();
+        const client = new CustomSmtpClient(config.domain);
 
         try {
             await client.connect(smtpHostname, smtpPort);

@@ -108,9 +108,10 @@ Deno.serve(async (req: Request) => {
         const smtpUsername = Deno.env.get('SMTP_USERNAME');
         const smtpPassword = Deno.env.get('SMTP_PASSWORD');
         const smtpFrom = Deno.env.get('SMTP_FROM') || 'no-reply@theberman.eu';
+        const smtpDomain = (smtpFrom.match(/<(.+)>/)?.[1] || smtpFrom).split('@')[1] || 'theberman.eu';
 
         if (smtpHostname && smtpUsername && smtpPassword) {
-            const client = new CustomSmtpClient();
+            const client = new CustomSmtpClient(smtpDomain);
             const smtpPort = parseInt(smtpPortStr || '587');
             
             await client.connect(smtpHostname, smtpPort);

@@ -37,7 +37,7 @@ serve(async (req: Request) => {
         const smtpPassword = config.smtp_password;
         const smtpFrom = config.smtp_from;
 
-        const client = new CustomSmtpClient();
+        const client = new CustomSmtpClient(config.domain);
         try {
             await client.connect(smtpHostname, smtpPort);
             await client.authenticate(smtpUsername, smtpPassword);

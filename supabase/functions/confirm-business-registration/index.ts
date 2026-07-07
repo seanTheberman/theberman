@@ -171,7 +171,7 @@ serve(async (req: Request) => {
         const smtpFrom = config.smtp_from;
         const websiteUrl = config.website_url || 'https://theberman.eu';
 
-        const client = new CustomSmtpClient();
+        const client = new CustomSmtpClient(config.domain);
         try {
             await client.connect(smtpHostname, smtpPort);
             await client.authenticate(smtpUsername, smtpPassword);

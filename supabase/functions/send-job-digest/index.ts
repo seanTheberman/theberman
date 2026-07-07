@@ -215,7 +215,7 @@ Deno.serve(async (req: Request) => {
             });
 
             // 4. Send digest emails
-            const client = new CustomSmtpClient();
+            const client = new CustomSmtpClient(config.domain);
             try {
                 await client.connect(smtpHostname, smtpPort);
                 await client.authenticate(smtpUsername, smtpPassword);

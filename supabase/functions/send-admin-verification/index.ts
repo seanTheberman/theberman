@@ -30,7 +30,7 @@ serve(async (req: Request) => {
             );
         }
 
-        const client = new CustomSmtpClient();
+        const client = new CustomSmtpClient(config.domain);
         console.log(`[send-admin-verification] Sending verification code to ${email}`);
 
         try {

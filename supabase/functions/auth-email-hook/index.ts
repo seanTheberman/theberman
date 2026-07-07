@@ -131,7 +131,7 @@ Deno.serve(async (req: Request) => {
         }
 
         // Send via custom SMTP
-        const client = new CustomSmtpClient();
+        const client = new CustomSmtpClient(config.domain);
         try {
             await client.connect(config.smtp_hostname, config.smtp_port);
             await client.authenticate(config.smtp_username, config.smtp_password);

@@ -58,7 +58,7 @@ Deno.serve(async (req: Request) => {
             return new Response(JSON.stringify({ success: false, error: 'SMTP Secrets missing' }), { status: 500, headers: responseHeaders });
         }
 
-        const client = new CustomSmtpClient();
+        const client = new CustomSmtpClient(config.domain);
 
         try {
             await client.connect(smtpHostname, smtpPort);

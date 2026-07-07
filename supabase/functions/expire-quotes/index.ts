@@ -69,7 +69,7 @@ Deno.serve(async (req: Request) => {
 
         if (smtpHostname && smtpUsername && smtpPassword) {
             try {
-                smtpClient = new CustomSmtpClient();
+                smtpClient = new CustomSmtpClient(config.domain);
                 await smtpClient.connect(smtpHostname, smtpPort);
                 await smtpClient.authenticate(smtpUsername, smtpPassword);
             } catch (smtpErr) {

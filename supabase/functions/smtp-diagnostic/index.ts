@@ -31,6 +31,7 @@ Deno.serve(async (req: Request) => {
         const username = Deno.env.get('SMTP_USERNAME');
         const password = Deno.env.get('SMTP_PASSWORD');
         const from = Deno.env.get('SMTP_FROM') || 'no-reply@theberman.eu';
+        const smtpDomain = (from.match(/<(.+)>/)?.[1] || from).split('@')[1] || 'theberman.eu';
 
         logger(`Diagnostic Start`);
         logger(`SMTP_HOSTNAME: ${hostname || 'MISSING'}`);
@@ -43,7 +44,7 @@ Deno.serve(async (req: Request) => {
             throw new Error("One or more SMTP environment variables are missing.");
         }
 
-        const client = new CustomSmtpClient();
+        const client = new CustomSmtpClient(smtpDomain);
 
         // We need to patch the client or just use it and rely on its own logging if it has any, 
         // but CustomSmtpClient logs to console.log which we can see in Supabase logs.

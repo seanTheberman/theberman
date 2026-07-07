@@ -40,7 +40,7 @@ Deno.serve(async (req: Request) => {
             return new Response(JSON.stringify({ success: false, error: `SMTP not configured for tenant ${tenant}` }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 
-        const client = new CustomSmtpClient()
+        const client = new CustomSmtpClient(config.domain)
         await client.connect(smtpHostname, smtpPort)
         await client.authenticate(smtpUsername, smtpPassword)
 

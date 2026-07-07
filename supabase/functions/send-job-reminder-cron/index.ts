@@ -82,6 +82,7 @@ Deno.serve(async (req: Request) => {
                 continue;
             }
             const { smtp_hostname: smtpHostname, smtp_port: smtpPort, smtp_username: smtpUsername, smtp_password: smtpPassword, smtp_from: smtpFrom, website_url: websiteUrl } = config;
+            const isSpanish = tenant === 'spain';
 
             if (!smtpHostname || !smtpUsername || !smtpPassword) {
                 console.error(`[send-job-reminder-cron] SMTP not configured for tenant ${tenant}, skipping.`);
@@ -190,7 +191,7 @@ Deno.serve(async (req: Request) => {
                 .limit(3);
             const promoHtml = generatePromoHtml(sponsors || []);
 
-            const client = new CustomSmtpClient();
+            const client = new CustomSmtpClient(config.domain);
             try {
                 await client.connect(smtpHostname, smtpPort);
                 await client.authenticate(smtpUsername, smtpPassword);
@@ -267,11 +268,12 @@ Deno.serve(async (req: Request) => {
                         promoHtml,
                         websiteUrl,
                         contractor.phone || undefined,
+                        isSpanish,
                     );
                     await client.send(
                         smtpFrom,
                         contractor.email,
-                        `${matchingJobs.length}x Jobs Still Available to Quote`,
+                        isSpanish ? `${matchingJobs.length} trabajos disponibles para presupuestar` : `${matchingJobs.length}x Jobs Still Available to Quote`,
                         emailHtml,
                     );
                     perTenantResults[tenant].sent++;

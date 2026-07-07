@@ -63,7 +63,7 @@ serve(async (req: Request) => {
             </div>
         `;
 
-        const client = new CustomSmtpClient();
+        const client = new CustomSmtpClient(config.domain);
         await client.connect(config.smtp_hostname, config.smtp_port);
         await client.authenticate(config.smtp_username, config.smtp_password);
 

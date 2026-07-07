@@ -1,7 +1,40 @@
-export const generateContractorEmail = (customerCounty: string, customerTown: string, contractorName: string, promoHtml: string, websiteUrl: string = "https://theberman.eu", jobType?: string, eircode?: string, propertyAddress?: string, assessmentId?: string, contractorPhone?: string, propertySize?: string, bedrooms?: number | string) => {
+const SPANISH_PROPERTY_LABELS: Record<string, string> = {
+    'Address': 'Dirección',
+    'Eircode': 'Código Postal',
+    'Bedrooms': 'Habitaciones',
+    'Property Size': 'Tamaño',
+    'Property Details': 'Detalles de la Propiedad',
+};
+
+const SPANISH_PROPERTY_TYPES: Record<string, string> = {
+    'Semi-Detached': 'Adosado',
+    'Mid-Terrace': 'Casa Pareada',
+    'End-Terrace': 'Casa Extremo',
+    'Apartment': 'Apartamento',
+    'Piso': 'Piso',
+    'Duplex': 'Dúplex',
+    'Detached': 'Casa Aislada',
+    'Bungalow': 'Bungalow',
+    'Multi-Unit': 'Multi-Unidad',
+    'Other': 'Otro',
+    'Office': 'Oficina',
+    'Retail / Shop': 'Tienda / Comercio',
+    'Warehouse / Industrial': 'Almacén / Industrial',
+    'Hospitality': 'Hostelería',
+    'Healthcare': 'Salud / Sanitario',
+    'Education': 'Educación',
+    'Mixed-Use': 'Uso Mixto',
+};
+
+export const generateContractorEmail = (customerCounty: string, customerTown: string, contractorName: string, promoHtml: string, websiteUrl: string = "https://theberman.eu", jobType?: string, eircode?: string, propertyAddress?: string, assessmentId?: string, contractorPhone?: string, propertySize?: string, bedrooms?: number | string, isSpanish: boolean = false) => {
     const isCommercial = jobType === 'commercial';
-    const jobTitle = isCommercial ? 'Commercial BER Certificate' : 'Domestic BER Certificate';
-    const locationStr = `${customerTown}${customerTown && customerCounty ? ', Co. ' : ''}${customerCounty}`;
+    const jobTitle = isCommercial
+        ? (isSpanish ? 'Certificado Energético Comercial' : 'Commercial BER Certificate')
+        : (isSpanish ? 'Certificado Energético de Vivienda' : 'Domestic BER Certificate');
+    const locationStr = isSpanish
+        ? `${customerTown}${customerTown && customerCounty ? ', ' : ''}${customerCounty}`
+        : `${customerTown}${customerTown && customerCounty ? ', Co. ' : ''}${customerCounty}`;
+    const translatePropertyType = (type: string) => isSpanish ? (SPANISH_PROPERTY_TYPES[type] || type) : type;
     // Include ?phone so the assessor can submit without logging in — QuickQuotePage
     // auto-identifies them by phone and attaches the quote to their profile.
     const phoneParam = contractorPhone ? `?phone=${encodeURIComponent(contractorPhone)}` : '';
@@ -38,32 +71,32 @@ export const generateContractorEmail = (customerCounty: string, customerTown: st
                     <tr>
                         <td style="padding: 40px 30px 20px 30px;">
                             <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333; line-height: 1.6;">
-                                Hi ${contractorName},
+                                ${isSpanish ? 'Hola' : 'Hi'} ${contractorName},
                             </p>
                             <p style="margin: 0 0 30px 0; font-size: 16px; color: #555555; line-height: 1.8;">
-                                A client in <strong>${locationStr}</strong> is looking for a <strong>${jobTitle}</strong>.
+                                ${isSpanish ? `Un cliente en <strong>${locationStr}</strong> busca un <strong>${jobTitle}</strong>.` : `A client in <strong>${locationStr}</strong> is looking for a <strong>${jobTitle}</strong>.`}
                             </p>
                             ${(propertyAddress || propertySize || bedrooms) ? `
                             <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #007F00;">
-                                <h4 style="margin: 0 0 15px 0; font-size: 15px; color: #007F00; font-weight: bold;">Property Details</h4>
+                                <h4 style="margin: 0 0 15px 0; font-size: 15px; color: #007F00; font-weight: bold;">${isSpanish ? SPANISH_PROPERTY_LABELS['Property Details'] : 'Property Details'}</h4>
                                 ${propertyAddress ? `
                                 <p style="margin: 0 0 10px 0; font-size: 14px; color: #555555; line-height: 1.6;">
-                                    <strong>Address:</strong> ${propertyAddress}
+                                    <strong>${isSpanish ? SPANISH_PROPERTY_LABELS['Address'] : 'Address'}:</strong> ${propertyAddress}
                                 </p>
                                 ` : ''}
                                 ${eircode ? `
                                 <p style="margin: 0 0 10px 0; font-size: 14px; color: #555555; line-height: 1.6;">
-                                    <strong>Eircode:</strong> <span style="color: #007F00; font-weight: bold;">${eircode}</span>
+                                    <strong>${isSpanish ? SPANISH_PROPERTY_LABELS['Eircode'] : 'Eircode'}:</strong> <span style="color: #007F00; font-weight: bold;">${eircode}</span>
                                 </p>
                                 ` : ''}
                                 ${bedrooms ? `
                                 <p style="margin: 0 0 10px 0; font-size: 14px; color: #555555; line-height: 1.6;">
-                                    <strong>Bedrooms:</strong> ${bedrooms}
+                                    <strong>${isSpanish ? SPANISH_PROPERTY_LABELS['Bedrooms'] : 'Bedrooms'}:</strong> ${bedrooms}
                                 </p>
                                 ` : ''}
                                 ${propertySize ? `
                                 <p style="margin: 0; font-size: 14px; color: #555555; line-height: 1.6;">
-                                    <strong>Property Size:</strong> ${propertySize}
+                                    <strong>${isSpanish ? SPANISH_PROPERTY_LABELS['Property Size'] : 'Property Size'}:</strong> ${propertySize}
                                 </p>
                                 ` : ''}
                             </div>
@@ -78,7 +111,7 @@ export const generateContractorEmail = (customerCounty: string, customerTown: st
                                 <tr>
                                     <td style="background-color: #55a355; border-radius: 6px;">
                                         <a href="${dashboardUrl}" target="_blank" style="display: inline-block; padding: 16px 40px; font-size: 18px; font-weight: bold; color: #ffffff; text-decoration: none; letter-spacing: 0.3px;">
-                                            Quote Now
+                                            ${isSpanish ? 'Presupuestar Ahora' : 'Quote Now'}
                                         </a>
                                     </td>
                                 </tr>
@@ -90,8 +123,7 @@ export const generateContractorEmail = (customerCounty: string, customerTown: st
                     <tr>
                         <td style="padding: 0 30px 30px 30px;">
                             <p style="margin: 0; font-size: 15px; color: #555555; line-height: 1.8;">
-                                Best Regards,<br>
-                                TheBerman.eu
+                                ${isSpanish ? 'Un saludo,<br>Equipo de Certificado Energético' : 'Best Regards,<br>TheBerman.eu'}
                             </p>
                         </td>
                     </tr>
@@ -103,13 +135,13 @@ export const generateContractorEmail = (customerCounty: string, customerTown: st
                                 <tr>
                                     <td style="padding: 30px; text-align: center;">
                                         <p style="margin: 0 0 5px 0; font-size: 15px; font-weight: bold; color: #333333;">
-                                            Considering Solar Panels?
+                                            ${isSpanish ? '¿Considerando placas solares?' : 'Considering Solar Panels?'}
                                         </p>
                                         <p style="margin: 0 0 12px 0; font-size: 14px; font-weight: bold; color: #333333;">
-                                            Compare the Best Solar Deals at
+                                            ${isSpanish ? 'Compara las mejores ofertas de energía solar en' : 'Compare the Best Solar Deals at'}
                                         </p>
-                                        <a href="https://solarquotesireland.com" target="_blank" style="display: inline-block; font-size: 15px; font-weight: bold; color: #1a73e8; text-decoration: none;">
-                                            SolarQuotesIreland.com
+                                        <a href="${isSpanish ? 'https://solarquotesspain.com' : 'https://solarquotesireland.com'}" target="_blank" style="display: inline-block; font-size: 15px; font-weight: bold; color: #1a73e8; text-decoration: none;">
+                                            ${isSpanish ? 'SolarQuotesSpain.com' : 'SolarQuotesIreland.com'}
                                         </a>
                                     </td>
                                 </tr>
@@ -130,20 +162,16 @@ export const generateContractorEmail = (customerCounty: string, customerTown: st
                     <tr>
                         <td style="padding: 25px 30px; border-top: 1px solid #eeeeee;">
                             <p style="margin: 0 0 5px 0; font-size: 13px; color: #888888;">
-                                W: <a href="https://theberman.eu" style="color: #1a73e8; text-decoration: none;">www.theberman.eu</a>
+                                W: <a href="${websiteUrl}" style="color: #1a73e8; text-decoration: none;">${websiteUrl.replace('https://', 'www.')}</a>
                             </p>
                             <p style="margin: 0 0 15px 0; font-size: 13px; color: #888888;">
-                                E: <a href="mailto:info@theberman.eu" style="color: #1a73e8; text-decoration: none;">info@theberman.eu</a>
+                                E: <a href="mailto:${isSpanish ? 'info@certificadosenergeticos.eu' : 'info@theberman.eu'}" style="color: #1a73e8; text-decoration: none;">${isSpanish ? 'info@certificadosenergeticos.eu' : 'info@theberman.eu'}</a>
                             </p>
                             <p style="margin: 0 0 15px 0; font-size: 12px; color: #aaaaaa;">
-                                &copy; ${currentYear} TheBerman.eu
+                                &copy; ${currentYear} ${isSpanish ? 'Certificado Energético' : 'TheBerman.eu'}
                             </p>
                             <p style="margin: 0; font-size: 11px; color: #aaaaaa; line-height: 1.6;">
-                                This email was sent because you are a registered BER assessor on TheBerman.eu.
-                                If you do not wish to receive updates you can
-                                <a href="${websiteUrl}/unsubscribe" style="color: #888888; text-decoration: underline;">unsubscribe here</a>.
-                                You will no longer receive job notifications, but you can still access your account
-                                by logging in at the website with your email address.
+                                ${isSpanish ? `Este correo se ha enviado porque estás registrado como certificador energético en ${websiteUrl}. Si no deseas recibir más avisos, puedes <a href="${websiteUrl}/unsubscribe" style="color: #888888; text-decoration: underline;">darte de baja aquí</a>. Dejarás de recibir notificaciones de trabajos, pero podrás seguir accediendo a tu cuenta iniciando sesión en la web con tu dirección de correo.` : `This email was sent because you are a registered BER assessor on TheBerman.eu. If you do not wish to receive updates you can <a href="${websiteUrl}/unsubscribe" style="color: #888888; text-decoration: underline;">unsubscribe here</a>. You will no longer receive job notifications, but you can still access your account by logging in at the website with your email address.`}
                             </p>
                         </td>
                     </tr>

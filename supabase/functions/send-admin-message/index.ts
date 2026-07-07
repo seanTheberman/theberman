@@ -37,7 +37,7 @@ serve(async (req: Request) => {
             );
         }
 
-        const client = new CustomSmtpClient();
+        const client = new CustomSmtpClient(config.domain);
         console.log(`[send-admin-message] Tenant=${tenant}, sending to ${to}`);
 
         const htmlBody = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#333;line-height:1.6;">

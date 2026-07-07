@@ -36,7 +36,7 @@ serve(async (req: Request) => {
             throw new Error(`SMTP credentials missing for tenant ${tenant}`);
         }
 
-        const client = new CustomSmtpClient()
+        const client = new CustomSmtpClient(config.domain)
         await client.connect(smtpHostname, smtpPort)
         await client.authenticate(smtpUsername, smtpPassword)
 

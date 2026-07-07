@@ -155,12 +155,13 @@ Deno.serve(async (req: Request) => {
         const smtpPassword = Deno.env.get('SMTP_PASSWORD')
         const websiteUrl = Deno.env.get('PUBLIC_WEBSITE_URL')?.replace(/\/$/, '') || 'https://theberman.eu';
         const smtpFrom = `The Berman <${smtpUsername}>`;
+        const smtpDomain = smtpUsername?.split('@')[1] || 'theberman.eu';
 
         if (!smtpHostname || !smtpUsername || !smtpPassword) {
             throw new Error('SMTP credentials missing');
         }
 
-        const client = new CustomSmtpClient()
+        const client = new CustomSmtpClient(smtpDomain)
         await client.connect(smtpHostname, smtpPort)
         await client.authenticate(smtpUsername, smtpPassword)
 

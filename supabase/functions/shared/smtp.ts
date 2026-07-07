@@ -4,6 +4,13 @@ export class CustomSmtpClient {
     private reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
     private encoder = new TextEncoder();
     private decoder = new TextDecoder();
+    private ehloDomain: string;
+    private messageIdDomain: string;
+
+    constructor(domain: string = 'theberman.eu') {
+        this.ehloDomain = domain;
+        this.messageIdDomain = domain;
+    }
 
     async connect(hostname: string, port: number) {
         console.log(`[SMTP] Connecting to ${hostname}:${port}...`);
@@ -11,7 +18,7 @@ export class CustomSmtpClient {
         this.reader = this.conn.readable.getReader();
         await this.readResponse();
 
-        await this.command("EHLO theberman.eu");
+        await this.command(`EHLO ${this.ehloDomain}`);
 
         if (port !== 465) {
             console.log("[SMTP] Issuing STARTTLS...");
@@ -21,7 +28,7 @@ export class CustomSmtpClient {
             const tlsConn = await Deno.startTls(this.conn as any, { hostname });
             this.conn = tlsConn;
             this.reader = this.conn.readable.getReader();
-            await this.command("EHLO theberman.eu");
+            await this.command(`EHLO ${this.ehloDomain}`);
         }
     }
 
@@ -46,7 +53,7 @@ export class CustomSmtpClient {
         await this.command("DATA");
 
         const date = new Date().toUTCString();
-        const messageId = `<${crypto.randomUUID()}@theberman.eu>`;
+        const messageId = `<${crypto.randomUUID()}@${this.messageIdDomain}>`;
 
         const message = [
             `From: ${from}`,
@@ -55,7 +62,7 @@ export class CustomSmtpClient {
             `Subject: ${subject}`,
             `Date: ${date}`,
             `Message-ID: ${messageId}`,
-            `X-Mailer: The Berman.eu Mailer`,
+            `X-Mailer: ${this.ehloDomain} Mailer`,
             `Importance: normal`,
             `MIME-Version: 1.0`,
             `Content-Type: text/html; charset=UTF-8`,

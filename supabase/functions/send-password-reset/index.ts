@@ -96,7 +96,7 @@ serve(async (req: Request) => {
         console.log(`[send-password-reset] Starting SMTP send to ${email}`);
         console.log(`[send-password-reset] SMTP config: host=${config.smtp_hostname}, port=${config.smtp_port}, from=${config.smtp_from}`);
 
-        const client = new CustomSmtpClient();
+        const client = new CustomSmtpClient(config.domain);
         try {
             console.log("[send-password-reset] Connecting to SMTP...");
             await client.connect(config.smtp_hostname, config.smtp_port);

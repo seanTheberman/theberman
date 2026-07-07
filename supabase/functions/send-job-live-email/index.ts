@@ -153,7 +153,7 @@ Deno.serve(async (req: Request) => {
             return new Response(JSON.stringify({ success: false, error: 'SMTP Secrets missing' }), { status: 500, headers: responseHeaders });
         }
 
-        const client = new CustomSmtpClient();
+        const client = new CustomSmtpClient(config.domain);
 
         const { data: sponsors } = await supabase
             .from('sponsors')
@@ -166,6 +166,7 @@ Deno.serve(async (req: Request) => {
         let emailSent = false;
         let smsSent = false;
         let smtpReady = false;
+        const isSpanish = tenant === 'spain';
 
         // Try SMTP connection — if it fails, SMS still sends
         try {
@@ -428,9 +429,13 @@ Deno.serve(async (req: Request) => {
                             assessmentId,
                             contractor.phone,
                             assessmentDetails?.property_size,
-                            assessmentDetails?.bedrooms
+                            assessmentDetails?.bedrooms,
+                            isSpanish
                         );
-                        await client.send(smtpFrom, contractor.email, `New ${jobType === 'commercial' ? 'Commercial' : 'Domestic'} BER Job in ${jobLocation}`, contractorHtml);
+                        const subject = isSpanish
+                            ? `Nuevo trabajo ${jobType === 'commercial' ? 'comercial' : 'de vivienda'} en ${jobLocation}`
+                            : `New ${jobType === 'commercial' ? 'Commercial' : 'Domestic'} BER Job in ${jobLocation}`;
+                        await client.send(smtpFrom, contractor.email, subject, contractorHtml);
                         contractorEmailSentCount++;
                         console.log(`[send-job-live-email] Notified contractor via email: ${contractor.email} (tenant: ${tenant})`);
                     } catch (err) {
