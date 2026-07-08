@@ -23,6 +23,7 @@ import {
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from '../hooks/useTranslation';
 import { getTenantEmail, getTenantFromDomain } from '../lib/tenant';
+import { getPhonePlaceholder, getWhatsAppPlaceholder } from '../lib/phoneFormats';
 import toast from 'react-hot-toast';
 import { geocodeAddress } from '../lib/geocoding';
 import ReferralProgram from '../components/business/ReferralProgram';
@@ -89,7 +90,8 @@ const useDebounce = (callback: Function, delay: number) => {
 const BusinessDashboard = () => {
     const { user, profile, signOut } = useAuth();
     const { isSpanish } = useTranslation();
-    const isEngland = getTenantFromDomain() === 'england';
+    const tenant = getTenantFromDomain();
+    const isEngland = tenant === 'england';
     const brandName = isEngland ? 'EPC Cert' : 'The Berman';
     const navigate = useNavigate();
     const [listing, setListing] = useState<CatalogueListing | null>(null);
@@ -705,7 +707,7 @@ const BusinessDashboard = () => {
                                             name="phone"
                                             value={listing.phone || ''}
                                             onChange={handleProfileChange}
-                                            placeholder="e.g. +353 1 234 5678"
+                                            placeholder={getPhonePlaceholder(tenant)}
                                             className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 font-bold text-gray-900 focus:ring-2 focus:ring-[#007F00] focus:bg-white transition-all shadow-inner"
                                         />
                                     </div>
@@ -756,7 +758,7 @@ const BusinessDashboard = () => {
                                                 </div>
                                                 <div>
                                                     <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2"><MessageCircle size={12} /> WhatsApp</label>
-                                                    <input name="social_whatsapp" value={listing.social_media?.whatsapp || ''} onChange={handleProfileChange} placeholder="+35312345678" className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold shadow-inner" />
+                                                    <input name="social_whatsapp" value={listing.social_media?.whatsapp || ''} onChange={handleProfileChange} placeholder={getWhatsAppPlaceholder(tenant)} className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-bold shadow-inner" />
                                                 </div>
                                             </div>
                                         </div>

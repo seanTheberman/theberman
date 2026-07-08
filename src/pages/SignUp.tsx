@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 import { trackReferral } from '../lib/referralTracking';
 import { supabase } from '../lib/supabase';
 import { getTenantFromDomain } from '../lib/tenant';
+import { getCountryCode, getPhoneExample } from '../lib/phoneFormats';
 
 // Tenant-specific registration number labels
 const REGISTRATION_NUMBER_LABELS: Record<string, { label: string; placeholder: string }> = {
@@ -301,13 +302,13 @@ const SignUp = () => {
                                 <label className="text-sm font-bold text-gray-700 ml-1">{t('phone_number')}</label>
                                 <div className="flex">
                                     <span className="flex items-center px-3 bg-gray-100 border border-r-0 border-gray-200 rounded-l-xl text-sm font-bold text-gray-500 whitespace-nowrap">
-                                        {isSpanish ? '+34' : '+353'}
+                                        {getCountryCode(tenant)}
                                     </span>
                                     <input
                                         {...register('phone')}
                                         type="tel"
                                         className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-r-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                        placeholder={isSpanish ? '600 123 456' : '087 123 4567'}
+                                        placeholder={getPhoneExample(tenant)}
                                     />
                                 </div>
                                 {errors.phone && <p className="text-red-500 text-xs mt-1 font-medium ml-1">{errors.phone.message}</p>}

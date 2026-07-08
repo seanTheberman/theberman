@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import { getTownsForTenant } from '../lib/tenantData';
 import SEOHead from '../components/SEOHead';
 import { getTenantFromDomain, getTenantEmail, getTenantDomain } from '../lib/tenant';
+import { getPhonePlaceholder } from '../lib/phoneFormats';
 
 const hireAgentSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -135,7 +136,7 @@ const HireAgent = () => {
         fullName: 'Full Name',
         fullNamePh: 'Full name',
         phoneNumber: 'Phone Number',
-        phonePh: 'phone number',
+        phonePh: getPhonePlaceholder(tenant),
         email: 'Email Address',
         emailPh: 'email',
         county: 'County',
@@ -194,7 +195,7 @@ const HireAgent = () => {
         fullName: 'Full Name',
         fullNamePh: 'Full name',
         phoneNumber: 'Phone Number',
-        phonePh: 'phone number',
+        phonePh: getPhonePlaceholder(tenant),
         email: 'Email Address',
         emailPh: 'email',
         county: 'County',

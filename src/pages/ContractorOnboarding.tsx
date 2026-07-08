@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import { getTownsForTenant, getCountiesForTenant } from '../lib/tenantData';
 import { geocodeAddress } from '../lib/geocoding';
 import { getTenantFromDomain } from '../lib/tenant';
+import { getPhonePlaceholder } from '../lib/phoneFormats';
 
 // Tenant-specific registration number labels
 const REGISTRATION_NUMBER_LABELS: Record<string, { label: string; placeholder: string; sinceLabel: string }> = {
@@ -358,6 +359,7 @@ const ContractorOnboarding = () => {
                                     name="phone"
                                     id="phone"
                                     required
+                                    placeholder={getPhonePlaceholder(tenant)}
                                     className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}

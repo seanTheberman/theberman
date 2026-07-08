@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { getTenantFromDomain } from '../lib/tenant';
+import { getPhonePlaceholder } from '../lib/phoneFormats';
 import {
     ShieldCheck,
     MapPin,
@@ -296,7 +297,7 @@ const PublicAssessorProfile = () => {
                                         <input
                                             required
                                             type="tel"
-                                            placeholder="Mobile"
+                                            placeholder={getPhonePlaceholder(tenant)}
                                             value={formData.phone}
                                             onChange={e => setFormData({ ...formData, phone: e.target.value })}
                                             className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#007EA7] focus:bg-white rounded-2xl outline-none font-bold text-sm transition-all"

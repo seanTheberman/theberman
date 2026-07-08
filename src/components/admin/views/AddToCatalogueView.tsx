@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, Briefcase, MapPin, ImageIcon, Globe, Facebook, Instagram, Linkedin, Twitter, Plus, Star, Check, CheckCircle2, Loader2, UploadCloud, Youtube, MessageCircle, ChevronRight } from 'lucide-react';
 import type { Profile, CatalogueFormData, AdminView } from '../../../types/admin';
 import { getCountiesForTenant } from '../../../lib/tenantData';
+import { getWhatsAppPlaceholder } from '../../../lib/phoneFormats';
 
 interface Props {
     catalogueFormData: CatalogueFormData;
@@ -254,7 +255,7 @@ export const AddToCatalogueView = ({
                                     { key: 'socialInstagram', label: 'Instagram', icon: <Instagram size={13} className="text-[#e4405f]" />, placeholder: 'https://instagram.com/yourprofile' },
                                     { key: 'socialLinkedin', label: 'LinkedIn', icon: <Linkedin size={13} className="text-[#0A66C2]" />, placeholder: 'https://linkedin.com/company/handle' },
                                     { key: 'socialTwitter', label: 'Twitter / X', icon: <Twitter size={13} />, placeholder: 'https://twitter.com/handle' },
-                                    { key: 'socialWhatsapp', label: 'WhatsApp', icon: <MessageCircle size={13} className="text-[#25D366]" />, placeholder: '+353 87 123 4567' },
+                                    { key: 'socialWhatsapp', label: 'WhatsApp', icon: <MessageCircle size={13} className="text-[#25D366]" />, placeholder: getWhatsAppPlaceholder(selectedTenant || 'ireland') },
                                     { key: 'socialYoutube', label: 'YouTube', icon: <Youtube size={13} className="text-[#FF0000]" />, placeholder: 'https://youtube.com/@channel' },
                                     { key: 'socialSnapchat', label: 'Snapchat', icon: <span className="text-[13px]">👻</span>, placeholder: 'https://snapchat.com/add/username' },
                                     { key: 'socialTiktok', label: 'TikTok', icon: <span className="font-black text-[13px]">♪</span>, placeholder: 'https://tiktok.com/@username' },

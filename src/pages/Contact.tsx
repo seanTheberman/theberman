@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import { getTownsForTenant } from '../lib/tenantData';
 import SEOHead from '../components/SEOHead';
 import { getTenantFromDomain, getTenantEmail, getTenantDomain } from '../lib/tenant';
+import { getPhonePlaceholder } from '../lib/phoneFormats';
 import { usePageContent, cmsValue } from '../hooks/usePageContent';
 
 const getContactSchema = (isSpanish: boolean) => z.object({
@@ -72,7 +73,7 @@ const Contact = () => {
         fullName: isSpanish ? 'Nombre Completo' : 'Full Name',
         fullNamePlaceholder: isSpanish ? 'Nombre completo' : 'Full name',
         phoneNumber: isSpanish ? 'Número de Teléfono' : 'Phone Number',
-        phonePlaceholder: isSpanish ? 'número de teléfono' : 'phone number',
+        phonePlaceholder: isSpanish ? 'número de teléfono' : getPhonePlaceholder(tenant),
         emailAddress: isSpanish ? 'Correo Electrónico' : 'Email Address',
         emailPlaceholder: isSpanish ? 'correo electrónico' : 'email',
         county: isSpanish ? 'Comunidad Autónoma' : 'County',

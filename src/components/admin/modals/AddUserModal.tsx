@@ -1,5 +1,6 @@
 import { X, AlertTriangle, CheckCircle2, Loader2, CreditCard } from 'lucide-react';
 import { getCountiesForTenant, getTownsForTenant } from '../../../lib/tenantData';
+import { getPhonePlaceholder } from '../../../lib/phoneFormats';
 
 interface NewUserFormData {
     fullName: string;
@@ -98,7 +99,7 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
                                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Phone</label>
                                 <input
                                     type="tel"
-                                    placeholder="+353 8X XXX XXXX"
+                                    placeholder={getPhonePlaceholder(tenant)}
                                     value={newUserFormData.phone}
                                     onChange={(e) => setNewUserFormData({ ...newUserFormData, phone: e.target.value })}
                                     className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00]"

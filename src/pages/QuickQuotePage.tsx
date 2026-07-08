@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { ArrowLeft, MapPin, Home, Calendar, Clock, Euro, PoundSterling, Mail, Phone, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { getTenantFromDomain } from '../lib/tenant';
+import { getPhonePlaceholder } from '../lib/phoneFormats';
 
 interface Assessment {
     id: string;
@@ -37,7 +38,8 @@ const QuickQuotePage = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const isSpanish = getTenantFromDomain() === 'spain';
+    const tenant = getTenantFromDomain();
+    const isSpanish = tenant === 'spain';
     
     // Phone pre-filled from SMS link — skip the contact step
     const phoneFromUrl = searchParams.get('phone') || '';
@@ -472,7 +474,7 @@ const QuickQuotePage = () => {
                                         value={contactInfo.phone}
                                         onChange={(e) => setContactInfo({ ...contactInfo, phone: e.target.value })}
                                         className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007F00]"
-                                        placeholder="phone number"
+                                        placeholder={getPhonePlaceholder(tenant)}
                                     />
                                 </div>
                             </div>

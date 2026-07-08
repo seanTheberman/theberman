@@ -3,6 +3,7 @@ import { Home, Building2, Send } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 import { getTenantFromDomain } from '../../lib/tenant';
+import { getPhonePlaceholder } from '../../lib/phoneFormats';
 
 const IRISH_COUNTIES = [
     'Carlow', 'Cavan', 'Clare', 'Cork', 'Donegal', 'Dublin', 'Galway',
@@ -30,6 +31,7 @@ interface Props {
 }
 
 export const BusinessPostJob = ({ businessUserId, listingId, businessName, businessEmail, businessPhone, isSpanish }: Props) => {
+    const tenant = getTenantFromDomain();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [payerType, setPayerType] = useState<'business' | 'homeowner'>('homeowner');
     const [jobType, setJobType] = useState<'domestic' | 'commercial'>('domestic');
@@ -75,7 +77,6 @@ export const BusinessPostJob = ({ businessUserId, listingId, businessName, busin
 
         setIsSubmitting(true);
         try {
-            const tenant = getTenantFromDomain();
             const contactName = payerType === 'business' ? businessName : homeownerName;
             const contactEmail = payerType === 'business' ? businessEmail : homeownerEmail;
             const contactPhone = payerType === 'business' ? businessPhone : homeownerPhone;
@@ -182,7 +183,7 @@ export const BusinessPostJob = ({ businessUserId, listingId, businessName, busin
                         </div>
                         <div>
                             <label className="block text-xs font-medium text-gray-600 mb-1">{isSpanish ? 'Teléfono' : 'Phone'} *</label>
-                            <input value={homeownerPhone} onChange={e => setHomeownerPhone(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#007F00]" placeholder="+353 85 123 4567" />
+                            <input value={homeownerPhone} onChange={e => setHomeownerPhone(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#007F00]" placeholder={getPhonePlaceholder(tenant)} />
                         </div>
                     </div>
                 </div>

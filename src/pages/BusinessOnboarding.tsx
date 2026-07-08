@@ -7,6 +7,7 @@ import { Loader2, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getTenantFromDomain } from '../lib/tenant';
 import { getCountiesForTenant } from '../lib/tenantData';
+import { getPhonePlaceholder, getWhatsAppPlaceholder } from '../lib/phoneFormats';
 
 interface Category {
     id: string;
@@ -297,7 +298,7 @@ const BusinessOnboarding = () => {
                                     className="mt-1 block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                    placeholder={isSpanish ? '+34 600 123 456' : '+353 1 234 5678'}
+                                    placeholder={getPhonePlaceholder(tenant)}
                                 />
                             </div>
 
@@ -494,7 +495,7 @@ const BusinessOnboarding = () => {
                                         className="block w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 focus:ring-[#007F00] focus:border-[#007F00] transition-colors text-sm"
                                         value={formData.whatsapp}
                                         onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
-                                        placeholder="+353 87 123 4567"
+                                        placeholder={getWhatsAppPlaceholder(tenant)}
                                     />
                                 </div>
                             </div>
