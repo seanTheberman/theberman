@@ -23,7 +23,7 @@ const tenant = getTenantFromDomain();
 const isEngland = tenant === 'england';
 const isSpanish = tenant === 'spain';
 const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : 'The Berman';
-const regNumberLabel = isEngland ? 'Assessor ID' : isSpanish ? 'CEE #' : 'SEAI #';
+const regNumberLabel = isEngland ? 'Assessor ID' : isSpanish ? 'CEE CAT #' : 'SEAI #';
 
 const PublicAssessorProfile = () => {
     const { id } = useParams();
@@ -227,15 +227,15 @@ const PublicAssessorProfile = () => {
                                 <div className="bg-white p-6 rounded-[2rem] border border-gray-50 shadow-sm space-y-4">
                                     <div className="flex items-center gap-3 text-sm font-bold text-gray-600">
                                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                        Licensed BER Assessor
+                                        {isSpanish ? 'Certificador Licenciado' : isEngland ? 'Licensed EPC Assessor' : 'Licensed BER Assessor'}
                                     </div>
                                     <div className="flex items-center gap-3 text-sm font-bold text-gray-600">
                                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                        SEAI Registered Partner
+                                        {isSpanish ? 'Socio Registrado CEE CAT' : isEngland ? 'Accredited Partner' : 'SEAI Registered Partner'}
                                     </div>
                                     <div className="flex items-center gap-3 text-sm font-bold text-gray-600">
                                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                        Verified Insurance Coverage
+                                        {isSpanish ? 'Seguro Verificado' : 'Verified Insurance Coverage'}
                                     </div>
                                 </div>
                             </div>
@@ -352,10 +352,10 @@ const PublicAssessorProfile = () => {
                 <div className="max-w-7xl mx-auto px-6 text-center">
                     <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">{brandName} Licensed Professional Network</p>
                     <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-30 grayscale">
-                        <span className="font-black text-lg italic tracking-tight">SEAI REGISTERED</span>
-                        <span className="font-black text-lg italic tracking-tight">NSAI CERTIFIED</span>
-                        <span className="font-black text-lg italic tracking-tight">BIA MEMBER</span>
-                        <span className="font-black text-lg italic tracking-tight">IEA PARTNER</span>
+                        <span className="font-black text-lg italic tracking-tight">{isSpanish ? 'CEE CAT REGISTRADO' : isEngland ? 'ACCREDITED' : 'SEAI REGISTERED'}</span>
+                        <span className="font-black text-lg italic tracking-tight">{isSpanish ? 'CERTIFICADO' : isEngland ? 'CERTIFIED' : 'NSAI CERTIFIED'}</span>
+                        <span className="font-black text-lg italic tracking-tight">{isSpanish ? 'MIEMBRO' : isEngland ? 'MEMBER' : 'BIA MEMBER'}</span>
+                        <span className="font-black text-lg italic tracking-tight">{isSpanish ? 'SOCIO IEA' : 'IEA PARTNER'}</span>
                     </div>
                 </div>
             </footer>

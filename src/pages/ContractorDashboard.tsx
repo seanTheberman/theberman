@@ -9,6 +9,7 @@ const isEngland = tenant === 'england';
 const isSpanish = tenant === 'spain';
 const assessmentLabel = isEngland ? 'EPC' : isSpanish ? 'Certificado Energético' : 'BER';
 const assessorLabel = isEngland ? 'Domestic Energy Assessor' : isSpanish ? 'Certificador Energético' : 'BER Assessor';
+const regAuthority = isSpanish ? 'CEE CAT' : isEngland ? 'accredited' : 'SEAI';
 import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, AlertCircle, Settings, MessageCircle, User, Menu, Plus, Search } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { DatePicker } from '../components/ui/DatePicker';
@@ -2093,7 +2094,7 @@ const ContractorDashboard = () => {
                                                 <h3 className="font-bold text-green-800 text-center">Your Quote</h3>
                                             </div>
                                             <div className="p-6 space-y-4">
-                                                <p className="text-sm text-green-700 text-center italic">Include SEAI fees.</p>
+                                                <p className="text-sm text-green-700 text-center italic">Include {regAuthority} fees.</p>
                                                 <p className="text-sm text-green-700 text-center italic">Include VAT (if registered).</p>
                                                 <p className="text-sm text-green-700 text-center font-bold">
                                                     {(profile?.completed_jobs_count || 0) % 11 === 10 ? (

@@ -11,6 +11,7 @@ const TermsOfService = () => {
     const tenantDomain = getTenantDomain(tenant);
     const brand = isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Cert' : isFrance ? 'DPE France' : isPortugal ? 'Certificado Energético' : 'The Berman';
     const lastUpdated = isSpanish ? '2 de febrero de 2026' : isFrance ? '2 février 2026' : isPortugal ? '2 de fevereiro de 2026' : 'February 2, 2026';
+    const regAuthority = isSpanish ? 'CEE CAT' : isEngland ? 'accredited' : isFrance ? 'DPE' : isPortugal ? 'ADENE' : 'SEAI';
 
     const tr = isSpanish ? {
         seoTitle: 'Aviso Legal y Términos de Uso',
@@ -86,8 +87,8 @@ const TermsOfService = () => {
         agreementH: 'The Agreement',
         agreementP: `By accessing or using the ${tenantDomain} website, you agree to be bound by these Terms of Service and all applicable laws and regulations in Ireland. If you do not agree with any of these terms, you are prohibited from using or accessing this site.`,
         servicesH: 'Our Services',
-        servicesP1: `${brand} acts as a platform connecting homeowners and property managers with SEAI-registered BER assessors. We facilitate quote comparisons and booking management.`,
-        servicesP2: 'Note: While we vet all assessors for SEAI registration, the actual assessment contract is between the user and the chosen assessor.',
+        servicesP1: `${brand} acts as a platform connecting homeowners and property managers with ${regAuthority}-registered assessors. We facilitate quote comparisons and booking management.`,
+        servicesP2: `Note: While we vet all assessors for ${regAuthority} registration, the actual assessment contract is between the user and the chosen assessor.`,
         bookingH: 'Bookings',
         bookingItems: [
             'Quotes provided on the platform are based on the information supplied by the user.',
@@ -95,9 +96,9 @@ const TermsOfService = () => {
             'Cancellations should be made at least 24 hours prior to the scheduled assessment time.',
         ],
         liabilityH: 'Liability',
-        liabilityP: `${brand} is not responsible for the accuracy of individual BER certificates. BER certificates are issued under the assessor's SEAI registration. We shall not be liable for any direct, indirect, or consequential loss arising from the use of our platform or services.`,
+        liabilityP: `${brand} is not responsible for the accuracy of individual certificates. Certificates are issued under the assessor's ${regAuthority} registration. We shall not be liable for any direct, indirect, or consequential loss arising from the use of our platform or services.`,
         lawH: 'Governing Law',
-        lawP: 'These terms and conditions are governed by and construed in accordance with the laws of Ireland. You irrevocably submit to the exclusive jurisdiction of the courts in Ireland for any dispute related to these terms.',
+        lawP: `These terms and conditions are governed by and construed in accordance with the laws of ${isEngland ? 'England' : isFrance ? 'France' : isPortugal ? 'Portugal' : 'Ireland'}. You irrevocably submit to the exclusive jurisdiction of the courts in ${isEngland ? 'England' : isFrance ? 'France' : isPortugal ? 'Portugal' : 'Ireland'} for any dispute related to these terms.`,
     };
 
     return (

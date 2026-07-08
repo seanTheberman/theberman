@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { Search, TrendingUp, Briefcase, Home, Eye, AlertTriangle, Mail, Send, Edit2, Plus, CheckCircle2, X, Trash2, KeyRound } from 'lucide-react';
 import { Filter as FilterIcon } from 'lucide-react';
+import { getTenantFromDomain } from '../../../lib/tenant';
 import type { Profile, Assessment, AdminView, CatalogueListing } from '../../../types/admin';
 import { StatusCell, PaymentStatusBadge } from '../StatusBadges';
+
+const tenant = getTenantFromDomain();
+const regNumberLabel = tenant === 'spain' ? 'CEE CAT #' : tenant === 'england' ? 'Assessor ID' : 'SEAI #';
 
 interface Props {
     view: AdminView;
@@ -116,7 +120,7 @@ export const UsersView = React.memo(({
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={15} />
                         <input
                             type="text"
-                            placeholder={isAssessors ? 'Name, email, SEAI #...' : 'Name or email...'}
+                            placeholder={isAssessors ? `Name, email, ${regNumberLabel}...` : 'Name or email...'}
                             className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] outline-none transition-all bg-gray-50"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}

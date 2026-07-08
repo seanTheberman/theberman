@@ -10,21 +10,24 @@ import { getTenantFromDomain } from '../lib/tenant';
 import { getPhonePlaceholder } from '../lib/phoneFormats';
 
 // Tenant-specific registration number labels
-const REGISTRATION_NUMBER_LABELS: Record<string, { label: string; placeholder: string; sinceLabel: string }> = {
+const REGISTRATION_NUMBER_LABELS: Record<string, { label: string; placeholder: string; sinceLabel: string; validationError: string }> = {
     ireland: {
         label: 'SEAI Registration #',
         placeholder: 'e.g. 10XXX',
-        sinceLabel: 'SEAI Assessor since'
+        sinceLabel: 'SEAI Assessor since',
+        validationError: 'SEAI registration number is required'
     },
     spain: {
-        label: 'CEE Registration #',
+        label: 'CEE CAT Registration #',
         placeholder: 'e.g. 123456',
-        sinceLabel: 'Certificado desde'
+        sinceLabel: 'Certificado desde',
+        validationError: 'Número de registro CEE CAT es obligatorio'
     },
     england: {
         label: 'Assessor ID',
         placeholder: 'e.g. ELH123456',
-        sinceLabel: 'Accredited since'
+        sinceLabel: 'Accredited since',
+        validationError: 'Assessor ID is required'
     }
 };
 
@@ -230,7 +233,7 @@ const ContractorOnboarding = () => {
         }
 
         if (!formData.seaiNumber || formData.seaiNumber.trim() === '') {
-            toast.error(lbl.regNumberRequired);
+            toast.error(regLabels.validationError);
             return;
         }
 

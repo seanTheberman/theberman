@@ -13,15 +13,17 @@ import { getTenantFromDomain } from '../lib/tenant';
 import { getCountryCode, getPhoneExample } from '../lib/phoneFormats';
 
 // Tenant-specific registration number labels
-const REGISTRATION_NUMBER_LABELS: Record<string, { label: string; placeholder: string }> = {
-    ireland: { label: 'SEAI Registration #', placeholder: 'e.g. 10XXX' },
-    spain: { label: 'Nº de Registro CEE', placeholder: 'ej. 123456' },
-    england: { label: 'Assessor ID', placeholder: 'e.g. ELH123456' },
-    france: { label: 'DPE Diagnostiqueur #', placeholder: 'e.g. 12345' },
-    portugal: { label: 'ADENE Registration #', placeholder: 'e.g. 12345' }
+const REGISTRATION_NUMBER_LABELS: Record<string, { label: string; placeholder: string; validationError: string }> = {
+    ireland: { label: 'SEAI Registration #', placeholder: 'e.g. 10XXX', validationError: 'SEAI registration number is required' },
+    spain: { label: 'CEE CAT Registration #', placeholder: 'ej. 123456', validationError: 'Número de registro CEE CAT es obligatorio' },
+    england: { label: 'Assessor ID', placeholder: 'e.g. ELH123456', validationError: 'Assessor ID is required' },
+    france: { label: 'DPE Diagnostiqueur #', placeholder: 'e.g. 12345', validationError: 'DPE number is required' },
+    portugal: { label: 'ADENE Registration #', placeholder: 'e.g. 12345', validationError: 'ADENE registration number is required' }
 };
 
-const IS_SPANISH_TENANT = getTenantFromDomain() === 'spain';
+const tenant = getTenantFromDomain();
+const IS_SPANISH_TENANT = tenant === 'spain';
+const regLabels = REGISTRATION_NUMBER_LABELS[tenant] || REGISTRATION_NUMBER_LABELS.ireland;
 
 const signupSchema = z.object({
     fullName: z.string().min(2, IS_SPANISH_TENANT ? 'El nombre completo debe tener al menos 2 caracteres' : 'Full name must be at least 2 characters'),
@@ -30,7 +32,7 @@ const signupSchema = z.object({
     password: z.string().min(6, IS_SPANISH_TENANT ? 'La contraseña debe tener al menos 6 caracteres' : 'Password must be at least 6 characters'),
     confirmPassword: z.string(),
     role: z.enum(['user', 'contractor', 'business']),
-    seaiNumber: z.string().min(1, IS_SPANISH_TENANT ? 'El número de registro es obligatorio' : 'Registration number is required'),
+    seaiNumber: z.string().min(1, regLabels.validationError),
 }).refine((data) => data.password === data.confirmPassword, {
     message: IS_SPANISH_TENANT ? 'Las contraseñas no coinciden' : "Passwords don't match",
     path: ["confirmPassword"],
@@ -40,7 +42,7 @@ const signupSchema = z.object({
     }
     return true;
 }, {
-    message: IS_SPANISH_TENANT ? 'El número de registro es obligatorio para certificadores' : "Registration number is required for assessors",
+    message: regLabels.validationError,
     path: ["seaiNumber"],
 }).refine((data) => {
     if (data.role === 'user' && (!data.phone || data.phone.length < 7)) {
@@ -63,8 +65,6 @@ const SignUp = () => {
     const [isRoleFixed, setIsRoleFixed] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const tenant = getTenantFromDomain();
-    const regLabels = REGISTRATION_NUMBER_LABELS[tenant] || REGISTRATION_NUMBER_LABELS.ireland;
 
     // Redirect if already authenticated
     useEffect(() => {

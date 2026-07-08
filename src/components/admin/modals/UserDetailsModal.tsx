@@ -1,5 +1,9 @@
 import { X, CheckCircle2, XCircle, AlertTriangle, Mail, Zap, Loader2, Edit2, MapPin, Phone, Calendar, Clock, Building2, Shield } from 'lucide-react';
 import type { Profile } from '../../../types/admin';
+import { getTenantFromDomain } from '../../../lib/tenant';
+
+const tenant = getTenantFromDomain();
+const regNumberLabel = tenant === 'spain' ? 'CEE CAT Number' : tenant === 'england' ? 'Assessor ID' : 'SEAI Number';
 
 interface Props {
     user: Profile;
@@ -207,7 +211,7 @@ export const UserDetailsModal = ({
                                 icon={<Clock size={11} />}
                             />
                             {user.role === 'contractor' && user.seai_number && (
-                                <InfoCard label="SEAI Number" value={user.seai_number} icon={<Shield size={11} />} />
+                                <InfoCard label={regNumberLabel} value={user.seai_number} icon={<Shield size={11} />} />
                             )}
                             {user.role === 'contractor' && user.assessor_type && (
                                 <InfoCard label="Assessor Type" value={user.assessor_type} icon={<Shield size={11} />} />

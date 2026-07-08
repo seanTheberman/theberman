@@ -1,6 +1,7 @@
 import { X, Home, Calendar, Send, User, Building, Euro, Clock, Edit } from 'lucide-react';
 import type { Assessment } from '../../../types/admin';
 import { getStatusColor } from '../adminUtils';
+import { getTenantFromDomain } from '../../../lib/tenant';
 
 interface Props {
     assessment: Assessment;
@@ -13,6 +14,9 @@ interface Props {
     onMessage: (content: string) => void;
     onEdit?: () => void;
 }
+
+const tenant = getTenantFromDomain();
+const regNumberLabel = tenant === 'spain' ? 'CEE CAT' : tenant === 'england' ? 'Assessor ID' : 'SEAI';
 
 export const AssessmentDetailModal = ({
     assessment, onClose, onGenerateQuote, onResendNotifications, onAssignAssessor, onSchedule, onComplete, onMessage, onEdit,
@@ -203,7 +207,7 @@ export const AssessmentDetailModal = ({
                                                     <div> {quote.contractor?.email || 'N/A'}</div>
                                                     <div> {quote.contractor?.phone || 'N/A'}</div>
                                                     <div> {quote.contractor?.company_name || 'N/A'}</div>
-                                                    <div> SEAI: {quote.contractor?.seai_number || 'N/A'}</div>
+                                                    <div> {regNumberLabel}: {quote.contractor?.seai_number || 'N/A'}</div>
                                                     <div> County: {quote.contractor?.county || 'N/A'}</div>
                                                     <div> Type: {quote.contractor?.assessor_type || 'N/A'}</div>
                                                 </div>

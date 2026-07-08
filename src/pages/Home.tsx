@@ -28,6 +28,7 @@ const HomePage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const brandName = isSpanish ? 'Certificado Energético' : tenant === 'england' ? 'EPC Cert' : tenant === 'france' ? 'DPE France' : tenant === 'portugal' ? 'Certificado Energético' : 'The BER Man';
+    const regAuthority = isSpanish ? 'CEE CAT' : tenant === 'england' ? 'accredited' : tenant === 'france' ? 'DPE' : tenant === 'portugal' ? 'ADENE' : 'SEAI';
     const ratingName = isSpanish ? 'Certificado Energético' : tenant === 'england' ? 'EPC' : tenant === 'france' ? 'DPE' : tenant === 'portugal' ? 'Certificado Energético' : 'BER';
     const country = isSpanish ? 'Spain' : tenant === 'england' ? 'England' : tenant === 'france' ? 'France' : tenant === 'portugal' ? 'Portugal' : 'Ireland';
 
@@ -305,7 +306,7 @@ const HomePage = () => {
                             {
                                 author: c('reviews', 'review2_author', isSpanish ? "Lucía Martínez" : "Sarah O'Toole"),
                                 location: c('reviews', 'review2_location', isSpanish ? "Barcelona" : "Cork"),
-                                quote: c('reviews', 'review2_quote', isSpanish ? "Extremadamente fácil de usar. Me encantó poder ver la acreditación y las reseñas de los certificadores antes de reservar. Muy recomendable para propietarios." : "Extremely easy to use. I loved that I could see the SEAI registration numbers and reviews for the assessors before booking. Highly recommended for landlords."),
+                                quote: c('reviews', 'review2_quote', isSpanish ? "Extremadamente fácil de usar. Me encantó poder ver la acreditación y las reseñas de los certificadores antes de reservar. Muy recomendable para propietarios." : `Extremely easy to use. I loved that I could see the ${regAuthority} registration numbers and reviews for the assessors before booking. Highly recommended for landlords.`),
                                 rating: 5
                             },
                             {

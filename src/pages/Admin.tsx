@@ -865,6 +865,20 @@ const Admin = () => {
                 return;
             }
 
+            // Validate registration number for contractors
+            if (newUserRole === 'contractor' && (!newUserFormData.seaiNumber || newUserFormData.seaiNumber.trim() === '')) {
+                const regLabels: Record<string, { validationError: string }> = {
+                    ireland: { validationError: 'SEAI registration number is required' },
+                    spain: { validationError: 'Número de registro CEE CAT es obligatorio' },
+                    england: { validationError: 'Assessor ID is required' },
+                    france: { validationError: 'DPE number is required' },
+                    portugal: { validationError: 'ADENE registration number is required' },
+                };
+                toast.error(regLabels[selectedTenant]?.validationError || regLabels.ireland.validationError);
+                setIsUpdating(false);
+                return;
+            }
+
             // Check for duplicate phone number
             if (newUserFormData.phone && newUserFormData.phone.trim().length >= 7) {
                 const { data: existingPhone } = await supabase

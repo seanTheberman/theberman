@@ -356,9 +356,9 @@ export const CMS_PAGES: PageDefinition[] = [
                     },
                     portugal: {
                         heading: 'Excellent', subheading: 'Based on 1,000 Verified Customer Ratings',
-                        review1_author: 'James Thompson', review1_location: 'Lisboa', review1_quote: 'Used the platform twice now. Both times I got several quotes within an hour and the assessor was super professional. Saved about £30 vs other sites.',
-                        review2_author: 'Sarah Williams', review2_location: 'Manchester', review2_quote: 'Extremely easy to use. I loved that I could verify the Perito accreditation and read reviews before booking. Highly recommended for landlords needing Certificado Energéticos.',
-                        review3_author: 'David Clarke', review3_location: 'Birmingham', review3_quote: 'Fast turnaround and competitive pricing. The portal makes it very simple to manage everything and the Certificado Energético was issued within 24 hours of the assessment.',
+                        review1_author: 'James Thompson', review1_location: 'Lisboa', review1_quote: 'Used the platform twice now. Both times I got several quotes within an hour and the assessor was super professional. Saved about €30 vs other sites.',
+                        review2_author: 'Sarah Williams', review2_location: 'Porto', review2_quote: 'Extremely easy to use. I loved that I could verify the ADENE registration and read reviews before booking. Highly recommended for landlords needing energy certificates.',
+                        review3_author: 'David Clarke', review3_location: 'Faro', review3_quote: 'Fast turnaround and competitive pricing. The portal makes it very simple to manage everything and the certificate was issued within 24 hours of the assessment.',
                     },
                 },
             },

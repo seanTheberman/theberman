@@ -14,6 +14,11 @@ import SEOHead from '../components/SEOHead';
 import { getTenantFromDomain, getTenantEmail, getTenantDomain } from '../lib/tenant';
 import { getPhonePlaceholder } from '../lib/phoneFormats';
 
+const tenant = getTenantFromDomain();
+const isSpanish = tenant === 'spain';
+const isEngland = tenant === 'england';
+const regAuthority = isSpanish ? 'CEE CAT' : isEngland ? 'accredited' : 'SEAI';
+
 const hireAgentSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
     email: z.string().email('Please enter a valid email address'),
@@ -182,7 +187,7 @@ const HireAgent = () => {
             'Advise on best BER improvements',
             'Source and compare contractor quotes',
             'Negotiate best-value options',
-            'Assist with SEAI grant paperwork',
+            `Assist with ${regAuthority} grant paperwork`,
             'Avoid unnecessary or overpriced works',
         ],
         speakClose: 'Our goal is to help you make informed energy upgrade decisions through expert advice, technical insights, and practical recommendations tailored to your property. If you need to find a BER assessor, compare providers in our home energy business directory, or discuss your project further, you can also contact The BER Man.',

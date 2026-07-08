@@ -11,6 +11,7 @@ const About = () => {
     const isPortugal = tenant === 'portugal';
     const isEngland = tenant === 'england';
     const brand = isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Cert' : isFrance ? 'DPE France' : isPortugal ? 'Certificado Energético' : 'The BER Man';
+    const regAuthority = isSpanish ? 'CEE CAT' : isEngland ? 'accredited' : isFrance ? 'DPE' : isPortugal ? 'ADENE' : 'SEAI';
 
     const { content: cms, loading: cmsLoading } = usePageContent('about');
     const c = (section: string, key: string, fallback: string) => cmsValue(cms, section, key, fallback);
@@ -73,7 +74,7 @@ const About = () => {
             "As energy efficiency continues to play an important role in the property sector, our commitment remains the same: helping customers across England access reliable EPC assessment services while making the process clear, efficient and stress-free.",
         ] : [
             "The BER Man was created to make arranging BER assessments simpler, more transparent, and easier to manage for property owners.",
-            "What started as a specialist service has grown into a trusted network of SEAI-registered BER Assessors, helping homeowners, landlords, estate agents, and businesses access professional energy rating services through one convenient platform.",
+            `What started as a specialist service has grown into a trusted network of ${regAuthority}-registered BER Assessors, helping homeowners, landlords, estate agents, and businesses access professional energy rating services through one convenient platform.`,
             "Today, the BER Man helps connect property owners with qualified assessors while making BER assessments easier to arrange and understand.",
             "Our focus remains simple: helping people make informed decisions about their property's energy performance with confidence.",
         ],
@@ -84,7 +85,7 @@ const About = () => {
         ] : [
             { n: '1,000+', l1: 'BER Assessments', l2: 'Completed' },
             { n: '100+', l1: 'Qualified', l2: 'Assessors' },
-            { n: 'SEAI', l1: 'Registered', l2: 'BER Assessors' },
+            { n: regAuthority.toUpperCase(), l1: 'Registered', l2: 'BER Assessors' },
         ],
         howH: 'How We Work',
         howSub: isEngland ? 'Our Core Principles' : 'The BER Man combines local expertise with a streamlined online process, helping property owners arrange BER assessments with confidence.',
@@ -111,9 +112,9 @@ const About = () => {
             { q: 'How much does a BER Certificate cost?', a: 'The cost depends on the size and type of the property. Prices vary, which is why comparing quotes from multiple assessors helps you get the best price.' },
             { q: 'How long does a BER assessment take?', a: 'The on-site assessment usually takes 1–3 hours, depending on the property size.' },
             { q: 'How long is a BER Certificate valid for?', a: 'A BER certificate is valid for 10 years, unless major changes are made to the property that affect energy performance.' },
-            { q: 'How do I get a BER Certificate?', a: 'You book a SEAI-registered BER assessor, they visit and assess your property, and your certificate is issued and registered with SEAI.' },
+            { q: 'How do I get a BER Certificate?', a: `You book a ${regAuthority}-registered BER assessor, they visit and assess your property, and your certificate is issued and registered with ${regAuthority}.` },
             { q: 'Can I choose my assessment date and time?', a: 'Yes. You can select a preferred date and time when booking through the platform.' },
-            { q: 'Are BER assessors registered and trusted?', a: 'Yes. All BER assessments are carried out by SEAI-registered assessors who follow an official code of practice.' },
+            { q: 'Are BER assessors registered and trusted?', a: `Yes. All BER assessments are carried out by ${regAuthority}-registered assessors who follow an official code of practice.` },
             { q: 'What happens if I get a bad rating?', a: 'A bad rating does not prevent you from selling. It simply informs the buyer. Our advisory report will suggest ways to improve it.' },
         ],
         joinH: isEngland ? 'Need an EPC Certificate?' : 'Ready to Arrange Your',
@@ -231,7 +232,7 @@ const About = () => {
                             {[
                                 { icon: <Euro size={28} />, title: 'Best Value Rates' },
                                 { icon: <Zap size={28} />, title: 'Quick Results' },
-                                { icon: <ShieldCheck size={28} />, title: 'SEAI Certified Experts' },
+                                { icon: <ShieldCheck size={28} />, title: `${regAuthority} Certified Experts` },
                                 { icon: <CheckCircle size={28} />, title: 'Smooth & Stress-Free' },
                                 { icon: <Shield size={28} />, title: 'Satisfaction Guaranteed' },
                                 { icon: <Clock size={28} />, title: 'Pick Your Schedule' },

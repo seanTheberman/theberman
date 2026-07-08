@@ -950,7 +950,7 @@ const UserDashboard = () => {
                                                                 </div>
                                                                 <div>
                                                                     <p className="text-[10px] font-bold text-gray-900">{quote.contractor.full_name}</p>
-                                                                    <p className="text-[9px] text-gray-400">{isSpanish ? 'Registro:' : 'SEAI:'} {quote.contractor.seai_number || (isSpanish ? 'Pendiente' : 'Pending')}</p>
+                                                                    <p className="text-[9px] text-gray-400">{isSpanish ? 'CEE CAT:' : isEngland ? 'Assessor ID:' : 'SEAI:'} {quote.contractor.seai_number || (isSpanish ? 'Pendiente' : 'Pending')}</p>
                                                                 </div>
                                                             </div>
                                                         )}

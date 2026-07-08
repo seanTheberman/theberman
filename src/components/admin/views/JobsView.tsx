@@ -1,7 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { Search, MapPin, Clock, FileText, ChevronDown, ChevronRight, X, Briefcase, AlertTriangle, XCircle, Eye, Trash2, Plus } from 'lucide-react';
 import { formatCurrency } from '../../../lib/tenant';
+import { getTenantFromDomain } from '../../../lib/tenant';
 import type { Assessment } from '../../../types/admin';
+
+const tenant = getTenantFromDomain();
+const regNumberLabel = tenant === 'spain' ? 'CEE CAT #' : tenant === 'england' ? 'Assessor ID' : 'SEAI #';
 
 interface Props {
     assessments: Assessment[];
@@ -578,7 +582,7 @@ export const JobsView: React.FC<Props> = ({
                                                                                         <th className="text-left py-2 px-3 font-bold text-gray-600">Company</th>
                                                                                         <th className="text-left py-2 px-3 font-bold text-gray-600">Email</th>
                                                                                         <th className="text-left py-2 px-3 font-bold text-gray-600">Phone</th>
-                                                                                        <th className="text-left py-2 px-3 font-bold text-gray-600">SEAI #</th>
+                                                                                        <th className="text-left py-2 px-3 font-bold text-gray-600">{regNumberLabel}</th>
                                                                                         <th className="text-left py-2 px-3 font-bold text-gray-600">Price</th>
                                                                                         <th className="text-left py-2 px-3 font-bold text-gray-600">Status</th>
                                                                                         <th className="text-left py-2 px-3 font-bold text-gray-600">Date</th>
