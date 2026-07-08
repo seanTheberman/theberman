@@ -919,7 +919,7 @@ export default async function middleware(req) {
     `<meta name="author" content="${siteName}" />`
   ).replace(
     '</head>',
-    `  ${gscMeta}\n  ${hreflangTags(path, tenant)}\n  ${schemaBlock}\n</head>`
+    `  <meta name="description" content="${desc}" />\n  <link rel="canonical" href="${canonical}" />\n  <meta property="og:title" content="${title}" />\n  <meta property="og:description" content="${desc}" />\n  <meta property="og:url" content="${canonical}" />\n  <meta property="og:image" content="${ogImage}" />\n  <meta property="og:locale" content="${locale}" />\n  <meta property="og:site_name" content="${siteName}" />\n  <meta property="og:type" content="website" />\n  <meta name="twitter:card" content="summary_large_image" />\n  <meta name="twitter:title" content="${title}" />\n  <meta name="twitter:description" content="${desc}" />\n  <meta name="twitter:image" content="${ogImage}" />\n  ${gscMeta}\n  ${hreflangTags(path, tenant)}\n  ${schemaBlock}\n</head>`
   );
 
   return new Response(injected, {
