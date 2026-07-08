@@ -142,6 +142,15 @@ const About = () => {
                         : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
     };
 
+    const breadcrumbSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: `${baseUrl}/` },
+            { '@type': 'ListItem', position: 2, name: 'About Us', item: `${baseUrl}/about-us` },
+        ],
+    };
+
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen">
             <SEOHead
@@ -149,17 +158,7 @@ const About = () => {
                 description={tr.seoDesc}
                 canonical="/about-us"
                 jsonLd={[
-                    {
-                        '@context': 'https://schema.org',
-                        '@type': 'BreadcrumbList',
-                        itemListElement: isEngland ? [
-                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.epccert.com/' },
-                            { '@type': 'ListItem', position: 2, name: 'About Us', item: 'https://www.epccert.com/about-us' },
-                        ] : [
-                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.theberman.eu/' },
-                            { '@type': 'ListItem', position: 2, name: 'About Us', item: 'https://www.theberman.eu/about-us' },
-                        ],
-                    },
+                    breadcrumbSchema,
                     orgSchema,
                 ]}
             />

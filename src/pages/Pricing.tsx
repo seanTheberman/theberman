@@ -8,9 +8,15 @@ import { getTenantFromDomain } from '../lib/tenant';
 
 const Pricing = () => {
     const { profile } = useAuth();
+    const tenant = getTenantFromDomain();
     const isManualActive = profile?.stripe_payment_id === 'MANUAL_BY_ADMIN';
-    const isEngland = getTenantFromDomain() === 'england';
+    const isEngland = tenant === 'england';
+    const isSpanish = tenant === 'spain';
+    const isFrance = tenant === 'france';
+    const isPortugal = tenant === 'portugal';
     const currencySymbol = isEngland ? '£' : '€';
+    const baseUrl = tenant === 'england' ? 'https://www.epccert.com' : isSpanish ? 'https://certificadoenerg\u00e9tico.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://www.theberman.eu';
+    const brand = isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Cert' : isFrance ? 'DPE France' : isPortugal ? 'Certificado Energético' : 'The BER Man';
 
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen">
@@ -21,12 +27,18 @@ const Pricing = () => {
                 jsonLd={{
                     '@context': 'https://schema.org',
                     '@type': 'Organization',
-                    name: isEngland ? 'EPC Cert' : 'The BER Man',
-                    url: isEngland ? 'https://www.epccert.com' : 'https://www.theberman.eu',
-                    logo: isEngland ? 'https://www.epccert.com/logo.png' : 'https://www.theberman.eu/logo.svg',
-                    sameAs: isEngland
+                    name: brand,
+                    url: baseUrl,
+                    logo: `${baseUrl}/logo.svg`,
+                    sameAs: tenant === 'england'
                         ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
-                        : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
+                        : isSpanish
+                            ? ['https://www.facebook.com/certificadoenergetico', 'https://www.instagram.com/certificadoenergetico']
+                            : tenant === 'france'
+                                ? ['https://www.facebook.com/dpefrance', 'https://www.instagram.com/dpefrance']
+                                : tenant === 'portugal'
+                                    ? ['https://www.facebook.com/certificadoenergeticopt', 'https://www.instagram.com/certificadoenergeticopt']
+                                    : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
                 }}
             />
 

@@ -9,6 +9,8 @@ const Subscribe = () => {
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
     const isEngland = tenant === 'england';
+    const isFrance = tenant === 'france';
+    const isPortugal = tenant === 'portugal';
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const tr = isSpanish ? {
@@ -46,8 +48,8 @@ const Subscribe = () => {
         instantDownload: 'Instant Download',
     };
 
-    const baseUrl = isEngland ? 'https://www.epccert.com' : isSpanish ? 'https://certificadoenergético.eu' : 'https://www.theberman.eu';
-    const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : 'The BER Man';
+    const baseUrl = tenant === 'england' ? 'https://www.epccert.com' : isSpanish ? 'https://certificadoenerg\u00e9tico.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://www.theberman.eu';
+    const brandName = isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Cert' : isFrance ? 'DPE France' : isPortugal ? 'Certificado Energético' : 'The BER Man';
 
     return (
         <div className="font-sans text-gray-900 bg-white min-h-screen">
@@ -59,20 +61,10 @@ const Subscribe = () => {
                     {
                         '@context': 'https://schema.org',
                         '@type': 'BreadcrumbList',
-                        itemListElement: isEngland
-                            ? [
-                                { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.epccert.com/' },
-                                { '@type': 'ListItem', position: 2, name: 'Subscribe', item: 'https://www.epccert.com/subscribe' },
-                            ]
-                            : isSpanish
-                                ? [
-                                    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://certificadoenergético.eu/' },
-                                    { '@type': 'ListItem', position: 2, name: 'Subscribe', item: 'https://certificadoenergético.eu/subscribe' },
-                                ]
-                                : [
-                                    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.theberman.eu/' },
-                                    { '@type': 'ListItem', position: 2, name: 'Subscribe', item: 'https://www.theberman.eu/subscribe' },
-                                ],
+                        itemListElement: [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: `${baseUrl}/` },
+                            { '@type': 'ListItem', position: 2, name: 'Subscribe', item: `${baseUrl}/subscribe` },
+                        ],
                     },
                     {
                         '@context': 'https://schema.org',
@@ -80,11 +72,15 @@ const Subscribe = () => {
                         name: brandName,
                         url: baseUrl,
                         logo: `${baseUrl}/logo.svg`,
-                        sameAs: isEngland
+                        sameAs: tenant === 'england'
                             ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
                             : isSpanish
                                 ? ['https://www.facebook.com/certificadoenergetico', 'https://www.instagram.com/certificadoenergetico']
-                                : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
+                                : tenant === 'france'
+                                    ? ['https://www.facebook.com/dpefrance', 'https://www.instagram.com/dpefrance']
+                                    : tenant === 'portugal'
+                                        ? ['https://www.facebook.com/certificadoenergeticopt', 'https://www.instagram.com/certificadoenergeticopt']
+                                        : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
                     },
                 ]}
             />

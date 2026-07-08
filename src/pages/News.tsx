@@ -29,6 +29,8 @@ const NewsPage = () => {
     const isEngland = tenant === 'england';
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
+    const baseUrl = tenant === 'england' ? 'https://www.epccert.com' : isSpanish ? 'https://certificadoenerg\u00e9tico.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://www.theberman.eu';
+    const brand = isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Cert' : isFrance ? 'DPE France' : isPortugal ? 'Certificado Energético' : 'The BER Man';
     const { content: cms, loading: cmsLoading } = usePageContent('news');
     const c = (section: string, key: string, fallback: string) => cmsValue(cms, section, key, fallback);
     const tr = isSpanish ? {
@@ -237,23 +239,26 @@ const NewsPage = () => {
                     {
                         '@context': 'https://schema.org',
                         '@type': 'BreadcrumbList',
-                        itemListElement: isEngland ? [
-                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.epccert.com/' },
-                            { '@type': 'ListItem', position: 2, name: 'News', item: 'https://www.epccert.com/news' },
-                        ] : [
-                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.theberman.eu/' },
-                            { '@type': 'ListItem', position: 2, name: 'News', item: 'https://www.theberman.eu/news' },
+                        itemListElement: [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: `${baseUrl}/` },
+                            { '@type': 'ListItem', position: 2, name: 'News', item: `${baseUrl}/news` },
                         ],
                     },
                     {
                         '@context': 'https://schema.org',
                         '@type': 'Organization',
-                        name: tenant === 'england' ? 'EPC Cert' : 'The BER Man',
-                        url: tenant === 'england' ? 'https://www.epccert.com' : 'https://www.theberman.eu',
-                        logo: tenant === 'england' ? 'https://www.epccert.com/logo.png' : 'https://www.theberman.eu/logo.svg',
+                        name: brand,
+                        url: baseUrl,
+                        logo: `${baseUrl}/logo.svg`,
                         sameAs: tenant === 'england'
                             ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
-                            : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
+                            : isSpanish
+                                ? ['https://www.facebook.com/certificadoenergetico', 'https://www.instagram.com/certificadoenergetico']
+                                : tenant === 'france'
+                                    ? ['https://www.facebook.com/dpefrance', 'https://www.instagram.com/dpefrance']
+                                    : tenant === 'portugal'
+                                        ? ['https://www.facebook.com/certificadoenergeticopt', 'https://www.instagram.com/certificadoenergeticopt']
+                                        : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
                     },
                 ]}
             />

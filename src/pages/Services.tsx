@@ -57,9 +57,15 @@ const Services = () => {
                         name: brand,
                         url: baseUrl,
                         logo: `${baseUrl}/logo.png`,
-                        sameAs: isEngland
+                        sameAs: tenant === 'england'
                             ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
-                            : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
+                            : isSpanish
+                                ? ['https://www.facebook.com/certificadoenergetico', 'https://www.instagram.com/certificadoenergetico']
+                                : tenant === 'france'
+                                    ? ['https://www.facebook.com/dpefrance', 'https://www.instagram.com/dpefrance']
+                                    : tenant === 'portugal'
+                                        ? ['https://www.facebook.com/certificadoenergeticopt', 'https://www.instagram.com/certificadoenergeticopt']
+                                        : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
                     }
                 ]}
             />

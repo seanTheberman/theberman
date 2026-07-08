@@ -273,19 +273,16 @@ const HireAgent = () => {
                     {
                         '@context': 'https://schema.org',
                         '@type': 'BreadcrumbList',
-                        itemListElement: isEngland ? [
-                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.epccert.com/' },
-                            { '@type': 'ListItem', position: 2, name: 'Energy Advisor', item: 'https://www.epccert.com/hire-agent' },
-                        ] : [
-                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.theberman.eu/' },
-                            { '@type': 'ListItem', position: 2, name: 'Hire an Energy Advisor', item: 'https://www.theberman.eu/hire-agent' },
+                        itemListElement: [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: `${tenantDomain}/` },
+                            { '@type': 'ListItem', position: 2, name: isEngland ? 'Energy Advisor' : 'Hire an Energy Advisor', item: `${tenantDomain}/hire-agent` },
                         ],
                     },
                     {
                         '@context': 'https://schema.org',
                         '@type': 'Organization',
                         name: isEngland ? 'EPC Cert' : 'The BER Man',
-                        url: isEngland ? 'https://www.epccert.com' : 'https://www.theberman.eu',
+                        url: tenantDomain,
                         logo: isEngland ? 'https://www.epccert.com/logo.png' : 'https://www.theberman.eu/logo.svg',
                         sameAs: isEngland
                             ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
