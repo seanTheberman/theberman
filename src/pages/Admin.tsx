@@ -48,6 +48,82 @@ import { AddUserModal } from '../components/admin/modals/AddUserModal';
 const JOB_NOTIFICATION_EXPIRY_DAYS = 7;
 const NOTIFIABLE_JOB_STATUSES = ['live', 'submitted', 'pending_quote'] as const;
 
+const adminUserToastMessages: Record<string, {
+    addUserFailed: string;
+    duplicateEmail: (email: string) => string;
+    duplicatePhone: (phone: string, email: string) => string;
+    requestTimedOut: string;
+    userCreatedEmailSent: (role: 'contractor' | 'business') => string;
+    userCreatedEmailFailed: string;
+    registrationRequired: string;
+}> = {
+    ireland: {
+        addUserFailed: 'Failed to add user',
+        duplicateEmail: (email) => `User with email ${email} already exists. Please use a different email or delete the existing user first.`,
+        duplicatePhone: (phone, email) => `Phone number ${phone} is already used by ${email}. Please use a different number.`,
+        requestTimedOut: 'Request timed out. The user may have been created - please refresh and check the list.',
+        userCreatedEmailSent: (role) => `${role === 'contractor' ? 'Assessor' : 'Business'} created & login link sent via email!`,
+        userCreatedEmailFailed: 'User created but email failed. Please share the login link manually.',
+        registrationRequired: 'SEAI registration number is required',
+    },
+    spain: {
+        addUserFailed: 'No se pudo añadir el usuario',
+        duplicateEmail: (email) => `Ya existe un usuario con el correo ${email}. Usa otro correo o elimina primero el usuario existente.`,
+        duplicatePhone: (phone, email) => `El número ${phone} ya está asociado a ${email}. Usa un número diferente.`,
+        requestTimedOut: 'La solicitud ha tardado demasiado. Es posible que el usuario se haya creado; actualiza y revisa la lista.',
+        userCreatedEmailSent: (role) => `${role === 'contractor' ? 'Certificador' : 'Empresa'} creado y enlace de acceso enviado por correo.`,
+        userCreatedEmailFailed: 'Usuario creado, pero falló el correo. Comparte el enlace de acceso manualmente.',
+        registrationRequired: 'Número de registro CEE CAT es obligatorio',
+    },
+    england: {
+        addUserFailed: 'Failed to add user',
+        duplicateEmail: (email) => `User with email ${email} already exists. Please use a different email or delete the existing user first.`,
+        duplicatePhone: (phone, email) => `Phone number ${phone} is already used by ${email}. Please use a different number.`,
+        requestTimedOut: 'Request timed out. The user may have been created - please refresh and check the list.',
+        userCreatedEmailSent: (role) => `${role === 'contractor' ? 'Assessor' : 'Business'} created & login link sent via email!`,
+        userCreatedEmailFailed: 'User created but email failed. Please share the login link manually.',
+        registrationRequired: 'Assessor ID is required',
+    },
+    france: {
+        addUserFailed: "Impossible d'ajouter l'utilisateur",
+        duplicateEmail: (email) => `Un utilisateur avec l'email ${email} existe déjà. Utilisez un autre email ou supprimez d'abord l'utilisateur existant.`,
+        duplicatePhone: (phone, email) => `Le numéro ${phone} est déjà utilisé par ${email}. Utilisez un autre numéro.`,
+        requestTimedOut: "La demande a expiré. L'utilisateur a peut-être été créé ; actualisez et vérifiez la liste.",
+        userCreatedEmailSent: (role) => `${role === 'contractor' ? 'Diagnostiqueur' : 'Entreprise'} créé et lien de connexion envoyé par email.`,
+        userCreatedEmailFailed: "Utilisateur créé, mais l'email a échoué. Partagez le lien de connexion manuellement.",
+        registrationRequired: 'Le numéro DPE est obligatoire',
+    },
+    portugal: {
+        addUserFailed: 'Não foi possível adicionar o utilizador',
+        duplicateEmail: (email) => `Já existe um utilizador com o email ${email}. Use outro email ou elimine primeiro o utilizador existente.`,
+        duplicatePhone: (phone, email) => `O número ${phone} já está associado a ${email}. Use outro número.`,
+        requestTimedOut: 'O pedido expirou. O utilizador pode ter sido criado; atualize e verifique a lista.',
+        userCreatedEmailSent: (role) => `${role === 'contractor' ? 'Perito' : 'Empresa'} criado e link de acesso enviado por email.`,
+        userCreatedEmailFailed: 'Utilizador criado, mas o email falhou. Partilhe o link de acesso manualmente.',
+        registrationRequired: 'O número de registo ADENE é obrigatório',
+    },
+};
+
+const getAdminUserToastMessages = (tenant: string) => adminUserToastMessages[tenant];
+
+const localizeAdminAddUserError = (message: string | undefined, tenant: string) => {
+    const messages = getAdminUserToastMessages(tenant);
+    if (!messages) return undefined;
+    if (!message) return messages.addUserFailed;
+
+    const normalized = message.toLowerCase();
+    if (
+        normalized.includes('seai number is required') ||
+        normalized.includes('registration number is required') ||
+        normalized.includes('accreditation number is required') ||
+        normalized.includes('assessor id is required')
+    ) {
+        return messages.registrationRequired;
+    }
+
+    return message;
+};
+
 const getAssessmentLastActivityDate = (assessment: Assessment) => {
     let latest = new Date(assessment.created_at);
 
@@ -851,6 +927,7 @@ const Admin = () => {
     const handleAddUser = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         setIsUpdating(true);
+        const messages = getAdminUserToastMessages(selectedTenant);
         try {
             // Check if email already exists (including soft-deleted users)
             const { data: existingUser } = await supabase
@@ -860,7 +937,7 @@ const Admin = () => {
                 .maybeSingle();
             
             if (existingUser) {
-                toast.error(`User with email ${newUserFormData.email} already exists. Please use a different email or delete the existing user first.`);
+                if (messages) toast.error(messages.duplicateEmail(newUserFormData.email));
                 setIsUpdating(false);
                 return;
             }
@@ -887,7 +964,7 @@ const Admin = () => {
                     .eq('phone', newUserFormData.phone.trim())
                     .maybeSingle();
                 if (existingPhone) {
-                    toast.error(`Phone number ${newUserFormData.phone} is already used by ${existingPhone.email}. Please use a different number.`);
+                    if (messages) toast.error(messages.duplicatePhone(newUserFormData.phone, existingPhone.email));
                     setIsUpdating(false);
                     return;
                 }
@@ -954,12 +1031,12 @@ const Admin = () => {
 
                 const { data: emailData } = await supabase.functions.invoke(emailFn, { body: emailBody });
                 if (emailData?.success) {
-                    toast.success(`${isAssessorRole ? 'Assessor' : 'Business'} created & login link sent via email!`);
+                    if (messages) toast.success(messages.userCreatedEmailSent(newUserRole));
                 } else {
-                    toast.success('User created but email failed. Please share the login link manually.');
+                    if (messages) toast.success(messages.userCreatedEmailFailed);
                 }
             } catch {
-                toast.success('User created but email failed. Please share the login link manually.');
+                if (messages) toast.success(messages.userCreatedEmailFailed);
             }
 
             if (fnData?.user) {
@@ -978,18 +1055,21 @@ const Admin = () => {
             
             // Check if it's a timeout error
             if (error.message?.includes('timeout') || error.message?.includes('LockManager')) {
-                toast.error('Request timed out. The user may have been created - please refresh and check the list.', {
-                    duration: 6000
-                });
+                if (messages) {
+                    toast.error(messages.requestTimedOut, {
+                        duration: 6000
+                    });
+                }
                 // Refresh the user list in case it was created
                 setTimeout(() => fetchUsers(), 2000);
             } else {
-                toast.error(error.message || 'Failed to add user');
+                const localizedError = localizeAdminAddUserError(error.message, selectedTenant);
+                if (localizedError) toast.error(localizedError);
             }
         } finally {
             setIsUpdating(false);
         }
-    }, [newUserFormData, newUserRole, fetchUsers, logAudit]);
+    }, [newUserFormData, newUserRole, selectedTenant, fetchUsers, logAudit]);
 
     const handleUpdateProfile = useCallback(async () => {
         if (!selectedUser) return;

@@ -19,6 +19,38 @@ function generateSecurePassword(length = 12): string {
     return password;
 }
 
+const contractorValidationMessages: Record<string, {
+    serviceAreaRequired: string;
+    registrationRequired: string;
+    assessorTypeRequired: string;
+}> = {
+    ireland: {
+        serviceAreaRequired: 'At least one preferred county or town is required for contractors',
+        registrationRequired: 'SEAI registration number is required',
+        assessorTypeRequired: 'Assessor type is required for contractors',
+    },
+    spain: {
+        serviceAreaRequired: 'Selecciona al menos una comunidad autónoma o localidad para el certificador',
+        registrationRequired: 'Número de registro CEE CAT es obligatorio',
+        assessorTypeRequired: 'El tipo de certificador es obligatorio',
+    },
+    england: {
+        serviceAreaRequired: 'At least one preferred county or town is required for assessors',
+        registrationRequired: 'Assessor ID is required',
+        assessorTypeRequired: 'Assessor type is required',
+    },
+    france: {
+        serviceAreaRequired: 'Au moins une région ou ville est obligatoire pour le diagnostiqueur',
+        registrationRequired: 'Le numéro DPE est obligatoire',
+        assessorTypeRequired: 'Le type de diagnostiqueur est obligatoire',
+    },
+    portugal: {
+        serviceAreaRequired: 'Selecione pelo menos uma região ou localidade para o perito',
+        registrationRequired: 'O número de registo ADENE é obrigatório',
+        assessorTypeRequired: 'O tipo de perito é obrigatório',
+    },
+};
+
 Deno.serve(async (req: Request) => {
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
@@ -31,23 +63,27 @@ Deno.serve(async (req: Request) => {
         );
 
         const body = await req.json();
-        const { fullName, email, password: providedPassword, phone, role, county, town, seaiNumber, assessorType, companyName, businessAddress, website, companyNumber, vatNumber, description, preferredCounties, preferredTowns, tenant = 'ireland' } = body;
+        const { fullName, email, password: providedPassword, phone, role, county, town, seaiNumber, assessorType, companyName, businessAddress, website, companyNumber, vatNumber, description, preferredCounties, preferredTowns, tenant } = body;
+        const validationMessages = contractorValidationMessages[tenant];
 
-        if (!email || !fullName || !role) {
+        if (!email || !fullName || !role || !tenant) {
             throw new Error('Missing required fields');
+        }
+
+        if (!validationMessages) {
+            throw new Error(`Missing validation messages for tenant: ${tenant}`);
         }
 
         // For contractors, require at least one service area (county or town)
         if (role === 'contractor') {
             if ((!preferredCounties || preferredCounties.length === 0) && (!preferredTowns || preferredTowns.length === 0)) {
-                throw new Error('At least one preferred county or town is required for contractors');
+                throw new Error(validationMessages.serviceAreaRequired);
             }
-            const isEngland = tenant === 'england';
             if (!seaiNumber) {
-                throw new Error(isEngland ? 'Accreditation number is required for contractors' : 'SEAI number is required for contractors');
+                throw new Error(validationMessages.registrationRequired);
             }
             if (!assessorType) {
-                throw new Error('Assessor type is required for contractors');
+                throw new Error(validationMessages.assessorTypeRequired);
             }
         }
 
