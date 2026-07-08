@@ -1,7 +1,9 @@
-export const generateCredentialsHtml = (fullName: string, email: string, password: string, loginUrl: string, tenant: string = 'ireland') => {
+export const generateCredentialsHtml = (fullName: string, email: string, password: string, loginUrl: string, tenant: string = 'ireland', displayName: string = 'The Berman', websiteUrl: string = 'https://theberman.eu') => {
     const isSpanish = tenant === 'spain';
     const isEngland = tenant === 'england';
-    
+    const brandName = displayName;
+    const roleName = isSpanish ? 'Certificador Energético' : (isEngland ? 'Domestic Energy Assessor' : 'BER Assessor');
+
     if (isSpanish) {
         return `
     <!DOCTYPE html>
@@ -47,15 +49,15 @@ export const generateCredentialsHtml = (fullName: string, email: string, passwor
     <body>
         <div class="container">
             <div class="header">
-                <h1>Bienvenido a Certificado Energético</h1>
-                <p>Registro de Certificador Energético</p>
+                <h1>Bienvenido a ${brandName}</h1>
+                <p>Registro de ${roleName}</p>
             </div>
             <div class="content">
                 <p class="greeting">Hola ${fullName.split(' ')[0]},</p>
                 
                 <p class="body-text">
-                    Has sido registrado como <strong>Certificador Energético</strong> en la plataforma
-                    <strong>Certificado Energético</strong>. A continuación están tus credenciales de acceso para comenzar.
+                    Has sido registrado como <strong>${roleName}</strong> en la plataforma
+                    <strong>${brandName}</strong>. A continuación están tus credenciales de acceso para comenzar.
                 </p>
 
                 <div class="credentials-box">
@@ -91,13 +93,13 @@ export const generateCredentialsHtml = (fullName: string, email: string, passwor
 
                 <p class="body-text">
                     Saludos cordiales,<br>
-                    <strong>El Equipo de Certificado Energético</strong>
+                    <strong>El Equipo de ${brandName}</strong>
                 </p>
             </div>
             <div class="footer">
-                <p>&copy; ${new Date().getFullYear()} Certificado Energético. Todos los derechos reservados.</p>
+                <p>&copy; ${new Date().getFullYear()} ${brandName}. Todos los derechos reservados.</p>
                 <div class="footer-links">
-                    <a href="https://certificadosenergetico.es">Visitar Sitio Web</a>
+                    <a href="${websiteUrl}">Visitar Sitio Web</a>
                 </div>
             </div>
         </div>
@@ -150,15 +152,15 @@ export const generateCredentialsHtml = (fullName: string, email: string, passwor
     <body>
         <div class="container">
             <div class="header">
-                <h1>Welcome to Berman Home Energy</h1>
-                <p>BER Assessor Registration</p>
+                <h1>Welcome to ${brandName}</h1>
+                <p>${roleName} Registration</p>
             </div>
             <div class="content">
                 <p class="greeting">Hi ${fullName.split(' ')[0]},</p>
                 
                 <p class="body-text">
-                    You have been registered as a <strong>BER Assessor</strong> on the 
-                    <strong>Berman Home Energy</strong> platform. Below are your login credentials to get started.
+                    You have been registered as a <strong>${roleName}</strong> on the 
+                    <strong>${brandName}</strong> platform. Below are your login credentials to get started.
                 </p>
 
                 <div class="credentials-box">
@@ -194,13 +196,13 @@ export const generateCredentialsHtml = (fullName: string, email: string, passwor
 
                 <p class="body-text">
                     Best Regards,<br>
-                    <strong>The Berman Team</strong>
+                    <strong>The ${brandName} Team</strong>
                 </p>
             </div>
             <div class="footer">
-                <p>&copy; 2026 The Berman. All rights reserved.</p>
+                <p>&copy; ${new Date().getFullYear()} ${brandName}. All rights reserved.</p>
                 <div class="footer-links">
-                    <a href="https://theberman.eu">Visit Website</a>
+                    <a href="${websiteUrl}">Visit Website</a>
                 </div>
             </div>
         </div>

@@ -71,7 +71,7 @@ Deno.serve(async (req: Request) => {
             const isSpanish = tenant === 'spain';
 
             // 3. Generate Email HTML for homeowner
-            const emailHtml = generateHomeownerQuoteEmail(assessment.contact_name, websiteUrl, promoHtml, tenant);
+            const emailHtml = generateHomeownerQuoteEmail(assessment.contact_name, websiteUrl, promoHtml, tenant, config.display_name);
 
             // 4. Send Email to homeowner
             await client.send(smtpFrom, assessment.contact_email, isSpanish ? 'Has recibido un presupuesto.' : 'BER quote received.', emailHtml);
@@ -104,7 +104,7 @@ Deno.serve(async (req: Request) => {
                     }
 
                     if (posterEmail) {
-                        const posterHtml = generatePosterQuoteEmail(posterName, websiteUrl, promoHtml, tenant);
+                        const posterHtml = generatePosterQuoteEmail(posterName, websiteUrl, promoHtml, tenant, config.display_name);
                         await client.send(smtpFrom, posterEmail, isSpanish ? 'Nuevo presupuesto en tu trabajo publicado.' : 'New quote on your posted job.', posterHtml);
                         console.log(`[send-quote-notification] Copied poster (${assessment.posted_by}): ${posterEmail} (tenant: ${tenant})`);
                     }

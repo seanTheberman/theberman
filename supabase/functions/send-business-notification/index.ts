@@ -35,8 +35,8 @@ Deno.serve(async (req: Request) => {
         const websiteUrl = (config.website_url || 'https://theberman.eu').replace(/\/$/, '');
         const smtpFrom = config.smtp_from || `${config.display_name} <${smtpUsername}>`;
         const isSpanish = tenant === 'spain';
-        const brandName = config.display_name || (isSpanish ? 'Certificado Energético' : 'The Berman');
-        const catalogueName = isSpanish ? 'Catálogo de Certificado Energético' : 'The Berman Home Energy Catalogue';
+        const brandName = config.display_name;
+        const catalogueName = `${brandName} Home Energy Catalogue`;
         const marketArea = isSpanish ? 'España' : 'Ireland';
 
         if (!smtpHostname || !smtpUsername || !smtpPassword) {

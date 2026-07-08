@@ -1,5 +1,8 @@
-export const generateContractorBookingEmail = (contractorName: string, customerName: string, customerAddress: string, price: number, websiteUrl: string = "https://theberman.eu", promoHtml: string = "", tenant: string = 'ireland') => {
+export const generateContractorBookingEmail = (contractorName: string, customerName: string, customerAddress: string, price: number, websiteUrl: string = "https://theberman.eu", promoHtml: string = "", tenant: string = 'ireland', displayName: string = 'The Berman') => {
     const isSpanish = tenant === 'spain';
+    const isEngland = tenant === 'england';
+    const brandName = displayName;
+    const certificateName = isSpanish ? 'certificado energético' : (isEngland ? 'EPC' : 'BER');
     const dashboardUrl = `${websiteUrl}/dashboard/contractor`;
 
     return `
@@ -32,7 +35,7 @@ export const generateContractorBookingEmail = (contractorName: string, customerN
         <div class="content">
             <div class="greeting">${isSpanish ? 'Hola' : 'Hi'} ${contractorName},</div>
             <div class="message">
-                ${isSpanish ? `¡Enhorabuena! <strong>${customerName}</strong> ha aceptado tu presupuesto para un certificado energético.` : `Congratulations! <strong>${customerName}</strong> has accepted your quote for a BER assessment.`}
+                ${isSpanish ? `¡Enhorabuena! <strong>${customerName}</strong> ha aceptado tu presupuesto para un certificado energético.` : `Congratulations! <strong>${customerName}</strong> has accepted your quote for a ${certificateName} assessment.`}
             </div>
 
             <div class="highlight-box">
@@ -52,7 +55,7 @@ export const generateContractorBookingEmail = (contractorName: string, customerN
 
             <div class="message">
                 <strong>${isSpanish ? 'Siguiente Paso:' : 'Next Step:'}</strong><br>
-                ${isSpanish ? 'Inicia sesión en tu panel para ver los datos de contacto completos y acordar la fecha de la visita con el cliente.' : 'Please log in to your dashboard to view the full contact details and schedule the inspection date with the client.'}
+                ${isSpanish ? 'Inicia sesión en tu panel para ver los datos de contacto completos y acordar la fecha de la visita con el cliente.' : 'Please log in to your dashboard to view the full contact details and schedule the assessment date with the client.'}
             </div>
 
             <div class="button-container">
@@ -60,13 +63,13 @@ export const generateContractorBookingEmail = (contractorName: string, customerN
             </div>
 
             <div class="message">
-                ${isSpanish ? 'Un saludo,<br>El Equipo de TheBerman' : 'Best Regards,<br>TheBerman Team'}
+                ${isSpanish ? `Un saludo,<br>El Equipo de ${brandName}` : `Best Regards,<br>${brandName} Team`}
             </div>
         </div>
         <div class="footer">
             ${promoHtml}
             <div style="margin-top: 20px; text-align: center; font-size: 12px; color: #aaa;">
-                &copy; ${new Date().getFullYear()} TheBerman. ${isSpanish ? 'Todos los derechos reservados.' : 'All rights reserved.'}
+                &copy; ${new Date().getFullYear()} ${brandName}. ${isSpanish ? 'Todos los derechos reservados.' : 'All rights reserved.'}
             </div>
         </div>
     </div>

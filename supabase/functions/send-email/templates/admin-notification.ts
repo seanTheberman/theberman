@@ -1,8 +1,8 @@
 
 export const generateAdminEmail = (record: any, sponsors: any[], promoHtml: string, tenant: string = 'ireland', config?: any) => {
   const isSpanish = tenant === 'spain';
-  const brandName = config?.display_name || (isSpanish ? 'Certificado Energético' : 'The Berman');
-  const websiteUrl = (config?.website_url || (isSpanish ? 'https://certificadosenergeticos.eu' : 'https://theberman.eu')).replace(/\/$/, '');
+  const brandName = config?.display_name || 'The Berman';
+  const websiteUrl = (config?.website_url || 'https://theberman.eu').replace(/\/$/, '');
   return `
                   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
                     <div style="background-color: #007F00; padding: 20px; text-align: center;">

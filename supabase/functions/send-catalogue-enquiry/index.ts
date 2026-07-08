@@ -45,14 +45,16 @@ Deno.serve(async (req: Request) => {
         await client.authenticate(smtpUsername, smtpPassword)
 
         const isSpanish = tenant === 'spain';
+        const websiteUrl = (config.website_url || 'https://theberman.eu').replace(/\/$/, '');
+        const brandName = config.display_name;
 
         // 1. Send notification to the business
-        const businessHtml = generateBusinessEmail(record, businessName || 'Service Provider', tenant)
+        const businessHtml = generateBusinessEmail(record, businessName || 'Service Provider', tenant, websiteUrl, brandName)
         await client.send(smtpFrom!, businessEmail, isSpanish ? `Nueva Consulta: ${record.name}` : `New Enquiry: ${record.name}`, businessHtml)
         console.log(`[send-catalogue-enquiry] Notified business: ${businessEmail}`);
 
         // 2. Send confirmation to the customer
-        const customerHtml = generateCustomerConfirmationEmail(record, businessName || 'Service Provider', tenant)
+        const customerHtml = generateCustomerConfirmationEmail(record, businessName || 'Service Provider', tenant, websiteUrl, brandName)
         await client.send(smtpFrom!, record.email, isSpanish ? `Confirmación de Consulta: ${businessName || 'Service Provider'}` : `Enquiry Confirmation: ${businessName || 'Service Provider'}`, customerHtml)
         console.log(`[send-catalogue-enquiry] Notified customer: ${record.email}`);
 

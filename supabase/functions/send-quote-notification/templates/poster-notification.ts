@@ -1,5 +1,6 @@
-export const generatePosterQuoteEmail = (posterName: string, websiteUrl: string = "https://theberman.eu", promoHtml: string = "", tenant: string = 'ireland') => {
+export const generatePosterQuoteEmail = (posterName: string, websiteUrl: string = "https://theberman.eu", promoHtml: string = "", tenant: string = 'ireland', displayName: string = 'The Berman') => {
     const isSpanish = tenant === 'spain';
+    const brandName = displayName;
     const dashboardUrl = `${websiteUrl}/dashboard/business`;
 
     return `
@@ -12,7 +13,7 @@ export const generatePosterQuoteEmail = (posterName: string, websiteUrl: string 
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f7f4;">
     <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <div style="background-color: #007F00; color: white; padding: 40px 20px; text-align: center;">
-            <img src="${websiteUrl}/logo.svg" alt="${isSpanish ? 'Certificado Energético' : 'The Berman'}" style="height: 35px; margin-bottom: 15px; filter: brightness(0) invert(1);">
+            <img src="${websiteUrl}/logo.svg" alt="${brandName}" style="height: 35px; margin-bottom: 15px; filter: brightness(0) invert(1);">
             <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">${isSpanish ? 'Nuevo Presupuesto en tu Trabajo Publicado' : 'New Quote on Your Posted Job'}</h1>
         </div>
 
@@ -47,7 +48,7 @@ export const generatePosterQuoteEmail = (posterName: string, websiteUrl: string 
         <div style="padding: 30px; background-color: #fafafa; border-top: 1px solid #eee;">
             ${promoHtml}
             <div style="margin-top: 25px; text-align: center; font-size: 12px; color: #999;">
-                &copy; ${new Date().getFullYear()} ${isSpanish ? 'Certificado Energético' : 'The Berman'}. ${isSpanish ? 'Todos los derechos reservados.' : 'All rights reserved.'}<br>
+                &copy; ${new Date().getFullYear()} ${brandName}. ${isSpanish ? 'Todos los derechos reservados.' : 'All rights reserved.'}<br>
                 ${isSpanish ? 'Conectando propietarios con certificadores energéticos certificados en España.' : 'Connecting homeowners with certified energy assessors across Ireland.'}
             </div>
         </div>

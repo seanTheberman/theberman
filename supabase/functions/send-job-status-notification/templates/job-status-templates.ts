@@ -9,29 +9,34 @@ export const generateStatusEmail = (
     },
     promoHtml: string,
     websiteUrl: string = "https://theberman.eu",
-    tenant: string = 'ireland'
+    tenant: string = 'ireland',
+    displayName: string = 'The Berman'
 ) => {
     const isSpanish = tenant === 'spain';
+    const isEngland = tenant === 'england';
+    const brandName = displayName;
+    const certificateName = isSpanish ? 'certificado energético' : (isEngland ? 'EPC' : 'BER');
+    const inspectionName = isSpanish ? 'visita' : (isEngland ? 'assessment' : 'inspection');
     let title = "";
     let message = "";
     let buttonText = isSpanish ? "Ver Panel" : "View Dashboard";
     let buttonUrl = `${websiteUrl}/dashboard`;
 
     if (status === 'scheduled') {
-        title = isSpanish ? "Visita Programada" : "Inspection Scheduled";
+        title = isSpanish ? "Visita Programada" : `${inspectionName.charAt(0).toUpperCase() + inspectionName.slice(1)} Scheduled`;
         message = isSpanish
             ? `¡Buenas noticias! La visita para tu certificado energético en <strong>${details.town}</strong> ha sido programada para el <strong>${details.inspectionDate}</strong> por <strong>${details.contractorName}</strong>.`
-            : `Good news! Your BER inspection for the property in <strong>${details.town}</strong> has been scheduled for <strong>${details.inspectionDate}</strong> by <strong>${details.contractorName}</strong>.`;
+            : `Good news! Your ${certificateName} ${inspectionName} for the property in <strong>${details.town}</strong> has been scheduled for <strong>${details.inspectionDate}</strong> by <strong>${details.contractorName}</strong>.`;
     } else if (status === 'rescheduled') {
-        title = isSpanish ? "Visita Reprogramada" : "Inspection Rescheduled";
+        title = isSpanish ? "Visita Reprogramada" : `${inspectionName.charAt(0).toUpperCase() + inspectionName.slice(1)} Rescheduled`;
         message = isSpanish
             ? `Ten en cuenta que la visita para tu certificado energético en <strong>${details.town}</strong> se ha reprogramado al <strong>${details.inspectionDate}</strong>.`
-            : `Please note that your BER inspection for the property in <strong>${details.town}</strong> has been rescheduled to <strong>${details.inspectionDate}</strong>.`;
+            : `Please note that your ${certificateName} ${inspectionName} for the property in <strong>${details.town}</strong> has been rescheduled to <strong>${details.inspectionDate}</strong>.`;
     } else if (status === 'completed') {
         title = isSpanish ? "Trabajo Completado" : "Job Completed";
         message = isSpanish
             ? `Tu certificado energético para la propiedad en <strong>${details.town}</strong> ya está listo. Puedes verlo y descargarlo usando el siguiente enlace.`
-            : `Your BER assessment for the property in <strong>${details.town}</strong> is now complete. You can view and download your certificate using the link below.`;
+            : `Your ${certificateName} assessment for the property in <strong>${details.town}</strong> is now complete. You can view and download your certificate using the link below.`;
         buttonText = isSpanish ? "Ver Certificado" : "View Certificate";
         buttonUrl = details.certificateUrl || buttonUrl;
     }
@@ -68,7 +73,7 @@ export const generateStatusEmail = (
                 <a href="${buttonUrl}" class="button">${buttonText}</a>
             </div>
             <div class="message">
-                ${isSpanish ? 'Un saludo,<br>El Equipo de TheBerman' : 'Best Regards,<br>TheBerman Team'}
+                ${isSpanish ? `Un saludo,<br>El Equipo de ${brandName}` : `Best Regards,<br>${brandName} Team`}
             </div>
         </div>
         <div class="footer">

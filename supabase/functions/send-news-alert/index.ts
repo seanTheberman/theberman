@@ -23,13 +23,13 @@ Deno.serve(async (req: Request) => {
 
         const tenant = record?.tenant || 'ireland';
         const isSpanish = tenant === 'spain';
-        const brandName = isSpanish ? 'Certificado Energético' : 'The Berman';
 
         const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
         const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
         const supabase = createClient(supabaseUrl, supabaseServiceRoleKey!);
 
         const config = await getTenantConfig(supabase, tenant);
+        const brandName = config.display_name;
         const smtpHostname = config.smtp_hostname;
         const smtpPort = parseInt(config.smtp_port || '587');
         const smtpUsername = config.smtp_username;

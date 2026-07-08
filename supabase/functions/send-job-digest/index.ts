@@ -281,7 +281,7 @@ Deno.serve(async (req: Request) => {
 
                 try {
                     console.log(`[send-job-digest] Sending digest with ${relevantJobs.length} jobs to ${contractor.email} (tenant: ${tenant})`);
-                    const html = generateDigestEmail(contractor.full_name, relevantJobs, websiteUrl, tenant);
+                    const html = generateDigestEmail(contractor.full_name, relevantJobs, websiteUrl, tenant, config.display_name);
                     const langMap: Record<string, string> = { spain: 'es', france: 'fr', portugal: 'pt' };
                     const lang = langMap[tenant] || 'en';
                     const subjects: Record<string, string> = {

@@ -80,10 +80,14 @@ export const generateDigestEmail = (
     contractorName: string,
     availableJobs: any[],
     websiteUrl: string,
-    tenant: string = 'ireland'
+    tenant: string = 'ireland',
+    displayName: string = 'The Berman'
 ): string => {
     const lang = getLang(tenant);
-    const t = TRANSLATIONS[lang];
+    const t = { ...TRANSLATIONS[lang] };
+    const domain = websiteUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    t.teamName = lang === 'es' ? `El Equipo de ${displayName}` : lang === 'fr' ? `L'Équipe ${displayName}` : lang === 'pt' ? `A Equipa ${displayName}` : `${displayName} Team`;
+    t.footer = (year: number) => `&copy; ${year} ${domain}. ${lang === 'es' ? 'Todos los derechos reservados.' : lang === 'fr' ? 'Tous droits réservés.' : lang === 'pt' ? 'Todos os direitos reservados.' : 'All rights reserved.'}`;
 
     const jobRows = availableJobs.map(job => `
     <tr>

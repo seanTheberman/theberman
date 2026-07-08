@@ -77,7 +77,7 @@ serve(async (req: Request) => {
 
         // 4. Send email
         const resetUrl = `${config.website_url}/update-password?token=${token}&email=${encodeURIComponent(email)}`;
-        const brandName = config.display_name || (isSpanish ? 'Certificado Energético' : 'The Berman');
+        const brandName = config.display_name;
 
         const emailHtml = `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">

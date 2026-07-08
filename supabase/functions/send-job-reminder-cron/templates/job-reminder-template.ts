@@ -26,7 +26,9 @@ export const generateJobReminderEmail = (
     websiteUrl: string = "https://theberman.eu",
     contractorPhone?: string,
     isSpanish: boolean = false,
+    displayName: string = 'The Berman',
 ) => {
+    const brandName = displayName;
     const jobCount = jobs.length;
     const phoneParam = contractorPhone ? `?phone=${encodeURIComponent(contractorPhone)}` : '';
     const translatePurpose = (purpose: string) => isSpanish ? (SPANISH_PURPOSES[purpose] || purpose) : purpose;
@@ -113,7 +115,7 @@ export const generateJobReminderEmail = (
             </table>
 
             <div class="message">
-                ${isSpanish ? 'Un saludo,<br>Equipo de Certificado Energético' : 'Best Regards,<br>TheBerman Team'}
+                ${isSpanish ? `Un saludo,<br>Equipo de ${brandName}` : `Best Regards,<br>${brandName} Team`}
             </div>
         </div>
         <div class="footer">

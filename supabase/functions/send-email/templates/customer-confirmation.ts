@@ -1,8 +1,8 @@
 
 export const generateCustomerEmail = (record: any, promoHtml: string, tenant: string = 'ireland', config?: any) => {
     const isSpanish = tenant === 'spain';
-    const brandName = config?.display_name || (isSpanish ? 'Certificado Energético' : 'The Berman');
-    const websiteUrl = (config?.website_url || (isSpanish ? 'https://certificadosenergeticos.eu' : 'https://theberman.eu')).replace(/\/$/, '');
+    const brandName = config?.display_name || 'The Berman';
+    const websiteUrl = (config?.website_url || 'https://theberman.eu').replace(/\/$/, '');
     return `
 <!DOCTYPE html>
 <html>

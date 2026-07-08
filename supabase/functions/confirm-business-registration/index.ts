@@ -139,7 +139,16 @@ serve(async (req: Request) => {
         }
 
         const isSpanish = tenant === 'spain';
-        const brandName = isSpanish ? 'Certificado Energético' : 'The Berman';
+
+        // 4. Send Confirmation Emails
+        const config = await getTenantConfig(supabase, tenant);
+        const smtpHostname = config.smtp_hostname;
+        const smtpPort = config.smtp_port;
+        const smtpUsername = config.smtp_username;
+        const smtpPassword = config.smtp_password;
+        const smtpFrom = config.smtp_from;
+        const websiteUrl = config.website_url || 'https://theberman.eu';
+        const brandName = config.display_name;
 
         const userEmailHtml = isSpanish ? `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
@@ -165,7 +174,7 @@ serve(async (req: Request) => {
             </div>
         ` : `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
-                <h1 style="color: #007F00; text-align: center;">Welcome to The Berman!</h1>
+                <h1 style="color: #007F00; text-align: center;">Welcome to ${brandName}!</h1>
                 <p>Hello ${user_full_name},</p>
                 <p>Your business registration is now complete and your listing is active in our Home Energy Catalogue.</p>
 
@@ -186,15 +195,6 @@ serve(async (req: Request) => {
                 </p>
             </div>
         `;
-
-        // 4. Send Confirmation Emails
-        const config = await getTenantConfig(supabase, tenant);
-        const smtpHostname = config.smtp_hostname;
-        const smtpPort = config.smtp_port;
-        const smtpUsername = config.smtp_username;
-        const smtpPassword = config.smtp_password;
-        const smtpFrom = config.smtp_from;
-        const websiteUrl = config.website_url || 'https://theberman.eu';
 
         const client = new CustomSmtpClient(config.domain);
         try {
@@ -241,7 +241,7 @@ serve(async (req: Request) => {
             ` : `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
                     <h1 style="color: #4F46E5; text-align: center;">New Business Registration</h1>
-                    <p>A new business has successfully registered and paid on The Berman.</p>
+                    <p>A new business has successfully registered and paid on ${brandName}.</p>
 
                     <div style="background-color: #f3f4f6; padding: 15px; border-radius: 0.5rem; margin: 20px 0;">
                         <h2 style="font-size: 1.1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">Business Details</h2>

@@ -1,4 +1,6 @@
-export const generateOnboardingHtml = (fullName: string, town: string, onboardingUrl: string) => {
+export const generateOnboardingHtml = (fullName: string, town: string, onboardingUrl: string, displayName: string = 'The Berman', websiteUrl: string = 'https://theberman.eu') => {
+    const brandName = displayName;
+    const catalogueName = `${brandName} Catalogue`;
     return `
     <!DOCTYPE html>
     <html>
@@ -41,7 +43,7 @@ export const generateOnboardingHtml = (fullName: string, town: string, onboardin
                 <p class="greeting">Hi ${fullName.split(' ')[0]},</p>
                 
                 <p class="body-text">
-                    Great news! Your application to join the <strong>Berman Home Energy Catalogue</strong> has been approved. 
+                    Great news! Your application to join the <strong>${catalogueName}</strong> has been approved.
                     A client interested in energy services in your area is waiting to see your profile.
                 </p>
 
@@ -51,7 +53,7 @@ export const generateOnboardingHtml = (fullName: string, town: string, onboardin
 
                 <p class="body-text">
                     Best Regards,<br>
-                    <strong>The Berman Team</strong>
+                    <strong>${brandName} Team</strong>
                 </p>
 
                 <div class="promo-box">
@@ -60,9 +62,9 @@ export const generateOnboardingHtml = (fullName: string, town: string, onboardin
                 </div>
             </div>
             <div class="footer">
-                <p>&copy; 2026 The Berman. All rights reserved.</p>
+                <p>&copy; ${new Date().getFullYear()} ${brandName}. All rights reserved.</p>
                 <div class="footer-links">
-                    <a href="https://theberman.eu">Visit Website</a>
+                    <a href="${websiteUrl}">Visit Website</a>
                 </div>
             </div>
         </div>

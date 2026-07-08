@@ -53,7 +53,7 @@ Deno.serve(async (req: Request) => {
 
         if (isBusiness && isApproval) {
             // ─── APPROVAL EMAIL: sent after admin approves the business ───
-            subject = isSpanish ? "¡Estás Aprobado! – Certificado Energético" : (isEngland ? "You're Approved! – EPC Cert" : "You're Approved! – The Berman Home Energy Catalogue");
+            subject = isSpanish ? `¡Estás Aprobado! – ${config.display_name}` : `You're Approved! – ${config.display_name}`;
             const loginUrl = `${websiteUrl}/login`;
 
             if (isSpanish) {
@@ -87,7 +87,7 @@ Deno.serve(async (req: Request) => {
 
                     <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
                     <p style="font-size: 12px; color: #999; text-align: center; line-height: 1.6;">
-                        &copy; ${new Date().getFullYear()} Certificado Energético.<br>
+                        &copy; ${new Date().getFullYear()} ${config.display_name}.<br>
                         Apoyando objetivos de energía sostenible a través de certificaciones profesionales.
                     </p>
                 </div>
@@ -96,13 +96,13 @@ Deno.serve(async (req: Request) => {
                 html = `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
                     <div style="text-align: center; margin-bottom: 25px;">
-                        <img src="${websiteUrl}/logo.svg" alt="${isEngland ? 'EPC Cert' : 'The Berman'}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
+                        <img src="${websiteUrl}/logo.svg" alt="${config.display_name}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
                     </div>
                     <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">You're Approved! 🎉</h2>
                     <p style="font-size: 16px; color: #333;">Hello <strong>${fullName}</strong>,</p>
                     <p style="font-size: 15px; color: #555; line-height: 1.6;">
                         Great news! Your registration has been reviewed and <strong>approved</strong>.
-                        Your business is now published in our ${isEngland ? 'EPC' : 'Home Energy'} Catalogue.
+                        Your business is now published in our catalogue.
                     </p>
                     <p style="font-size: 15px; color: #555; line-height: 1.6;">
                         You can now log in to your Business Portal to edit your catalogue profile,
@@ -134,7 +134,7 @@ Deno.serve(async (req: Request) => {
             }
         } else if (isBusiness) {
             // ─── WELCOME EMAIL: sent when admin manually signs up a business ───
-            subject = isSpanish ? "Bienvenido a Certificado Energético – Completa Tu Registro" : (isEngland ? "Welcome to EPC Cert – Complete Your Registration" : "Welcome to The Berman – Complete Your Registration");
+            subject = isSpanish ? `Bienvenido a ${config.display_name} – Completa Tu Registro` : `Welcome to ${config.display_name} – Complete Your Registration`;
 
             // Use the magic link if provided, otherwise fallback to business-onboarding page
             const actionUrl = onboardingUrl || `${websiteUrl}/business-onboarding`;
@@ -143,11 +143,11 @@ Deno.serve(async (req: Request) => {
             if (isSpanish) {
                 html = `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
-                    <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Bienvenido a Certificado Energético</h2>
+                    <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Bienvenido a ${config.display_name}</h2>
                     <p style="font-size: 16px; color: #333;">Hola <strong>${fullName}</strong>,</p>
                     <p style="font-size: 15px; color: #555; line-height: 1.6;">
-                        Bienvenido a Certificado Energético. Haz clic en el enlace de abajo para completar el formulario de registro
-                        y ser publicado en nuestro catálogo de certificados energéticos.
+                        Bienvenido a ${config.display_name}. Haz clic en el enlace de abajo para completar el formulario de registro
+                        y ser publicado en nuestro catálogo.
                         Esperamos construir una relación sólida contigo.
                     </p>
 
@@ -173,7 +173,7 @@ Deno.serve(async (req: Request) => {
 
                     <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
                     <p style="font-size: 12px; color: #999; text-align: center; line-height: 1.6;">
-                        &copy; ${new Date().getFullYear()} Certificado Energético.<br>
+                        &copy; ${new Date().getFullYear()} ${config.display_name}.<br>
                         Apoyando objetivos de energía sostenible a través de certificaciones profesionales.
                     </p>
                 </div>
@@ -182,12 +182,12 @@ Deno.serve(async (req: Request) => {
                 html = `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
                     <div style="text-align: center; margin-bottom: 25px;">
-                        <img src="${websiteUrl}/logo.svg" alt="${isEngland ? 'EPC Cert' : 'The Berman'}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
+                        <img src="${websiteUrl}/logo.svg" alt="${config.display_name}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
                     </div>
-                    <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Welcome to ${isEngland ? 'EPC Cert' : 'The Berman'}</h2>
+                    <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Welcome to ${config.display_name}</h2>
                     <p style="font-size: 16px; color: #333;">Hello <strong>${fullName}</strong>,</p>
                     <p style="font-size: 15px; color: #555; line-height: 1.6;">
-                        Welcome to ${isEngland ? 'EPC Cert' : 'the Berman'}. Click the link below to finish the registration form and be published in our ${isEngland ? 'EPC' : 'home energy'} catalogue.
+                        Welcome to ${config.display_name}. Click the link below to finish the registration form and be published in our catalogue.
                         We look forward to building a strong relationship with you.
                     </p>
 
@@ -224,12 +224,12 @@ Deno.serve(async (req: Request) => {
             const roleName = isSpanish ? 'Certificador Energético' : (isEngland ? 'Domestic Energy Assessor' : 'BER Assessor');
             const loginUrl = `${websiteUrl}/login`;
 
-            subject = isSpanish ? "Bienvenido a Certificado Energético – Tus Datos de Acceso" : (isEngland ? "Welcome to EPC Cert – Your DEA Login Details" : "Welcome to The Berman – Your BER Assessor Login Details");
+            subject = isSpanish ? `Bienvenido a ${config.display_name} – Tus Datos de Acceso` : `Welcome to ${config.display_name} – Your ${roleName} Login Details`;
 
             if (isSpanish) {
                 html = `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
-                    <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Bienvenido a Certificado Energético</h2>
+                    <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Bienvenido a ${config.display_name}</h2>
                     <p style="font-size: 16px; color: #333;">Hola <strong>${fullName}</strong>,</p>
                     <p style="font-size: 15px; color: #555; line-height: 1.6;">
                         Tu cuenta como <strong>${roleName}</strong> ha sido creada exitosamente.
@@ -267,9 +267,9 @@ Deno.serve(async (req: Request) => {
                 html = `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
                     <div style="text-align: center; margin-bottom: 25px;">
-                        <img src="${websiteUrl}/logo.svg" alt="${isEngland ? 'EPC Cert' : 'The Berman'}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
+                        <img src="${websiteUrl}/logo.svg" alt="${config.display_name}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
                     </div>
-                    <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Welcome to ${isEngland ? 'EPC Cert' : 'The Berman'}</h2>
+                    <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Welcome to ${config.display_name}</h2>
                     <p style="font-size: 16px; color: #333;">Hello <strong>${fullName}</strong>,</p>
                     <p style="font-size: 15px; color: #555; line-height: 1.6;">
                         Your account as a <strong>${roleName}</strong> has been successfully created.

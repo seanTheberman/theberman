@@ -1,7 +1,7 @@
 
-export const generateBusinessEmail = (record: any, businessName: string, tenant: string = 'ireland') => {
+export const generateBusinessEmail = (record: any, businessName: string, tenant: string = 'ireland', websiteUrl: string = 'https://theberman.eu', brandName: string = 'The Berman') => {
     const isSpanish = tenant === 'spain';
-    const websiteUrl = isSpanish ? 'https://certificadosenergeticos.eu' : 'https://theberman.eu';
+    const catalogueName = `${brandName} Catalogue`;
     return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
       <div style="background-color: #1b6cb5; padding: 20px; text-align: center;">
@@ -9,7 +9,7 @@ export const generateBusinessEmail = (record: any, businessName: string, tenant:
       </div>
       <div style="padding: 20px; border: 1px solid #ddd; border-top: none;">
         <p style="font-size: 16px;">${isSpanish ? 'Hola' : 'Hello'} <strong>${businessName}</strong>,</p>
-        <p style="font-size: 16px;">${isSpanish ? 'Has recibido una nueva consulta de un cliente potencial a través de tu ficha en' : 'You have received a new enquiry from a potential customer via your listing on'} <strong>${isSpanish ? 'Certificado Energético' : 'The Berman Catalogue'}</strong>.</p>
+        <p style="font-size: 16px;">${isSpanish ? 'Has recibido una nueva consulta de un cliente potencial a través de tu ficha en' : 'You have received a new enquiry from a potential customer via your listing on'} <strong>${catalogueName}</strong>.</p>
 
         <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
           <tr>
@@ -37,7 +37,7 @@ export const generateBusinessEmail = (record: any, businessName: string, tenant:
         </div>
       </div>
       <div style="text-align: center; padding: 10px; font-size: 12px; color: #999;">
-        &copy; 2026 ${isSpanish ? 'Certificado Energético' : 'The Berman'}. ${isSpanish ? 'Todos los derechos reservados.' : 'All rights reserved.'} <br/>
+        &copy; 2026 ${brandName}. ${isSpanish ? 'Todos los derechos reservados.' : 'All rights reserved.'} <br/>
         <a href="${websiteUrl}" style="color: #1b6cb5; text-decoration: none;">${websiteUrl.replace('https://', '')}</a>
       </div>
     </div>

@@ -269,6 +269,7 @@ Deno.serve(async (req: Request) => {
                         websiteUrl,
                         contractor.phone || undefined,
                         isSpanish,
+                        config.display_name,
                     );
                     await client.send(
                         smtpFrom,

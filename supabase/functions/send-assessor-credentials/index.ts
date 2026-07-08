@@ -47,7 +47,7 @@ Deno.serve(async (req: Request) => {
         await client.connect(smtpHostname, smtpPort)
         await client.authenticate(smtpUsername, smtpPassword)
 
-        const html = generateCredentialsHtml(fullName, email, password, resolvedLoginUrl, tenant)
+        const html = generateCredentialsHtml(fullName, email, password, resolvedLoginUrl, tenant, config.display_name, config.website_url)
         await client.send(smtpFrom!, email, isSpanish ? `Tus Credenciales de Acceso - ${config.display_name}` : (isEngland ? `Your DEA Login Credentials - ${config.display_name}` : `Your BER Assessor Login Credentials - ${config.display_name}`), html)
 
         await client.close()

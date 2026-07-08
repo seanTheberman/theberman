@@ -81,6 +81,8 @@ Deno.serve(async (req: Request) => {
             const promoHtml = generatePromoHtml(sponsors || []);
 
             const isSpanish = tenant === 'spain';
+            const isEngland = tenant === 'england';
+            const certificateName = isSpanish ? 'certificado energético' : (isEngland ? 'EPC' : 'BER');
 
             // 2. Notify Homeowner
             const homeownerHtml = generateHomeownerAcceptanceEmail(
@@ -89,7 +91,8 @@ Deno.serve(async (req: Request) => {
                 quote.price,
                 websiteUrl,
                 promoHtml,
-                tenant
+                tenant,
+                config.display_name
             );
             await client.send(smtpFrom, assessment.contact_email, isSpanish ? `Reserva Confirmada - ${websiteUrl.replace('https://', '')}` : `Booking Confirmed - ${websiteUrl.replace('https://', '')}`, homeownerHtml);
             console.log(`[send-acceptance-notification] Notified homeowner: ${assessment.contact_email} (tenant: ${tenant})`);
@@ -102,7 +105,8 @@ Deno.serve(async (req: Request) => {
                 quote.price,
                 websiteUrl,
                 promoHtml,
-                tenant
+                tenant,
+                config.display_name
             );
             await client.send(smtpFrom, contractor.email, isSpanish ? '¡Nueva Reserva Confirmada!' : 'New Booking Confirmed!', contractorHtml);
             console.log(`[send-acceptance-notification] Notified contractor: ${contractor.email} (tenant: ${tenant})`);
@@ -110,7 +114,7 @@ Deno.serve(async (req: Request) => {
             // SMS to homeowner
             await trySendSms(assessment.contact_phone, isSpanish
                 ? `Hola ${assessment.contact_name}, tu reserva de certificado energético con ${contractor.full_name} está confirmada. Importe: EUR ${quote.price}. Ver detalles en ${websiteUrl}`
-                : `Hi ${assessment.contact_name}, your BER booking with ${contractor.full_name} is confirmed! Amount: EUR ${quote.price}. View details at ${websiteUrl}`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
+                : `Hi ${assessment.contact_name}, your ${certificateName} booking with ${contractor.full_name} is confirmed! Amount: EUR ${quote.price}. View details at ${websiteUrl}`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
 
             // SMS to contractor
             await trySendSms(contractor.phone, isSpanish
