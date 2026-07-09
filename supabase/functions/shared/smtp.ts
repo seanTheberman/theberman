@@ -8,8 +8,14 @@ export class CustomSmtpClient {
     private messageIdDomain: string;
 
     constructor(domain: string = 'theberman.eu') {
-        this.ehloDomain = domain;
-        this.messageIdDomain = domain;
+        // SMTP EHLO/Message-ID must be ASCII. Convert IDN (e.g. certificadoenergético.eu)
+        // to punycode so providers like Gmail do not reject the handshake.
+        try {
+            this.ehloDomain = new URL(`https://${domain}`).hostname;
+        } catch {
+            this.ehloDomain = domain;
+        }
+        this.messageIdDomain = this.ehloDomain;
     }
 
     async connect(hostname: string, port: number) {

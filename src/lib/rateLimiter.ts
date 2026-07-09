@@ -119,8 +119,16 @@ export const recordFailedAttempt = async (email: string): Promise<{ requiresVeri
         attempts.lockedUntil = now + LOCKOUT_DURATION;
         loginAttempts.set(normalizedEmail, attempts);
 
-        // Send verification email
-        await sendVerificationEmail(normalizedEmail, code);
+        // Only send verification email for actual admin accounts.
+        const { data: adminProfile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('email', normalizedEmail)
+            .maybeSingle();
+
+        if (adminProfile?.role === 'admin') {
+            await sendVerificationEmail(normalizedEmail, code);
+        }
 
         return {
             requiresVerification: true,
@@ -183,6 +191,16 @@ export const resendVerificationCode = async (email: string): Promise<boolean> =>
     const attempts = loginAttempts.get(normalizedEmail);
 
     if (!attempts || !attempts.requiresVerification) {
+        return false;
+    }
+
+    const { data: adminProfile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('email', normalizedEmail)
+        .maybeSingle();
+
+    if (adminProfile?.role !== 'admin') {
         return false;
     }
 

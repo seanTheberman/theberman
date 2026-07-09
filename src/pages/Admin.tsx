@@ -976,7 +976,7 @@ const Admin = () => {
             );
 
             // Race between the function call and timeout
-            const functionPromise = supabase.functions.invoke('create-admin-user', {
+            const functionPromise = supabase.functions.invoke('create-managed-user', {
                 body: {
                     fullName: newUserFormData.fullName,
                     email: newUserFormData.email,

@@ -18,7 +18,7 @@ const adminLoginSchema = z.object({
 type AdminLoginFormData = z.infer<typeof adminLoginSchema>;
 
 const AdminLogin = () => {
-    const { signIn, user, role, loading } = useAuth();
+    const { signIn, signOut, user, role, loading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [showPassword, setShowPassword] = useState(false);
@@ -87,6 +87,21 @@ const AdminLogin = () => {
                 throw new Error(passwordValidation.message || 'Invalid password format.');
             }
             
+            // Only allow admin emails to use this login page.
+            const { data: adminCheck } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('email', email)
+                .maybeSingle();
+
+            if (adminCheck?.role !== 'admin') {
+                // Not an admin account — send them to the regular login page.
+                navigate('/login', { replace: true });
+                setIsSubmitting(false);
+                signingIn.current = false;
+                return;
+            }
+
             // Check if account is locked or requires verification
             const accountStatus = isAccountLocked(email);
             if (accountStatus.locked && accountStatus.requiresVerification) {
@@ -150,19 +165,9 @@ const AdminLogin = () => {
                     .maybeSingle();
 
                 if (profile?.role !== 'admin') {
-                    // Non-admin user — log them into their correct dashboard instead of blocking
-                    recordSuccessfulLogin(email);
-                    toast.success('Login successful! Redirecting to your dashboard...');
-
-                    const userRole = profile?.role;
-                    if (userRole === 'contractor') {
-                        navigate('/dashboard/ber-assessor', { replace: true });
-                    } else if (userRole === 'business') {
-                        navigate('/dashboard/business', { replace: true });
-                    } else {
-                        navigate('/dashboard/user', { replace: true });
-                    }
-                    return;
+                    // Admin login page is for administrators only. Sign out and reject.
+                    await signOut();
+                    throw new Error('Access denied: this login page is restricted to administrators.');
                 }
 
                 // Record successful login (clears rate limit)

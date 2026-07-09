@@ -4,6 +4,8 @@
 
 export const config = { matcher: '/((?!_next|assets|favicon|logo|robots).*)' };
 
+const PUBLIC_FILE = /\.(?:avif|css|csv|gif|ico|jpe?g|js|json|map|pdf|png|svg|txt|webmanifest|woff2?|xml)$/i;
+
 // ─── Page metadata map (Ireland) ─────────────────────────────────────────────
 const PAGE_META_IE = {
   '/': {
@@ -1501,6 +1503,10 @@ export default async function middleware(req) {
   const url  = new URL(req.url);
   const path = url.pathname;
 
+  if (PUBLIC_FILE.test(path) && path !== '/sitemap.xml') {
+    return;
+  }
+
   const hostname = req.headers.get('host') || url.hostname;
   const isEsp = /certificado|xn--/.test(hostname);
   const isEng = /epccert/.test(hostname);
@@ -1549,7 +1555,12 @@ export default async function middleware(req) {
     });
   }
 
-  const res = await fetch(req);
+  const indexUrl = new URL('/index.html', req.url);
+  const res = await fetch(indexUrl, { headers: req.headers });
+  const contentType = res.headers.get('content-type') || '';
+  if (!contentType.includes('text/html')) {
+    return res;
+  }
   const html = await res.text();
 
   const { title, desc } = getMeta(path, tenant);

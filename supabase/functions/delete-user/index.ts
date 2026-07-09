@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireAdmin } from "../shared/auth.ts";
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -18,9 +19,15 @@ Deno.serve(async (req: Request) => {
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         );
 
-        // Skip authentication for service role key
-        // This function is designed to be called from admin panel or with service role key
-        // The function uses service role key internally for admin operations
+        // Authorize: only authenticated admins may invoke this endpoint
+        const { error: authError } = await requireAdmin(req, supabaseAdmin);
+        if (authError) {
+            console.warn('[delete-user] Authorization failed:', authError);
+            return new Response(
+                JSON.stringify({ success: false, error: 'Unauthorized' }),
+                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+            );
+        }
 
         const body = await req.json();
         const { userId } = body;
