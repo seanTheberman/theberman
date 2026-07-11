@@ -26,7 +26,7 @@ const Login = () => {
     const tenant = getTenantFromDomain();
     const isEngland = tenant === 'england';
     const assessorLabel = isEngland ? 'EPC Assessor' : isSpanish ? 'Certificador Energético' : 'BER Assessor';
-    const { signIn, signOut, user, role, profile, loading } = useAuth();
+    const { signIn, user, role, profile, loading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [activeTab, setActiveTab] = useState<'homeowner' | 'assessor' | 'business'>('homeowner');
@@ -138,32 +138,6 @@ const Login = () => {
 
                 const userRole = profile?.role || 'user';
                 const regStatus = profile?.registration_status;
-
-                // Role validation based on active tab — MUST happen first
-                if (activeTab === 'homeowner') {
-                    if (userRole === 'contractor') {
-                        await signOut();
-                        throw new Error(isSpanish ? `Esta cuenta está registrada como ${assessorLabel}. Usa la pestaña "${assessorLabel}" para iniciar sesión.` : `This account is registered as a ${assessorLabel}. Please use the "${assessorLabel}" tab to log in.`);
-                    }
-                    if (userRole === 'business') {
-                        await signOut();
-                        throw new Error(isSpanish ? 'Esta cuenta está registrada como Negocio. Usa la pestaña "Negocio" para iniciar sesión.' : 'This account is registered as a Business. Please use the "Business" tab to log in.');
-                    }
-                } else if (activeTab === 'assessor') {
-                    if (userRole === 'user' || userRole === 'homeowner') {
-                        await signOut();
-                        throw new Error(isSpanish ? 'Esta cuenta está registrada como Propietario. Usa la pestaña "Zona Cliente" para iniciar sesión.' : 'This account is registered as a Homeowner. Please use the "Homeowner" tab to log in.');
-                    }
-                    if (userRole === 'business') {
-                        await signOut();
-                        throw new Error(isSpanish ? 'Esta cuenta está registrada como Negocio. Usa la pestaña "Negocio" para iniciar sesión.' : 'This account is registered as a Business. Please use the "Business" tab to log in.');
-                    }
-                } else if (activeTab === 'business') {
-                    if (userRole !== 'business') {
-                        await signOut();
-                        throw new Error(isSpanish ? 'Esta cuenta no está registrada como Negocio.' : 'This account is not registered as a Business.');
-                    }
-                }
 
                 // If requires_password_change is still set but the user just logged in
                 // successfully (proving they know their password), clear the flag.

@@ -43,15 +43,32 @@ Deno.serve(async (req: Request) => {
             throw new Error(`SMTP configuration missing for tenant ${tenant}`);
         }
 
-        const client = new CustomSmtpClient(config.domain)
-        await client.connect(smtpHostname, smtpPort)
-        await client.authenticate(smtpUsername, smtpPassword)
+        const html = generateCredentialsHtml(fullName, email, password, resolvedLoginUrl, tenant, config.display_name, config.website_url);
+        const subject = isSpanish
+            ? `Tus Credenciales de Acceso - ${config.display_name}`
+            : (isEngland ? `Your DEA Login Credentials - ${config.display_name}` : `Your BER Assessor Login Credentials - ${config.display_name}`);
 
-        const html = generateCredentialsHtml(fullName, email, password, resolvedLoginUrl, tenant, config.display_name, config.website_url)
-        await client.send(smtpFrom!, email, isSpanish ? `Tus Credenciales de Acceso - ${config.display_name}` : (isEngland ? `Your DEA Login Credentials - ${config.display_name}` : `Your BER Assessor Login Credentials - ${config.display_name}`), html)
-
-        await client.close()
-        console.log(`[send-assessor-credentials] SUCCESS: Credentials email sent to ${email}`);
+        let lastError: any = null;
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            const client = new CustomSmtpClient(config.domain);
+            try {
+                await client.connect(smtpHostname, smtpPort);
+                await client.authenticate(smtpUsername, smtpPassword);
+                await client.send(smtpFrom!, email, subject, html);
+                await client.close();
+                console.log(`[send-assessor-credentials] SUCCESS: Credentials email sent to ${email} (attempt ${attempt})`);
+                break;
+            } catch (smtpErr: any) {
+                lastError = smtpErr;
+                console.warn(`[send-assessor-credentials] SMTP attempt ${attempt} failed for ${email}:`, smtpErr?.message);
+                try { await client.close(); } catch (e) { }
+                if (attempt === 3) {
+                    throw new Error(`SMTP failed after 3 attempts: ${smtpErr?.message}`);
+                }
+                // Wait before retrying (exponential backoff)
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+            }
+        }
 
         return new Response(
             JSON.stringify({ success: true, message: 'Credentials email sent successfully' }),
