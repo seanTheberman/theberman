@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Mail, Facebook, Instagram, Linkedin, ChevronRight, Globe, MapPin } from 'lucide-react';
+import { Menu, X, Mail, Facebook, Instagram, Linkedin, ChevronRight, Globe, MapPin, Phone } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
 import { getTenantDisplayName, getTenantWebsiteUrl, getTenantEmail, getTenantDomain } from '../lib/tenant';
@@ -346,6 +346,30 @@ const Layout = () => {
                                 {isSpanish ? 'Catálogo Energético' : <>Energy <span className="text-[#9ACD32]">Catalogue</span></>}
                             </span>
                         </Link>}
+
+                        {/* Talk to Us — clickable phone number */}
+                        {(() => {
+                            const phoneNumber = isSpanish ? '+34613907509' : '0818213131';
+                            const phoneDisplay = isSpanish ? '+34 613 90 75 09' : '0818213131';
+                            return (
+                                <a
+                                    href={`tel:${phoneNumber}`}
+                                    className="hidden sm:flex items-center gap-2 px-4 py-2 bg-[#007F00] hover:bg-[#006600] rounded-full text-white font-bold text-xs uppercase tracking-wide transition-colors whitespace-nowrap"
+                                >
+                                    <Phone size={14} />
+                                    <span>{isSpanish ? 'Llámanos' : 'Talk to Us'}</span>
+                                    <span className="text-[#9ACD32]">{phoneDisplay}</span>
+                                </a>
+                            );
+                        })()}
+
+                        {/* Mobile: icon-only phone button */}
+                        <a
+                            href={`tel:${isSpanish ? '+34613907509' : '0818213131'}`}
+                            className="flex sm:hidden items-center justify-center w-10 h-10 bg-[#007F00] hover:bg-[#006600] rounded-full text-white transition-colors"
+                        >
+                            <Phone size={16} />
+                        </a>
 
                         {/* Hamburger */}
                         <button

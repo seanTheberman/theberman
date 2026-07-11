@@ -46,9 +46,25 @@ export class CustomSmtpClient {
         console.log("[SMTP] Authentication successful.");
     }
 
+    private encodeHeader(text: string): string {
+        // RFC 2047: encode display names / subjects containing non-ASCII chars
+        if (/^[\x00-\x7F]*$/.test(text)) return text;
+        const b64 = btoa(unescape(encodeURIComponent(text)));
+        return `=?UTF-8?B?${b64}?=`;
+    }
+
     async send(from: string, to: string, subject: string, html: string) {
         const fromEmail = (from.match(/<(.+)>/)?.[1] || from).trim();
         const toEmail = (to.match(/<(.+)>/)?.[1] || to).trim();
+        const fromDisplayName = (from.match(/^(.+?)\s*<.+>$/)?.[1] || '').trim();
+
+        // Encode From header: if there's a display name with non-ASCII, MIME-encode it
+        const encodedFrom = fromDisplayName
+            ? `${this.encodeHeader(fromDisplayName)} <${fromEmail}>`
+            : from;
+
+        // Encode Subject if it contains non-ASCII characters
+        const encodedSubject = this.encodeHeader(subject);
 
         console.log(`[SMTP] Sending MAIL FROM:<${fromEmail}>`);
         await this.command(`MAIL FROM:<${fromEmail}>`);
@@ -62,16 +78,17 @@ export class CustomSmtpClient {
         const messageId = `<${crypto.randomUUID()}@${this.messageIdDomain}>`;
 
         const message = [
-            `From: ${from}`,
+            `From: ${encodedFrom}`,
             `To: ${to}`,
             `Reply-To: ${fromEmail}`,
-            `Subject: ${subject}`,
+            `Subject: ${encodedSubject}`,
             `Date: ${date}`,
             `Message-ID: ${messageId}`,
             `X-Mailer: ${this.ehloDomain} Mailer`,
             `Importance: normal`,
             `MIME-Version: 1.0`,
             `Content-Type: text/html; charset=UTF-8`,
+            `Content-Transfer-Encoding: 8bit`,
             `Auto-Submitted: auto-generated`,
             `X-Entity-Ref-ID: ${crypto.randomUUID()}`,
             "",
