@@ -32,10 +32,6 @@ const DOMAIN_TO_TENANT: Record<string, string> = {
   'diagnostic-france.eu': 'france',
   'www.diagnostic-france.eu': 'france',
   // Portugal
-  'certificado-pt.eu': 'portugal',
-  'www.certificado-pt.eu': 'portugal',
-  'certificadopt.eu': 'portugal',
-  'www.certificadopt.eu': 'portugal',
   'certificadoenergia.com': 'portugal',
   'www.certificadoenergia.com': 'portugal',
   // Local dev
@@ -106,9 +102,11 @@ export function getTenantCurrency(tenant: string): string {
 }
 
 export function formatCurrency(amount: number | null | undefined, tenant?: string): string {
-  const currency = getTenantCurrency(tenant || getTenantFromDomain());
+  const resolvedTenant = tenant || getTenantFromDomain();
+  const currency = getTenantCurrency(resolvedTenant);
+  const locale = resolvedTenant === 'portugal' ? 'pt-PT' : 'en-GB';
   const value = typeof amount === 'number' ? amount : 0;
-  return new Intl.NumberFormat('en-GB', { style: 'currency', currency, maximumFractionDigits: 2 }).format(value);
+  return new Intl.NumberFormat(locale, { style: 'currency', currency, maximumFractionDigits: 2 }).format(value);
 }
 
 function getCurrentHostname(): string | null {
@@ -134,7 +132,7 @@ export function getTenantWebsiteUrl(tenant: string): string {
   }
   if (tenant === 'portugal') {
     const host = getCurrentHostname();
-    if (host && (host.includes('energia') || host.includes('pt'))) return `https://${host}`;
+    if (host && host.includes('energia')) return `https://${host}`;
     return 'https://certificadoenergia.com';
   }
   return 'https://www.theberman.eu';
@@ -174,7 +172,7 @@ export function getTenantDomain(tenant: string): string {
   }
   if (tenant === 'portugal') {
     const host = getCurrentHostname();
-    if (host && (host.includes('energia') || host.includes('pt'))) return host.replace(/^www\./, '');
+    if (host && host.includes('energia')) return host.replace(/^www\./, '');
     return 'certificadoenergia.com';
   }
   return 'theberman.eu';

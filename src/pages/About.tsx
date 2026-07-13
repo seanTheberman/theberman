@@ -10,13 +10,56 @@ const About = () => {
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
     const isEngland = tenant === 'england';
-    const brand = isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Cert' : isFrance ? 'DPE France' : isPortugal ? 'Certificado Energético' : 'The BER Man';
+    const brand = isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Cert' : isFrance ? 'DPE France' : isPortugal ? 'Certificado Energia' : 'The BER Man';
     const regAuthority = isSpanish ? 'CEE CAT' : isEngland ? 'accredited' : isFrance ? 'DPE' : isPortugal ? 'ADENE' : 'SEAI';
 
     const { content: cms, loading: cmsLoading } = usePageContent('about');
     const c = (section: string, key: string, fallback: string) => cmsValue(cms, section, key, fallback);
 
-    const tr = isSpanish ? {
+    const tr = isPortugal ? {
+        seoTitle: 'Sobre Nós - Especialistas em Certificação Energética',
+        seoDesc: 'Conheça a Certificado Energia, a plataforma de confiança para certificação energética em Portugal. Peritos certificados, avaliações rápidas e profissionais.',
+        missionTag: 'A Nossa Missão',
+        title1: 'Precisão em cada',
+        title2: 'Certificação.',
+        heroP: 'Ajudamos os proprietários em Portugal a compreender, melhorar e certificar o desempenho energético dos seus imóveis, com apoio dos melhores profissionais do setor.',
+        storyH: 'A Nossa História',
+        story: [
+            `A ${brand} nasceu com um objetivo claro: trazer clareza profissional e rigor técnico ao setor da certificação energética em Portugal.`,
+            'O que começou como uma pequena equipa em Lisboa cresceu para uma rede nacional de peritos certificados.',
+            `Hoje, a ${brand} é uma plataforma de confiança para avaliações energéticas em todo o Portugal. Já facilitámos milhares de Certificados Energéticos.`,
+            'Olhando para o futuro, o nosso foco mantém-se na inovação, na conformidade e em ajudar os proprietários a cumprir a legislação energética mais recente.',
+        ],
+        stats: [
+            { n: '1k+', l1: 'Avaliações Energéticas', l2: 'Concluídas' },
+            { n: '100+', l1: 'Peritos Certificados', l2: 'em Todo o País' },
+            { n: 'ADENE', l1: 'Peritos', l2: 'Certificados' },
+        ],
+        howH: 'Como Trabalhamos',
+        howSub: `Princípios da ${brand}`,
+        values: [
+            { icon: <Zap size={24} />, title: 'Rapidez e Precisão', desc: 'Os nossos peritos oferecem avaliações precisas com foco em tempos de resposta rápidos.' },
+            { icon: <Shield size={24} />, title: 'Integridade Profissional', desc: 'Todas as certificações são realizadas por profissionais certificados e comprometidos com um trabalho honesto e transparente.' },
+            { icon: <Globe size={24} />, title: 'Futuro Verde', desc: 'Oferecemos recomendações orientadas para a poupança energética a longo prazo e a redução do impacto ambiental.' },
+        ],
+        faqH: 'Perguntas Frequentes',
+        faqSub: 'Tudo o que precisa de saber',
+        faqs: [
+            { q: 'O que é um Certificado Energético?', a: 'O Certificado Energético indica o nível de eficiência energética de um imóvel, classificando-o de A (mais eficiente) a G (menos eficiente), de forma semelhante ao etiquetagem dos eletrodomésticos.' },
+            { q: 'O Certificado Energético é obrigatório em Portugal?', a: 'Sim. É obrigatório por lei para vender, arrendar ou anunciar um imóvel, com exceções muito limitadas.' },
+            { q: 'Quanto custa um Certificado Energético?', a: 'O preço depende do tamanho e tipo do imóvel. Comparar orçamentos de vários peritos ajuda a conseguir o melhor preço.' },
+            { q: 'Quanto tempo dura a avaliação?', a: 'A avaliação no imóvel costuma durar entre 1 e 3 horas, consoante o tamanho.' },
+            { q: 'Qual a validade do Certificado Energético?', a: 'É válido por 10 anos, salvo se forem efetuadas alterações significativas que afetem o desempenho energético do imóvel.' },
+            { q: 'Como obtenho um Certificado Energético?', a: 'Marca com um perito certificado, este visita e avalia o imóvel, e o certificado é emitido e registado.' },
+            { q: 'Posso escolher a data e hora da avaliação?', a: 'Sim. Pode selecionar a data e hora preferidas ao reservar através da plataforma.' },
+            { q: 'Os peritos estão certificados e são de confiança?', a: 'Sim. Todas as avaliações são realizadas por peritos certificados que seguem um código oficial de boas práticas.' },
+            { q: 'O que acontece se obtiver uma classificação baixa?', a: 'Uma classificação baixa não impede a venda do imóvel; apenas informa o comprador. O nosso relatório de recomendações indicará como melhorar.' },
+        ],
+        joinH: 'Junte-se à',
+        joinH2: `${brand}`,
+        joinP: 'Pronto para uma avaliação energética profissional? A nossa rede nacional de peritos certificados está pronta para o ajudar hoje.',
+        cta: 'Pedir o Meu Orçamento',
+    } : isSpanish ? {
         seoTitle: 'Sobre Nosotros - Certificadores Energéticos Expertos',
         seoDesc: 'Conoce Certificado Energético, la principal consultora energética de España. Certificaciones rápidas, precisas y profesionales.',
         missionTag: 'Nuestra Misión',
@@ -123,14 +166,14 @@ const About = () => {
         cta: isEngland ? 'Get a Free Quote' : 'Get My BER Quote',
     };
 
-    const baseUrl = tenant === 'england' ? 'https://www.epccert.com' : isSpanish ? 'https://certificadoenerg\u00e9tico.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://www.theberman.eu';
+    const baseUrl = tenant === 'england' ? 'https://www.epccert.com' : isSpanish ? 'https://certificadoenerg\u00e9tico.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadoenergia.com' : 'https://www.theberman.eu';
 
     const orgSchema = {
         '@context': 'https://schema.org',
         '@type': 'Organization',
         name: brand,
         url: baseUrl,
-        logo: `${baseUrl}/logo.svg`,
+        logo: tenant === 'portugal' ? `${baseUrl}/certificado-energia-logo.svg` : `${baseUrl}/logo.svg`,
         description: tr.seoDesc,
         sameAs: tenant === 'england'
             ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
@@ -139,7 +182,7 @@ const About = () => {
                 : tenant === 'france'
                     ? ['https://www.facebook.com/dpefrance', 'https://www.instagram.com/dpefrance']
                     : tenant === 'portugal'
-                        ? ['https://www.facebook.com/certificadoenergeticopt', 'https://www.instagram.com/certificadoenergeticopt']
+                        ? []
                         : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
     };
 
@@ -147,8 +190,8 @@ const About = () => {
         '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',
         itemListElement: [
-            { '@type': 'ListItem', position: 1, name: 'Home', item: `${baseUrl}/` },
-            { '@type': 'ListItem', position: 2, name: 'About Us', item: `${baseUrl}/about-us` },
+            { '@type': 'ListItem', position: 1, name: isPortugal ? 'Início' : 'Home', item: `${baseUrl}/` },
+            { '@type': 'ListItem', position: 2, name: isPortugal ? 'Sobre Nós' : 'About Us', item: `${baseUrl}/about-us` },
         ],
     };
 

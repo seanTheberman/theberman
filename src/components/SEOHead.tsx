@@ -28,6 +28,13 @@ const TENANT_CONFIG: Record<string, { siteName: string; baseUrl: string; ogImage
         locale: 'en_GB',
         currency: 'GBP',
     },
+    portugal: {
+        siteName: 'Certificado Energia',
+        baseUrl: 'https://certificadoenergia.com',
+        ogImage: 'https://certificadoenergia.com/certificado-energia-logo.svg',
+        locale: 'pt_PT',
+        currency: 'EUR',
+    },
     ireland: {
         siteName: 'The BER Man',
         baseUrl: 'https://www.theberman.eu',

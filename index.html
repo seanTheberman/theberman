@@ -18,9 +18,9 @@
     (function() {
       var host = location.hostname;
       var isEng = /epccert/.test(host);
-      var isEsp = /certificado/.test(host);
+      var isEsp = /certificadoenergético|certificadosenergetico/.test(host);
       var isFra = /dpefrance/.test(host);
-      var isPor = /certificadopt/.test(host);
+      var isPor = /certificadoenergia/.test(host);
 
       var title, desc, locale, siteName, baseUrl, ogImage;
       if (isEng) {
@@ -45,11 +45,11 @@
         desc = "Plateforme leader de DPE en France. Obtenez votre diagnostic de performance énergétique rapidement avec des experts certifiés.";
         locale = "fr_FR";
       } else if (isPor) {
-        siteName = "Certificado Energético";
-        baseUrl = "https://certificadopt.eu";
-        ogImage = "https://certificadopt.eu/logo.png";
-        title = "Certificado Energético Portugal | Certificados de Eficiência Energética";
-        desc = "Plataforma líder de certificados energéticos em Portugal. Obtenha o seu certificado de eficiência energética com avaliadores certificados.";
+        siteName = "Certificado Energia";
+        baseUrl = "https://certificadoenergia.com";
+        ogImage = "https://certificadoenergia.com/certificado-energia-logo.svg";
+        title = "Certificado Energia Portugal | Certificados de Eficiência Energética";
+        desc = "A plataforma líder de certificação energética em Portugal. Obtenha o seu certificado de eficiência energética com peritos certificados.";
         locale = "pt_PT";
       } else {
         siteName = "The BER Man";
@@ -62,6 +62,12 @@
 
       document.title = title;
       document.documentElement.lang = isEsp ? 'es' : isEng ? 'en' : isFra ? 'fr' : isPor ? 'pt' : 'en';
+
+      // Update favicon for the current tenant
+      var favicon = document.querySelector('link[rel="icon"]');
+      if (favicon) {
+        favicon.href = isPor ? '/certificado-energia-logo.svg' : (isEsp ? '/certificado-logo-trimmed.png' : (isEng ? '/epc-logo-trimmed.png' : '/logo.svg'));
+      }
 
       // Create Helmet-tracked (data-rh) default tags so non-JS crawlers get
       // tenant-correct values, and react-helmet-async REPLACES them in place

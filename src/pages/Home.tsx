@@ -27,7 +27,7 @@ const HomePage = () => {
     const [isDismissed, setIsDismissed] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const brandName = isSpanish ? 'Certificado Energético' : tenant === 'england' ? 'EPC Cert' : tenant === 'france' ? 'DPE France' : tenant === 'portugal' ? 'Certificado Energético' : 'The BER Man';
+    const brandName = isSpanish ? 'Certificado Energético' : tenant === 'england' ? 'EPC Cert' : tenant === 'france' ? 'DPE France' : tenant === 'portugal' ? 'Certificado Energia' : 'The BER Man';
     const regAuthority = isSpanish ? 'CEE CAT' : tenant === 'england' ? 'accredited' : tenant === 'france' ? 'DPE' : tenant === 'portugal' ? 'ADENE' : 'SEAI';
     const ratingName = isSpanish ? 'Certificado Energético' : tenant === 'england' ? 'EPC' : tenant === 'france' ? 'DPE' : tenant === 'portugal' ? 'Certificado Energético' : 'BER';
     const country = isSpanish ? 'Spain' : tenant === 'england' ? 'England' : tenant === 'france' ? 'France' : tenant === 'portugal' ? 'Portugal' : 'Ireland';
@@ -52,13 +52,17 @@ const HomePage = () => {
                     ? `Home | ${brandName} ${ratingName} Ratings`
                     : tenant === 'england'
                         ? 'EPC Certificate England | Domestic & Commercial EPC'
-                        : 'BER Cert Ireland | The BER Man'
+                        : tenant === 'portugal'
+                            ? 'Certificado Energia Portugal | Certificados de Eficiência Energética'
+                            : 'BER Cert Ireland | The BER Man'
                 }
                 description={isSpanish
                     ? `El sitio web más grande de ${ratingName} en ${country}. Evaluaciones de ${ratingName} rápidas, fiables y sin complicaciones. Obtenga cotizaciones competitivas de certificadores locales hoy.`
                     : tenant === 'england'
                         ? 'Book Accredited EPC Assessments Across England. Fast Domestic and Commercial EPC Certificates with Competitive Pricing and Nationwide Coverage'
-                        : "Need a BER Cert in Ireland? The BER Man Connects You with Local, SEAI-Registered Assessors Nationwide. Get a Free Quote Online Today!"
+                        : tenant === 'portugal'
+                            ? 'A plataforma líder de certificação energética em Portugal. Obtenha o seu Certificado Energético com peritos certificados. Peça um orçamento grátis online.'
+                            : "Need a BER Cert in Ireland? The BER Man Connects You with Local, SEAI-Registered Assessors Nationwide. Get a Free Quote Online Today!"
                 }
                 canonical="/"
                 jsonLd={[
@@ -66,17 +70,17 @@ const HomePage = () => {
                         '@context': 'https://schema.org',
                         '@type': 'BreadcrumbList',
                         itemListElement: [
-                            { '@type': 'ListItem', position: 1, name: 'Home', item: tenant === 'england' ? 'https://www.epccert.com/' : isSpanish ? 'https://certificadoenergético.eu/' : tenant === 'france' ? 'https://dpefrance.eu/' : tenant === 'portugal' ? 'https://certificadopt.eu/' : 'https://www.theberman.eu/' },
+                            { '@type': 'ListItem', position: 1, name: tenant === 'portugal' ? 'Início' : 'Home', item: tenant === 'england' ? 'https://www.epccert.com/' : isSpanish ? 'https://certificadoenergético.eu/' : tenant === 'france' ? 'https://dpefrance.eu/' : tenant === 'portugal' ? 'https://certificadoenergia.com/' : 'https://www.theberman.eu/' },
                         ],
                     },
                     {
                         '@context': 'https://schema.org',
                         '@type': 'WebSite',
                         name: brandName,
-                        url: tenant === 'england' ? 'https://www.epccert.com' : isSpanish ? 'https://certificadoenergético.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://www.theberman.eu',
+                        url: tenant === 'england' ? 'https://www.epccert.com' : isSpanish ? 'https://certificadoenergético.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadoenergia.com' : 'https://www.theberman.eu',
                         potentialAction: {
                             '@type': 'SearchAction',
-                            target: tenant === 'england' ? 'https://www.epccert.com/catalogue?q={search_term_string}' : isSpanish ? 'https://certificadoenergético.eu/catalogue?q={search_term_string}' : tenant === 'france' ? 'https://dpefrance.eu/catalogue?q={search_term_string}' : tenant === 'portugal' ? 'https://certificadopt.eu/catalogue?q={search_term_string}' : 'https://www.theberman.eu/catalogue?q={search_term_string}',
+                            target: tenant === 'england' ? 'https://www.epccert.com/catalogue?q={search_term_string}' : isSpanish ? 'https://certificadoenergético.eu/catalogue?q={search_term_string}' : tenant === 'france' ? 'https://dpefrance.eu/catalogue?q={search_term_string}' : tenant === 'portugal' ? 'https://certificadoenergia.com/catalogue?q={search_term_string}' : 'https://www.theberman.eu/catalogue?q={search_term_string}',
                             'query-input': 'required name=search_term_string',
                         },
                     },
@@ -84,17 +88,17 @@ const HomePage = () => {
                         '@context': 'https://schema.org',
                         '@type': 'Organization',
                         name: brandName,
-                        url: tenant === 'england' ? 'https://www.epccert.com' : isSpanish ? 'https://certificadoenergético.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://www.theberman.eu',
-                        logo: tenant === 'england' ? 'https://www.epccert.com/logo.png' : isSpanish ? 'https://certificadoenergético.eu/logo.png' : tenant === 'france' ? 'https://dpefrance.eu/logo.png' : tenant === 'portugal' ? 'https://certificadopt.eu/logo.png' : 'https://www.theberman.eu/logo.svg',
-                        sameAs: tenant === 'england' ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert'] : isSpanish ? ['https://www.facebook.com/certificadoenergetico', 'https://www.instagram.com/certificadoenergetico'] : tenant === 'france' ? ['https://www.facebook.com/dpefrance', 'https://www.instagram.com/dpefrance'] : tenant === 'portugal' ? ['https://www.facebook.com/certificadoenergeticopt', 'https://www.instagram.com/certificadoenergeticopt'] : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
-                        contactPoint: { '@type': 'ContactPoint', email: tenant === 'england' ? 'hello@epccert.com' : isSpanish ? 'info@certificadoenergético.eu' : tenant === 'france' ? 'contact@dpefrance.eu' : tenant === 'portugal' ? 'contact@certificadopt.eu' : 'hello@theberman.eu', contactType: 'customer service', areaServed: tenant === 'england' ? 'GB' : isSpanish ? 'ES' : tenant === 'france' ? 'FR' : tenant === 'portugal' ? 'PT' : 'IE' }
+                        url: tenant === 'england' ? 'https://www.epccert.com' : isSpanish ? 'https://certificadoenergético.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadoenergia.com' : 'https://www.theberman.eu',
+                        logo: tenant === 'england' ? 'https://www.epccert.com/logo.png' : isSpanish ? 'https://certificadoenergético.eu/logo.png' : tenant === 'france' ? 'https://dpefrance.eu/logo.png' : tenant === 'portugal' ? 'https://certificadoenergia.com/certificado-energia-logo.svg' : 'https://www.theberman.eu/logo.svg',
+                        sameAs: tenant === 'england' ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert'] : isSpanish ? ['https://www.facebook.com/certificadoenergetico', 'https://www.instagram.com/certificadoenergetico'] : tenant === 'france' ? ['https://www.facebook.com/dpefrance', 'https://www.instagram.com/dpefrance'] : tenant === 'portugal' ? [] : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
+                        contactPoint: { '@type': 'ContactPoint', email: tenant === 'england' ? 'hello@epccert.com' : isSpanish ? 'info@certificadoenergético.eu' : tenant === 'france' ? 'contact@dpefrance.eu' : tenant === 'portugal' ? 'hello@certificadoenergia.com' : 'hello@theberman.eu', contactType: 'customer service', areaServed: tenant === 'england' ? 'GB' : isSpanish ? 'ES' : tenant === 'france' ? 'FR' : tenant === 'portugal' ? 'PT' : 'IE' }
                     },
                     {
                         '@context': 'https://schema.org',
                         '@type': 'LocalBusiness',
                         name: brandName,
-                        description: tenant === 'england' ? `${country}'s largest ${ratingName} website. Fast, reliable, and hassle-free ${ratingName} assessments.` : "Need a BER Cert in Ireland? The BER Man Connects You with Local, SEAI-Registered Assessors Nationwide. Get a Free Quote Online Today!",
-                        url: tenant === 'england' ? 'https://www.epccert.com' : isSpanish ? 'https://certificadoenergético.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadopt.eu' : 'https://www.theberman.eu',
+                        description: tenant === 'england' ? `${country}'s largest ${ratingName} website. Fast, reliable, and hassle-free ${ratingName} assessments.` : tenant === 'portugal' ? `A plataforma líder de ${ratingName} em Portugal. Avaliações energéticas rápidas, fiáveis e sem complicações.` : "Need a BER Cert in Ireland? The BER Man Connects You with Local, SEAI-Registered Assessors Nationwide. Get a Free Quote Online Today!",
+                        url: tenant === 'england' ? 'https://www.epccert.com' : isSpanish ? 'https://certificadoenergético.eu' : tenant === 'france' ? 'https://dpefrance.eu' : tenant === 'portugal' ? 'https://certificadoenergia.com' : 'https://www.theberman.eu',
                         address: { '@type': 'PostalAddress', addressCountry: tenant === 'england' ? 'GB' : isSpanish ? 'ES' : tenant === 'france' ? 'FR' : tenant === 'portugal' ? 'PT' : 'IE', addressLocality: tenant === 'england' ? 'London' : isSpanish ? 'Madrid' : tenant === 'france' ? 'Paris' : tenant === 'portugal' ? 'Lisboa' : 'Dublin' },
                         priceRange: tenant === 'england' ? '££' : '€€'
                     }
@@ -257,25 +261,25 @@ const HomePage = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-4 pt-8">
                                     <div className="bg-gray-50 p-8 rounded-3xl border border-gray-100">
-                                        <div className="text-4xl font-black text-[#007F00] mb-2">{c('benefits', 'stat1_value', isSpanish ? '1k+' : '1k+')}</div>
-                                        <div className="text-sm font-bold text-gray-500 uppercase">{c('benefits', 'stat1_label', isSpanish ? 'Usuarios Atendidos' : 'Users Served')}</div>
+                                        <div className="text-4xl font-black text-[#007F00] mb-2">{c('benefits', 'stat1_value', isSpanish ? '1k+' : tenant === 'portugal' ? '1k+' : '1k+')}</div>
+                                        <div className="text-sm font-bold text-gray-500 uppercase">{c('benefits', 'stat1_label', isSpanish ? 'Usuarios Atendidos' : tenant === 'portugal' ? 'Utilizadores Atendidos' : 'Users Served')}</div>
                                     </div>
                                     <div className="bg-green-50 p-8 rounded-3xl border border-green-100">
-                                        <div className="text-4xl font-black text-[#007F00] mb-2">{c('benefits', 'stat2_value', isSpanish ? '1000+' : '100+')}</div>
-                                        <div className="text-sm font-bold text-gray-500 uppercase">{c('benefits', 'stat2_label', isSpanish ? 'Certificadores' : 'Assessors')}</div>
+                                        <div className="text-4xl font-black text-[#007F00] mb-2">{c('benefits', 'stat2_value', isSpanish ? '1000+' : tenant === 'portugal' ? '100+' : '100+')}</div>
+                                        <div className="text-sm font-bold text-gray-500 uppercase">{c('benefits', 'stat2_label', isSpanish ? 'Certificadores' : tenant === 'portugal' ? 'Peritos Certificados' : 'Assessors')}</div>
                                     </div>
                                 </div>
                                 <div className="space-y-4">
                                     <div className="bg-[#007F00] p-8 rounded-3xl text-white shadow-xl shadow-green-100">
                                         <div className="text-4xl font-black mb-2">{c('benefits', 'stat3_value', '4.9/5')}</div>
-                                        <div className="text-sm font-bold opacity-80 uppercase tracking-widest">{c('benefits', 'stat3_label', isSpanish ? 'Valoración Media' : 'Average Rating')}</div>
+                                        <div className="text-sm font-bold opacity-80 uppercase tracking-widest">{c('benefits', 'stat3_label', isSpanish ? 'Valoración Media' : tenant === 'portugal' ? 'Classificação Média' : 'Average Rating')}</div>
                                         <div className="flex gap-1 mt-4">
                                             {[1, 2, 3, 4, 5].map(s => <Star key={s} size={16} fill="white" />)}
                                         </div>
                                     </div>
                                     <div className="bg-gray-50 p-8 rounded-3xl border border-gray-100">
-                                        <div className="text-4xl font-black text-gray-900 mb-2">{isSpanish ? 'Rápido' : 'Fast'}</div>
-                                        <div className="text-sm font-bold text-gray-500 uppercase">{isSpanish ? 'Servicio' : 'Turnaround'}</div>
+                                        <div className="text-4xl font-black text-gray-900 mb-2">{isSpanish ? 'Rápido' : tenant === 'portugal' ? 'Rápido' : 'Fast'}</div>
+                                        <div className="text-sm font-bold text-gray-500 uppercase">{isSpanish ? 'Servicio' : tenant === 'portugal' ? 'Serviço' : 'Turnaround'}</div>
                                     </div>
                                 </div>
                             </div>
@@ -290,7 +294,7 @@ const HomePage = () => {
                     <div className="text-center mb-16">
                         <div className="flex items-center justify-center gap-2 mb-4">
                             <Star className="text-green-500 fill-green-500" size={32} />
-                            <h2 className="text-3xl font-black">{c('reviews', 'heading', isSpanish ? 'Excelente' : (tenant === 'england' ? 'Trusted by Property Owners Across England' : 'What homeowners say about The Berman'))}</h2>
+                            <h2 className="text-3xl font-black">{c('reviews', 'heading', isSpanish ? 'Excelente' : (tenant === 'england' ? 'Trusted by Property Owners Across England' : tenant === 'portugal' ? 'Excelente' : 'What homeowners say about The Berman'))}</h2>
                         </div>
                         <p className="text-gray-500 font-bold uppercase tracking-widest text-sm">{c('reviews', 'subheading', isSpanish ? 'Basado en 1.000 valoraciones verificadas de clientes' : 'Based on 1,000+ verified customer reviews and ratings')}</p>
                     </div>
@@ -414,18 +418,18 @@ const HomePage = () => {
                             <div className="flex flex-wrap gap-4">
                                 <Link to="/catalogue">
                                     <button className="px-10 py-5 bg-[#007F00] text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-[#006400] transition-all shadow-xl shadow-green-100 flex items-center gap-3 active:scale-95 cursor-pointer">
-                                        {isSpanish ? 'Explorar Catálogo' : 'Browse Catalogue'}
+                                        {isSpanish ? 'Explorar Catálogo' : tenant === 'portugal' ? 'Explorar Catálogo' : 'Browse Catalogue'}
                                         <ArrowRight size={18} />
                                     </button>
                                 </Link>
                                 <Link to="/signup?role=business">
                                     <button className="px-10 py-5 bg-white text-gray-900 border-2 border-[#007F00] font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-green-50 transition-all flex items-center gap-3 active:scale-95 cursor-pointer">
-                                        {isSpanish ? 'Registra tu Negocio' : 'Register your Business'}
+                                        {isSpanish ? 'Registra tu Negocio' : tenant === 'portugal' ? 'Registe o Seu Negócio' : 'Register your Business'}
                                     </button>
                                 </Link>
                                 <Link to="/hire-agent">
                                     <button className="px-10 py-5 bg-white text-gray-900 border-2 border-gray-100 font-black text-xs uppercase tracking-widest rounded-2xl hover:border-[#007F00] transition-all flex items-center gap-3 active:scale-95 cursor-pointer">
-                                        {isSpanish ? 'Habla con un Asesor' : 'Speak to Advisor'}
+                                        {isSpanish ? 'Habla con un Asesor' : tenant === 'portugal' ? 'Fale com um Consultor' : 'Speak to Advisor'}
                                     </button>
                                 </Link>
                             </div>
@@ -434,7 +438,7 @@ const HomePage = () => {
                             <div className="relative aspect-square bg-white rounded-[3rem] shadow-2xl overflow-hidden border border-gray-100 group">
                                 <img
                                     src={c('catalogue_promo', 'image_url', 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=800&fm=webp')}
-                                    alt={tenant === 'england' ? 'Residential EPC assessment showing energy efficiency rating recommendations for a property owner - EPC Cert' : 'Home Energy Upgrades'}
+                                    alt={tenant === 'england' ? 'Residential EPC assessment showing energy efficiency rating recommendations for a property owner - EPC Cert' : tenant === 'portugal' ? 'Melhorias Energéticas em Casa' : 'Home Energy Upgrades'}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                                     loading="lazy"
                                 />
@@ -446,8 +450,8 @@ const HomePage = () => {
                                                 <Search size={24} />
                                             </div>
                                             <div>
-                                                <h4 className="text-lg font-black text-gray-900 leading-none">{isSpanish ? 'Búsqueda Inteligente' : 'Smart Search'}</h4>
-                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">{isSpanish ? 'Por Comunidad Autónoma y Tipo de Servicio' : 'By County & Service Type'}</p>
+                                                <h4 className="text-lg font-black text-gray-900 leading-none">{isSpanish ? 'Búsqueda Inteligente' : tenant === 'portugal' ? 'Pesquisa Inteligente' : 'Smart Search'}</h4>
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">{isSpanish ? 'Por Comunidad Autónoma y Tipo de Servicio' : tenant === 'portugal' ? 'Por Região e Tipo de Serviço' : 'By County & Service Type'}</p>
                                             </div>
                                         </div>
                                         <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -480,9 +484,9 @@ const HomePage = () => {
                                 </div>
                             ))}
                         </div>
-                        <Link to={isSpanish ? '/faq' : (tenant === 'england' ? '/epc-faq' : '/ber-faqs/')}>
+                        <Link to={isSpanish ? '/faq' : (tenant === 'england' ? '/epc-faq' : tenant === 'portugal' ? '/faq' : '/ber-faqs/')}>
                             <button className="mt-12 text-[#007F00] font-black border-b-2 border-[#007F00] pb-1 hover:text-[#006400] transition-all flex items-center gap-2 group cursor-pointer">
-                                {isSpanish ? 'Ver todas las preguntas' : 'View All FAQs'}
+                                {isSpanish ? 'Ver todas las preguntas' : tenant === 'portugal' ? 'Ver todas as perguntas' : 'View All FAQs'}
                                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                             </button>
                         </Link>
@@ -499,7 +503,7 @@ const HomePage = () => {
                         </div>
                         <Link to="/get-quote">
                             <button className="w-full bg-[#007F00] hover:bg-green-600 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-green-900/40 transform hover:-translate-y-1 cursor-pointer">
-                                {isSpanish ? 'Pide Presupuesto Online' : 'Get a Quote Online'}
+                                {isSpanish ? 'Pide Presupuesto Online' : tenant === 'portugal' ? 'Pedir Orçamento Online' : 'Get a Quote Online'}
                             </button>
                         </Link>
                     </div>
@@ -537,7 +541,36 @@ const HomePage = () => {
             {/* WE COVER ALL COUNTIES / PROVINCES */}
             <section className="py-20 bg-gray-50 border-t border-gray-100">
                 <div className="container mx-auto px-6">
-                    {(!isSpanish && tenant !== 'england') ? (
+                    {tenant === 'portugal' ? (
+                        <>
+                            <h2 className="text-3xl md:text-4xl font-black text-center text-[#007F00] mb-4">
+                                Serviços de Certificação Energética em Todo o Portugal
+                            </h2>
+                            <p className="text-center text-gray-600 font-medium mb-12 max-w-2xl mx-auto">
+                                Ajudamos proprietários em todo o país a ligar-se a peritos certificados na sua zona.
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                                {[
+                                    { name: 'Lisboa', count: 'Grande Lisboa', counties: 'Lisboa, Sintra, Cascais & mais' },
+                                    { name: 'Norte', count: 'Região Norte', counties: 'Porto, Braga, Guimarães & mais' },
+                                    { name: 'Centro', count: 'Região Centro', counties: 'Coimbra, Aveiro, Leiria & mais' },
+                                    { name: 'Algarve', count: 'Região do Algarve', counties: 'Faro, Portimão, Albufeira & mais' },
+                                ].map((province) => (
+                                    <Link key={province.name} to="/get-quote" className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all hover:border-[#007F00]/30 group">
+                                        <div className="flex items-start gap-3">
+                                            <span className="text-xl">📍</span>
+                                            <div>
+                                                <h3 className="text-lg font-black text-gray-900 group-hover:text-[#007F00] transition-colors">{province.name}</h3>
+                                                <p className="text-sm font-bold text-[#007F00]">{province.count}</p>
+                                                <p className="text-sm text-gray-500 font-medium">{province.counties}</p>
+                                                <span className="text-sm text-[#007F00] font-bold mt-2 inline-block group-hover:underline">Ver Localizações →</span>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </>
+                    ) : (!isSpanish && tenant !== 'england') ? (
                         <>
                             <h2 className="text-3xl md:text-4xl font-black text-center text-[#007F00] mb-4">
                                 BER Assessment Services Across Ireland

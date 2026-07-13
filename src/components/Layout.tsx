@@ -259,6 +259,8 @@ const Layout = () => {
                             <img src="/certificado-logo-trimmed.png" alt="Certificado Energético Logo" style={{ height: '4rem', width: 'auto' }} className="relative z-10" />
                         ) : tenant === 'england' ? (
                             <img src="/epc-logo-trimmed.png" alt="EPC Certificate England which provides a rating from A to G" style={{ height: '4rem', width: 'auto' }} className="relative z-10" />
+                        ) : tenant === 'portugal' ? (
+                            <img src="/certificado-energia-logo.svg" alt="Certificado Energia Logo" style={{ height: '4rem', width: 'auto' }} className="relative z-10" />
                         ) : (
                             <img src="/logo.svg" alt={tenant === 'ireland' ? 'The BER Man - BER Cert Ireland Specialists' : `${tenantDisplayName} Logo`} style={{ height: '4.5rem', width: 'auto' }} className="relative z-10" />
                         )}
@@ -267,11 +269,11 @@ const Layout = () => {
                     {/* Catalogue-only inline nav (desktop only) */}
                     {isCatalogueNav && (
                         <nav className="hidden md:flex items-center gap-1">
-                            <Link to="/" className="px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">{isSpanish ? 'Inicio' : 'Home'}</Link>
-                            <Link to="/catalogue" className="px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">{isSpanish ? 'Catálogo' : 'Catalogue'}</Link>
+                            <Link to="/" className="px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">{isSpanish ? 'Início' : tenant === 'portugal' ? 'Início' : 'Home'}</Link>
+                            <Link to="/catalogue" className="px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">{isSpanish ? 'Catálogo' : tenant === 'portugal' ? 'Catálogo' : 'Catalogue'}</Link>
 
                             {/* Mobile: simple Locations link */}
-                            <Link to="/locations" className="flex md:hidden px-2 py-1.5 text-[10px] font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">{isSpanish ? 'Ubicaciones' : 'Locations'}</Link>
+                            <Link to="/locations" className="flex md:hidden px-2 py-1.5 text-[10px] font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">{isSpanish ? 'Ubicaciones' : tenant === 'portugal' ? 'Localizações' : 'Locations'}</Link>
 
                             {/* Desktop: Locations hover dropdown */}
                             <div
@@ -281,7 +283,7 @@ const Layout = () => {
                                 onMouseLeave={() => { setIsLocationsHover(false); setHoveredProvince(null); }}
                             >
                                 <button className="px-3 py-2 text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap flex items-center gap-1">
-                                    {isSpanish ? 'Ubicaciones' : 'Locations'}
+                                    {isSpanish ? 'Ubicaciones' : tenant === 'portugal' ? 'Localizações' : 'Locations'}
                                     <ChevronRight size={12} className={`transition-transform duration-200 ${isLocationsHover ? 'rotate-90' : ''}`} />
                                 </button>
                                 {isLocationsHover && (
@@ -316,7 +318,7 @@ const Layout = () => {
                                 )}
                             </div>
 
-                            <Link to="/news" className="px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">News</Link>
+                            <Link to="/news" className="px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-bold text-white/70 hover:text-white uppercase tracking-wide transition-colors whitespace-nowrap">{tenant === 'portugal' ? 'Notícias' : 'News'}</Link>
                         </nav>
                     )}
 
@@ -331,7 +333,7 @@ const Layout = () => {
                             >
                                 <div className="w-2 h-2 rounded-full bg-[#9ACD32] group-hover:animate-pulse"></div>
                                 <span className="text-sm font-black text-white uppercase tracking-wider">
-                                    {isSpanish ? 'Catálogo de Eficiencia Energética' : <>Home Energy <span className="text-[#9ACD32]">Upgrade Catalogue</span></>}
+                                    {isSpanish ? 'Catálogo de Eficiencia Energética' : tenant === 'portugal' ? <>Catálogo de <span className="text-[#9ACD32]">Melhoria Energética</span></> : <>Home Energy <span className="text-[#9ACD32]">Upgrade Catalogue</span></>}
                                 </span>
                             </Link>
                         )}
@@ -343,29 +345,32 @@ const Layout = () => {
                         >
                             <div className="w-1.5 h-1.5 rounded-full bg-[#9ACD32]"></div>
                             <span className="text-[10px] font-black text-white uppercase tracking-wider">
-                                {isSpanish ? 'Catálogo Energético' : <>Energy <span className="text-[#9ACD32]">Catalogue</span></>}
+                                {isSpanish ? 'Catálogo Energético' : tenant === 'portugal' ? <>Catálogo <span className="text-[#9ACD32]">Energético</span></> : <>Energy <span className="text-[#9ACD32]">Catalogue</span></>}
                             </span>
                         </Link>}
 
                         {/* Talk to Us — clickable phone number */}
                         {(() => {
-                            const phoneNumber = isSpanish ? '+34613907509' : '0818213131';
-                            const phoneDisplay = isSpanish ? '+34 613 90 75 09' : '0818213131';
+                            const phoneConfig: Record<string, { number: string; display: string; label: string }> = {
+                                spain: { number: '+34613907509', display: '+34 613 90 75 09', label: 'Llámanos' },
+                                portugal: { number: '+351920123456', display: '+351 920 123 456', label: 'Fale Connosco' },
+                            };
+                            const cfg = phoneConfig[tenant] || { number: '0818213131', display: '0818213131', label: 'Talk to Us' };
                             return (
                                 <a
-                                    href={`tel:${phoneNumber}`}
+                                    href={`tel:${cfg.number}`}
                                     className="hidden sm:flex items-center gap-2 px-4 py-2 bg-[#007F00] hover:bg-[#006600] rounded-full text-white font-bold text-xs uppercase tracking-wide transition-colors whitespace-nowrap"
                                 >
                                     <Phone size={14} />
-                                    <span>{isSpanish ? 'Llámanos' : 'Talk to Us'}</span>
-                                    <span className="text-[#9ACD32]">{phoneDisplay}</span>
+                                    <span>{cfg.label}</span>
+                                    <span className="text-[#9ACD32]">{cfg.display}</span>
                                 </a>
                             );
                         })()}
 
                         {/* Mobile: icon-only phone button */}
                         <a
-                            href={`tel:${isSpanish ? '+34613907509' : '0818213131'}`}
+                            href={`tel:${tenant === 'portugal' ? '+351920123456' : isSpanish ? '+34613907509' : '0818213131'}`}
                             className="flex sm:hidden items-center justify-center w-10 h-10 bg-[#007F00] hover:bg-[#006600] rounded-full text-white transition-colors"
                         >
                             <Phone size={16} />
@@ -472,30 +477,30 @@ const Layout = () => {
                                         }}
                                         className="w-full px-5 py-3 text-left text-sm font-semibold text-gray-700 hover:bg-gray-50 uppercase tracking-wide border-b border-gray-100"
                                     >
-                                        {isSpanish ? 'Suscribirse a Noticias' : 'Subscribe to News'}
+                                        {isSpanish ? 'Suscribirse a Noticias' : tenant === 'portugal' ? 'Subscrever Notícias' : 'Subscribe to News'}
                                     </button>}
 
                                     <div className="border-t border-gray-200 mt-2 pt-2">
                                         {!user ? (
                                             <>
                                                 <Link to="/login" onClick={closeMenu} className="block px-5 py-3 text-sm font-bold text-[#5CB85C] hover:bg-gray-50 uppercase tracking-wide">{t('sign_in')}</Link>
-                                                <Link to="/signup?role=contractor" onClick={closeMenu} className="block px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 uppercase tracking-wide">{isSpanish ? 'Registro de Certificador' : 'Assessor Registration'}</Link>
-                                                <Link to="/signup?role=business" onClick={closeMenu} className="block px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 uppercase tracking-wide">{isSpanish ? 'Registro de Negocio' : 'Business Catalogue Registration'}</Link>
+                                                <Link to="/signup?role=contractor" onClick={closeMenu} className="block px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 uppercase tracking-wide">{isSpanish ? 'Registro de Certificador' : tenant === 'portugal' ? 'Registo de Perito' : 'Assessor Registration'}</Link>
+                                                <Link to="/signup?role=business" onClick={closeMenu} className="block px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 uppercase tracking-wide">{isSpanish ? 'Registro de Negocio' : tenant === 'portugal' ? 'Registo de Negócio' : 'Business Catalogue Registration'}</Link>
                                             </>
                                         ) : (
                                             <>
                                                 <div className="px-5 py-3 bg-gray-50">
-                                                    <p className="text-xs text-gray-500 font-medium">{isSpanish ? 'Sesión iniciada como' : 'Signed in as'}</p>
+                                                    <p className="text-xs text-gray-500 font-medium">{isSpanish ? 'Sesión iniciada como' : tenant === 'portugal' ? 'Sessão iniciada como' : 'Signed in as'}</p>
                                                     <p className="text-sm font-bold text-gray-900 truncate">{user.email}</p>
                                                 </div>
                                                 {role && (role !== 'business' || profile?.registration_status === 'active' || profile?.registration_status === 'pending') && (
                                                     <Link to={getDashboardLink()} onClick={closeMenu} className="block px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 uppercase tracking-wide border-b border-gray-100/50">
-                                                        {role === 'business' ? (isSpanish ? 'Portal de Negocio' : 'Business Portal') : role === 'contractor' ? (isSpanish ? 'Panel del Certificador' : 'Assessor Dashboard') : t('dashboard')}
+                                                        {role === 'business' ? (isSpanish ? 'Portal de Negocio' : tenant === 'portugal' ? 'Portal de Negócio' : 'Business Portal') : role === 'contractor' ? (isSpanish ? 'Panel del Certificador' : tenant === 'portugal' ? 'Painel do Perito' : 'Assessor Dashboard') : t('dashboard')}
                                                     </Link>
                                                 )}
                                                 {role === 'contractor' && hasBusinessListing && (
                                                     <Link to="/dashboard/business" onClick={closeMenu} className="block px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 uppercase tracking-wide border-b border-gray-100/50">
-                                                        {isSpanish ? 'Portal de Negocio' : 'Business Portal'}
+                                                        {isSpanish ? 'Portal de Negocio' : tenant === 'portugal' ? 'Portal de Negócio' : 'Business Portal'}
                                                     </Link>
                                                 )}
                                                 <button onClick={handleLogout} className="w-full px-5 py-3 text-left text-sm font-medium text-red-600 hover:bg-red-50 uppercase tracking-wide">
@@ -513,13 +518,13 @@ const Layout = () => {
                 {/* Mobile catalogue sub-nav bar */}
                 {isCatalogueNav && (
                     <nav className="md:hidden border-t border-white/10 flex items-center justify-center gap-0 py-2">
-                        <Link to="/" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">{isSpanish ? 'Inicio' : 'Home'}</Link>
+                        <Link to="/" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">{isSpanish ? 'Inicio' : tenant === 'portugal' ? 'Início' : 'Home'}</Link>
                         <span className="text-white/20 text-[8px]">|</span>
-                        <Link to="/catalogue" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">{isSpanish ? 'Catálogo' : 'Catalogue'}</Link>
+                        <Link to="/catalogue" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">{isSpanish ? 'Catálogo' : tenant === 'portugal' ? 'Catálogo' : 'Catalogue'}</Link>
                         <span className="text-white/20 text-[8px]">|</span>
-                        <Link to="/locations" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">{isSpanish ? 'Ubicaciones' : 'Locations'}</Link>
+                        <Link to="/locations" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">{isSpanish ? 'Ubicaciones' : tenant === 'portugal' ? 'Localizações' : 'Locations'}</Link>
                         <span className="text-white/20 text-[8px]">|</span>
-                        <Link to="/news" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">{isSpanish ? 'Noticias' : 'News'}</Link>
+                        <Link to="/news" className="px-3 py-1 text-[9px] font-bold text-white/60 hover:text-white uppercase tracking-widest transition-colors whitespace-nowrap">{isSpanish ? 'Noticias' : tenant === 'portugal' ? 'Notícias' : 'News'}</Link>
                     </nav>
                 )}
 
@@ -545,6 +550,11 @@ const Layout = () => {
                                     <span style={{ fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif", fontSize: '1.6rem', color: 'white', letterSpacing: '1px', lineHeight: 1.2, fontWeight: 900 }}>
                                         EPC Cert
                                     </span>
+                                ) : tenant === 'portugal' ? (
+                                    <>
+                                        <img src="/certificado-energia-logo.svg" alt={tenantDisplayName} className="h-16" />
+                                        <span className="text-xl font-serif font-bold">{tenantDisplayName}</span>
+                                    </>
                                 ) : (
                                     <>
                                         <img src="/logo.svg" alt={tenantDisplayName} className="h-16" />
@@ -553,13 +563,24 @@ const Layout = () => {
                                 )}
                             </div>
                             <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                                {isSpanish ? 'Su socio de confianza para certificados energéticos y consultoría energética.' : tenant === 'england' ? "England's trusted partner for EPC assessments and energy performance certification." : "Ireland's trusted partner for BER assessments and energy consultancy."}
+                                {isSpanish ? 'Su socio de confianza para certificados energéticos y consultoría energética.' : tenant === 'england' ? "England's trusted partner for EPC assessments and energy performance certification." : tenant === 'portugal' ? "O seu parceiro de confiança para certificação energética e consultoria em eficiência energética em Portugal." : "Ireland's trusted partner for BER assessments and energy consultancy."}
                             </p>
                             <div className="flex gap-4">
                                 {tenant === 'england' ? (
                                     <>
                                         <a href="https://www.facebook.com/epccert" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#007F00] hover:text-white transition cursor-pointer"><Facebook size={16} /></a>
                                         <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#007F00] hover:text-white transition cursor-pointer">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932L18.901 1.153zM17.61 20.644h2.039L6.486 3.24H4.298L17.61 20.644z" />
+                                            </svg>
+                                        </a>
+                                    </>
+                                ) : tenant === 'portugal' ? (
+                                    <>
+                                        <a href="#" className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#007F00] hover:text-white transition cursor-pointer"><Facebook size={16} /></a>
+                                        <a href="#" className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#007F00] hover:text-white transition cursor-pointer"><Instagram size={16} /></a>
+                                        <a href="#" className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#007F00] hover:text-white transition cursor-pointer"><Linkedin size={16} /></a>
+                                        <a href="#" className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#007F00] hover:text-white transition cursor-pointer">
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                                                 <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932L18.901 1.153zM17.61 20.644h2.039L6.486 3.24H4.298L17.61 20.644z" />
                                             </svg>
@@ -581,15 +602,15 @@ const Layout = () => {
                         </div>
 
                         <div>
-                            <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">{isSpanish ? 'Enlaces Rápidos' : 'Quick Links'}</h4>
+                            <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">{isSpanish ? 'Enlaces Rápidos' : tenant === 'portugal' ? 'Links Rápidos' : 'Quick Links'}</h4>
                             <ul className="space-y-3">
                                 {[
-                                    { label: isSpanish ? 'Inicio' : 'Home', path: '/' },
-                                    { label: isSpanish ? 'Sobre Nosotros' : 'About Us', path: '/about-us' },
-                                    { label: isSpanish ? 'Catálogo de Eficiencia Energética' : 'Energy Upgrade Catalogue', path: '/catalogue' },
-                                    { label: isSpanish ? 'Habla con un Asesor Energético' : 'Speak to an Energy Advisor', path: '/hire-agent' },
-                                    { label: isSpanish ? 'Registro de Negocio' : 'Business Registration', path: '/signup?role=business' },
-                                    { label: 'FAQ', path: '/ber-faqs/' }
+                                    { label: isSpanish ? 'Inicio' : tenant === 'portugal' ? 'Início' : 'Home', path: '/' },
+                                    { label: isSpanish ? 'Sobre Nosotros' : tenant === 'portugal' ? 'Sobre Nós' : 'About Us', path: '/about-us' },
+                                    { label: isSpanish ? 'Catálogo de Eficiencia Energética' : tenant === 'portugal' ? 'Catálogo de Melhoria Energética' : 'Energy Upgrade Catalogue', path: '/catalogue' },
+                                    { label: isSpanish ? 'Habla con un Asesor Energético' : tenant === 'portugal' ? 'Fale com um Consultor Energético' : 'Speak to an Energy Advisor', path: '/hire-agent' },
+                                    { label: isSpanish ? 'Registro de Negocio' : tenant === 'portugal' ? 'Registo de Negócio' : 'Business Registration', path: '/signup?role=business' },
+                                    { label: 'FAQ', path: tenant === 'portugal' ? '/faq' : '/ber-faqs/' }
                                 ].map(link => (
                                     <li key={link.path}>
                                         <Link to={link.path} className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{link.label}</Link>
@@ -599,16 +620,16 @@ const Layout = () => {
                         </div>
 
                         <div>
-                            <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">{isSpanish ? 'Cuenta' : 'Account'}</h4>
+                            <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">{isSpanish ? 'Cuenta' : tenant === 'portugal' ? 'Conta' : 'Account'}</h4>
                             <ul className="space-y-3">
                                 {[
-                                    { label: isSpanish ? 'Reservar Certificadores' : (tenant === 'england' ? 'Book EPC Assessors' : 'Book BER Assessors'), path: '/' },
-                                    { label: isSpanish ? 'Ubicaciones' : 'Locations', path: '/locations' },
-                                    { label: isSpanish ? 'Nuestras Noticias' : 'Our News', path: '/news' },
+                                    { label: isSpanish ? 'Reservar Certificadores' : tenant === 'portugal' ? 'Agendar Perito Certificador' : (tenant === 'england' ? 'Book EPC Assessors' : 'Book BER Assessors'), path: '/' },
+                                    { label: isSpanish ? 'Ubicaciones' : tenant === 'portugal' ? 'Localizações' : 'Locations', path: '/locations' },
+                                    { label: isSpanish ? 'Nuestras Noticias' : tenant === 'portugal' ? 'Notícias' : 'Our News', path: '/news' },
                                     { label: 'Blog', path: '/blog' },
-                                    { label: isSpanish ? 'Contacto' : 'Contact Us', path: '/contact-us' },
-                                    { label: isSpanish ? 'Iniciar Sesión' : 'Login to Portal', path: '/login' },
-                                    { label: isSpanish ? 'Registrarse' : 'Sign Up', path: '/signup' }
+                                    { label: isSpanish ? 'Contacto' : tenant === 'portugal' ? 'Contacto' : 'Contact Us', path: '/contact-us' },
+                                    { label: isSpanish ? 'Iniciar Sesión' : tenant === 'portugal' ? 'Iniciar Sessão' : 'Login to Portal', path: '/login' },
+                                    { label: isSpanish ? 'Registrarse' : tenant === 'portugal' ? 'Registar-se' : 'Sign Up', path: '/signup' }
                                 ].map(link => (
                                     <li key={link.label}>
                                         <Link to={link.path} className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{link.label}</Link>
@@ -626,7 +647,7 @@ const Layout = () => {
                                         }}
                                         className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2 cursor-pointer"
                                     >
-                                        {isSpanish ? 'Suscribirse a Noticias' : 'Subscribe to News'}
+                                        {isSpanish ? 'Suscribirse a Noticias' : tenant === 'portugal' ? 'Subscrever Notícias' : 'Subscribe to News'}
                                     </button>
                                 </li>
                             </ul>
@@ -635,9 +656,9 @@ const Layout = () => {
                         <div>
                             <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">{isSpanish ? 'Legal' : 'Legal'}</h4>
                             <ul className="space-y-3">
-                                <li><Link to="/privacy" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{isSpanish ? 'Política de Privacidad' : 'Privacy Policy'}</Link></li>
-                                <li><Link to="/terms" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{isSpanish ? 'Términos y Condiciones' : 'Terms & Conditions'}</Link></li>
-                                <li><Link to="/cookie-policy" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{isSpanish ? 'Política de Cookies' : 'Cookie Policy'}</Link></li>
+                                <li><Link to="/privacy" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{isSpanish ? 'Política de Privacidad' : tenant === 'portugal' ? 'Política de Privacidade' : 'Privacy Policy'}</Link></li>
+                                <li><Link to="/terms" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{isSpanish ? 'Términos y Condiciones' : tenant === 'portugal' ? 'Termos e Condições' : 'Terms & Conditions'}</Link></li>
+                                <li><Link to="/cookie-policy" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{isSpanish ? 'Política de Cookies' : tenant === 'portugal' ? 'Política de Cookies' : 'Cookie Policy'}</Link></li>
                                 {isSpanish && (
                                     <>
                                         <li><a href="https://www.boe.es/buscar/act.php?id=BOE-A-2013-4394" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">RD 235/2013 (CEE)</a></li>
@@ -645,7 +666,7 @@ const Layout = () => {
                                         <li><a href="https://www.miteco.gob.es/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">MITECO</a></li>
                                     </>
                                 )}
-                                {!isSpanish && (
+                                {!isSpanish && tenant !== 'portugal' && (
                                     tenant === 'england' ? (
                                         <li><a href="https://www.gov.uk/government/collections/domestic-energy-performance-certificates" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">GOV.UK EPCs</a></li>
                                     ) : (
@@ -656,7 +677,7 @@ const Layout = () => {
                         </div>
 
                         <div>
-                            <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">{isSpanish ? 'Contacto' : 'Get in Touch'}</h4>
+                            <h4 className="text-sm font-bold uppercase tracking-wider text-[#9ACD32] mb-6">{isSpanish ? 'Contacto' : tenant === 'portugal' ? 'Contacto' : 'Get in Touch'}</h4>
                             <ul className="space-y-4">
                                 <li className="flex items-start gap-3 text-gray-400 text-sm">
                                     <Mail className="text-[#9ACD32] mt-0.5" size={16} />
@@ -672,15 +693,21 @@ const Layout = () => {
                                         <span>Madrid, España</span>
                                     </li>
                                 )}
+                                {tenant === 'portugal' && (
+                                    <li className="flex items-start gap-3 text-gray-400 text-sm">
+                                        <MapPin className="text-[#9ACD32] mt-0.5" size={16} />
+                                        <span>Lisboa, Portugal</span>
+                                    </li>
+                                )}
                             </ul>
                         </div>
                     </div>
 
                     <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
-                        <p>&copy; {new Date().getFullYear()} {tenantDisplayName}. {isSpanish ? 'Todos los derechos reservados.' : 'All rights reserved.'}</p>
+                        <p>&copy; {new Date().getFullYear()} {tenantDisplayName}. {isSpanish ? 'Todos los derechos reservados.' : tenant === 'portugal' ? 'Todos os direitos reservados.' : 'All rights reserved.'}</p>
                         <div className="flex gap-6 mt-4 md:mt-0">
-                            <Link to="/privacy" className="hover:text-white cursor-pointer transition">{isSpanish ? 'Política de Privacidad' : 'Privacy Policy'}</Link>
-                            <Link to="/terms" className="hover:text-white cursor-pointer transition">{isSpanish ? 'Términos de Servicio' : 'Terms of Service'}</Link>
+                            <Link to="/privacy" className="hover:text-white cursor-pointer transition">{isSpanish ? 'Política de Privacidad' : tenant === 'portugal' ? 'Política de Privacidade' : 'Privacy Policy'}</Link>
+                            <Link to="/terms" className="hover:text-white cursor-pointer transition">{isSpanish ? 'Términos de Servicio' : tenant === 'portugal' ? 'Termos de Serviço' : 'Terms of Service'}</Link>
                         </div>
                     </div>
                 </div>

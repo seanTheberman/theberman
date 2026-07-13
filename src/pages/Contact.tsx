@@ -14,15 +14,15 @@ import { getTenantFromDomain, getTenantEmail, getTenantDomain } from '../lib/ten
 import { getPhonePlaceholder } from '../lib/phoneFormats';
 import { usePageContent, cmsValue } from '../hooks/usePageContent';
 
-const getContactSchema = (isSpanish: boolean) => z.object({
-    name: z.string().min(2, isSpanish ? 'El nombre debe tener al menos 2 caracteres' : 'Name must be at least 2 characters'),
-    email: z.string().email(isSpanish ? 'Por favor, introduce una dirección de correo válida' : 'Please enter a valid email address'),
-    phone: z.string().regex(/^\+?[0-9\s-]{9,15}$/, isSpanish ? 'Por favor, introduce un número de teléfono válido' : 'Please enter a valid phone number'),
-    county: z.string().min(1, isSpanish ? 'Por favor, selecciona una comunidad autónoma' : 'Please select a county'),
-    town: z.string().min(2, isSpanish ? 'La ciudad es obligatoria' : 'Town/City is required'),
-    property_type: z.string().min(1, isSpanish ? 'Por favor, selecciona un tipo de propiedad' : 'Please select a property type'),
-    purpose: z.string().min(1, isSpanish ? 'Por favor, selecciona un propósito' : 'Please select a purpose'),
-    message: z.string().min(10, isSpanish ? 'El mensaje es demasiado corto (mínimo 10 caracteres)' : 'Message is too short (min 10 chars)'),
+const getContactSchema = (isSpanish: boolean, isPortuguese: boolean) => z.object({
+    name: z.string().min(2, isSpanish ? 'El nombre debe tener al menos 2 caracteres' : isPortuguese ? 'O nome deve ter pelo menos 2 caracteres' : 'Name must be at least 2 characters'),
+    email: z.string().email(isSpanish ? 'Por favor, introduce una dirección de correo válida' : isPortuguese ? 'Por favor, introduza um email válido' : 'Please enter a valid email address'),
+    phone: z.string().regex(/^\+?[0-9\s-]{9,15}$/, isSpanish ? 'Por favor, introduce un número de teléfono válido' : isPortuguese ? 'Por favor, introduza um número de telefone válido' : 'Please enter a valid phone number'),
+    county: z.string().min(1, isSpanish ? 'Por favor, selecciona una comunidad autónoma' : isPortuguese ? 'Por favor, selecione uma região' : 'Please select a county'),
+    town: z.string().min(2, isSpanish ? 'La ciudad es obligatoria' : isPortuguese ? 'A cidade é obrigatória' : 'Town/City is required'),
+    property_type: z.string().min(1, isSpanish ? 'Por favor, selecciona un tipo de propiedad' : isPortuguese ? 'Por favor, selecione um tipo de imóvel' : 'Please select a property type'),
+    purpose: z.string().min(1, isSpanish ? 'Por favor, selecciona un propósito' : isPortuguese ? 'Por favor, selecione uma finalidade' : 'Please select a purpose'),
+    message: z.string().min(10, isSpanish ? 'El mensaje es demasiado corto (mínimo 10 caracteres)' : isPortuguese ? 'A mensagem é demasiado curta (mínimo 10 caracteres)' : 'Message is too short (min 10 chars)'),
     bot_check: z.string().optional(), // Honeypot field
 });
 
@@ -33,6 +33,7 @@ const Contact = () => {
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
     const isEngland = tenant === 'england';
+    const isPortuguese = tenant === 'portugal';
 
     const {
         register,
@@ -42,7 +43,7 @@ const Contact = () => {
         setValue,
         formState: { errors, isSubmitting },
     } = useForm<ContactFormData>({
-        resolver: zodResolver(getContactSchema(isSpanish)),
+        resolver: zodResolver(getContactSchema(isSpanish, isPortuguese)),
     });
     const selectedCounty = watch('county');
     const townsByCounty = getTownsForTenant(tenant);
@@ -51,57 +52,61 @@ const Contact = () => {
     const { content: cms, loading: cmsLoading } = usePageContent('contact');
     const c = (section: string, key: string, fallback: string) => cmsValue(cms, section, key, fallback);
     const tr = {
-        seoTitle: isSpanish ? 'Contacto' : isEngland ? 'Book EPC Assessment England | Contact EPC Cert' : 'Book a BER Assessment in Ireland | Contact The BER Man',
+        seoTitle: isSpanish ? 'Contacto' : isEngland ? 'Book EPC Assessment England | Contact EPC Cert' : isPortuguese ? 'Contacto | Certificado Energia Portugal' : 'Book a BER Assessment in Ireland | Contact The BER Man',
         seoDesc: isSpanish
             ? 'Contacta con Certificado Energético para tus certificados energéticos, calificaciones y mejoras en toda España.'
             : isEngland
                 ? 'Book an EPC assessment in England with accredited assessors. Contact EPC Cert to compare quotes and arrange your EPC today'
-                : 'Book a BER Assessment in Ireland or Contact the BER Man for Support. Connect with Qualified BER Assessors and Get Assistance with Your Enquiry',
-        badge: isSpanish ? 'Ponte en Contacto' : 'Get In Touch',
-        title1: isSpanish ? '¿En qué podemos' : isEngland ? 'Book an EPC Assessment' : 'Book a BER',
-        title2: isSpanish ? 'ayudarte?' : isEngland ? 'in England' : 'Assessment in Ireland',
+                : isPortuguese
+                    ? 'Contacte a Certificado Energia para certificação energética em Portugal. Peritos certificados e orçamentos competitivos.'
+                    : 'Book a BER Assessment in Ireland or Contact the BER Man for Support. Connect with Qualified BER Assessors and Get Assistance with Your Enquiry',
+        badge: isSpanish ? 'Ponte en Contacto' : isPortuguese ? 'Contacto' : 'Get In Touch',
+        title1: isSpanish ? '¿En qué podemos' : isEngland ? 'Book an EPC Assessment' : isPortuguese ? 'Como podemos' : 'Book a BER',
+        title2: isSpanish ? 'ayudarte?' : isEngland ? 'in England' : isPortuguese ? 'ajudar?' : 'Assessment in Ireland',
         subtitle: isSpanish
             ? '¿Tienes alguna pregunta sobre certificaciones energéticas? Nuestro equipo está aquí para ayudarte.'
             : isEngland
                 ? 'Compare quotes from accredited EPC assessors across England and arrange your EPC assessment with confidence.'
-                : 'Contact The BER Man to book a BER assessment, connect with qualified BER assessors, or get support with your enquiry.',
-        trustStrip: isEngland ? '' : '1,000+ Assessments Completed • 100+ Qualified Assessors • Nationwide Coverage',
-        ourDetails: isSpanish ? 'Nuestros Datos' : isEngland ? 'Our details' : 'Contact Information',
-        emailUs: isSpanish ? 'Escríbenos' : 'Email Us',
-        website: isSpanish ? 'Sitio Web' : 'Website',
-        sendDetailed: isSpanish ? 'Envíanos un mensaje detallado' : isEngland ? 'Request an EPC Assessment' : 'Request a BER Assessment',
-        fullName: isSpanish ? 'Nombre Completo' : 'Full Name',
-        fullNamePlaceholder: isSpanish ? 'Nombre completo' : 'Full name',
-        phoneNumber: isSpanish ? 'Número de Teléfono' : 'Phone Number',
+                : isPortuguese
+                    ? 'Tem alguma dúvida sobre certificados energéticos? A nossa equipa está aqui para o ajudar.'
+                    : 'Contact The BER Man to book a BER assessment, connect with qualified BER assessors, or get support with your enquiry.',
+        trustStrip: isEngland ? '' : isPortuguese ? '1.000+ Avaliações Concluídas • 100+ Peritos Certificados • Cobertura Nacional' : '1,000+ Assessments Completed • 100+ Qualified Assessors • Nationwide Coverage',
+        ourDetails: isSpanish ? 'Nuestros Datos' : isEngland ? 'Our details' : isPortuguese ? 'Os Nossos Detalhes' : 'Contact Information',
+        emailUs: isSpanish ? 'Escríbenos' : isPortuguese ? 'Email' : 'Email Us',
+        website: isSpanish ? 'Sitio Web' : isPortuguese ? 'Website' : 'Website',
+        sendDetailed: isSpanish ? 'Envíanos un mensaje detallado' : isEngland ? 'Request an EPC Assessment' : isPortuguese ? 'Pedir uma Avaliação Energética' : 'Request a BER Assessment',
+        fullName: isSpanish ? 'Nombre Completo' : isPortuguese ? 'Nome Completo' : 'Full Name',
+        fullNamePlaceholder: isSpanish ? 'Nombre completo' : isPortuguese ? 'Nome completo' : 'Full name',
+        phoneNumber: isSpanish ? 'Número de Teléfono' : isPortuguese ? 'Telefone' : 'Phone Number',
         phonePlaceholder: isSpanish ? 'número de teléfono' : getPhonePlaceholder(tenant),
-        emailAddress: isSpanish ? 'Correo Electrónico' : 'Email Address',
-        emailPlaceholder: isSpanish ? 'correo electrónico' : 'email',
-        county: isSpanish ? 'Comunidad Autónoma' : 'County',
-        selectCounty: isSpanish ? 'Seleccionar Comunidad Autónoma' : 'Select County',
-        town: isSpanish ? 'Ciudad / Localidad' : 'Town / City',
-        selectTown: isSpanish ? 'Seleccionar Ciudad' : 'Select Town',
-        selectCountyFirst: isSpanish ? 'Selecciona Comunidad Autónoma Primero' : 'Select County First',
-        propertyType: isSpanish ? 'Tipo de Propiedad' : 'Property Type',
-        selectType: isSpanish ? 'Seleccionar Tipo' : 'Select Type',
-        apartment: isSpanish ? 'Apartamento' : 'Apartment',
-        midTerrace: isSpanish ? 'Casa Adosada (Interior)' : 'Mid-Terrace',
-        endTerrace: isSpanish ? 'Casa Adosada (Esquina)' : 'End-Terrace',
-        semiDetached: isSpanish ? 'Casa Pareada' : 'Semi-Detached',
-        detached: isSpanish ? 'Casa Independiente' : 'Detached',
-        bungalow: isSpanish ? 'Chalet' : 'Bungalow',
-        purposeLabel: isSpanish ? 'Propósito del Certificado' : isEngland ? 'Purpose of EPC' : 'Purpose of BER',
-        selectPurpose: isSpanish ? 'Seleccionar Propósito' : 'Select Purpose',
-        mortgage: isSpanish ? 'Hipoteca/Banco' : 'Mortgage/Bank',
-        selling: isSpanish ? 'Venta' : 'Selling',
-        renting: isSpanish ? 'Alquiler' : 'Renting',
-        grant: isSpanish ? 'Subvención' : 'Govt Grant',
-        other: isSpanish ? 'Otro' : 'Other',
-        message: isSpanish ? 'Mensaje' : isEngland ? 'Message' : 'Message',
-        messagePlaceholder: isSpanish ? 'Cuéntanos más sobre tu solicitud...' : isEngland ? 'Tell us about your property or EPC assessment requirements.' : 'Tell us about your property or BER assessment requirements.',
-        sending: isSpanish ? 'Enviando...' : isEngland ? 'Sending...' : 'Submitting...',
-        sendMessage: isSpanish ? 'Enviar Mensaje' : isEngland ? 'Submit Enquiry' : 'Submit Enquiry',
-        toastSuccess: isSpanish ? '¡Mensaje enviado correctamente! Nos pondremos en contacto en breve.' : 'Message sent successfully! We will be in touch shortly.',
-        toastError: isSpanish ? 'Error al enviar el mensaje. Por favor, inténtalo de nuevo.' : 'Failed to send message. Please try again.',
+        emailAddress: isSpanish ? 'Correo Electrónico' : isPortuguese ? 'Email' : 'Email Address',
+        emailPlaceholder: isSpanish ? 'correo electrónico' : isPortuguese ? 'email' : 'email',
+        county: isSpanish ? 'Comunidad Autónoma' : isPortuguese ? 'Região' : 'County',
+        selectCounty: isSpanish ? 'Seleccionar Comunidad Autónoma' : isPortuguese ? 'Selecionar Região' : 'Select County',
+        town: isSpanish ? 'Ciudad / Localidad' : isPortuguese ? 'Cidade / Localidade' : 'Town / City',
+        selectTown: isSpanish ? 'Seleccionar Ciudad' : isPortuguese ? 'Selecionar Cidade' : 'Select Town',
+        selectCountyFirst: isSpanish ? 'Selecciona Comunidad Autónoma Primero' : isPortuguese ? 'Selecione a Região Primeiro' : 'Select County First',
+        propertyType: isSpanish ? 'Tipo de Propiedad' : isPortuguese ? 'Tipo de Imóvel' : 'Property Type',
+        selectType: isSpanish ? 'Seleccionar Tipo' : isPortuguese ? 'Selecionar Tipo' : 'Select Type',
+        apartment: isSpanish ? 'Apartamento' : isPortuguese ? 'Apartamento' : 'Apartment',
+        midTerrace: isSpanish ? 'Casa Adosada (Interior)' : isPortuguese ? 'Moradia em Banda (Meio)' : 'Mid-Terrace',
+        endTerrace: isSpanish ? 'Casa Adosada (Esquina)' : isPortuguese ? 'Moradia em Banda (Extremo)' : 'End-Terrace',
+        semiDetached: isSpanish ? 'Casa Pareada' : isPortuguese ? 'Moradia Geminada' : 'Semi-Detached',
+        detached: isSpanish ? 'Casa Independiente' : isPortuguese ? 'Moradia Isolada' : 'Detached',
+        bungalow: isSpanish ? 'Chalet' : isPortuguese ? 'Bungalow' : 'Bungalow',
+        purposeLabel: isSpanish ? 'Propósito del Certificado' : isEngland ? 'Purpose of EPC' : isPortuguese ? 'Finalidade do Certificado' : 'Purpose of BER',
+        selectPurpose: isSpanish ? 'Seleccionar Propósito' : isPortuguese ? 'Selecionar Finalidade' : 'Select Purpose',
+        mortgage: isSpanish ? 'Hipoteca/Banco' : isPortuguese ? 'Crédito Habitação/Banco' : 'Mortgage/Bank',
+        selling: isSpanish ? 'Venta' : isPortuguese ? 'Venda' : 'Selling',
+        renting: isSpanish ? 'Alquiler' : isPortuguese ? 'Arrendamento' : 'Renting',
+        grant: isSpanish ? 'Subvención' : isPortuguese ? 'Subvenção' : 'Govt Grant',
+        other: isSpanish ? 'Otro' : isPortuguese ? 'Outro' : 'Other',
+        message: isSpanish ? 'Mensaje' : isEngland ? 'Message' : isPortuguese ? 'Mensagem' : 'Message',
+        messagePlaceholder: isSpanish ? 'Cuéntanos más sobre tu solicitud...' : isEngland ? 'Tell us about your property or EPC assessment requirements.' : isPortuguese ? 'Fale-nos sobre o seu imóvel ou necessidade de certificação energética.' : 'Tell us about your property or BER assessment requirements.',
+        sending: isSpanish ? 'Enviando...' : isEngland ? 'Sending...' : isPortuguese ? 'A enviar...' : 'Submitting...',
+        sendMessage: isSpanish ? 'Enviar Mensaje' : isEngland ? 'Submit Enquiry' : isPortuguese ? 'Enviar Mensagem' : 'Submit Enquiry',
+        toastSuccess: isSpanish ? '¡Mensaje enviado correctamente! Nos pondremos en contacto en breve.' : isPortuguese ? 'Mensagem enviada com sucesso! Entraremos em contacto em breve.' : 'Message sent successfully! We will be in touch shortly.',
+        toastError: isSpanish ? 'Error al enviar el mensaje. Por favor, inténtalo de nuevo.' : isPortuguese ? 'Erro ao enviar a mensagem. Por favor, tente novamente.' : 'Failed to send message. Please try again.',
     };
 
     const onSubmit = async (data: ContactFormData) => {
@@ -152,24 +157,24 @@ const Contact = () => {
                         '@context': 'https://schema.org',
                         '@type': 'BreadcrumbList',
                         itemListElement: [
-                            { '@type': 'ListItem', position: 1, name: 'Home', item: `${tenantDomain}/` },
-                            { '@type': 'ListItem', position: 2, name: 'Contact Us', item: `${tenantDomain}/contact-us` },
+                            { '@type': 'ListItem', position: 1, name: isPortuguese ? 'Início' : 'Home', item: `${tenantDomain}/` },
+                            { '@type': 'ListItem', position: 2, name: isPortuguese ? 'Contacto' : 'Contact Us', item: `${tenantDomain}/contact-us` },
                         ],
                     },
                     {
                         '@context': 'https://schema.org',
                         '@type': 'Organization',
-                        name: tenant === 'england' ? 'EPC Cert' : 'The BER Man',
+                        name: tenant === 'england' ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : tenant === 'france' ? 'DPE France' : isPortuguese ? 'Certificado Energia' : 'The BER Man',
                         url: tenantDomain,
-                        logo: tenant === 'england' ? 'https://www.epccert.com/logo.png' : 'https://www.theberman.eu/logo.svg',
+                        logo: tenant === 'england' ? 'https://www.epccert.com/logo.png' : isSpanish ? `https://${tenantDomain}/logo.png` : tenant === 'france' ? `https://${tenantDomain}/logo.png` : isPortuguese ? `https://${tenantDomain}/certificado-energia-logo.svg` : 'https://www.theberman.eu/logo.svg',
                         sameAs: tenant === 'england'
                             ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
                             : isSpanish
                                 ? ['https://www.facebook.com/certificadoenergetico', 'https://www.instagram.com/certificadoenergetico']
                                 : tenant === 'france'
                                     ? ['https://www.facebook.com/dpefrance', 'https://www.instagram.com/dpefrance']
-                                    : tenant === 'portugal'
-                                        ? ['https://www.facebook.com/certificadoenergeticopt', 'https://www.instagram.com/certificadoenergeticopt']
+                                    : isPortuguese
+                                        ? []
                                         : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
                     },
                 ]}
