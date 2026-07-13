@@ -17,17 +17,53 @@ import { getPhonePlaceholder } from '../lib/phoneFormats';
 const tenant = getTenantFromDomain();
 const isSpanish = tenant === 'spain';
 const isEngland = tenant === 'england';
-const regAuthority = isSpanish ? 'CEE CAT' : isEngland ? 'accredited' : 'SEAI';
+const isPortuguese = tenant === 'portugal';
+const regAuthority = isSpanish ? 'CEE CAT' : isEngland ? 'accredited' : isPortuguese ? 'ADENE' : 'SEAI';
+
+const getValidationMessages = () => {
+    if (isSpanish) return {
+        nameMin: 'El nombre debe tener al menos 2 caracteres',
+        emailInvalid: 'Por favor, introduce un correo electrónico válido',
+        phoneInvalid: 'Por favor, introduce un número de teléfono válido',
+        countyRequired: 'Por favor, selecciona una comunidad autónoma',
+        townRequired: 'Ciudad/Localidad es obligatoria',
+        propertyTypeRequired: 'Por favor, selecciona un tipo de propiedad',
+        purposeRequired: 'Por favor, selecciona un propósito',
+        messageMin: 'El mensaje es demasiado corto (mín. 10 caracteres)',
+    };
+    if (isPortuguese) return {
+        nameMin: 'O nome deve ter pelo menos 2 caracteres',
+        emailInvalid: 'Por favor, introduza um email válido',
+        phoneInvalid: 'Por favor, introduza um número de telefone válido',
+        countyRequired: 'Por favor, selecione um distrito',
+        townRequired: 'Cidade/Localidade é obrigatória',
+        propertyTypeRequired: 'Por favor, selecione um tipo de imóvel',
+        purposeRequired: 'Por favor, selecione uma finalidade',
+        messageMin: 'A mensagem é demasiado curta (mín. 10 caracteres)',
+    };
+    return {
+        nameMin: 'Name must be at least 2 characters',
+        emailInvalid: 'Please enter a valid email address',
+        phoneInvalid: 'Please enter a valid phone number',
+        countyRequired: 'Please select a county',
+        townRequired: 'Town/City is required',
+        propertyTypeRequired: 'Please select a property type',
+        purposeRequired: 'Please select a purpose',
+        messageMin: 'Message is too short (min 10 chars)',
+    };
+};
+
+const vMsgs = getValidationMessages();
 
 const hireAgentSchema = z.object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
-    email: z.string().email('Please enter a valid email address'),
-    phone: z.string().regex(/^\+?[0-9\s-]{9,15}$/, 'Please enter a valid phone number'),
-    county: z.string().min(1, 'Please select a county'),
-    town: z.string().min(2, 'Town/City is required'),
-    property_type: z.string().min(1, 'Please select a property type'),
-    purpose: z.string().min(1, 'Please select a purpose'),
-    message: z.string().min(10, 'Message is too short (min 10 chars)'),
+    name: z.string().min(2, vMsgs.nameMin),
+    email: z.string().email(vMsgs.emailInvalid),
+    phone: z.string().regex(/^\+?[0-9\s-]{9,15}$/, vMsgs.phoneInvalid),
+    county: z.string().min(1, vMsgs.countyRequired),
+    town: z.string().min(2, vMsgs.townRequired),
+    property_type: z.string().min(1, vMsgs.propertyTypeRequired),
+    purpose: z.string().min(1, vMsgs.purposeRequired),
+    message: z.string().min(10, vMsgs.messageMin),
     bot_check: z.string().optional(), // Honeypot field
 });
 
@@ -112,6 +148,65 @@ const HireAgent = () => {
         hireBtn: 'Contratar Asesor Energético',
         toastSuccess: '¡Tu consulta ha sido enviada! Un Asesor Energético se pondrá en contacto contigo en breve.',
         toastError: 'Error al enviar el mensaje. Por favor, inténtalo de nuevo.',
+    } : isPortuguese ? {
+        seoTitle: 'Contratar um Consultor Energético',
+        seoDesc: 'Obtenha orientação gratuita e imparcial de um Consultor Energético certificado. Análise técnica verificada e preços competitivos para melhorar a eficiência da sua habitação.',
+        badge: 'Aconselhamento Especializado',
+        title1: 'Contrate um',
+        titleHighlight: 'Consultor Energético',
+        title2: ' Grátis',
+        subtitle: 'Obtenha orientação imparcial, análise técnica verificada e acesso a preços competitivos para melhorar a eficiência energética da sua habitação.',
+        speakH1: 'Fale com um',
+        speakH2: 'Consultor Energético',
+        speakP: 'O seu consultor energético coordenará e trabalhará diretamente com um perito certificador para que as recomendações sejam tecnicamente precisas e baseadas no seu certificado energético atual e no respetivo relatório de recomendações.',
+        agentWillLabel: 'O consultor encarregar-se-á de:',
+        benefits: [
+            'Identificar opções de melhoria custo-eficazes',
+            'Aconselhar as melhores melhorias de eficiência',
+            'Procurar e comparar orçamentos de profissionais',
+            'Negociar as melhores opções qualidade/preço',
+            'Ajudar com a documentação de subsídios',
+            'Evitar obras desnecessárias ou sobrevalorizadas',
+        ],
+        speakClose: 'O objetivo é oferecer uma orientação clara e imparcial, um critério técnico verificado e acesso a preços competitivos, para que as melhorias sejam realizadas da forma mais inteligente e económica possível.',
+        badge1: 'Independente das empresas',
+        badge2: 'Apoio técnico e certificação',
+        ourDetails: 'Os nossos Dados',
+        emailUs: 'Escreva-nos',
+        website: 'Site Web',
+        requestH: 'Solicite o seu Consultor Energético',
+        fullName: 'Nome Completo',
+        fullNamePh: 'Nome completo',
+        phoneNumber: 'Número de Telefone',
+        phonePh: getPhonePlaceholder(tenant),
+        email: 'Email',
+        emailPh: 'email',
+        county: 'Distrito',
+        selectCounty: 'Selecionar Distrito',
+        town: 'Cidade / Localidade',
+        selectTown: 'Selecionar Cidade',
+        selectCountyFirst: 'Selecione o Distrito Primeiro',
+        propertyType: 'Tipo de Imóvel',
+        selectType: 'Selecionar Tipo',
+        apartment: 'Apartamento',
+        midTerrace: 'Moradia em Banda (Meio)',
+        endTerrace: 'Moradia em Banda (Extremo)',
+        semiDetached: 'Geminada',
+        detached: 'Moradia Isolada',
+        bungalow: 'Vivenda',
+        purposeLabel: 'Finalidade do Certificado',
+        selectPurpose: 'Selecionar Finalidade',
+        mortgage: 'Crédito Habitação/Banco',
+        selling: 'Venda',
+        renting: 'Arrendamento',
+        grant: 'Subvenção',
+        other: 'Outro',
+        message: 'Mensagem',
+        messagePh: 'Diga-nos quais são os seus objetivos de eficiência energética...',
+        sending: 'A enviar...',
+        hireBtn: 'Contratar Consultor Energético',
+        toastSuccess: 'A sua consulta foi enviada! Um Consultor Energético entrará em contacto consigo em breve.',
+        toastError: 'Erro ao enviar a mensagem. Por favor, tente novamente.',
     } : isEngland ? {
         seoTitle: 'Energy Advisor England | Independent Home Energy Advice',
         seoDesc: 'Receive independent energy advice, upgrade guidance and technical support to help improve your property\'s energy performance',

@@ -171,7 +171,7 @@ const BusinessDashboard = () => {
             }
         } catch (error) {
             console.error('Error fetching business data:', error);
-            toast.error(isSpanish ? 'Error al cargar los datos del panel' : 'Failed to load dashboard data');
+            toast.error(isSpanish ? 'Error al cargar los datos del panel' : isPortuguese ? 'Erro ao carregar dados do painel' : 'Failed to load dashboard data');
         } finally {
             setLoading(false);
         }
@@ -209,7 +209,7 @@ const BusinessDashboard = () => {
                         .eq('id', listing.id);
                 }
             }
-            toast.success(isSpanish ? 'Cambios guardados' : 'Saved changes', { id: 'profile-save' });
+            toast.success(isSpanish ? 'Cambios guardados' : isPortuguese ? 'Alterações guardadas' : 'Saved changes', { id: 'profile-save' });
         } catch (error) {
             console.error('Error autosaving profile:', error);
         } finally {
@@ -258,10 +258,10 @@ const BusinessDashboard = () => {
                 if (error) throw error;
             }
 
-            toast.success(isSpanish ? 'Categorías actualizadas' : 'Categories updated', { id: 'cat-save' });
+            toast.success(isSpanish ? 'Categorías actualizadas' : isPortuguese ? 'Categorias atualizadas' : 'Categories updated', { id: 'cat-save' });
         } catch (error) {
             console.error('Error saving categories:', error);
-            toast.error(isSpanish ? 'Error al actualizar las categorías' : 'Failed to update categories');
+            toast.error(isSpanish ? 'Error al actualizar las categorías' : isPortuguese ? 'Erro ao atualizar as categorias' : 'Failed to update categories');
         } finally {
             setIsSavingCategories(false);
         }
@@ -298,7 +298,7 @@ const BusinessDashboard = () => {
                 if (error) throw error;
             }
 
-            toast.success(isSpanish ? 'Galería actualizada' : 'Gallery updated', { id: 'gallery-save' });
+            toast.success(isSpanish ? 'Galería actualizada' : isPortuguese ? 'Galeria atualizada' : 'Gallery updated', { id: 'gallery-save' });
         } catch (error) {
             console.error('Error autosaving gallery:', error);
         } finally {
@@ -320,12 +320,12 @@ const BusinessDashboard = () => {
         if (!file) return;
 
         if (!file.type.startsWith('image/')) {
-            toast.error(isSpanish ? 'Por favor sube un archivo de imagen' : 'Please upload an image file');
+            toast.error(isSpanish ? 'Por favor sube un archivo de imagen' : isPortuguese ? 'Por favor, carregue um ficheiro de imagem' : 'Please upload an image file');
             return;
         }
 
         if (file.size > 10 * 1024 * 1024) {
-            toast.error(isSpanish ? 'La imagen debe ser menor de 10MB' : 'Image must be less than 10MB');
+            toast.error(isSpanish ? 'La imagen debe ser menor de 10MB' : isPortuguese ? 'A imagem deve ter menos de 10MB' : 'Image must be less than 10MB');
             return;
         }
 
@@ -339,10 +339,10 @@ const BusinessDashboard = () => {
             newImages[index].url = publicUrl;
             setListingImages(newImages);
             saveGalleryData(newImages);
-            toast.success(isSpanish ? 'Imagen subida con éxito' : 'Image uploaded successfully');
+            toast.success(isSpanish ? 'Imagen subida con éxito' : isPortuguese ? 'Imagem carregada com sucesso' : 'Image uploaded successfully');
         } catch (error: any) {
             console.error('Error uploading gallery image:', error);
-            toast.error(error.message || (isSpanish ? 'Error al subir la imagen' : 'Failed to upload image'));
+            toast.error(error.message || (isSpanish ? 'Error al subir la imagen' : isPortuguese ? 'Erro ao carregar a imagem' : 'Failed to upload image'));
         } finally {
             setIsSavingGallery(false);
             setIsUploadingGallery(prev => ({ ...prev, [index]: false }));
@@ -355,12 +355,12 @@ const BusinessDashboard = () => {
         if (!file) return;
 
         if (!file.type.startsWith('image/')) {
-            toast.error(isSpanish ? 'Por favor sube un archivo de imagen' : 'Please upload an image file');
+            toast.error(isSpanish ? 'Por favor sube un archivo de imagen' : isPortuguese ? 'Por favor, carregue um ficheiro de imagem' : 'Please upload an image file');
             return;
         }
 
         if (file.size > 15 * 1024 * 1024) {
-            toast.error(isSpanish ? 'La imagen del banner debe ser menor de 15MB' : 'Banner image must be less than 15MB');
+            toast.error(isSpanish ? 'La imagen del banner debe ser menor de 15MB' : isPortuguese ? 'A imagem do banner deve ter menos de 15MB' : 'Banner image must be less than 15MB');
             return;
         }
 
@@ -374,10 +374,10 @@ const BusinessDashboard = () => {
                 saveProfileData({ banner_url: publicUrl });
                 return updated;
             });
-            toast.success(isSpanish ? 'Banner subido con éxito' : 'Banner uploaded successfully');
+            toast.success(isSpanish ? 'Banner subido con éxito' : isPortuguese ? 'Banner carregado com sucesso' : 'Banner uploaded successfully');
         } catch (error: any) {
             console.error('Error uploading banner:', error);
-            toast.error(error.message || (isSpanish ? 'Error al subir el banner' : 'Failed to upload banner'));
+            toast.error(error.message || (isSpanish ? 'Error al subir el banner' : isPortuguese ? 'Erro ao carregar o banner' : 'Failed to upload banner'));
         } finally {
             setIsUploadingBanner(false);
             e.target.value = '';
@@ -397,7 +397,7 @@ const BusinessDashboard = () => {
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="flex flex-col items-center gap-4">
                     <Loader2 size={40} className="text-[#007F00] animate-spin" />
-                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">{isSpanish ? 'Cargando Portal...' : 'Loading Portal...'}</p>
+                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">{isSpanish ? 'Cargando Portal...' : isPortuguese ? 'A Carregar Portal...' : 'Loading Portal...'}</p>
                 </div>
             </div>
         );
@@ -428,7 +428,7 @@ const BusinessDashboard = () => {
                             <Link to="/contact-us" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">{isSpanish ? 'Contacto' : isPortuguese ? 'Contacto' : 'Contact'}</Link>
                         </nav>
                         <button onClick={handleSignOut} className="text-sm font-bold text-gray-500 hover:text-red-500 transition-colors flex items-center gap-2">
-                            <LogOut size={16} /> {isSpanish ? 'Cerrar Sesión' : 'Sign Out'}
+                            <LogOut size={16} /> {isSpanish ? 'Cerrar Sesión' : isPortuguese ? 'Terminar Sessão' : 'Sign Out'}
                         </button>
                     </div>
                 </header>
@@ -441,37 +441,37 @@ const BusinessDashboard = () => {
                             </div>
                             <h1 className="text-2xl font-black text-gray-900 mb-3">
                                 {suspended
-                                    ? (isSpanish ? 'Cuenta Suspendida' : 'Account Suspended')
-                                    : (isSpanish ? 'Cuenta Pendiente de Aprobación' : 'Account Pending Approval')}
+                                    ? (isSpanish ? 'Cuenta Suspendida' : isPortuguese ? 'Conta Suspensa' : 'Account Suspended')
+                                    : (isSpanish ? 'Cuenta Pendiente de Aprobación' : isPortuguese ? 'Conta Pendente de Aprovação' : 'Account Pending Approval')}
                             </h1>
                             <p className="text-gray-500 mb-2 font-medium leading-relaxed">
                                 {suspended
-                                    ? (isSpanish ? 'Tu cuenta ha sido suspendida por un administrador.' : 'Your account has been suspended by an administrator.')
-                                    : (isSpanish ? 'Tu perfil ha sido enviado y está esperando revisión por nuestro equipo.' : 'Your profile has been submitted and is waiting to be reviewed by our team.')}
+                                    ? (isSpanish ? 'Tu cuenta ha sido suspendida por un administrador.' : isPortuguese ? 'A sua conta foi suspensa por um administrador.' : 'Your account has been suspended by an administrator.')
+                                    : (isSpanish ? 'Tu perfil ha sido enviado y está esperando revisión por nuestro equipo.' : isPortuguese ? 'O seu perfil foi enviado e está a aguardar revisão pela nossa equipa.' : 'Your profile has been submitted and is waiting to be reviewed by our team.')}
                             </p>
                             <p className="text-gray-400 text-sm mb-8">
                                 {suspended
-                                    ? (isSpanish ? 'Si crees que esto es un error, contacta con nuestro equipo de soporte.' : 'If you believe this is a mistake, please contact our support team.')
-                                    : (isSpanish ? 'Una vez aprobado, tendrás acceso completo al Portal de Empresa.' : 'Once approved, you will have full access to the Business Portal.')}
+                                    ? (isSpanish ? 'Si crees que esto es un error, contacta con nuestro equipo de soporte.' : isPortuguese ? 'Se acredita que isto é um erro, contacte a nossa equipa de suporte.' : 'If you believe this is a mistake, please contact our support team.')
+                                    : (isSpanish ? 'Una vez aprobado, tendrás acceso completo al Portal de Empresa.' : isPortuguese ? 'Uma vez aprovado, terá acesso completo ao Portal de Negócio.' : 'Once approved, you will have full access to the Business Portal.')}
                             </p>
                             <div className={`border rounded-xl p-4 mb-8 text-left ${suspended ? 'bg-red-50 border-red-100' : 'bg-green-50 border-green-100'}`}>
                                 <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${suspended ? 'text-red-600' : 'text-[#007F00]'}`}>
                                     {suspended
-                                        ? (isSpanish ? 'Cuenta suspendida' : 'Suspended account')
-                                        : (isSpanish ? 'Registrado como' : 'Registered as')}
+                                        ? (isSpanish ? 'Cuenta suspendida' : isPortuguese ? 'Conta suspensa' : 'Suspended account')
+                                        : (isSpanish ? 'Registrado como' : isPortuguese ? 'Registado como' : 'Registered as')}
                                 </p>
                                 <p className="text-sm font-semibold text-gray-800">{user?.user_metadata?.full_name || user?.email}</p>
                                 <p className="text-xs text-gray-500">{user?.email}</p>
                             </div>
                             <p className="text-xs text-gray-400 mb-6">
-                                {isSpanish ? '¿Preguntas? Contáctanos en' : 'Questions? Contact us at'}{' '}
+                                {isSpanish ? '¿Preguntas? Contáctanos en' : isPortuguese ? 'Dúvidas? Contacte-nos em' : 'Questions? Contact us at'}{' '}
                                 <a href={`mailto:${getTenantEmail(getTenantFromDomain())}`} className={`font-semibold hover:underline ${suspended ? 'text-red-500' : 'text-[#007F00]'}`}>
                                     {getTenantEmail(getTenantFromDomain())}
                                 </a>
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3">
                                 <Link to="/" className={`flex-1 py-3 px-6 text-white rounded-xl font-bold text-sm transition-colors text-center ${suspended ? 'bg-red-500 hover:bg-red-600' : 'bg-[#007F00] hover:bg-[#006600]'}`}>
-                                    {isSpanish ? 'Explorar Web' : 'Explore Website'}
+                                    {isSpanish ? 'Explorar Web' : isPortuguese ? 'Explorar Site' : 'Explore Website'}
                                 </Link>
                                 <button onClick={handleSignOut} className="flex-1 py-3 px-6 border border-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors">
                                     {isSpanish ? 'Cerrar Sesión' : isPortuguese ? 'Terminar Sessão' : 'Sign Out'}
@@ -491,13 +491,13 @@ const BusinessDashboard = () => {
                     <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6">
                         <Building2 size={40} className="text-amber-500" />
                     </div>
-                    <h2 className="text-2xl font-black text-gray-900 mb-2">{isSpanish ? 'No se encontró ningún listado' : 'No Listing Found'}</h2>
-                    <p className="text-gray-500 mb-8 font-medium">{isSpanish ? 'Tu cuenta no está vinculada a un listado de empresa. Por favor, completa el registro.' : "Your account hasn't been linked to a business listing yet. Please complete your onboarding."}</p>
+                    <h2 className="text-2xl font-black text-gray-900 mb-2">{isSpanish ? 'No se encontró ningún listado' : isPortuguese ? 'Nenhuma Listagem Encontrada' : 'No Listing Found'}</h2>
+                    <p className="text-gray-500 mb-8 font-medium">{isSpanish ? 'Tu cuenta no está vinculada a un listado de empresa. Por favor, completa el registro.' : isPortuguese ? 'A sua conta não está ligada a uma listagem de negócio. Por favor, conclua o registo.' : "Your account hasn't been linked to a business listing yet. Please complete your onboarding."}</p>
                     <Link to="/business-onboarding" className="block w-full bg-[#007F00] text-white py-4 rounded-2xl font-black uppercase tracking-wider text-sm hover:bg-green-800 transition-all mb-3">
-                        {isSpanish ? 'Completar Registro' : 'Complete Onboarding'}
+                        {isSpanish ? 'Completar Registro' : isPortuguese ? 'Concluir Registo' : 'Complete Onboarding'}
                     </Link>
                     <button onClick={handleSignOut} className="w-full bg-gray-100 text-gray-700 py-4 rounded-2xl font-black uppercase tracking-wider text-sm hover:bg-gray-200 transition-all">
-                        {isSpanish ? 'Cerrar Sesión' : 'Sign Out'}
+                        {isSpanish ? 'Cerrar Sesión' : isPortuguese ? 'Terminar Sessão' : 'Sign Out'}
                     </button>
                 </div>
             </div>
@@ -600,19 +600,19 @@ const BusinessDashboard = () => {
                             onClick={() => document.getElementById('locations')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                             className="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-gray-600 hover:bg-white hover:text-red-600 transition-all whitespace-nowrap"
                         >
-                            <MapPin size={14} /> {isSpanish ? 'Ubicaciones' : 'Locations'}
+                            <MapPin size={14} /> {isSpanish ? 'Ubicaciones' : isPortuguese ? 'Localizações' : 'Locations'}
                         </button>
                         <button
                             onClick={() => document.getElementById('post-job')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                             className="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-orange-600 hover:bg-orange-50 hover:text-orange-700 transition-all whitespace-nowrap bg-orange-50 border border-orange-100"
                         >
-                            <Briefcase size={14} /> {isSpanish ? 'Publicar Trabajo' : 'Post a Job'}
+                            <Briefcase size={14} /> {isSpanish ? 'Publicar Trabajo' : isPortuguese ? 'Publicar Trabalho' : 'Post a Job'}
                         </button>
                         <button
                             onClick={() => document.getElementById('referral-program')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                             className="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-purple-600 hover:bg-purple-50 hover:text-purple-700 transition-all whitespace-nowrap bg-purple-50 border border-purple-100"
                         >
-                            <Gift size={14} /> {isSpanish ? 'Referencias' : 'Referrals'}
+                            <Gift size={14} /> {isSpanish ? 'Referencias' : isPortuguese ? 'Referências' : 'Referrals'}
                         </button>
                     </div>
 
@@ -625,20 +625,20 @@ const BusinessDashboard = () => {
                                         <Building2 size={24} />
                                     </div>
                                     <div>
-                                        <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">{isSpanish ? 'Detalles del Perfil' : 'Profile Details'}</h3>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{isSpanish ? 'Información Principal de la Empresa' : 'Main Business Information'}</p>
+                                        <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">{isSpanish ? 'Detalles del Perfil' : isPortuguese ? 'Detalhes do Perfil' : 'Profile Details'}</h3>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{isSpanish ? 'Información Principal de la Empresa' : isPortuguese ? 'Informação Principal da Empresa' : 'Main Business Information'}</p>
                                     </div>
                                 </div>
                                 {isSavingProfile && (
                                     <div className="flex items-center gap-2 text-[#007F00] text-xs font-black uppercase tracking-widest bg-white px-4 py-2 rounded-full border border-green-100 shadow-sm">
-                                        <Loader2 size={12} className="animate-spin" /> {isSpanish ? 'Guardando...' : 'Saving...'}
+                                        <Loader2 size={12} className="animate-spin" /> {isSpanish ? 'Guardando...' : isPortuguese ? 'A guardar...' : 'Saving...'}
                                     </div>
                                 )}
                             </div>
                             <div className="p-10 space-y-10">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="md:col-span-2">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">{isSpanish ? 'Nombre de la Empresa' : 'Display Business Name'}</label>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">{isSpanish ? 'Nombre de la Empresa' : isPortuguese ? 'Nome da Empresa' : 'Display Business Name'}</label>
                                         <input
                                             name="company_name"
                                             value={listing.company_name || ''}
@@ -649,20 +649,20 @@ const BusinessDashboard = () => {
                                     </div>
 
                                     <div className="md:col-span-2">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">{isSpanish ? 'Descripción / Sobre Nosotros' : 'Business Bio / About Us'}</label>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">{isSpanish ? 'Descripción / Sobre Nosotros' : isPortuguese ? 'Descrição / Sobre Nós' : 'Business Bio / About Us'}</label>
                                         <textarea
                                             name="description"
                                             value={listing.description || ''}
                                             onChange={handleProfileChange}
                                             rows={6}
-                                            placeholder="Describe your services and expertise..."
+                                            placeholder={isSpanish ? 'Describe tus servicios y experiencia...' : isPortuguese ? 'Descreva os seus serviços e especialidade...' : 'Describe your services and expertise...'}
                                             className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-5 font-bold text-gray-900 focus:ring-2 focus:ring-[#007F00] focus:bg-white focus:border-[#007F00] transition-all outline-none shadow-inner resize-none mb-6"
                                         />
 
                                         <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
                                             <div className="flex items-center justify-between mb-4">
-                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">{isSpanish ? 'Características / Destacados' : 'Key Features / Highlights'}</label>
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tight">{isSpanish ? 'Aparece en la pestaña Características' : 'Appears in "Features" tab'}</span>
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">{isSpanish ? 'Características / Destacados' : isPortuguese ? 'Características / Destaques' : 'Key Features / Highlights'}</label>
+                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tight">{isSpanish ? 'Aparece en la pestaña Características' : isPortuguese ? 'Aparece no separador Características' : 'Appears in "Features" tab'}</span>
                                             </div>
                                             <div className="space-y-3">
                                                 {(listing.features || []).map((feature, idx) => (
@@ -697,14 +697,14 @@ const BusinessDashboard = () => {
                                                     }}
                                                     className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:border-[#007F00] hover:text-[#007F00] transition-all bg-white/50"
                                                 >
-                                                    {isSpanish ? '+ Añadir Destacado' : '+ Add New Highlight'}
+                                                    {isSpanish ? '+ Añadir Destacado' : isPortuguese ? '+ Adicionar Destaque' : '+ Add New Highlight'}
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">{isSpanish ? 'Teléfono de Contacto Público' : 'Public Contact Phone'}</label>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">{isSpanish ? 'Teléfono de Contacto Público' : isPortuguese ? 'Telefone de Contacto Público' : 'Public Contact Phone'}</label>
                                         <input
                                             name="phone"
                                             value={listing.phone || ''}
@@ -715,7 +715,7 @@ const BusinessDashboard = () => {
                                     </div>
 
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">{isSpanish ? 'Email de Contacto Público' : 'Public Contact Email'}</label>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">{isSpanish ? 'Email de Contacto Público' : isPortuguese ? 'Email de Contacto Público' : 'Public Contact Email'}</label>
                                         <input
                                             name="email"
                                             value={listing.email || ''}
@@ -726,7 +726,7 @@ const BusinessDashboard = () => {
                                     </div>
 
                                     <div className="md:col-span-2">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">{isSpanish ? 'Dirección de la Sede' : 'Business Headquarters Address'}</label>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">{isSpanish ? 'Dirección de la Sede' : isPortuguese ? 'Endereço da Sede' : 'Business Headquarters Address'}</label>
                                         <input
                                             name="address"
                                             value={listing.address || ''}
@@ -737,7 +737,7 @@ const BusinessDashboard = () => {
                                     </div>
 
                                     <div className="md:col-span-2">
-                                        <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-100 pb-2">{isSpanish ? 'Redes Sociales' : 'Social Connect Links'}</h4>
+                                        <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-100 pb-2">{isSpanish ? 'Redes Sociales' : isPortuguese ? 'Redes Sociais' : 'Social Connect Links'}</h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-4">
                                                 <div>
@@ -777,8 +777,8 @@ const BusinessDashboard = () => {
                                         <Briefcase size={24} />
                                     </div>
                                     <div>
-                                        <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">{isSpanish ? 'Publicar un Trabajo' : 'Post a Job'}</h3>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{isSpanish ? 'Registre un trabajo para un propietario de forma gratuita' : 'Register a job for a homeowner for free'}</p>
+                                        <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">{isSpanish ? 'Publicar un Trabajo' : isPortuguese ? 'Publicar um Trabalho' : 'Post a Job'}</h3>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{isSpanish ? 'Registre un trabajo para un propietario de forma gratuita' : isPortuguese ? 'Registe um trabalho para um proprietário gratuitamente' : 'Register a job for a homeowner for free'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -795,7 +795,7 @@ const BusinessDashboard = () => {
                                 )}
                                 {!listing && (
                                     <div className="text-center py-8 text-gray-500">
-                                        {isSpanish ? 'Complete su perfil de catálogo primero.' : 'Please complete your catalogue profile first.'}
+                                        {isSpanish ? 'Complete su perfil de catálogo primero.' : isPortuguese ? 'Conclua o seu perfil de catálogo primeiro.' : 'Please complete your catalogue profile first.'}
                                     </div>
                                 )}
                             </div>
@@ -809,13 +809,13 @@ const BusinessDashboard = () => {
                                         <ImageIcon size={24} />
                                     </div>
                                     <div>
-                                        <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">{isSpanish ? 'Medios del Catálogo' : 'Catalogue Media'}</h3>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{isSpanish ? 'Banner e Imágenes Deslizantes' : 'Banner and Image Slider'}</p>
+                                        <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">{isSpanish ? 'Medios del Catálogo' : isPortuguese ? 'Mídia do Catálogo' : 'Catalogue Media'}</h3>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{isSpanish ? 'Banner e Imágenes Deslizantes' : isPortuguese ? 'Banner e Imagens Deslizantes' : 'Banner and Image Slider'}</p>
                                     </div>
                                 </div>
                                 {(isSavingGallery || isUploadingBanner) && (
                                     <div className="flex items-center gap-2 text-[#007EA7] text-xs font-black uppercase tracking-widest bg-white px-4 py-2 rounded-full border border-sky-100 shadow-sm">
-                                        <Loader2 size={12} className="animate-spin" /> SYNCING...
+                                        <Loader2 size={12} className="animate-spin" /> {isSpanish ? 'SINCRONIZANDO...' : isPortuguese ? 'A SINCRONIZAR...' : 'SYNCING...'}
                                     </div>
                                 )}
                             </div>
@@ -824,14 +824,14 @@ const BusinessDashboard = () => {
                                 <div>
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                                         <div>
-                                            <h4 className="text-sm font-black text-gray-900 uppercase tracking-tight mb-1">{isSpanish ? 'Banner Principal' : 'Main Heritage Banner'}</h4>
-                                            <p className="text-xs text-gray-500 font-medium">{isSpanish ? 'Esta es la imagen principal en la parte superior de tu perfil.' : 'This is the premium wide-screen image at the top of your profile.'}</p>
+                                            <h4 className="text-sm font-black text-gray-900 uppercase tracking-tight mb-1">{isSpanish ? 'Banner Principal' : isPortuguese ? 'Banner Principal' : 'Main Heritage Banner'}</h4>
+                                            <p className="text-xs text-gray-500 font-medium">{isSpanish ? 'Esta es la imagen principal en la parte superior de tu perfil.' : isPortuguese ? 'Esta é a imagem principal no topo do seu perfil.' : 'This is the premium wide-screen image at the top of your profile.'}</p>
                                         </div>
                                         <div className="flex-shrink-0">
                                             <input type="file" id="hero-up" className="hidden" accept="image/*" onChange={handleBannerUpload} disabled={isUploadingBanner} />
                                             <label htmlFor="hero-up" className="inline-flex items-center gap-2 px-8 py-3.5 bg-gray-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black cursor-pointer transition-all shadow-xl shadow-gray-200">
                                                 {isUploadingBanner ? <Loader2 size={14} className="animate-spin" /> : <ImageIcon size={14} />}
-                                                {isUploadingBanner ? (isSpanish ? 'Subiendo...' : 'Uploading...') : (isSpanish ? 'Cambiar Banner Principal' : 'Replace Master Banner')}
+                                                {isUploadingBanner ? (isSpanish ? 'Subiendo...' : isPortuguese ? 'A carregar...' : 'Uploading...') : (isSpanish ? 'Cambiar Banner Principal' : isPortuguese ? 'Substituir Banner Principal' : 'Replace Master Banner')}
                                             </label>
                                         </div>
                                     </div>
@@ -847,7 +847,7 @@ const BusinessDashboard = () => {
                                         ) : (
                                             <div className="w-full h-full flex flex-col items-center justify-center text-gray-300">
                                                 <ImageIcon size={64} className="mb-4 opacity-10" />
-                                                <span className="font-black text-[10px] uppercase tracking-[0.3em]">{isSpanish ? 'Sección Vacía' : 'Design Empty Section'}</span>
+                                                <span className="font-black text-[10px] uppercase tracking-[0.3em]">{isSpanish ? 'Sección Vacía' : isPortuguese ? 'Secção Vazia' : 'Design Empty Section'}</span>
                                             </div>
                                         )}
                                     </div>
@@ -856,8 +856,8 @@ const BusinessDashboard = () => {
                                 {/* Slider Gallery */}
                                 <div>
                                     <div className="mb-10">
-                                        <h4 className="text-sm font-black text-gray-900 uppercase tracking-tight mb-1">{isSpanish ? 'Galería de Imágenes' : 'Hero Slider Portfolio'}</h4>
-                                        <p className="text-xs text-gray-500 font-medium">{isSpanish ? 'Añade hasta 10 fotos que muestren tu mejor trabajo en el deslizador del perfil.' : 'Add up to 10 photos that showcase your best work in the profile slider.'}</p>
+                                        <h4 className="text-sm font-black text-gray-900 uppercase tracking-tight mb-1">{isSpanish ? 'Galería de Imágenes' : isPortuguese ? 'Galeria de Imagens' : 'Hero Slider Portfolio'}</h4>
+                                        <p className="text-xs text-gray-500 font-medium">{isSpanish ? 'Añade hasta 10 fotos que muestren tu mejor trabajo en el deslizador del perfil.' : isPortuguese ? 'Adicione até 10 fotos que mostrem o seu melhor trabalho no slider do perfil.' : 'Add up to 10 photos that showcase your best work in the profile slider.'}</p>
                                     </div>
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                                         {listingImages.map((img, idx) => (
@@ -877,17 +877,17 @@ const BusinessDashboard = () => {
                                                             </div>
                                                             <input type="file" id={`gallery-${idx}`} className="hidden" accept="image/*" onChange={(e) => handleGalleryUpload(idx, e)} disabled={isUploadingGallery[idx]} />
                                                             <label htmlFor={`gallery-${idx}`} className="px-5 py-2.5 bg-white border border-[#007EA7]/20 text-[#007EA7] rounded-xl font-black text-[9px] uppercase tracking-widest hover:bg-[#007EA7] hover:text-white cursor-pointer transition-all shadow-sm">
-                                                                {isSpanish ? `Subir Imagen ${idx + 1}` : `Upload Image ${idx + 1}`}
+                                                                {isSpanish ? `Subir Imagen ${idx + 1}` : isPortuguese ? `Carregar Imagem ${idx + 1}` : `Upload Image ${idx + 1}`}
                                                             </label>
                                                         </div>
                                                     )}
                                                 </div>
                                                 <div className="p-6 flex-grow ">
-                                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-3 block">{isSpanish ? 'Título de la Foto' : 'Photo Context / Caption'}</label>
+                                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-3 block">{isSpanish ? 'Título de la Foto' : isPortuguese ? 'Legenda da Foto' : 'Photo Context / Caption'}</label>
                                                     <textarea
                                                         value={img.description}
                                                         onChange={(e) => handleGalleryDescriptionChange(idx, e.target.value)}
-                                                        placeholder={isSpanish ? 'Añadir un título...' : 'Add a caption...'}
+                                                        placeholder={isSpanish ? 'Añadir un título...' : isPortuguese ? 'Adicionar legenda...' : 'Add a caption...'}
                                                         rows={2}
                                                         className="w-full bg-transparent border-none p-0 text-sm font-bold text-gray-900 focus:ring-0 placeholder:text-gray-300 resize-none leading-relaxed"
                                                     />
@@ -907,18 +907,18 @@ const BusinessDashboard = () => {
                                         <Tags size={24} />
                                     </div>
                                     <div>
-                                        <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">{isSpanish ? 'Categorías de Servicio' : 'Service Categories'}</h3>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{isSpanish ? 'Visibilidad en el Catálogo' : 'Catalogue Visibility'}</p>
+                                        <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">{isSpanish ? 'Categorías de Servicio' : isPortuguese ? 'Categorias de Serviço' : 'Service Categories'}</h3>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{isSpanish ? 'Visibilidad en el Catálogo' : isPortuguese ? 'Visibilidade no Catálogo' : 'Catalogue Visibility'}</p>
                                     </div>
                                 </div>
                                 {isSavingCategories && (
                                     <div className="flex items-center gap-2 text-orange-600 text-xs font-black uppercase tracking-widest bg-white px-4 py-2 rounded-full border border-orange-100 shadow-sm">
-                                        <Loader2 size={12} className="animate-spin" /> {isSpanish ? 'SINCRONIZANDO...' : 'SYNCING...'}
+                                        <Loader2 size={12} className="animate-spin" /> {isSpanish ? 'SINCRONIZANDO...' : isPortuguese ? 'A SINCRONIZAR...' : 'SYNCING...'}
                                     </div>
                                 )}
                             </div>
                             <div className="p-10">
-                                <p className="text-gray-500 text-sm font-medium mb-10 max-w-2xl leading-relaxed">{isSpanish ? 'Selecciona las categorías que definen tu empresa. Esto determina dónde apareces cuando los usuarios filtran por servicio en nuestro directorio.' : 'Select the categories that define your business. This determines where you appear when users filter by service in our directory.'}</p>
+                                <p className="text-gray-500 text-sm font-medium mb-10 max-w-2xl leading-relaxed">{isSpanish ? 'Selecciona las categorías que definen tu empresa. Esto determina dónde apareces cuando los usuarios filtran por servicio en nuestro directorio.' : isPortuguese ? 'Selecione as categorias que definem o seu negócio. Isto determina onde aparece quando os utilizadores filtram por serviço no nosso diretório.' : 'Select the categories that define your business. This determines where you appear when users filter by service in our directory.'}</p>
                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                                     {allCategories.map(cat => (
                                         <button
@@ -949,13 +949,13 @@ const BusinessDashboard = () => {
                                         <MapPin size={24} />
                                     </div>
                                     <div>
-                                        <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">{isSpanish ? 'Cobertura del Servicio' : 'Service Coverage'}</h3>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{isSpanish ? 'Segmentación Regional' : 'Regional Targeting'}</p>
+                                        <h3 className="font-black text-gray-900 uppercase tracking-widest text-sm">{isSpanish ? 'Cobertura del Servicio' : isPortuguese ? 'Cobertura de Serviço' : 'Service Coverage'}</h3>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{isSpanish ? 'Segmentación Regional' : isPortuguese ? 'Segmentação Regional' : 'Regional Targeting'}</p>
                                     </div>
                                 </div>
                             </div>
                             <div className="p-10">
-                                <p className="text-gray-500 text-sm font-medium mb-10 max-w-2xl leading-relaxed">{isSpanish ? 'Elige cada provincia donde estés activo. Serás asociado con consultas y aparecerás en búsquedas de estas áreas específicas.' : 'Choose every county where you are active. You will be matched with inquiries and appear in searches for these specific areas.'}</p>
+                                <p className="text-gray-500 text-sm font-medium mb-10 max-w-2xl leading-relaxed">{isSpanish ? 'Elige cada provincia donde estés activo. Serás asociado con consultas y aparecerás en búsquedas de estas áreas específicas.' : isPortuguese ? 'Escolha cada distrito onde está ativo. Será associado a consultas e aparecerá em buscas destas áreas específicas.' : 'Choose every county where you are active. You will be matched with inquiries and appear in searches for these specific areas.'}</p>
                                 <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
                                     {IRISH_COUNTIES.map(county => {
                                         const isSelected = (listing.additional_addresses || []).includes(county);

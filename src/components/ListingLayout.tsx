@@ -6,6 +6,7 @@ import {
     Check, ChevronRight, ChevronLeft, Linkedin, Twitter, Youtube,
     MessageCircle, LayoutDashboard
 } from 'lucide-react';
+import { getTenantFromDomain } from '../lib/tenant';
 
 export interface Category {
     id: string;
@@ -72,6 +73,10 @@ interface ListingLayoutProps {
 
 
 const DEFAULT_HERO_IMAGE = "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2000&fm=webp";
+
+const tenant = getTenantFromDomain();
+const isSpanish = tenant === 'spain';
+const isPortuguese = tenant === 'portugal';
 
 const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmitting, isOwner = false }: ListingLayoutProps) => {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -440,47 +445,47 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
                                     <div className="w-10 h-10 bg-[#007EA7]/10 text-[#007EA7] rounded-xl flex items-center justify-center">
                                         <Mail size={20} />
                                     </div>
-                                    <h3 className="text-2xl font-black text-gray-900 tracking-tight">Message Directly</h3>
+                                    <h3 className="text-2xl font-black text-gray-900 tracking-tight">{isSpanish ? 'Enviar Mensaje' : isPortuguese ? 'Enviar Mensagem' : 'Message Directly'}</h3>
                                 </div>
 
                                 <form onSubmit={onEnquirySubmit} className="space-y-5 relative z-10">
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Your name</label>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{isSpanish ? 'Tu nombre' : isPortuguese ? 'O seu nome' : 'Your name'}</label>
                                         <input
                                             required
                                             type="text"
-                                            placeholder="Enter your full name"
+                                            placeholder={isSpanish ? 'Introduce tu nombre completo' : isPortuguese ? 'Introduza o seu nome completo' : 'Enter your full name'}
                                             value={enquiry.name}
                                             onChange={e => setEnquiry({ ...enquiry, name: e.target.value })}
                                             className="w-full px-6 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all font-medium text-gray-900"
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Your email</label>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{isSpanish ? 'Tu correo electrónico' : isPortuguese ? 'O seu email' : 'Your email'}</label>
                                         <input
                                             required
                                             type="email"
-                                            placeholder="Enter your email address"
+                                            placeholder={isSpanish ? 'Introduce tu correo electrónico' : isPortuguese ? 'Introduza o seu email' : 'Enter your email address'}
                                             value={enquiry.email}
                                             onChange={e => setEnquiry({ ...enquiry, email: e.target.value })}
                                             className="w-full px-6 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all font-medium text-gray-900"
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Mobile Number</label>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{isSpanish ? 'Número de móvil' : isPortuguese ? 'Telemóvel' : 'Mobile Number'}</label>
                                         <input
                                             type="tel"
-                                            placeholder="Enter your phone number"
+                                            placeholder={isSpanish ? 'Introduce tu número de móvil' : isPortuguese ? 'Introduza o seu número de telefone' : 'Enter your phone number'}
                                             value={enquiry.phone}
                                             onChange={e => setEnquiry({ ...enquiry, phone: e.target.value })}
                                             className="w-full px-6 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all font-medium text-gray-900"
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Your message (optional)</label>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{isSpanish ? 'Tu mensaje (opcional)' : isPortuguese ? 'A sua mensagem (opcional)' : 'Your message (optional)'}</label>
                                         <textarea
                                             rows={6}
-                                            placeholder="Tell them what you're looking for..."
+                                            placeholder={isSpanish ? 'Cuéntales qué estás buscando...' : isPortuguese ? 'Diga-nos o que procura...' : "Tell them what you're looking for..."}
                                             value={enquiry.message}
                                             onChange={e => setEnquiry({ ...enquiry, message: e.target.value })}
                                             className="w-full px-6 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] outline-none transition-all font-medium text-gray-900 resize-none"
@@ -493,7 +498,7 @@ const ListingLayout = ({ listing, enquiry, setEnquiry, onEnquirySubmit, isSubmit
                                         className="w-full bg-[#1b6cb5] hover:bg-[#155a96] text-white py-4 rounded-xl font-black text-sm uppercase tracking-widest shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-70 flex items-center justify-center gap-3 mt-4"
                                     >
                                         {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <Mail size={18} />}
-                                        Submit Request
+                                        {isSpanish ? 'Enviar Solicitud' : isPortuguese ? 'Enviar Pedido' : 'Submit Request'}
                                     </button>
                                 </form>
                             </div>

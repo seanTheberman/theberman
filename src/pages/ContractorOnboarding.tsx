@@ -749,7 +749,7 @@ const ContractorOnboarding = () => {
                                         </div>
                                     );
                                 })}
-                                <p className="text-xs text-gray-500 mt-2 text-right">{formData.preferredTowns.length} {isSpanish ? 'ciudades seleccionadas' : 'towns selected'}</p>
+                                <p className="text-xs text-gray-500 mt-2 text-right">{formData.preferredTowns.length} {isSpanish ? 'ciudades seleccionadas' : tenant === 'portugal' ? 'cidades selecionadas' : 'towns selected'}</p>
                             </div>
                         )}
 

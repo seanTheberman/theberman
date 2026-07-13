@@ -709,14 +709,14 @@ const HomePage = () => {
 
                                         if (error) throw error;
 
-                                        toast.success('Subscribed! Check your email soon.', {
+                                        toast.success(isSpanish ? 'Subscrito! Verifique o seu email em breve.' : tenant === 'portugal' ? 'Subscrito! Verifique o seu email em breve.' : 'Subscribed! Check your email soon.', {
                                             icon: '✅',
                                             duration: 5000
                                         });
                                         (e.target as HTMLFormElement).reset();
                                     } catch (err: any) {
                                         console.error('Newsletter error:', err);
-                                        toast.error(err.message || 'Failed to subscribe');
+                                        toast.error(err.message || (isSpanish ? 'Erro ao subscrever' : tenant === 'portugal' ? 'Erro ao subscrever' : 'Failed to subscribe'));
                                     } finally {
                                         setIsSubmitting(false);
                                     }
@@ -724,7 +724,7 @@ const HomePage = () => {
                             >
                                 <input
                                     type="email"
-                                    placeholder={c('newsletter', 'placeholder', isSpanish ? 'Introduce tu correo electrónico' : 'Enter your email address')}
+                                    placeholder={c('newsletter', 'placeholder', isSpanish ? 'Introduce tu correo electrónico' : tenant === 'portugal' ? 'Introduza o seu email' : 'Enter your email address')}
                                     className="flex-grow bg-white border border-gray-200 rounded-2xl px-6 py-5 text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#007F00] transition-all font-bold text-lg"
                                     required
                                     disabled={isSubmitting}
@@ -733,18 +733,18 @@ const HomePage = () => {
                                     disabled={isSubmitting}
                                     className="bg-[#007F00] text-white font-black px-10 py-5 rounded-2xl hover:bg-[#006400] transition-all shadow-xl shadow-green-100 whitespace-nowrap text-lg cursor-pointer disabled:opacity-70 flex items-center justify-center min-w-[200px]"
                                 >
-                                    {isSubmitting ? (isSpanish ? 'Enviando...' : 'Sending...') : c('newsletter', 'button_text', isSpanish ? 'Suscribirse' : 'Subscribe to news')}
+                                    {isSubmitting ? (isSpanish ? 'Enviando...' : tenant === 'portugal' ? 'A enviar...' : 'Sending...') : c('newsletter', 'button_text', isSpanish ? 'Suscribirse' : tenant === 'portugal' ? 'Subscrever' : 'Subscribe to news')}
                                 </button>
                             </form>
 
                             <div className="flex flex-wrap items-center justify-center gap-8 text-xs text-gray-500 font-bold uppercase tracking-widest">
                                 <div className="flex items-center gap-2">
                                     <Shield size={14} className="text-[#007F00]" />
-                                    {isSpanish ? 'Sin Spam Nunca' : 'No Spam Ever'}
+                                    {isSpanish ? 'Sin Spam Nunca' : tenant === 'portugal' ? 'Sem Spam' : 'No Spam Ever'}
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <ZapIcon size={14} className="text-[#007F00]" />
-                                    {isSpanish ? 'Descarga Instantánea' : 'Instant Download'}
+                                    {isSpanish ? 'Descarga Instantánea' : tenant === 'portugal' ? 'Descarga Instantânea' : 'Instant Download'}
                                 </div>
                             </div>
                         </div>

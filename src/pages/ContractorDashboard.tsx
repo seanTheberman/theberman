@@ -21,6 +21,23 @@ import { getCountiesForTenant } from '../lib/tenantData';
 
 import toast from 'react-hot-toast';
 
+// Purpose keyword helpers — support English, Spanish and Portuguese values stored in the database
+const purposeIncludes = (value: string | undefined | null, englishKeyword: string) => {
+    if (!value) return false;
+    const v = value.toLowerCase();
+    const map: Record<string, Record<string, string[]>> = {
+        selling: { es: ['venta', 'vendiendo'], pt: ['venda', 'vender'] },
+        letting: { es: ['alquiler', 'arriendo'], pt: ['arrendamento', 'alugar'] },
+        mortgage: { es: ['hipoteca'], pt: ['crédito habitação', 'hipoteca'] },
+        grant: { es: ['subvención'], pt: ['subvenção'] },
+        compliance: { es: ['cumplimiento'], pt: ['conformidade'] },
+        leasing: { es: ['arrendamiento'], pt: ['arrendamento', 'locação'] },
+        funding: { es: ['financiación'], pt: ['financiamento'] },
+    };
+    const keywords = [englishKeyword, ...(map[englishKeyword]?.[isSpanish ? 'es' : isPortuguese ? 'pt' : ''] || [])];
+    return keywords.some(k => v.includes(k.toLowerCase()));
+};
+
 interface Quote {
     id: string;
     price: number;
@@ -99,27 +116,51 @@ const ContractorDashboard = () => {
     const navigate = useNavigate();
 
     const getStatusLabel = (status: string) => {
-        if (!isSpanish) return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        const map: Record<string, string> = {
-            live: 'Activo',
-            submitted: 'Enviado',
-            pending_quote: 'Pendiente de Presupuesto',
-            quote_accepted: 'Presupuesto Aceptado',
-            scheduled: 'Programado',
-            completed: 'Completado',
-            draft: 'Borrador',
-        };
-        return map[status] || status;
+        if (isSpanish) {
+            const map: Record<string, string> = {
+                live: 'Activo',
+                submitted: 'Enviado',
+                pending_quote: 'Pendiente de Presupuesto',
+                quote_accepted: 'Presupuesto Aceptado',
+                scheduled: 'Programado',
+                completed: 'Completado',
+                draft: 'Borrador',
+            };
+            return map[status] || status;
+        }
+        if (isPortuguese) {
+            const map: Record<string, string> = {
+                live: 'Ativo',
+                submitted: 'Enviado',
+                pending_quote: 'Pendente de Orçamento',
+                quote_accepted: 'Orçamento Aceite',
+                scheduled: 'Agendado',
+                completed: 'Concluído',
+                draft: 'Rascunho',
+            };
+            return map[status] || status;
+        }
+        return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     };
 
     const getQuoteStatusLabel = (status: string) => {
-        if (!isSpanish) return status.charAt(0).toUpperCase() + status.slice(1);
-        const map: Record<string, string> = {
-            pending: 'Pendiente',
-            accepted: 'Aceptado',
-            rejected: 'Rechazado',
-        };
-        return map[status] || status;
+        if (isSpanish) {
+            const map: Record<string, string> = {
+                pending: 'Pendiente',
+                accepted: 'Aceptado',
+                rejected: 'Rechazado',
+            };
+            return map[status] || status;
+        }
+        if (isPortuguese) {
+            const map: Record<string, string> = {
+                pending: 'Pendente',
+                accepted: 'Aceite',
+                rejected: 'Rejeitado',
+            };
+            return map[status] || status;
+        }
+        return status.charAt(0).toUpperCase() + status.slice(1);
     };
 
     const [view, setView] = useState<'available' | 'my_quotes' | 'active' | 'settings'>('available');
@@ -398,7 +439,7 @@ const ContractorDashboard = () => {
 
         } catch (error: any) {
             console.error('Error fetching contractor data:', error);
-            toast.error(isSpanish ? 'Error al cargar datos del panel' : 'Failed to load dashboard data');
+            toast.error(isSpanish ? 'Error al cargar datos del panel' : isPortuguese ? 'Erro ao carregar dados do painel' : 'Failed to load dashboard data');
         } finally {
             setLoading(false);
         }
@@ -469,7 +510,7 @@ const ContractorDashboard = () => {
             }
             const daysSince = (Date.now() - lastActivity) / (1000 * 60 * 60 * 24);
             if (notOpenStatus || daysSince >= 7) {
-                toast.error(isSpanish ? 'Este trabajo ha expirado y ya no acepta presupuestos.' : 'This job has expired and is no longer accepting quotes.');
+                toast.error(isSpanish ? 'Este trabajo ha expirado y ya no acepta presupuestos.' : isPortuguese ? 'Este trabalho expirou e já não aceita orçamentos.' : 'This job has expired and is no longer accepting quotes.');
                 setQuoteModalOpen(false);
                 return;
             }
@@ -517,14 +558,14 @@ const ContractorDashboard = () => {
                 }).catch(err => console.error('Failed to trigger homeowner notification:', err)).finally(() => setIsNotifying(false));
             }
 
-            toast.success(isSpanish ? '¡Presupuesto enviado correctamente!' : 'Quote submitted successfully!');
+            toast.success(isSpanish ? '¡Presupuesto enviado correctamente!' : isPortuguese ? 'Orçamento enviado com sucesso!' : 'Quote submitted successfully!');
             setQuoteModalOpen(false);
             setQuotePrice('');
             setQuoteNotes('');
             setSelectedJob(null);
             fetchData();
         } catch (error: any) {
-            toast.error(error.message || (isSpanish ? 'Error al enviar presupuesto' : 'Failed to submit quote'));
+            toast.error(error.message || (isSpanish ? 'Error al enviar presupuesto' : isPortuguese ? 'Erro ao enviar orçamento' : 'Failed to submit quote'));
         } finally {
             setIsSubmitting(false);
         }
@@ -548,13 +589,13 @@ const ContractorDashboard = () => {
 
             if (error) throw error;
 
-            toast.success(isSpanish ? 'Solicitud rechazada. Ya no aparecerá en tu lista.' : 'Lead rejected. It will no longer appear in your list.');
+            toast.success(isSpanish ? 'Solicitud rechazada. Ya no aparecerá en tu lista.' : isPortuguese ? 'Pedido rejeitado. Já não aparecerá na sua lista.' : 'Lead rejected. It will no longer appear in your list.');
             setRejectionModalOpen(false);
             setJobDetailsModalOpen(false);
             setRejectionReason('');
             fetchData();
         } catch (error: any) {
-            toast.error(error.message || (isSpanish ? 'Error al rechazar solicitud' : 'Failed to reject lead'));
+            toast.error(error.message || (isSpanish ? 'Error al rechazar solicitud' : isPortuguese ? 'Erro ao rejeitar pedido' : 'Failed to reject lead'));
         } finally {
             setIsSubmitting(false);
         }
@@ -599,13 +640,13 @@ const ContractorDashboard = () => {
                 }).catch(err => console.error('Failed to trigger status notification:', err));
             }
 
-            toast.success(isSpanish ? `Trabajo marcado como ${getStatusLabel(newStatus)}` : `Job marked as ${newStatus.replace('_', ' ')}`);
+            toast.success(isSpanish ? `Trabajo marcado como ${getStatusLabel(newStatus)}` : isPortuguese ? `Trabalho marcado como ${getStatusLabel(newStatus)}` : `Job marked as ${newStatus.replace('_', ' ')}`);
             setSchedulingJob(null);
             setCompletingJob(null);
             fetchData();
         } catch (error: any) {
             console.error('Error updating status:', error);
-            toast.error(error.message || (isSpanish ? 'Error al actualizar estado' : 'Failed to update status'));
+            toast.error(error.message || (isSpanish ? 'Error al actualizar estado' : isPortuguese ? 'Erro ao atualizar estado' : 'Failed to update status'));
         } finally {
             setIsSubmitting(false);
         }
@@ -651,27 +692,27 @@ const ContractorDashboard = () => {
                                 <AlertCircle size={40} className={`${suspended ? 'text-red-500' : 'text-[#007F00]'} animate-pulse`} />
                             </div>
                             <h1 className="text-2xl font-black text-gray-900 mb-3">
-                                {suspended ? (isSpanish ? 'Cuenta Suspendida' : 'Account Suspended') : (isSpanish ? 'Cuenta Pendiente de Aprobación' : 'Account Pending Approval')}
+                                {suspended ? (isSpanish ? 'Cuenta Suspendida' : isPortuguese ? 'Conta Suspensa' : 'Account Suspended') : (isSpanish ? 'Cuenta Pendiente de Aprobación' : isPortuguese ? 'Conta Pendente de Aprovação' : 'Account Pending Approval')}
                             </h1>
                             <p className="text-gray-500 mb-2 font-medium leading-relaxed">
                                 {suspended
-                                    ? (isSpanish ? 'Tu cuenta ha sido suspendida por un administrador.' : 'Your account has been suspended by an administrator.')
-                                    : (isSpanish ? 'Tu perfil ha sido enviado y está esperando ser revisado por nuestro equipo.' : 'Your profile has been submitted and is waiting to be reviewed by our team.')}
+                                    ? (isSpanish ? 'Tu cuenta ha sido suspendida por un administrador.' : isPortuguese ? 'A sua conta foi suspensa por um administrador.' : 'Your account has been suspended by an administrator.')
+                                    : (isSpanish ? 'Tu perfil ha sido enviado y está esperando ser revisado por nuestro equipo.' : isPortuguese ? 'O seu perfil foi enviado e está à espera de revisão pela nossa equipa.' : 'Your profile has been submitted and is waiting to be reviewed by our team.')}
                             </p>
                             <p className="text-gray-400 text-sm mb-8">
                                 {suspended
-                                    ? (isSpanish ? 'Si crees que esto es un error, por favor contacta con nuestro equipo de soporte.' : 'If you believe this is a mistake, please contact our support team.')
-                                    : (isSpanish ? 'Una vez aprobado, tendrás acceso completo al Portal del Certificador.' : 'Once approved, you will receive full access to the Assessor Portal.')}
+                                    ? (isSpanish ? 'Si crees que esto es un error, por favor contacta con nuestro equipo de soporte.' : isPortuguese ? 'Se acredita que isto é um erro, por favor contacte a nossa equipa de suporte.' : 'If you believe this is a mistake, please contact our support team.')
+                                    : (isSpanish ? 'Una vez aprobado, tendrás acceso completo al Portal del Certificador.' : isPortuguese ? 'Uma vez aprovado, terá acesso completo ao Portal do Perito.' : 'Once approved, you will receive full access to the Assessor Portal.')}
                             </p>
                             <div className={`border rounded-xl p-4 mb-8 text-left ${suspended ? 'bg-red-50 border-red-100' : 'bg-green-50 border-green-100'}`}>
                                 <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${suspended ? 'text-red-600' : 'text-[#007F00]'}`}>
-                                    {suspended ? (isSpanish ? 'Cuenta suspendida' : 'Suspended account') : (isSpanish ? 'Registrado como' : 'Registered as')}
+                                    {suspended ? (isSpanish ? 'Cuenta suspendida' : isPortuguese ? 'Conta suspensa' : 'Suspended account') : (isSpanish ? 'Registrado como' : isPortuguese ? 'Registado como' : 'Registered as')}
                                 </p>
                                 <p className="text-sm font-semibold text-gray-800">{user?.user_metadata?.full_name || user?.email}</p>
                                 <p className="text-xs text-gray-500">{user?.email}</p>
                             </div>
                             <p className="text-xs text-gray-400 mb-6">
-                                Questions? Contact us at{' '}
+                                {isSpanish ? '¿Preguntas? Contáctanos en' : isPortuguese ? 'Dúvidas? Contacte-nos em' : 'Questions? Contact us at'}{' '}
                                 <a href={`mailto:${getTenantEmail(getTenantFromDomain())}`} className={`font-semibold hover:underline ${suspended ? 'text-red-500' : 'text-[#007F00]'}`}>
                                     {getTenantEmail(getTenantFromDomain())}
                                 </a>
@@ -681,7 +722,7 @@ const ContractorDashboard = () => {
                                     to="/"
                                     className={`flex-1 py-3 px-6 text-white rounded-xl font-bold text-sm transition-colors text-center ${suspended ? 'bg-red-500 hover:bg-red-600' : 'bg-[#007F00] hover:bg-[#006600]'}`}
                                 >
-                                    {isSpanish ? 'Explorar Web' : 'Explore Website'}
+                                    {isSpanish ? 'Explorar Web' : isPortuguese ? 'Explorar Site' : 'Explore Website'}
                                 </Link>
                                 <button
                                     onClick={handleSignOut}
@@ -710,7 +751,7 @@ const ContractorDashboard = () => {
                             <h1 className="text-lg font-bold text-white leading-tight">{isSpanish ? 'Portal del Certificador' : isPortuguese ? 'Portal do Perito' : 'Assessor Portal'}</h1>
                             <span className="text-[10px] text-gray-400 flex items-center gap-1.5 uppercase tracking-widest font-bold">
                                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
-                                {isSpanish ? 'Red de Certificación Activa' : 'Live Assessment Network'}
+                                {isSpanish ? 'Red de Certificación Activa' : isPortuguese ? 'Rede de Certificação Ativa' : 'Live Assessment Network'}
                             </span>
                         </div>
                     </div>
@@ -722,7 +763,7 @@ const ContractorDashboard = () => {
                                 className="bg-white/5 p-2.5 rounded-xl hover:bg-white/10 transition-colors border border-white/10 flex items-center gap-2 text-white/70"
                             >
                                 {isMenuOpen ? <X size={20} className="text-[#5CB85C]" /> : <Menu size={20} className="text-[#5CB85C]" />}
-                                <span className="text-[11px] font-black uppercase tracking-[0.15em] hidden sm:block">{isSpanish ? 'Menú' : 'Menu'}</span>
+                                <span className="text-[11px] font-black uppercase tracking-[0.15em] hidden sm:block">{isSpanish ? 'Menú' : isPortuguese ? 'Menu' : 'Menu'}</span>
                             </button>
 
                             {isMenuOpen && (
@@ -775,24 +816,24 @@ const ContractorDashboard = () => {
                     {/* Live Jobs Header - Green banner matching BerCert */}
                     <div className="bg-[#c8e6c9] py-6 px-6 text-center">
                         <h2 className="text-2xl font-bold italic text-gray-900 mb-1">
-                            {view === 'available' ? 'Live Jobs' :
-                                view === 'my_quotes' ? 'My Active Quotes' :
-                                    view === 'active' ? 'My Assessment Clients' :
-                                        view === 'settings' ? 'Assessor Settings' : 'Dashboard'}
+                            {view === 'available' ? (isSpanish ? 'Trabajos Activos' : isPortuguese ? 'Trabalhos Ativos' : 'Live Jobs') :
+                                view === 'my_quotes' ? (isSpanish ? 'Mis Presupuestos Activos' : isPortuguese ? 'Os Meus Orçamentos Ativos' : 'My Active Quotes') :
+                                    view === 'active' ? (isSpanish ? 'Mis Clientes' : isPortuguese ? 'Os Meus Clientes' : 'My Assessment Clients') :
+                                        view === 'settings' ? (isSpanish ? 'Ajustes del Certificador' : isPortuguese ? 'Configurações do Perito' : 'Assessor Settings') : (isSpanish ? 'Panel' : isPortuguese ? 'Painel' : 'Dashboard')}
                         </h2>
                         {view === 'available' && (
                             <div className="text-sm italic text-gray-800">
                                 <p>{availableJobs.length > 0
-                                    ? 'You have not yet submitted a quote for these jobs.'
-                                    : 'No jobs available right now.'}</p>
+                                    ? (isSpanish ? 'Aún no has enviado un presupuesto para estos trabajos.' : isPortuguese ? 'Ainda não enviou um orçamento para estes trabalhos.' : 'You have not yet submitted a quote for these jobs.')
+                                    : (isSpanish ? 'No hay trabajos disponibles ahora mismo.' : isPortuguese ? 'Não há trabalhos disponíveis de momento.' : 'No jobs available right now.')}</p>
                                 <p>{availableJobs.length > 0
-                                    ? 'Submit your quote below.'
-                                    : 'We\'ll notify you when new requests come in.'}</p>
+                                    ? (isSpanish ? 'Envía tu presupuesto a continuación.' : isPortuguese ? 'Envie o seu orçamento abaixo.' : 'Submit your quote below.')
+                                    : (isSpanish ? 'Te notificaremos cuando lleguen nuevas solicitudes.' : isPortuguese ? 'Notificá-lo-emos quando chegarem novos pedidos.' : 'We\'ll notify you when new requests come in.')}</p>
                             </div>
                         )}
-                        {view === 'my_quotes' && <p className="text-sm italic text-gray-800">Track and manage quotes you've submitted to homeowners.</p>}
-                        {view === 'active' && <p className="text-sm italic text-gray-800">Manage your current inspection schedule and client communications.</p>}
-                        {view === 'settings' && <p className="text-sm italic text-gray-800">Configure your notification preferences and service area.</p>}
+                        {view === 'my_quotes' && <p className="text-sm italic text-gray-800">{isSpanish ? 'Controla y gestiona los presupuestos que has enviado a los propietarios.' : isPortuguese ? 'Acompanhe e gira os orçamentos que enviou aos proprietários.' : 'Track and manage quotes you\'ve submitted to homeowners.'}</p>}
+                        {view === 'active' && <p className="text-sm italic text-gray-800">{isSpanish ? 'Gestiona tu agenda de inspecciones actual y las comunicaciones con clientes.' : isPortuguese ? 'Gira a sua agenda de inspeções atual e as comunicações com clientes.' : 'Manage your current inspection schedule and client communications.'}</p>}
+                        {view === 'settings' && <p className="text-sm italic text-gray-800">{isSpanish ? 'Configura tus preferencias de notificación y área de servicio.' : isPortuguese ? 'Configure as suas preferências de notificação e área de serviço.' : 'Configure your notification preferences and service area.'}</p>}
                     </div>
 
                     {/* Filters Row */}
@@ -802,7 +843,7 @@ const ContractorDashboard = () => {
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                                 <input
                                     type="text"
-                                    placeholder="Search by town, county, type, eircode..."
+                                    placeholder={isSpanish ? 'Buscar por ciudad, provincia, tipo, código postal...' : isPortuguese ? 'Pesquisar por cidade, distrito, tipo, código postal...' : 'Search by town, county, type, eircode...'}
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="w-full pl-9 pr-8 py-2 bg-white border border-gray-300 rounded text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#007EA7]"
@@ -815,13 +856,13 @@ const ContractorDashboard = () => {
                             </div>
                             <div className="flex gap-2 flex-shrink-0">
                                 <span className="px-3 py-1.5 bg-[#007EA7] text-white rounded text-xs font-bold">
-                                    All ({availableJobs.length})
+                                    {isSpanish ? 'Todos' : isPortuguese ? 'Todos' : 'All'} ({availableJobs.length})
                                 </span>
                                 <span className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded text-xs font-bold">
-                                    Dom ({availableJobs.filter(j => j.job_type !== 'commercial').length})
+                                    {isSpanish ? 'Dom' : isPortuguese ? 'Dom' : 'Dom'} ({availableJobs.filter(j => j.job_type !== 'commercial').length})
                                 </span>
                                 <span className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded text-xs font-bold">
-                                    Comm ({availableJobs.filter(j => j.job_type === 'commercial').length})
+                                    {isSpanish ? 'Com' : isPortuguese ? 'Com' : 'Comm'} ({availableJobs.filter(j => j.job_type === 'commercial').length})
                                 </span>
                             </div>
                         </div>
@@ -831,7 +872,7 @@ const ContractorDashboard = () => {
                         {loading ? (
                             <div className="h-full flex flex-col items-center justify-center py-20">
                                 <div className="w-10 h-10 border-4 border-blue-50 border-t-[#007EA7] rounded-full animate-spin"></div>
-                                <p className="mt-4 text-sm font-bold text-gray-400 uppercase tracking-widest">Refreshing Dashboard...</p>
+                                <p className="mt-4 text-sm font-bold text-gray-400 uppercase tracking-widest">{isSpanish ? 'Actualizando Panel...' : isPortuguese ? 'A Atualizar Painel...' : 'Refreshing Dashboard...'}</p>
                             </div>
                         ) : view === 'available' ? (
                             availableJobs.length === 0 ? (
@@ -839,8 +880,8 @@ const ContractorDashboard = () => {
                                     <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6 text-gray-300">
                                         <Briefcase size={40} />
                                     </div>
-                                    <h3 className="text-xl font-bold text-gray-900 mb-2">No jobs available right now</h3>
-                                    <p className="text-gray-500 max-w-sm">We'll notify you when new assessment requests are submitted by homeowners in your area.</p>
+                                    <h3 className="text-xl font-bold text-gray-900 mb-2">{isSpanish ? 'No hay trabajos disponibles ahora mismo' : isPortuguese ? 'Não há trabalhos disponíveis de momento' : 'No jobs available right now'}</h3>
+                                    <p className="text-gray-500 max-w-sm">{isSpanish ? 'Te notificaremos cuando los propietarios de tu zona envíen nuevas solicitudes de evaluación.' : isPortuguese ? 'Notificá-lo-emos quando os proprietários da sua área enviarem novos pedidos de avaliação.' : "We'll notify you when new assessment requests are submitted by homeowners in your area."}</p>
                                 </div>
                             ) : (
                                 <div>
@@ -849,16 +890,16 @@ const ContractorDashboard = () => {
                                         <table className="w-full text-[13px] border-collapse">
                                             <thead>
                                                 <tr className="border-b-2 border-gray-300">
-                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Job<br/><span className="font-bold">Posted</span></th>
-                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Town</th>
-                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">County</th>
-                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Type</th>
-                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Sq. Mt.</th>
-                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Beds</th>
-                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Heat Pump</th>
-                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Purpose</th>
-                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Addition</th>
-                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">Preferred<br/>Date</th>
+                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">{isSpanish ? 'Fecha' : isPortuguese ? 'Data' : 'Job'}<br/><span className="font-bold">{isSpanish ? 'Publicación' : isPortuguese ? 'Publicação' : 'Posted'}</span></th>
+                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">{isSpanish ? 'Ciudad' : isPortuguese ? 'Cidade' : 'Town'}</th>
+                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">{isSpanish ? 'C. Autónoma' : isPortuguese ? 'Distrito' : 'County'}</th>
+                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">{isSpanish ? 'Tipo' : isPortuguese ? 'Tipo' : 'Type'}</th>
+                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">{isSpanish ? 'm²' : isPortuguese ? 'm²' : 'Sq. Mt.'}</th>
+                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">{isSpanish ? 'Hab.' : isPortuguese ? 'Quartos' : 'Beds'}</th>
+                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">{isSpanish ? 'Bomba Calor' : isPortuguese ? 'Bomba Calor' : 'Heat Pump'}</th>
+                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">{isSpanish ? 'Finalidad' : isPortuguese ? 'Finalidade' : 'Purpose'}</th>
+                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">{isSpanish ? 'Añadidos' : isPortuguese ? 'Extras' : 'Addition'}</th>
+                                                    <th className="text-left py-3 px-3 font-bold text-gray-800 whitespace-nowrap">{isSpanish ? 'Fecha' : isPortuguese ? 'Data' : 'Preferred'}<br/>{isSpanish ? 'Preferida' : isPortuguese ? 'Preferida' : 'Date'}</th>
                                                     <th className="py-3 px-3"></th>
                                                 </tr>
                                             </thead>
@@ -879,17 +920,17 @@ const ContractorDashboard = () => {
                                                     .map((job) => (
                                                     <tr key={job.id} className="border-b border-gray-200 hover:bg-gray-50">
                                                         <td className="py-3 px-3 text-gray-700 whitespace-nowrap">
-                                                            {new Date(job.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
+                                                            {new Date(job.created_at).toLocaleDateString(isSpanish ? 'es-ES' : isPortuguese ? 'pt-PT' : 'en-IE', { day: '2-digit', month: 'short' })}
                                                         </td>
                                                         <td className="py-3 px-3 text-gray-900">{job.town}</td>
                                                         <td className="py-3 px-3 text-gray-700">{job.county}</td>
-                                                        <td className="py-3 px-3 text-gray-700">{job.job_type === 'commercial' ? (job.building_type || 'Commercial') : job.property_type}</td>
+                                                        <td className="py-3 px-3 text-gray-700">{job.job_type === 'commercial' ? (job.building_type || (isSpanish ? 'Comercial' : isPortuguese ? 'Comercial' : 'Commercial')) : job.property_type}</td>
                                                         <td className="py-3 px-3 text-gray-700">{job.job_type === 'commercial' ? (job.floor_area || '-') : job.property_size}</td>
                                                         <td className="py-3 px-3 text-gray-700">{job.job_type === 'commercial' ? '-' : job.bedrooms}</td>
-                                                        <td className="py-3 px-3 text-gray-700">{job.heat_pump || 'None'}</td>
+                                                        <td className="py-3 px-3 text-gray-700">{job.heat_pump || (isSpanish ? 'Ninguna' : isPortuguese ? 'Nenhuma' : 'None')}</td>
                                                         <td className="py-3 px-3 text-gray-700">{job.ber_purpose || job.assessment_purpose || '-'}</td>
-                                                        <td className="py-3 px-3 text-gray-700">{job.additional_features?.length > 0 ? job.additional_features.join(', ') : 'None'}</td>
-                                                        <td className="py-3 px-3 text-gray-700 whitespace-nowrap">{job.preferred_date || 'Flexible'}</td>
+                                                        <td className="py-3 px-3 text-gray-700">{job.additional_features?.length > 0 ? job.additional_features.join(', ') : (isSpanish ? 'Ninguna' : isPortuguese ? 'Nenhuma' : 'None')}</td>
+                                                        <td className="py-3 px-3 text-gray-700 whitespace-nowrap">{job.preferred_date || (isSpanish ? 'Flexible' : isPortuguese ? 'Flexível' : 'Flexible')}</td>
                                                         <td className="py-3 px-3">
                                                             <button
                                                                 onClick={() => {
@@ -898,7 +939,7 @@ const ContractorDashboard = () => {
                                                                 }}
                                                                 className="px-4 py-1.5 bg-[#e8a838] hover:bg-[#d4962f] text-white rounded text-xs font-bold transition-colors"
                                                             >
-                                                                Quote
+                                                                {isSpanish ? 'Presupuestar' : isPortuguese ? 'Orçamentar' : 'Quote'}
                                                             </button>
                                                         </td>
                                                     </tr>
@@ -925,22 +966,22 @@ const ContractorDashboard = () => {
                                                 <div className="flex justify-between items-start mb-2">
                                                     <div>
                                                         <p className="font-bold text-gray-900 text-sm">{job.town}, {job.county}</p>
-                                                        <p className="text-xs text-gray-500">{job.job_type === 'commercial' ? (job.building_type || 'Commercial') : job.property_type} {job.job_type !== 'commercial' && `• ${job.bedrooms} beds`}</p>
+                                                        <p className="text-xs text-gray-500">{job.job_type === 'commercial' ? (job.building_type || (isSpanish ? 'Comercial' : isPortuguese ? 'Comercial' : 'Commercial')) : job.property_type} {job.job_type !== 'commercial' && <>• {job.bedrooms} {isSpanish ? 'hab.' : isPortuguese ? 'quartos' : 'beds'}</>}</p>
                                                     </div>
                                                     <span className="text-xs text-gray-400">
-                                                        {new Date(job.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
+                                                        {new Date(job.created_at).toLocaleDateString(isSpanish ? 'es-ES' : isPortuguese ? 'pt-PT' : 'en-IE', { day: '2-digit', month: 'short' })}
                                                     </span>
                                                 </div>
                                                 <div className="flex flex-wrap gap-1 mb-3 text-[11px]">
                                                     <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{job.ber_purpose || '-'}</span>
-                                                    <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{job.heat_pump || 'None'}</span>
-                                                    <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{job.preferred_date || 'Flexible'}</span>
+                                                    <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{job.heat_pump || (isSpanish ? 'Ninguna' : isPortuguese ? 'Nenhuma' : 'None')}</span>
+                                                    <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{job.preferred_date || (isSpanish ? 'Flexible' : isPortuguese ? 'Flexível' : 'Flexible')}</span>
                                                 </div>
                                                 <button
                                                     onClick={() => { setSelectedJob(job); setJobDetailsModalOpen(true); }}
                                                     className="w-full py-2.5 bg-[#e8a838] hover:bg-[#d4962f] text-white rounded font-bold text-sm transition-colors"
                                                 >
-                                                    Quote
+                                                    {isSpanish ? 'Presupuestar' : isPortuguese ? 'Orçamentar' : 'Quote'}
                                                 </button>
                                             </div>
                                         ))}
@@ -963,7 +1004,7 @@ const ContractorDashboard = () => {
                                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                         <input
                                             type="text"
-                                            placeholder="Search by town, county, type, or eircode..."
+                                            placeholder={isSpanish ? 'Buscar por ciudad, provincia, tipo o código postal...' : isPortuguese ? 'Pesquisar por cidade, distrito, tipo ou código postal...' : 'Search by town, county, type, or eircode...'}
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
                                             className="w-full pl-11 pr-4 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007EA7]/20 focus:border-[#007EA7] transition-all shadow-sm"
@@ -985,20 +1026,20 @@ const ContractorDashboard = () => {
                                             <table className="w-full text-sm">
                                                 <thead className="sticky top-0 z-10">
                                                     <tr className="bg-gray-50 border-b border-gray-200">
-                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Posted</th>
-                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Job Type</th>
-                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Town</th>
-                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">County</th>
-                                                        <th className="text-left py-3 px-3 text-xs font-bold text-blue-600 uppercase tracking-wider">Eircode</th>
-                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Type / Building</th>
-                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Size / Area</th>
-                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Beds / Complexity</th>
-                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Heat Pump / Systems</th>
-                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Purpose</th>
-                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Survey Date</th>
-                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-900 uppercase tracking-wider">Lowest Quote</th>
-                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">My Quote</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Fecha' : isPortuguese ? 'Data' : 'Posted'}</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Tipo Trabajo' : isPortuguese ? 'Tipo Trabalho' : 'Job Type'}</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Ciudad' : isPortuguese ? 'Cidade' : 'Town'}</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'C. Autónoma' : isPortuguese ? 'Distrito' : 'County'}</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-blue-600 uppercase tracking-wider">{isSpanish ? 'Código Postal' : isPortuguese ? 'Código Postal' : 'Eircode'}</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Tipo / Edificio' : isPortuguese ? 'Tipo / Edifício' : 'Type / Building'}</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Tamaño / Área' : isPortuguese ? 'Área / Superfície' : 'Size / Area'}</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Hab. / Complejidad' : isPortuguese ? 'Quartos / Complexidade' : 'Beds / Complexity'}</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Bomba Calor / Sistemas' : isPortuguese ? 'Bomba Calor / Sistemas' : 'Heat Pump / Systems'}</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Finalidad' : isPortuguese ? 'Finalidade' : 'Purpose'}</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Estado' : isPortuguese ? 'Estado' : 'Status'}</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Fecha Inspección' : isPortuguese ? 'Data Inspeção' : 'Survey Date'}</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-900 uppercase tracking-wider">{isSpanish ? 'Presupuesto Mínimo' : isPortuguese ? 'Orçamento Mínimo' : 'Lowest Quote'}</th>
+                                                        <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Mi Presupuesto' : isPortuguese ? 'O Meu Orçamento' : 'My Quote'}</th>
                                                         <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider"></th>
                                                     </tr>
                                                 </thead>
@@ -1026,11 +1067,11 @@ const ContractorDashboard = () => {
                                                                 className={`border-b border-gray-100 hover:bg-amber-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}
                                                             >
                                                                 <td className="py-3 px-3 text-gray-600 font-medium">
-                                                                    {new Date(a?.created_at || quote.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
+                                                                    {new Date(a?.created_at || quote.created_at).toLocaleDateString(isSpanish ? 'es-ES' : isPortuguese ? 'pt-PT' : 'en-IE', { day: '2-digit', month: 'short' })}
                                                                 </td>
                                                                 <td className="py-3 px-3">
                                                                     <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${isCommercial ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'}`}>
-                                                                        {isCommercial ? 'Commercial' : 'Domestic'}
+                                                                        {isCommercial ? (isSpanish ? 'Comercial' : isPortuguese ? 'Comercial' : 'Commercial') : (isSpanish ? 'Doméstico' : isPortuguese ? 'Doméstico' : 'Domestic')}
                                                                     </span>
                                                                 </td>
                                                                 <td className="py-3 px-3 text-gray-900 font-bold">{a?.town || '-'}</td>
@@ -1052,24 +1093,24 @@ const ContractorDashboard = () => {
                                                                 <td className="py-3 px-3 text-gray-600 text-xs">
                                                                     {isCommercial
                                                                         ? (a?.heating_cooling_systems?.length ? a.heating_cooling_systems.join(', ') : '-')
-                                                                        : (a?.heat_pump || 'None')
+                                                                        : (a?.heat_pump || (isSpanish ? 'Ninguna' : isPortuguese ? 'Nenhuma' : 'None'))
                                                                     }
                                                                 </td>
                                                                 {/* Purpose */}
                                                                 <td className="py-3 px-3">
                                                                     {isCommercial ? (
-                                                                        <span className={`px-2 py-1 rounded text-xs font-bold ${(a?.assessment_purpose || '').toLowerCase().includes('compliance') ? 'bg-blue-100 text-blue-700' :
-                                                                            (a?.assessment_purpose || '').toLowerCase().includes('leasing') ? 'bg-amber-100 text-amber-700' :
-                                                                                (a?.assessment_purpose || '').toLowerCase().includes('selling') ? 'bg-purple-100 text-purple-700' :
+                                                                        <span className={`px-2 py-1 rounded text-xs font-bold ${purposeIncludes(a?.assessment_purpose, 'compliance') ? 'bg-blue-100 text-blue-700' :
+                                                                            purposeIncludes(a?.assessment_purpose, 'leasing') ? 'bg-amber-100 text-amber-700' :
+                                                                                purposeIncludes(a?.assessment_purpose, 'selling') ? 'bg-purple-100 text-purple-700' :
                                                                                     'bg-gray-100 text-gray-600'
                                                                             }`}>
                                                                             {a?.assessment_purpose || '-'}
                                                                         </span>
                                                                     ) : (
-                                                                        <span className={`px-2 py-1 rounded text-xs font-bold ${a?.ber_purpose?.toLowerCase().includes('mortgage') ? 'bg-blue-100 text-blue-700' :
-                                                                            a?.ber_purpose?.toLowerCase().includes('grant') ? 'bg-green-100 text-green-700' :
-                                                                                a?.ber_purpose?.toLowerCase().includes('letting') ? 'bg-amber-100 text-amber-700' :
-                                                                                    a?.ber_purpose?.toLowerCase().includes('selling') ? 'bg-purple-100 text-purple-700' :
+                                                                        <span className={`px-2 py-1 rounded text-xs font-bold ${purposeIncludes(a?.ber_purpose, 'mortgage') ? 'bg-blue-100 text-blue-700' :
+                                                                            purposeIncludes(a?.ber_purpose, 'grant') ? 'bg-green-100 text-green-700' :
+                                                                                purposeIncludes(a?.ber_purpose, 'letting') ? 'bg-amber-100 text-amber-700' :
+                                                                                    purposeIncludes(a?.ber_purpose, 'selling') ? 'bg-purple-100 text-purple-700' :
                                                                                         'bg-gray-100 text-gray-600'
                                                                             }`}>
                                                                             {a?.ber_purpose || '-'}
@@ -1084,7 +1125,7 @@ const ContractorDashboard = () => {
                                                                         {getQuoteStatusLabel(quote.status) || '-'}
                                                                     </span>
                                                                 </td>
-                                                                <td className="py-3 px-3 text-gray-600">{a?.preferred_date || 'Flexible'}</td>
+                                                                <td className="py-3 px-3 text-gray-600">{a?.preferred_date || (isSpanish ? 'Flexible' : isPortuguese ? 'Flexível' : 'Flexible')}</td>
                                                                 <td className="py-3 px-3 text-gray-900 font-bold">{quote.lowestPrice != null ? formatCurrency(quote.lowestPrice) : '-'}</td>
                                                                 <td className={`py-3 px-3 font-bold ${isCompetitive ? 'text-green-700' : 'text-red-600'}`}>
                                                                     {formatCurrency(quote.price)}
@@ -1095,7 +1136,7 @@ const ContractorDashboard = () => {
                                                                         disabled={quote.status === 'accepted'}
                                                                         className="px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded text-xs font-bold transition-all"
                                                                     >
-                                                                        {isSpanish ? 'Re-Presupuestar' : 'Re-Quote'}
+                                                                        {isSpanish ? 'Re-Presupuestar' : isPortuguese ? 'Re-Orçamentar' : 'Re-Quote'}
                                                                     </button>
                                                                 </td>
                                                             </tr>
@@ -1128,7 +1169,7 @@ const ContractorDashboard = () => {
                                                                 <p className="font-bold text-gray-900">{a?.town || '-'}, {a?.county || '-'}</p>
                                                                 <p className="text-[10px] text-blue-600 font-bold">{a?.eircode}</p>
                                                                 <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${isCommercial ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'}`}>
-                                                                    {isCommercial ? 'Commercial' : 'Domestic'}
+                                                                    {isCommercial ? (isSpanish ? 'Comercial' : isPortuguese ? 'Comercial' : 'Commercial') : (isSpanish ? 'Doméstico' : isPortuguese ? 'Doméstico' : 'Domestic')}
                                                                 </span>
                                                             </div>
                                                             <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md ${quote.status === 'accepted' ? 'bg-green-100 text-green-700' : quote.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
@@ -1137,37 +1178,37 @@ const ContractorDashboard = () => {
                                                         </div>
                                                         <div className="grid grid-cols-2 gap-2 text-xs mb-3">
                                                             <div>
-                                                                <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Type / Building</p>
+                                                                <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">{isSpanish ? 'Tipo / Edificio' : isPortuguese ? 'Tipo / Edifício' : 'Type / Building'}</p>
                                                                 <p className="text-gray-700 font-medium">{isCommercial ? (a?.building_type || '-') : (a?.property_type || '-')}</p>
                                                             </div>
                                                             <div>
-                                                                <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Size / Area</p>
+                                                                <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">{isSpanish ? 'Tamaño / Área' : isPortuguese ? 'Área / Superfície' : 'Size / Area'}</p>
                                                                 <p className="text-gray-700 font-medium">{isCommercial ? (a?.floor_area || '-') : (a?.property_size || '-')}</p>
                                                             </div>
                                                             <div>
-                                                                <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">{isCommercial ? 'Complexity' : 'Bedrooms'}</p>
+                                                                <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">{isCommercial ? (isSpanish ? 'Complejidad' : isPortuguese ? 'Complexidade' : 'Complexity') : (isSpanish ? 'Habitaciones' : isPortuguese ? 'Quartos' : 'Bedrooms')}</p>
                                                                 <p className="text-gray-700 font-medium">{isCommercial ? (a?.building_complexity || '-') : (a?.bedrooms || '-')}</p>
                                                             </div>
                                                             <div>
-                                                                <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">{isCommercial ? 'Systems' : 'Heat Pump'}</p>
-                                                                <p className="text-gray-700 font-medium">{isCommercial ? (a?.heating_cooling_systems?.length ? a.heating_cooling_systems.join(', ') : '-') : (a?.heat_pump || 'None')}</p>
+                                                                <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">{isCommercial ? (isSpanish ? 'Sistemas' : isPortuguese ? 'Sistemas' : 'Systems') : (isSpanish ? 'Bomba Calor' : isPortuguese ? 'Bomba Calor' : 'Heat Pump')}</p>
+                                                                <p className="text-gray-700 font-medium">{isCommercial ? (a?.heating_cooling_systems?.length ? a.heating_cooling_systems.join(', ') : '-') : (a?.heat_pump || (isSpanish ? 'Ninguna' : isPortuguese ? 'Nenhuma' : 'None'))}</p>
                                                             </div>
                                                             <div>
-                                                                <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Purpose</p>
+                                                                <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">{isSpanish ? 'Finalidad' : isPortuguese ? 'Finalidade' : 'Purpose'}</p>
                                                                 <p className="text-gray-700 font-medium">{isCommercial ? (a?.assessment_purpose || '-') : (a?.ber_purpose || '-')}</p>
                                                             </div>
                                                             <div>
-                                                                <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Survey Date</p>
-                                                                <p className="text-gray-700 font-medium">{a?.preferred_date || 'Flexible'}</p>
+                                                                <p className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">{isSpanish ? 'Fecha Inspección' : isPortuguese ? 'Data Inspeção' : 'Survey Date'}</p>
+                                                                <p className="text-gray-700 font-medium">{a?.preferred_date || (isSpanish ? 'Flexible' : isPortuguese ? 'Flexível' : 'Flexible')}</p>
                                                             </div>
                                                         </div>
                                                         <div className="grid grid-cols-2 gap-4 mb-4">
                                                             <div>
-                                                                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Lowest Quote</p>
+                                                                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">{isSpanish ? 'Presupuesto Mínimo' : isPortuguese ? 'Orçamento Mínimo' : 'Lowest Quote'}</p>
                                                                 <p className="text-lg font-bold text-[#8B0000]">{quote.lowestPrice != null ? formatCurrency(quote.lowestPrice) : '-'}</p>
                                                             </div>
                                                             <div>
-                                                                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">My Quote</p>
+                                                                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">{isSpanish ? 'Mi Presupuesto' : isPortuguese ? 'O Meu Orçamento' : 'My Quote'}</p>
                                                                 <p className="text-lg font-bold text-green-700">{formatCurrency(quote.price)}</p>
                                                             </div>
                                                         </div>
@@ -1176,7 +1217,7 @@ const ContractorDashboard = () => {
                                                             disabled={quote.status === 'accepted'}
                                                             className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 disabled:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                                         >
-                                                            Re-Quote
+                                                            {isSpanish ? 'Re-Presupuestar' : isPortuguese ? 'Re-Orçamentar' : 'Re-Quote'}
                                                         </button>
                                                     </div>
                                                 );
@@ -1191,8 +1232,8 @@ const ContractorDashboard = () => {
                                     <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6 text-gray-300">
                                         <HardHat size={40} />
                                     </div>
-                                    <h3 className="text-xl font-bold text-gray-900 mb-2">No active jobs</h3>
-                                    <p className="text-gray-500 max-w-sm">When a homeowner accepts your quote, the job will appear here for you to manage.</p>
+                                    <h3 className="text-xl font-bold text-gray-900 mb-2">{isSpanish ? 'No hay trabajos activos' : isPortuguese ? 'Não há trabalhos ativos' : 'No active jobs'}</h3>
+                                    <p className="text-gray-500 max-w-sm">{isSpanish ? 'Cuando un propietario acepte tu presupuesto, el trabajo aparecerá aquí para que lo gestiones.' : isPortuguese ? 'Quando um proprietário aceitar o seu orçamento, o trabalho aparecerá aqui para o gerir.' : 'When a homeowner accepts your quote, the job will appear here for you to manage.'}</p>
                                 </div>
                             ) : (
                                 <div className="space-y-6">
@@ -1207,22 +1248,22 @@ const ContractorDashboard = () => {
                                         <table className="w-full text-sm hidden md:table">
                                             <thead>
                                                 <tr className="bg-gray-50 border-b border-gray-200">
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Fecha Aceptado' : 'Date Accepted'}</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Trabajo' : 'Job'}</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Ciudad' : 'Town'}</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'C. Autónoma' : 'County'}</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-blue-600 uppercase tracking-wider">{isSpanish ? 'Código Postal' : 'Eircode'}</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Tipo' : 'Type'}</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'm²' : 'Sq. Mt.'}</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Hab.' : 'Beds'}</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Bomba Calor' : 'Heat Pump'}</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Finalidad' : 'Purpose'}</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Estado' : 'Status'}</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Pagado' : 'Paid'}</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Añadidos' : 'Addition'}</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Fecha Inspección' : 'Survey Date'}</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Contacto' : 'Contact'}</th>
-                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Pago' : 'Payout'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Fecha Aceptado' : isPortuguese ? 'Data Aceite' : 'Date Accepted'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Trabajo' : isPortuguese ? 'Trabalho' : 'Job'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Ciudad' : isPortuguese ? 'Cidade' : 'Town'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'C. Autónoma' : isPortuguese ? 'Distrito' : 'County'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-blue-600 uppercase tracking-wider">{isSpanish ? 'Código Postal' : isPortuguese ? 'Código Postal' : 'Eircode'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Tipo' : isPortuguese ? 'Tipo' : 'Type'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'm²' : isPortuguese ? 'm²' : 'Sq. Mt.'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Hab.' : isPortuguese ? 'Quartos' : 'Beds'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Bomba Calor' : isPortuguese ? 'Bomba Calor' : 'Heat Pump'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Finalidad' : isPortuguese ? 'Finalidade' : 'Purpose'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Estado' : isPortuguese ? 'Estado' : 'Status'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Pagado' : isPortuguese ? 'Pago' : 'Paid'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Añadidos' : isPortuguese ? 'Extras' : 'Addition'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Fecha Inspección' : isPortuguese ? 'Data Inspeção' : 'Survey Date'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Contacto' : isPortuguese ? 'Contacto' : 'Contact'}</th>
+                                                    <th className="text-left py-3 px-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{isSpanish ? 'Pago' : isPortuguese ? 'Pagamento' : 'Payout'}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -1233,11 +1274,11 @@ const ContractorDashboard = () => {
                                                             className={`border-b border-gray-100 hover:bg-amber-50/50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}
                                                         >
                                                             <td className="py-3 px-3 text-gray-600 font-medium whitespace-nowrap">
-                                                                {new Date(job.created_at).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
+                                                                {new Date(job.created_at).toLocaleDateString(isSpanish ? 'es-ES' : isPortuguese ? 'pt-PT' : 'en-IE', { day: '2-digit', month: 'short' })}
                                                             </td>
                                                             <td className="py-3 px-3">
                                                                 <span className={`px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider ${job.job_type === 'commercial' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                                                                    {job.job_type === 'commercial' ? 'Comm' : 'Dom'}
+                                                                    {job.job_type === 'commercial' ? (isSpanish ? 'Com' : isPortuguese ? 'Com' : 'Comm') : (isSpanish ? 'Dom' : isPortuguese ? 'Dom' : 'Dom')}
                                                                 </span>
                                                             </td>
                                                             <td className="py-3 px-3 text-gray-900 font-bold">{job.town}</td>
@@ -1252,8 +1293,8 @@ const ContractorDashboard = () => {
                                                             <td className="py-3 px-3 text-gray-600 font-bold">{job.job_type === 'commercial' ? '-' : job.bedrooms}</td>
                                                             <td className="py-3 px-3 text-gray-600">{job.heat_pump || 'None'}</td>
                                                             <td className="py-3 px-3">
-                                                                <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${(job.ber_purpose || job.assessment_purpose || '')?.toLowerCase().includes('mortgage') ? 'bg-blue-100 text-blue-700' :
-                                                                    (job.ber_purpose || job.assessment_purpose || '')?.toLowerCase().includes('grant') || (job.ber_purpose || job.assessment_purpose || '')?.toLowerCase().includes('funding') ? 'bg-green-100 text-green-700' :
+                                                                <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${purposeIncludes(job.ber_purpose || job.assessment_purpose, 'mortgage') ? 'bg-blue-100 text-blue-700' :
+                                                                    purposeIncludes(job.ber_purpose || job.assessment_purpose, 'grant') || purposeIncludes(job.ber_purpose || job.assessment_purpose, 'funding') ? 'bg-green-100 text-green-700' :
                                                                         'bg-gray-100 text-gray-600'
                                                                     }`}>
                                                                     {job.ber_purpose || job.assessment_purpose || '-'}
@@ -1271,16 +1312,16 @@ const ContractorDashboard = () => {
                                                                 <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${job.payment_status === 'paid' ? 'bg-green-100 text-green-700' :
                                                                     'bg-orange-100 text-orange-700'
                                                                     }`}>
-                                                                    {job.payment_status || 'Unpaid'}
+                                                                    {job.payment_status || (isSpanish ? 'Impagado' : isPortuguese ? 'Não pago' : 'Unpaid')}
                                                                 </span>
                                                             </td>
                                                             <td className="py-3 px-3 text-gray-600 text-xs italic">
-                                                                {job.additional_features?.length ? job.additional_features.join(', ') : 'None'}
+                                                                {job.additional_features?.length ? job.additional_features.join(', ') : (isSpanish ? 'Ninguna' : isPortuguese ? 'Nenhuma' : 'None')}
                                                             </td>
                                                             <td className="py-3 px-3 text-gray-600 font-bold">
                                                                 {job.scheduled_date
-                                                                    ? new Date(job.scheduled_date).toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })
-                                                                    : 'TBD'
+                                                                    ? new Date(job.scheduled_date).toLocaleDateString(isSpanish ? 'es-ES' : isPortuguese ? 'pt-PT' : 'en-IE', { day: '2-digit', month: 'short' })
+                                                                    : (isSpanish ? 'Pendiente' : isPortuguese ? 'Por definir' : 'TBD')
                                                                 }
                                                             </td>
                                                             <td className="py-3 px-3 flex flex-col gap-1">
@@ -1288,14 +1329,14 @@ const ContractorDashboard = () => {
                                                                     onClick={() => setExpandedContactId(expandedContactId === job.id ? null : job.id)}
                                                                     className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-[10px] font-black uppercase transition-all whitespace-nowrap"
                                                                 >
-                                                                    {isSpanish ? 'Info Contacto' : 'Contact Info'}
+                                                                    {isSpanish ? 'Info Contacto' : isPortuguese ? 'Info Contacto' : 'Contact Info'}
                                                                 </button>
                                                                 {job.status === 'quote_accepted' && (
                                                                     <button
                                                                         onClick={() => setSchedulingJob(job)}
                                                                         className="px-3 py-1.5 bg-[#007EA7] hover:bg-[#005F7E] text-white rounded text-[10px] font-black uppercase transition-all whitespace-nowrap"
                                                                     >
-                                                                        {isSpanish ? 'Programar' : 'Schedule'}
+                                                                        {isSpanish ? 'Programar' : isPortuguese ? 'Agendar' : 'Schedule'}
                                                                     </button>
                                                                 )}
                                                                 {job.status === 'scheduled' && (
@@ -1304,13 +1345,13 @@ const ContractorDashboard = () => {
                                                                             onClick={() => setCompletingJob(job)}
                                                                             className="px-3 py-1.5 bg-[#007F00] hover:bg-green-800 text-white rounded text-[10px] font-black uppercase transition-all whitespace-nowrap"
                                                                         >
-                                                                            {isSpanish ? 'Completar' : 'Complete'}
+                                                                            {isSpanish ? 'Completar' : isPortuguese ? 'Concluir' : 'Complete'}
                                                                         </button>
                                                                         <button
                                                                             onClick={() => setSchedulingJob(job)}
                                                                             className="px-3 py-1.5 bg-gray-500 hover:bg-gray-600 text-white rounded text-[10px] font-black uppercase transition-all whitespace-nowrap"
                                                                         >
-                                                                            {isSpanish ? 'Reprogramar' : 'Reschedule'}
+                                                                            {isSpanish ? 'Reprogramar' : isPortuguese ? 'Reagendar' : 'Reschedule'}
                                                                         </button>
                                                                     </div>
                                                                 )}
@@ -1326,9 +1367,9 @@ const ContractorDashboard = () => {
                                                                 <td colSpan={15} className="py-3 px-6">
                                                                     <div className="flex items-center gap-6 text-sm">
                                                                         <span className="text-gray-400">↳</span>
-                                                                        <span><strong>{isSpanish ? 'Nombre:' : 'Name:'}</strong> {job.contact_name || job.profiles?.full_name || 'N/A'}</span>
-                                                                        <span><strong>{isSpanish ? 'Email:' : 'Email:'}</strong> <a href={`mailto:${job.contact_email}`} className="text-blue-600 hover:underline">{job.contact_email || 'N/A'}</a></span>
-                                                                        <span><strong>{isSpanish ? 'Teléfono:' : 'Phone:'}</strong> <a href={`tel:${job.contact_phone}`} className="text-blue-600 hover:underline">{job.contact_phone || 'N/A'}</a></span>
+                                                                        <span><strong>{isSpanish ? 'Nombre:' : isPortuguese ? 'Nome:' : 'Name:'}</strong> {job.contact_name || job.profiles?.full_name || 'N/A'}</span>
+                                                                        <span><strong>{isSpanish ? 'Email:' : isPortuguese ? 'Email:' : 'Email:'}</strong> <a href={`mailto:${job.contact_email}`} className="text-blue-600 hover:underline">{job.contact_email || 'N/A'}</a></span>
+                                                                        <span><strong>{isSpanish ? 'Teléfono:' : isPortuguese ? 'Telefone:' : 'Phone:'}</strong> <a href={`tel:${job.contact_phone}`} className="text-blue-600 hover:underline">{job.contact_phone || 'N/A'}</a></span>
                                                                     </div>
                                                                 </td>
                                                             </tr>
@@ -1345,7 +1386,7 @@ const ContractorDashboard = () => {
                                                         <div>
                                                             <div className="flex items-center gap-2 mb-1">
                                                                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                                                    {isSpanish ? 'Aceptado el' : 'Accepted'} {new Date(job.created_at).toLocaleDateString()}
+                                                                    {isSpanish ? 'Aceptado el' : isPortuguese ? 'Aceite em' : 'Accepted'} {new Date(job.created_at).toLocaleDateString()}
                                                                 </span>
                                                                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter border ${job.status === 'completed' ? 'bg-gray-100 text-gray-600 border-gray-200' :
                                                                     job.status === 'scheduled' ? 'bg-blue-50 text-blue-700 border-blue-100' :
@@ -1354,7 +1395,7 @@ const ContractorDashboard = () => {
                                                                     {getStatusLabel(job.status) || '-'}
                                                                 </span>
                                                                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter border ${job.job_type === 'commercial' ? 'bg-purple-50 text-purple-700 border-purple-100' : 'bg-blue-50 text-blue-700 border-blue-100'}`}>
-                                                                    {job.job_type === 'commercial' ? 'Comm' : 'Dom'}
+                                                                    {job.job_type === 'commercial' ? (isSpanish ? 'Com' : isPortuguese ? 'Com' : 'Comm') : (isSpanish ? 'Dom' : isPortuguese ? 'Dom' : 'Dom')}
                                                                 </span>
                                                             </div>
                                                             <h4 className="font-bold text-gray-900">{job.property_address}</h4>
@@ -1374,7 +1415,7 @@ const ContractorDashboard = () => {
                                                             onClick={() => setExpandedContactId(expandedContactId === job.id ? null : job.id)}
                                                             className="w-full py-3 bg-gray-50 border border-gray-100 text-gray-600 rounded-xl font-bold text-xs hover:bg-gray-100 transition-all uppercase tracking-tight"
                                                         >
-                                                            {expandedContactId === job.id ? (isSpanish ? 'Cerrar Detalles Contacto' : 'Close Contact Details') : (isSpanish ? 'Ver Detalles Contacto' : 'View Contact Details')}
+                                                            {expandedContactId === job.id ? (isSpanish ? 'Cerrar Detalles Contacto' : isPortuguese ? 'Fechar Detalhes de Contacto' : 'Close Contact Details') : (isSpanish ? 'Ver Detalles Contacto' : isPortuguese ? 'Ver Detalhes de Contacto' : 'View Contact Details')}
                                                         </button>
 
                                                         {job.status === 'quote_accepted' && (
@@ -1382,7 +1423,7 @@ const ContractorDashboard = () => {
                                                                 onClick={() => setSchedulingJob(job)}
                                                                 className="w-full py-3 bg-[#007EA7] text-white rounded-xl font-black text-xs hover:bg-[#005F7E] transition-all uppercase tracking-tight shadow-md shadow-blue-50"
                                                             >
-                                                                {isSpanish ? 'Programar Inspección' : 'Schedule Inspection'}
+                                                                {isSpanish ? 'Programar Inspección' : isPortuguese ? 'Agendar Inspeção' : 'Schedule Inspection'}
                                                             </button>
                                                         )}
 
@@ -1392,13 +1433,13 @@ const ContractorDashboard = () => {
                                                                     onClick={() => setCompletingJob(job)}
                                                                     className="w-full py-3 bg-[#007F00] text-white rounded-xl font-black text-xs hover:bg-green-800 transition-all uppercase tracking-tight shadow-md shadow-green-50"
                                                                 >
-                                                                    {isSpanish ? 'Marcar Completado' : 'Mark Complete'}
+                                                                    {isSpanish ? 'Marcar Completado' : isPortuguese ? 'Marcar como Concluído' : 'Mark Complete'}
                                                                 </button>
                                                                 <button
                                                                     onClick={() => setSchedulingJob(job)}
                                                                     className="w-full py-2 bg-gray-500 text-white rounded-xl font-bold text-[10px] hover:bg-gray-600 transition-all uppercase tracking-widest"
                                                                 >
-                                                                    {isSpanish ? 'Reprogramar' : 'Reschedule'}
+                                                                    {isSpanish ? 'Reprogramar' : isPortuguese ? 'Reagendar' : 'Reschedule'}
                                                                 </button>
                                                             </>
                                                         )}
@@ -1408,15 +1449,15 @@ const ContractorDashboard = () => {
                                                     {expandedContactId === job.id && (
                                                         <div className="mt-4 pt-4 border-t border-gray-50 space-y-2 animate-in slide-in-from-top-2 duration-200">
                                                             <div className="flex justify-between text-xs">
-                                                                <span className="text-gray-400">Name:</span>
+                                                                <span className="text-gray-400">{isSpanish ? 'Nombre:' : isPortuguese ? 'Nome:' : 'Name:'}</span>
                                                                 <span className="font-bold text-gray-900">{job.contact_name || job.profiles?.full_name || 'N/A'}</span>
                                                             </div>
                                                             <div className="flex justify-between text-xs">
-                                                                <span className="text-gray-400">Email:</span>
+                                                                <span className="text-gray-400">{isSpanish ? 'Email:' : isPortuguese ? 'Email:' : 'Email:'}</span>
                                                                 <a href={`mailto:${job.contact_email}`} className="font-bold text-blue-600 underline">{job.contact_email || 'N/A'}</a>
                                                             </div>
                                                             <div className="flex justify-between text-xs">
-                                                                <span className="text-gray-400">Phone:</span>
+                                                                <span className="text-gray-400">{isSpanish ? 'Teléfono:' : isPortuguese ? 'Telefone:' : 'Phone:'}</span>
                                                                 <a href={`tel:${job.contact_phone}`} className="font-bold text-blue-600 underline">{job.contact_phone || 'N/A'}</a>
                                                             </div>
                                                         </div>
@@ -1435,16 +1476,16 @@ const ContractorDashboard = () => {
                                         <div className="flex-1 text-center md:text-left">
                                             <h2 className="text-2xl font-black mb-2 flex items-center justify-center md:justify-start gap-2">
                                                 <TrendingUp className="text-blue-200" />
-                                                Assessor Loyalty Program
+                                                {isSpanish ? 'Programa de Fidelidad del Certificador' : isPortuguese ? 'Programa de Fidelidade do Perito' : 'Assessor Loyalty Program'}
                                             </h2>
                                             <p className="text-blue-100 font-medium">
-                                                Complete 10 assessments and your 11th job's platform fee is on us!
-                                                <span className="block text-sm text-blue-200 opacity-80 mt-1">Keep track of your progress toward your next free job.</span>
+                                                {isSpanish ? 'Completa 10 evaluaciones y la tasa de plataforma del 11º trabajo va por nuestra cuenta.' : isPortuguese ? 'Conclua 10 avaliações e a taxa de plataforma do 11º trabalho é por nossa conta.' : 'Complete 10 assessments and your 11th job\'s platform fee is on us!'}
+                                                <span className="block text-sm text-blue-200 opacity-80 mt-1">{isSpanish ? 'Mantén un seguimiento de tu progreso hacia tu próximo trabajo gratuito.' : isPortuguese ? 'Acompanhe o seu progresso em direção ao próximo trabalho gratuito.' : 'Keep track of your progress toward your next free job.'}</span>
                                             </p>
                                         </div>
                                         <div className="flex flex-col items-center justify-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 min-w-[200px] w-full md:w-auto">
                                             <div className="text-4xl font-black mb-1">{(stats.loyaltyJobs % 11) > 10 ? 0 : (stats.loyaltyJobs % 11)}/10</div>
-                                            <div className="text-[10px] font-black uppercase tracking-widest text-blue-200 mb-4">Jobs toward fee-free</div>
+                                            <div className="text-[10px] font-black uppercase tracking-widest text-blue-200 mb-4">{isSpanish ? 'Trabajos hacia tarifa gratis' : isPortuguese ? 'Trabalhos até isenção de taxa' : 'Jobs toward fee-free'}</div>
                                             <div className="w-full bg-white/20 h-2 rounded-full overflow-hidden">
                                                 <div
                                                     className="bg-green-400 h-full transition-all duration-1000"
@@ -1453,7 +1494,7 @@ const ContractorDashboard = () => {
                                             </div>
                                             {stats.loyaltyJobs % 11 === 10 && (
                                                 <div className="mt-3 text-[10px] font-black bg-green-500 text-white px-3 py-1 rounded-full animate-bounce">
-                                                    NEXT JOB IS FREE!
+                                                {isSpanish ? '¡PRÓXIMO TRABAJO GRATIS!' : isPortuguese ? 'PRÓXIMO TRABALHO GRÁTIS!' : 'NEXT JOB IS FREE!'}
                                                 </div>
                                             )}
                                         </div>
@@ -1465,26 +1506,26 @@ const ContractorDashboard = () => {
                                 {/* SMS Notifications Banner */}
                                 <div className="bg-[#E6F4EA] border-b border-gray-200 py-12 px-4 text-center">
                                     <div className="flex items-center justify-center gap-2 mb-2">
-                                        <h2 className="text-xl font-medium text-green-800">SMS Notifications</h2>
+                                        <h2 className="text-xl font-medium text-green-800">{isSpanish ? 'Notificaciones SMS' : isPortuguese ? 'Notificações SMS' : 'SMS Notifications'}</h2>
                                         <MessageCircle className="text-green-800 fill-green-800" size={24} />
                                     </div>
                                     <p className="text-sm text-green-700">
-                                        You are currently receiving job notifications by SMS to <span className="font-bold underline">{profile?.phone}</span>.
+                                        {isSpanish ? 'Actualmente estás recibiendo notificaciones de trabajos por SMS en' : isPortuguese ? 'Está atualmente a receber notificações de trabalhos por SMS em'} <span className="font-bold underline">{profile?.phone}</span>.
                                         <button
                                             onClick={async () => {
                                                 const { error } = await supabase
                                                     .from('profiles')
                                                     .update({ sms_notifications_enabled: !profile?.sms_notifications_enabled })
                                                     .eq('id', user?.id);
-                                                if (error) toast.error(isSpanish ? 'Error al actualizar notificaciones' : 'Failed to update notifications');
+                                                if (error) toast.error(isSpanish ? 'Error al actualizar notificaciones' : isPortuguese ? 'Erro ao atualizar notificações' : 'Failed to update notifications');
                                                 else {
                                                     setProfile({ ...profile, sms_notifications_enabled: !profile?.sms_notifications_enabled });
-                                                    toast.success(isSpanish ? 'Ajustes de notificación actualizados' : 'Notification settings updated');
+                                                    toast.success(isSpanish ? 'Ajustes de notificación actualizados' : isPortuguese ? 'Definições de notificação atualizadas' : 'Notification settings updated');
                                                 }
                                             }}
                                             className="ml-1 underline hover:text-green-900"
                                         >
-                                            {profile?.sms_notifications_enabled ? 'Cancel SMS Notifications' : 'Enable SMS Notifications'}
+                                            {profile?.sms_notifications_enabled ? (isSpanish ? 'Cancelar Notificaciones SMS' : isPortuguese ? 'Cancelar Notificações SMS' : 'Cancel SMS Notifications') : (isSpanish ? 'Activar Notificaciones SMS' : isPortuguese ? 'Ativar Notificações SMS' : 'Enable SMS Notifications')}
                                         </button>
                                     </p>
                                 </div>
@@ -1492,9 +1533,9 @@ const ContractorDashboard = () => {
                                 {/* County Preferences */}
                                 <div className="py-12 px-4 text-center">
                                     <h3 className="text-gray-600 font-medium mb-8 flex items-center justify-center gap-2 text-lg">
-                                        Service Areas / Counties <span className="text-red-500">*</span> <MapPin className="text-gray-700 fill-gray-700" size={24} />
+                                        {isSpanish ? 'Áreas de Servicio / Provincias' : isPortuguese ? 'Áreas de Serviço / Distritos'} <span className="text-red-500">*</span> <MapPin className="text-gray-700 fill-gray-700" size={24} />
                                     </h3>
-                                    <p className="text-sm text-gray-500 mb-6">Select your Preference location where you want to receive job notifications. You must select at least one.</p>
+                                    <p className="text-sm text-gray-500 mb-6">{isSpanish ? 'Selecciona tu ubicación preferida donde quieres recibir notificaciones de trabajos. Debes seleccionar al menos una.' : isPortuguese ? 'Selecione a sua localização preferida onde quer receber notificações de trabalhos. Deve selecionar pelo menos uma.' : 'Select your Preference location where you want to receive job notifications. You must select at least one.'}</p>
                                     <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 px-4">
                                         {COUNTIES.map(county => {
                                             const isSelected = profile?.preferred_counties?.includes(county);
@@ -1506,7 +1547,7 @@ const ContractorDashboard = () => {
                                                         let newCounties;
                                                         if (current.includes(county)) {
                                                             if (current.length === 1) {
-                                                                toast.error(isSpanish ? 'Debes seleccionar al menos una Área de Servicio / Comunidad Autónoma' : 'You must select at least one Service Area / County');
+                                                                toast.error(isSpanish ? 'Debes seleccionar al menos una Área de Servicio / Comunidad Autónoma' : isPortuguese ? 'Deve selecionar pelo menos uma Área de Serviço / Distrito' : 'You must select at least one Service Area / County');
                                                                 return;
                                                             }
                                                             newCounties = current.filter((c: string) => c !== county);
@@ -1527,7 +1568,7 @@ const ContractorDashboard = () => {
                                                                 .eq('id', user?.id);
 
                                                             if (error) throw error;
-                                                            toast.success(`${county} preference updated`, {
+                                                            toast.success(isSpanish ? `Preferencia de ${county} actualizada` : isPortuguese ? `Preferência de ${county} atualizada` : `${county} preference updated`, {
                                                                 duration: 2000,
                                                                 icon: '📍',
                                                                 style: {
@@ -1538,7 +1579,7 @@ const ContractorDashboard = () => {
                                                             });
                                                         } catch (err) {
                                                             console.error('Auto-save error:', err);
-                                                            toast.error(isSpanish ? 'Error al guardar preferencia automáticamente' : 'Failed to auto-save preference');
+                                                            toast.error(isSpanish ? 'Error al guardar preferencia automáticamente' : isPortuguese ? 'Erro ao guardar preferência automaticamente' : 'Failed to auto-save preference');
                                                         }
                                                     }}
                                                     className={`py-3 px-6 rounded-md border transition-all text-sm font-medium ${isSelected
@@ -1559,13 +1600,13 @@ const ContractorDashboard = () => {
                                 {/* My Profile Form */}
                                 <div className="max-w-3xl mx-auto px-4 text-center">
                                     <h3 className="text-gray-600 font-medium mb-8 flex items-center justify-center gap-2 text-lg">
-                                        My Profile <div className="bg-gray-700 rounded-full p-1"><Settings className="text-white w-4 h-4" /></div>
+                                        {isSpanish ? 'Mi Perfil' : isPortuguese ? 'O Meu Perfil'} <div className="bg-gray-700 rounded-full p-1"><Settings className="text-white w-4 h-4" /></div>
                                     </h3>
 
                                     <div className="space-y-6 text-left">
                                         <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1 ml-1">About Me</label>
-                                            <p className="text-[10px] text-gray-500 mb-2 ml-1">The information you submit below is displayed in the 'About' section of your {assessorLabel.toLowerCase()} profile on the website (max 200 words).</p>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1 ml-1">{isSpanish ? 'Sobre Mí' : isPortuguese ? 'Sobre Mim' : 'About Me'}</label>
+                                            <p className="text-[10px] text-gray-500 mb-2 ml-1">{isSpanish ? 'La información que envíes a continuación se muestra en la sección \'Sobre\' de tu perfil de' : isPortuguese ? 'A informação que enviar abaixo é apresentada na secção \'Sobre\' do seu perfil de'} {assessorLabel.toLowerCase()} {isSpanish ? 'en el sitio web (máx 200 palabras).' : isPortuguese ? 'no site (máx 200 palavras).' : 'profile on the website (max 200 words).'}</p>
                                             <textarea
                                                 value={profile?.about_me || ''}
                                                 onChange={(e) => setProfile({ ...profile, about_me: e.target.value })}
@@ -1574,18 +1615,18 @@ const ContractorDashboard = () => {
                                         </div>
 
                                         <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1 ml-1">Website URL</label>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1 ml-1">{isSpanish ? 'URL del Sitio Web' : isPortuguese ? 'URL do Website' : 'Website URL'}</label>
                                             <input
                                                 type="url"
                                                 value={profile?.website_url || ''}
                                                 onChange={(e) => setProfile({ ...profile, website_url: e.target.value })}
                                                 className="w-full p-3 bg-white border border-gray-300 rounded-md text-sm text-gray-700 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                                             />
-                                            <p className="text-[10px] text-gray-400 mt-1 ml-1">Must start with www., http://, https://, http://www., or https://www.</p>
+                                            <p className="text-[10px] text-gray-400 mt-1 ml-1">{isSpanish ? 'Debe empezar con www., http://, https://, http://www., o https://www.' : isPortuguese ? 'Deve começar com www., http://, https://, http://www., ou https://www.' : 'Must start with www., http://, https://, http://www., or https://www.'}</p>
                                         </div>
 
                                         <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1 ml-1">Company Name</label>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1 ml-1">{isSpanish ? 'Nombre de la Empresa' : isPortuguese ? 'Nome da Empresa' : 'Company Name'}</label>
                                             <input
                                                 type="text"
                                                 value={profile?.company_name || ''}
@@ -1595,7 +1636,7 @@ const ContractorDashboard = () => {
                                         </div>
 
                                         <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1 ml-1">Company Logo URL</label>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1 ml-1">{isSpanish ? 'URL del Logo de la Empresa' : isPortuguese ? 'URL do Logótipo da Empresa' : 'Company Logo URL'}</label>
                                             <input
                                                 type="url"
                                                 value={catalogueListing?.logo_url || ''}
@@ -1603,27 +1644,27 @@ const ContractorDashboard = () => {
                                                 className="w-full p-3 bg-white border border-gray-300 rounded-md text-sm text-gray-700 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                                                 placeholder="https://example.com/logo.png"
                                             />
-                                            <p className="text-[10px] text-gray-400 mt-1 ml-1">Provide a URL to your company logo (PNG, JPG, or SVG).</p>
+                                            <p className="text-[10px] text-gray-400 mt-1 ml-1">{isSpanish ? 'Proporciona una URL al logo de tu empresa (PNG, JPG o SVG).' : isPortuguese ? 'Forneça um URL para o logótipo da sua empresa (PNG, JPG ou SVG).' : 'Provide a URL to your company logo (PNG, JPG, or SVG).'}</p>
                                         </div>
 
                                         <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1 ml-1">Business Address</label>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1 ml-1">{isSpanish ? 'Dirección de la Empresa' : isPortuguese ? 'Endereço da Empresa' : 'Business Address'}</label>
                                             <input
                                                 type="text"
                                                 value={catalogueListing?.address || ''}
                                                 onChange={(e) => setCatalogueListing({ ...catalogueListing, address: e.target.value })}
                                                 className="w-full p-3 bg-white border border-gray-300 rounded-md text-sm text-gray-700 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-                                                placeholder="e.g. Navan, Co. Meath"
+                                                placeholder={isSpanish ? 'Ej. Navan, Co. Meath' : isPortuguese ? 'Ex. Lisboa, Portugal' : 'e.g. Navan, Co. Meath'}
                                             />
-                                            <p className="text-[10px] text-gray-400 mt-1 ml-1">This address will be displayed on the catalogue listing.</p>
+                                            <p className="text-[10px] text-gray-400 mt-1 ml-1">{isSpanish ? 'Esta dirección se mostrará en el listado del catálogo.' : isPortuguese ? 'Este endereço será apresentado na listagem do catálogo.' : 'This address will be displayed on the catalogue listing.'}</p>
                                         </div>
 
                                         <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1 ml-1">Home County (Auto-detected)</label>
-                                            <p className="text-[10px] text-gray-500 mb-2 ml-1">Your business location on the map is automatically detecting from your address.</p>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1 ml-1">{isSpanish ? 'Provincia Principal (Auto-detectada)' : isPortuguese ? 'Distrito Principal (Auto-detectado)' : 'Home County (Auto-detected)'}</label>
+                                            <p className="text-[10px] text-gray-500 mb-2 ml-1">{isSpanish ? 'Tu ubicación en el mapa se detecta automáticamente desde tu dirección.' : isPortuguese ? 'A sua localização no mapa é detetada automaticamente a partir do seu endereço.' : 'Your business location on the map is automatically detecting from your address.'}</p>
                                             <input
                                                 type="text"
-                                                value={profile?.home_county || 'Not detected'}
+                                                value={profile?.home_county || (isSpanish ? 'No detectada' : isPortuguese ? 'Não detetado' : 'Not detected')}
                                                 readOnly
                                                 className="w-full p-3 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-500 cursor-not-allowed"
                                             />
@@ -1631,7 +1672,7 @@ const ContractorDashboard = () => {
 
                                         {/* Social Media */}
                                         <div className="pt-4">
-                                            <label className="block text-xs font-medium text-gray-700 mb-2 ml-1">Social Media <span className="text-gray-400 font-normal">(optional)</span></label>
+                                            <label className="block text-xs font-medium text-gray-700 mb-2 ml-1">{isSpanish ? 'Redes Sociales' : isPortuguese ? 'Redes Sociais' : 'Social Media'} <span className="text-gray-400 font-normal">{isSpanish ? '(opcional)' : isPortuguese ? '(opcional)' : '(optional)'}</span></label>
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                 <div>
                                                     <label className="block text-[10px] text-gray-500 mb-1 ml-1">Facebook</label>
@@ -1668,14 +1709,14 @@ const ContractorDashboard = () => {
 
                                         {/* Features */}
                                         <div className="pt-4">
-                                            <label className="block text-xs font-medium text-gray-700 mb-1 ml-1">Features / Services <span className="text-gray-400 font-normal">(optional)</span></label>
-                                            <p className="text-[10px] text-gray-400 mb-2 ml-1">Highlight key services on your listing (e.g. "Fast Turnaround", "24hr E-certs").</p>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1 ml-1">{isSpanish ? 'Características / Servicios' : isPortuguese ? 'Características / Serviços' : 'Features / Services'} <span className="text-gray-400 font-normal">{isSpanish ? '(opcional)' : isPortuguese ? '(opcional)' : '(optional)'}</span></label>
+                                            <p className="text-[10px] text-gray-400 mb-2 ml-1">{isSpanish ? 'Destaca servicios clave en tu listado (ej. "Respuesta Rápida", "Certificados E 24h").' : isPortuguese ? 'Destaque serviços chave na sua listagem (ex. "Resposta Rápida", "Certificados E 24h").' : 'Highlight key services on your listing (e.g. "Fast Turnaround", "24hr E-certs").'}</p>
                                             <div className="flex gap-2 mb-3">
                                                 <input
                                                     type="text"
                                                     id="dashboardFeatureInput"
                                                     className="flex-1 p-3 bg-white border border-gray-300 rounded-md text-sm text-gray-700 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-                                                    placeholder="Type and press Enter or click Add"
+                                                    placeholder={isSpanish ? 'Escribe y pulsa Enter o haz clic en Añadir' : isPortuguese ? 'Escreva e prima Enter ou clique em Adicionar' : 'Type and press Enter or click Add'}
                                                     onKeyDown={(e) => {
                                                         if (e.key === 'Enter') {
                                                             e.preventDefault();
@@ -1700,7 +1741,7 @@ const ContractorDashboard = () => {
                                                     }}
                                                     className="px-4 py-2 bg-[#5CB85C] text-white rounded-md text-sm font-medium hover:bg-green-600 transition-colors flex items-center gap-1"
                                                 >
-                                                    <Plus size={14} /> Add
+                                                    <Plus size={14} /> {isSpanish ? 'Añadir' : isPortuguese ? 'Adicionar' : 'Add'}
                                                 </button>
                                             </div>
                                             {(catalogueListing?.features || []).length > 0 && (
@@ -1721,7 +1762,7 @@ const ContractorDashboard = () => {
                                             <button
                                                 onClick={async () => {
                                                     if (!profile?.preferred_counties || profile.preferred_counties.length === 0) {
-                                                        toast.error(isSpanish ? 'Por favor, selecciona al menos una Área de Servicio / Comunidad Autónoma' : 'Please select at least one Service Area / County');
+                                                        toast.error(isSpanish ? 'Por favor, selecciona al menos una Área de Servicio / Comunidad Autónoma' : isPortuguese ? 'Por favor, selecione pelo menos uma Área de Serviço / Distrito' : 'Please select at least one Service Area / County');
                                                         return;
                                                     }
                                                     setIsSubmitting(true);
@@ -1805,10 +1846,10 @@ const ContractorDashboard = () => {
                                                             }
                                                         }
 
-                                                        toast.success(isSpanish ? 'Perfil y datos de negocio actualizados' : 'Profile and Business details updated');
+                                                        toast.success(isSpanish ? 'Perfil y datos de negocio actualizados' : isPortuguese ? 'Perfil e dados de negócio atualizados' : 'Profile and Business details updated');
                                                     } catch (error: any) {
                                                         console.error('Update error:', error);
-                                                        toast.error(error.message || (isSpanish ? 'Error al guardar cambios' : 'Failed to save changes'));
+                                                        toast.error(error.message || (isSpanish ? 'Error al guardar cambios' : isPortuguese ? 'Erro ao guardar alterações' : 'Failed to save changes'));
                                                     } finally {
                                                         setIsSubmitting(false);
                                                     }
@@ -1818,10 +1859,10 @@ const ContractorDashboard = () => {
                                             >
                                                 {isSubmitting ? (
                                                     <>
-                                                        <Clock className="w-4 h-4 animate-spin" /> Saving...
+                                                        <Clock className="w-4 h-4 animate-spin" /> {isSpanish ? 'Guardando...' : isPortuguese ? 'A guardar...' : 'Saving...'}
                                                     </>
                                                 ) : (
-                                                    'Submit'
+                                                    isSpanish ? 'Enviar' : isPortuguese ? 'Enviar' : 'Submit'
                                                 )}
                                             </button>
                                             <Link
@@ -1829,7 +1870,7 @@ const ContractorDashboard = () => {
                                                 target="_blank"
                                                 className="px-8 py-2 bg-[#5CB85C] text-white rounded font-medium hover:bg-green-600 transition-colors text-sm flex items-center gap-2"
                                             >
-                                                View Profile <User size={14} className="fill-white" />
+                                                {isSpanish ? 'Ver Perfil' : isPortuguese ? 'Ver Perfil' : 'View Profile'} <User size={14} className="fill-white" />
                                             </Link>
                                         </div>
                                     </div>
@@ -1846,8 +1887,8 @@ const ContractorDashboard = () => {
                     <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="bg-white border-b border-gray-100 p-8 flex justify-between items-start">
                             <div>
-                                <h3 className="text-2xl font-black text-gray-900">Job Opportunity</h3>
-                                <p className="text-sm text-gray-500 font-medium mt-1">Review the details before proceeding</p>
+                                <h3 className="text-2xl font-black text-gray-900">{isSpanish ? 'Oportunidad de Trabajo' : isPortuguese ? 'Oportunidade de Trabalho' : 'Job Opportunity'}</h3>
+                                <p className="text-sm text-gray-500 font-medium mt-1">{isSpanish ? 'Revisa los detalles antes de continuar' : isPortuguese ? 'Reveja os detalhes antes de continuar' : 'Review the details before proceeding'}</p>
                             </div>
                             <button onClick={() => setJobDetailsModalOpen(false)} className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors">
                                 <X size={24} />
@@ -1857,30 +1898,30 @@ const ContractorDashboard = () => {
                         <div className="p-8 space-y-8">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                 <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Location</span>
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Ubicación' : isPortuguese ? 'Localização' : 'Location'}</span>
                                     <p className="text-sm font-bold text-gray-900 flex items-center gap-2">
                                         <MapPin size={14} className="text-[#007EA7]" />
                                         {selectedJob.town}, {selectedJob.county}
                                     </p>
                                 </div>
                                 <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Eircode</span>
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Código Postal' : isPortuguese ? 'Código Postal' : 'Eircode'}</span>
                                     <p className="text-sm font-bold text-blue-600">{selectedJob.eircode || 'N/A'}</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Size</span>
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Tamaño' : isPortuguese ? 'Área' : 'Size'}</span>
                                     <p className="text-sm font-bold text-gray-900">{selectedJob.property_size}</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Bedrooms</span>
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Habitaciones' : isPortuguese ? 'Quartos' : 'Bedrooms'}</span>
                                     <p className="text-sm font-bold text-gray-900">{selectedJob.bedrooms}</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Purpose</span>
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Finalidad' : isPortuguese ? 'Finalidade' : 'Purpose'}</span>
                                     <p className="text-sm font-bold text-gray-900">{selectedJob.ber_purpose}</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Heat Pump</span>
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Bomba Calor' : isPortuguese ? 'Bomba Calor' : 'Heat Pump'}</span>
                                     <p className="text-sm font-bold text-gray-900">{selectedJob.heat_pump}</p>
                                 </div>
                             </div>
@@ -1888,14 +1929,14 @@ const ContractorDashboard = () => {
                             <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
                                 <div className="grid md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest block">Preferred Schedule</span>
+                                        <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest block">{isSpanish ? 'Horario Preferido' : isPortuguese ? 'Horário Preferido' : 'Preferred Schedule'}</span>
                                         <p className="text-sm font-bold text-gray-900 flex items-center gap-2">
                                             <Calendar size={14} />
-                                            {selectedJob.preferred_date} at {selectedJob.preferred_time}
+                                            {selectedJob.preferred_date} {isSpanish ? 'a las' : isPortuguese ? 'às' : 'at'} {selectedJob.preferred_time}
                                         </p>
                                     </div>
                                     <div className="space-y-2">
-                                        <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest block">Features</span>
+                                        <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest block">{isSpanish ? 'Características' : isPortuguese ? 'Características' : 'Features'}</span>
                                         <div className="flex flex-wrap gap-1">
                                             {selectedJob.additional_features && selectedJob.additional_features.length > 0 ? (
                                                 selectedJob.additional_features.map((feature, i) => (
@@ -1904,7 +1945,7 @@ const ContractorDashboard = () => {
                                                     </span>
                                                 ))
                                             ) : (
-                                                <span className="text-xs text-gray-400">Standard property</span>
+                                                <span className="text-xs text-gray-400">{isSpanish ? 'Propiedad estándar' : isPortuguese ? 'Propriedade padrão' : 'Standard property'}</span>
                                             )}
                                         </div>
                                     </div>
@@ -1912,7 +1953,7 @@ const ContractorDashboard = () => {
                             </div>
 
                             <div className="bg-blue-50/50 rounded-2xl p-6 border border-blue-100">
-                                <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest block mb-2">Internal Reference</span>
+                                <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest block mb-2">{isSpanish ? 'Referencia Interna' : isPortuguese ? 'Referência Interna' : 'Internal Reference'}</span>
                                 <p className="text-base font-bold text-gray-900 leading-relaxed italic">
                                     "{selectedJob.property_address}"
                                 </p>
@@ -1928,13 +1969,13 @@ const ContractorDashboard = () => {
                                         className="flex-1 py-4 text-red-500 rounded-2xl font-bold bg-red-50 hover:bg-red-100 transition-all flex items-center justify-center gap-2"
                                     >
                                         <X size={20} />
-                                        Reject Lead
+                                        {isSpanish ? 'Rechazar Solicitud' : isPortuguese ? 'Rejeitar Pedido' : 'Reject Lead'}
                                     </button>
                                     <button
                                         onClick={handleStartQuote}
                                         className="flex-[2] py-4 bg-[#007EA7] text-white rounded-2xl font-black text-lg hover:bg-[#005F7E] transition-all shadow-xl shadow-blue-100 flex items-center justify-center gap-3"
                                     >
-                                        Start Quoting
+                                        {isSpanish ? 'Iniciar Presupuesto' : isPortuguese ? 'Iniciar Orçamento' : 'Start Quoting'}
                                         <ArrowRight size={20} />
                                     </button>
                                 </div>
@@ -1942,7 +1983,7 @@ const ContractorDashboard = () => {
                                     onClick={() => setJobDetailsModalOpen(false)}
                                     className="text-sm text-gray-400 font-bold hover:text-gray-600"
                                 >
-                                    Decide Later
+                                    {isSpanish ? 'Decidir Más Tarde' : isPortuguese ? 'Decidir Mais Tarde' : 'Decide Later'}
                                 </button>
                             </div>
                         </div>
@@ -1968,15 +2009,15 @@ const ContractorDashboard = () => {
                                     </button>
 
                                     <div className="text-center mb-8">
-                                        <h2 className="text-2xl font-bold text-gray-800 mb-2">Earliest date you can do the survey.</h2>
+                                        <h2 className="text-2xl font-bold text-gray-800 mb-2">{isSpanish ? 'Fecha más temprana para la inspección.' : isPortuguese ? 'Data mais próxima para a inspeção.' : 'Earliest date you can do the survey.'}</h2>
                                         {myQuotes.find(q => q.assessment_id === selectedJob.id) && (
                                             <p className="text-sm font-medium text-green-700 mb-4 bg-green-50 py-2 px-4 rounded-full inline-block">
-                                                Your previous quote was <span className="underline font-bold">{formatCurrency(myQuotes.find(q => q.assessment_id === selectedJob.id)?.price)}</span>
+                                                {isSpanish ? 'Tu presupuesto anterior fue' : isPortuguese ? 'O seu orçamento anterior foi'} <span className="underline font-bold">{formatCurrency(myQuotes.find(q => q.assessment_id === selectedJob.id)?.price)}</span>
                                             </p>
                                         )}
                                         <p className="text-sm text-gray-600">
-                                            The <span className="text-amber-600 underline">highlighted date</span> is the customer's preferred date & time.
-                                            Select the earliest date that you are available, even if it's before the customer's preferred date.
+                                            {isSpanish ? 'La' : isPortuguese ? 'A'} <span className="text-amber-600 underline">{isSpanish ? 'fecha destacada' : isPortuguese ? 'data destacada'}</span> {isSpanish ? 'es la fecha y hora preferida del cliente.' : isPortuguese ? 'é a data e hora preferida do cliente.' : "is the customer's preferred date & time."}
+                                            {isSpanish ? 'Selecciona la fecha más temprana en la que estés disponible, incluso si es anterior a la fecha preferida del cliente.' : isPortuguese ? 'Selecione a data mais próxima em que está disponível, mesmo que seja antes da data preferida do cliente.' : "Select the earliest date that you are available, even if it's before the customer's preferred date."}
                                         </p>
                                     </div>
 
@@ -2006,10 +2047,10 @@ const ContractorDashboard = () => {
                                                         }`}
                                                 >
                                                     <p className="text-sm font-medium text-gray-600">
-                                                        {date.toLocaleDateString('en-IE', { weekday: 'long' })}
+                                                        {date.toLocaleDateString(isSpanish ? 'es-ES' : isPortuguese ? 'pt-PT' : 'en-IE', { weekday: 'long' })}
                                                     </p>
                                                     <p className={`text-lg font-bold ${isSelected ? 'text-green-700' : isPreferred ? 'text-amber-700' : 'text-gray-800'}`}>
-                                                        {date.toLocaleDateString('en-IE', { day: '2-digit', month: 'short' })}
+                                                        {date.toLocaleDateString(isSpanish ? 'es-ES' : isPortuguese ? 'pt-PT' : 'en-IE', { day: '2-digit', month: 'short' })}
                                                     </p>
                                                     {isPreferred && (
                                                         <p className="text-[10px] text-amber-600 font-medium mt-1">
@@ -2036,15 +2077,15 @@ const ContractorDashboard = () => {
                                         >
                                             <X size={24} />
                                         </button>
-                                        <h2 className="text-xl font-bold text-green-800">Quote for this job in {selectedJob.town}, Co. {selectedJob.county}</h2>
+                                        <h2 className="text-xl font-bold text-green-800">{isSpanish ? 'Presupuesto para este trabajo en' : isPortuguese ? 'Orçamento para este trabalho em'} {selectedJob.town}, {isSpanish ? 'Prov.' : isPortuguese ? 'Dist.' : 'Co.'} {selectedJob.county}</h2>
                                         {(() => {
                                             const previousQuote = myQuotes.find(q => q.assessment_id === selectedJob.id);
                                             return previousQuote ? (
                                                 <p className="text-sm font-medium text-green-700">
-                                                    Your previous quote was <span className="underline font-bold">{formatCurrency(previousQuote.price)}</span>
+                                                    {isSpanish ? 'Tu presupuesto anterior fue' : isPortuguese ? 'O seu orçamento anterior foi'} <span className="underline font-bold">{formatCurrency(previousQuote.price)}</span>
                                                 </p>
                                             ) : (
-                                                <p className="text-sm text-green-600">Submit your quote below.</p>
+                                                <p className="text-sm text-green-600">{isSpanish ? 'Envía tu presupuesto a continuación.' : isPortuguese ? 'Envie o seu orçamento abaixo.' : 'Submit your quote below.'}</p>
                                             );
                                         })()}
                                     </div>
@@ -2053,39 +2094,39 @@ const ContractorDashboard = () => {
                                         {/* Left: Job Details */}
                                         <div className="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
                                             <div className="bg-gray-200 px-4 py-3 border-b border-gray-300">
-                                                <h3 className="font-bold text-gray-700 text-center">Job Details</h3>
+                                                <h3 className="font-bold text-gray-700 text-center">{isSpanish ? 'Detalles del Trabajo' : isPortuguese ? 'Detalhes do Trabalho' : 'Job Details'}</h3>
                                             </div>
                                             <div className="divide-y divide-gray-200">
                                                 <div className="flex justify-between px-4 py-3">
-                                                    <span className="text-gray-600">Location:</span>
-                                                    <span className="font-medium text-gray-800">{selectedJob.town}, Co. {selectedJob.county}</span>
+                                                    <span className="text-gray-600">{isSpanish ? 'Ubicación:' : isPortuguese ? 'Localização:' : 'Location:'}</span>
+                                                    <span className="font-medium text-gray-800">{selectedJob.town}, {isSpanish ? 'Prov.' : isPortuguese ? 'Dist.' : 'Co.'} {selectedJob.county}</span>
                                                 </div>
                                                 <div className="flex justify-between px-4 py-3">
-                                                    <span className="text-gray-600">Eircode:</span>
+                                                    <span className="text-gray-600">{isSpanish ? 'Código Postal:' : isPortuguese ? 'Código Postal:' : 'Eircode:'}</span>
                                                     <span className="font-medium text-blue-600">{selectedJob.eircode || 'N/A'}</span>
                                                 </div>
                                                 <div className="flex justify-between px-4 py-3">
-                                                    <span className="text-gray-600">Property Type:</span>
+                                                    <span className="text-gray-600">{isSpanish ? 'Tipo de Propiedad:' : isPortuguese ? 'Tipo de Propriedade:' : 'Property Type:'}</span>
                                                     <span className="font-medium text-gray-800">{selectedJob.property_type}</span>
                                                 </div>
                                                 <div className="flex justify-between px-4 py-3">
-                                                    <span className="text-gray-600">Size:</span>
+                                                    <span className="text-gray-600">{isSpanish ? 'Tamaño:' : isPortuguese ? 'Área:' : 'Size:'}</span>
                                                     <span className="font-medium text-gray-800">{selectedJob.property_size}</span>
                                                 </div>
                                                 <div className="flex justify-between px-4 py-3">
-                                                    <span className="text-gray-600">Beds:</span>
+                                                    <span className="text-gray-600">{isSpanish ? 'Hab.:' : isPortuguese ? 'Quartos:' : 'Beds:'}</span>
                                                     <span className="font-medium text-gray-800">{selectedJob.bedrooms}</span>
                                                 </div>
                                                 <div className="flex justify-between px-4 py-3">
-                                                    <span className="text-gray-600">Heat Pump:</span>
-                                                    <span className="font-medium text-gray-800">{selectedJob.heat_pump || 'None'}</span>
+                                                    <span className="text-gray-600">{isSpanish ? 'Bomba Calor:' : isPortuguese ? 'Bomba Calor:' : 'Heat Pump:'}</span>
+                                                    <span className="font-medium text-gray-800">{selectedJob.heat_pump || (isSpanish ? 'Ninguna' : isPortuguese ? 'Nenhuma' : 'None')}</span>
                                                 </div>
                                                 <div className="flex justify-between px-4 py-3">
-                                                    <span className="text-gray-600">Additions:</span>
-                                                    <span className="font-medium text-gray-800">{selectedJob.additional_features?.length ? selectedJob.additional_features.join(', ') : 'None'}</span>
+                                                    <span className="text-gray-600">{isSpanish ? 'Añadidos:' : isPortuguese ? 'Extras:' : 'Additions:'}</span>
+                                                    <span className="font-medium text-gray-800">{selectedJob.additional_features?.length ? selectedJob.additional_features.join(', ') : (isSpanish ? 'Ninguna' : isPortuguese ? 'Nenhuma' : 'None')}</span>
                                                 </div>
                                                 <div className="flex justify-between px-4 py-3">
-                                                    <span className="text-gray-600">Purpose:</span>
+                                                    <span className="text-gray-600">{isSpanish ? 'Finalidad:' : isPortuguese ? 'Finalidade:' : 'Purpose:'}</span>
                                                     <span className="font-medium text-gray-800">{selectedJob.ber_purpose}</span>
                                                 </div>
                                             </div>
@@ -2094,18 +2135,18 @@ const ContractorDashboard = () => {
                                         {/* Right: Your Quote */}
                                         <div className="bg-green-50 rounded-xl border border-green-200 overflow-hidden">
                                             <div className="bg-green-200 px-4 py-3 border-b border-green-300">
-                                                <h3 className="font-bold text-green-800 text-center">Your Quote</h3>
+                                                <h3 className="font-bold text-green-800 text-center">{isSpanish ? 'Tu Presupuesto' : isPortuguese ? 'O Seu Orçamento' : 'Your Quote'}</h3>
                                             </div>
                                             <div className="p-6 space-y-4">
-                                                <p className="text-sm text-green-700 text-center italic">Include {regAuthority} fees.</p>
-                                                <p className="text-sm text-green-700 text-center italic">Include VAT (if registered).</p>
+                                                <p className="text-sm text-green-700 text-center italic">{isSpanish ? 'Incluye tarifas de' : isPortuguese ? 'Inclui taxas de'} {regAuthority}.</p>
+                                                <p className="text-sm text-green-700 text-center italic">{isSpanish ? 'Incluye IVA (si estás registrado).' : isPortuguese ? 'Inclui IVA (se registado).' : 'Include VAT (if registered).'}</p>
                                                 <p className="text-sm text-green-700 text-center font-bold">
                                                     {(profile?.completed_jobs_count || 0) % 11 === 10 ? (
                                                         <span className="flex items-center justify-center gap-1.5 text-blue-600 bg-blue-50 py-1 rounded-lg border border-blue-100 animate-pulse">
-                                                            <CheckCircle2 size={14} /> LOYALTY JOB: {formatCurrency(0)} PLATFORM FEE
+                                                            <CheckCircle2 size={14} /> {isSpanish ? 'TRABAJO DE FIDELIDAD:' : isPortuguese ? 'TRABALHO DE FIDELIDADE:' : 'LOYALTY JOB:'} {formatCurrency(0)} {isSpanish ? 'TASA DE PLATAFORMA' : isPortuguese ? 'TAXA DE PLATAFORMA' : 'PLATFORM FEE'}
                                                         </span>
                                                     ) : (
-                                                        <span className="italic">Include {formatCurrency(25)} platform fee.</span>
+                                                        <span className="italic">{isSpanish ? 'Incluye' : isPortuguese ? 'Inclui'} {formatCurrency(25)} {isSpanish ? 'tasa de plataforma.' : isPortuguese ? 'taxa de plataforma.' : 'platform fee.'}</span>
                                                     )}
                                                 </p>
 
@@ -2119,9 +2160,9 @@ const ContractorDashboard = () => {
                                                     />
                                                 </div>
                                                 <p className="text-sm text-center font-bold text-gray-600">
-                                                    You will receive: {formatCurrency(quotePrice ? (parseInt(quotePrice) - ((profile?.completed_jobs_count || 0) % 11 === 10 ? 0 : 25)) : 0)} (direct from customer)
+                                                    {isSpanish ? 'Recibirás:' : isPortuguese ? 'Receberá:' : 'You will receive:'} {formatCurrency(quotePrice ? (parseInt(quotePrice) - ((profile?.completed_jobs_count || 0) % 11 === 10 ? 0 : 25)) : 0)} {isSpanish ? '(directo del cliente)' : isPortuguese ? '(direto do cliente)' : '(direct from customer)'}
                                                 </p>
-                                                <p className="text-xs text-gray-400 text-center">Eg. 170, no currency symbol or cents.</p>
+                                                <p className="text-xs text-gray-400 text-center">{isSpanish ? 'Ej. 170, sin símbolo de moneda ni céntimos.' : isPortuguese ? 'Ex. 170, sem símbolo de moeda nem cêntimos.' : 'Eg. 170, no currency symbol or cents.'}</p>
 
                                                 <div className="flex items-start gap-2 mt-4">
                                                     <input
@@ -2132,11 +2173,11 @@ const ContractorDashboard = () => {
                                                         className="mt-1 w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500"
                                                     />
                                                     <label htmlFor="termsCheck" className="text-sm text-gray-600">
-                                                        I agree to the <a href="/assessor-terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">terms of use</a>
+                                                        {isSpanish ? 'Acepto los' : isPortuguese ? 'Aceito os'} <a href="/assessor-terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">{isSpanish ? 'términos de uso' : isPortuguese ? 'termos de utilização' : 'terms of use'}</a>
                                                     </label>
                                                 </div>
                                                 <p className="text-sm text-gray-500 text-center">
-                                                    and I am available from {selectedAvailabilityDate ? new Date(selectedAvailabilityDate).toLocaleDateString('en-IE', { weekday: 'short', day: '2-digit', month: 'short' }) : 'selected date'}.
+                                                    {isSpanish ? 'y estoy disponible desde' : isPortuguese ? 'e estou disponível desde'} {selectedAvailabilityDate ? new Date(selectedAvailabilityDate).toLocaleDateString(isSpanish ? 'es-ES' : isPortuguese ? 'pt-PT' : 'en-IE', { weekday: 'short', day: '2-digit', month: 'short' }) : (isSpanish ? 'la fecha seleccionada' : isPortuguese ? 'a data selecionada' : 'selected date')}.
                                                 </p>
 
                                                 <button
@@ -2144,7 +2185,7 @@ const ContractorDashboard = () => {
                                                     disabled={!quotePrice || !termsAgreed || isSubmitting}
                                                     className="w-full py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                                 >
-                                                    {isSubmitting ? 'Submitting...' : 'Submit Quote'}
+                                                    {isSubmitting ? (isSpanish ? 'Enviando...' : isPortuguese ? 'A enviar...' : 'Submitting...') : (isSpanish ? 'Enviar Presupuesto' : isPortuguese ? 'Enviar Orçamento' : 'Submit Quote')}
                                                 </button>
                                             </div>
                                         </div>
@@ -2156,7 +2197,7 @@ const ContractorDashboard = () => {
                                             onClick={() => setQuoteStep(1)}
                                             className="text-sm font-bold text-gray-500 hover:text-gray-700 flex items-center gap-1"
                                         >
-                                            <ArrowLeft size={14} /> Back to date selection
+                                            <ArrowLeft size={14} /> {isSpanish ? 'Volver a selección de fecha' : isPortuguese ? 'Voltar à seleção de data' : 'Back to date selection'}
                                         </button>
                                     </div>
                                 </div>
@@ -2176,8 +2217,8 @@ const ContractorDashboard = () => {
                                     <AlertTriangle size={40} />
                                 </div>
                                 <div className="space-y-2">
-                                    <h3 className="text-2xl font-black text-gray-900">Reject this lead?</h3>
-                                    <p className="text-sm text-gray-500 font-medium">Please let us know why you're unable to take this job.</p>
+                                    <h3 className="text-2xl font-black text-gray-900">{isSpanish ? '¿Rechazar esta solicitud?' : isPortuguese ? 'Rejeitar este pedido?' : 'Reject this lead?'}</h3>
+                                    <p className="text-sm text-gray-500 font-medium">{isSpanish ? 'Por favor, dinos por qué no puedes tomar este trabajo.' : isPortuguese ? 'Por favor, diga-nos por que não pode aceitar este trabalho.' : "Please let us know why you're unable to take this job."}</p>
                                 </div>
 
                                 <select
@@ -2185,12 +2226,12 @@ const ContractorDashboard = () => {
                                     onChange={(e) => setRejectionReason(e.target.value)}
                                     className="w-full bg-gray-50 border-2 border-transparent focus:border-red-500 rounded-2xl px-6 py-4 text-sm font-bold outline-none transition-all"
                                 >
-                                    <option value="">Select a reason...</option>
-                                    <option value="too_busy">Too busy / High workload</option>
-                                    <option value="outside_area">Outside my service area</option>
-                                    <option value="incorrect_requirements">Incorrect property requirements</option>
-                                    <option value="safety_concerns">Safety or access concerns</option>
-                                    <option value="other">Other reason</option>
+                                    <option value="">{isSpanish ? 'Selecciona un motivo...' : isPortuguese ? 'Selecione um motivo...' : 'Select a reason...'}</option>
+                                    <option value="too_busy">{isSpanish ? 'Muy ocupado / Mucha carga de trabajo' : isPortuguese ? 'Muito ocupado / Muita carga de trabalho' : 'Too busy / High workload'}</option>
+                                    <option value="outside_area">{isSpanish ? 'Fuera de mi área de servicio' : isPortuguese ? 'Fora da minha área de serviço' : 'Outside my service area'}</option>
+                                    <option value="incorrect_requirements">{isSpanish ? 'Requisitos de propiedad incorrectos' : isPortuguese ? 'Requisitos de propriedade incorretos' : 'Incorrect property requirements'}</option>
+                                    <option value="safety_concerns">{isSpanish ? 'Preocupaciones de seguridad o acceso' : isPortuguese ? 'Preocupações de segurança ou acesso' : 'Safety or access concerns'}</option>
+                                    <option value="other">{isSpanish ? 'Otro motivo' : isPortuguese ? 'Outro motivo' : 'Other reason'}</option>
                                 </select>
 
                                 <div className="flex gap-4 pt-2">
@@ -2198,14 +2239,14 @@ const ContractorDashboard = () => {
                                         onClick={() => setRejectionModalOpen(false)}
                                         className="flex-1 py-4 text-gray-500 font-bold bg-gray-100 rounded-2xl hover:bg-gray-200 transition-all"
                                     >
-                                        Cancel
+                                        {isSpanish ? 'Cancelar' : isPortuguese ? 'Cancelar' : 'Cancel'}
                                     </button>
                                     <button
                                         onClick={handleRejectJob}
                                         disabled={!rejectionReason || isSubmitting}
                                         className="flex-[2] py-4 bg-red-500 text-white rounded-2xl font-black hover:bg-red-600 transition-all shadow-xl shadow-red-100 disabled:opacity-50"
                                     >
-                                        Confirm Rejection
+                                        {isSpanish ? 'Confirmar Rechazo' : isPortuguese ? 'Confirmar Rejeição' : 'Confirm Rejection'}
                                     </button>
                                 </div>
                             </div>
@@ -2219,20 +2260,20 @@ const ContractorDashboard = () => {
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
                         <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm p-8 animate-in zoom-in-95 duration-200">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-xl font-black text-gray-900">Schedule Inspection</h3>
+                                <h3 className="text-xl font-black text-gray-900">{isSpanish ? 'Programar Inspección' : isPortuguese ? 'Agendar Inspeção' : 'Schedule Inspection'}</h3>
                                 <button onClick={() => setSchedulingJob(null)} className="text-gray-400 hover:text-gray-600">
                                     <X size={24} />
                                 </button>
                             </div>
                             <div className="space-y-6">
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Inspection Date</label>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{isSpanish ? 'Fecha de Inspección' : isPortuguese ? 'Data de Inspeção' : 'Inspection Date'}</label>
                                     <DatePicker
                                         value={scheduledDate}
                                         onChange={setScheduledDate}
                                         min={tomorrow}
                                         label=""
-                                        placeholder="Select inspection date"
+                                        placeholder={isSpanish ? 'Seleccionar fecha de inspección' : isPortuguese ? 'Selecionar data de inspeção' : 'Select inspection date'}
                                     />
                                 </div>
                                 <button
@@ -2240,7 +2281,7 @@ const ContractorDashboard = () => {
                                     disabled={isSubmitting || !scheduledDate}
                                     className="w-full bg-[#007EA7] text-white py-4 rounded-2xl font-bold hover:bg-[#005F7E] transition-all shadow-lg shadow-blue-100 disabled:opacity-50"
                                 >
-                                    {isSubmitting ? 'Scheduling...' : 'Confirm Schedule'}
+                                    {isSubmitting ? (isSpanish ? 'Programando...' : isPortuguese ? 'A agendar...' : 'Scheduling...') : (isSpanish ? 'Confirmar Programación' : isPortuguese ? 'Confirmar Agendamento' : 'Confirm Schedule')}
                                 </button>
                             </div>
                         </div>
@@ -2254,14 +2295,14 @@ const ContractorDashboard = () => {
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
                         <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm p-8 animate-in zoom-in-95 duration-200">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-xl font-black text-gray-900">Complete Job</h3>
+                                <h3 className="text-xl font-black text-gray-900">{isSpanish ? 'Completar Trabajo' : isPortuguese ? 'Concluir Trabalho' : 'Complete Job'}</h3>
                                 <button onClick={() => setCompletingJob(null)} className="text-gray-400 hover:text-gray-600">
                                     <X size={24} />
                                 </button>
                             </div>
                             <div className="space-y-6">
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">BER Certificate URL</label>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{isSpanish ? 'URL del Certificado' : isPortuguese ? 'URL do Certificado' : 'BER Certificate URL'}</label>
                                     <input
                                         type="url"
                                         placeholder="https://..."
@@ -2269,14 +2310,14 @@ const ContractorDashboard = () => {
                                         onChange={(e) => setCertUrl(e.target.value)}
                                         className="w-full border-2 border-gray-100 rounded-2xl px-4 py-3 focus:outline-none focus:border-[#007EA7] transition-colors font-bold text-gray-900"
                                     />
-                                    <p className="text-[10px] text-gray-400 mt-2 font-medium italic">Please provide a link to the generated BER certificate.</p>
+                                    <p className="text-[10px] text-gray-400 mt-2 font-medium italic">{isSpanish ? 'Por favor, proporciona un enlace al certificado generado.' : isPortuguese ? 'Por favor, forneça um link para o certificado gerado.' : 'Please provide a link to the generated BER certificate.'}</p>
                                 </div>
                                 <button
                                     onClick={() => handleUpdateStatus(completingJob.id, 'completed', { certificate_url: certUrl, completed_at: new Date().toISOString() })}
                                     disabled={isSubmitting || !certUrl}
                                     className="w-full bg-[#007F00] text-white py-4 rounded-2xl font-bold hover:bg-green-800 transition-all shadow-lg shadow-green-100 disabled:opacity-50"
                                 >
-                                    {isSubmitting ? 'Completing...' : 'Submit & Complete'}
+                                    {isSubmitting ? (isSpanish ? 'Completando...' : isPortuguese ? 'A concluir...' : 'Completing...') : (isSpanish ? 'Enviar y Completar' : isPortuguese ? 'Enviar e Concluir' : 'Submit & Complete')}
                                 </button>
                             </div>
                         </div>

@@ -319,7 +319,7 @@ const SignUp = () => {
                                 {...register('email')}
                                 type="email"
                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007F00] focus:border-transparent outline-none transition-all"
-                                placeholder={isSpanish ? 'correo@empresa.com' : tenant === 'portugal' ? 'email' : 'email'}
+                                placeholder={isSpanish ? 'correo@empresa.com' : tenant === 'portugal' ? 'nome@exemplo.com' : 'email'}
                             />
                             {errors.email && <p className="text-red-500 text-xs mt-1 font-medium ml-1">{errors.email.message}</p>}
                         </div>
