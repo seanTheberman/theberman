@@ -42,14 +42,60 @@ serve(async (req: Request) => {
 
         const isSpanish = tenant === 'spain';
         const isEngland = tenant === 'england';
+        const isPortuguese = tenant === 'portugal';
         const brandName = config.display_name;
         const paymentUrl = `${websiteUrl}/membership-payment`;
         const roleName = isSpanish
             ? (role === 'business' ? 'Socio Comercial' : 'Certificador Energético')
-            : (role === 'business' ? 'Business Partner' : (isEngland ? 'Domestic Energy Assessor' : 'BER Assessor'));
-        const marketArea = isSpanish ? 'España' : (isEngland ? 'England' : 'Ireland');
+            : isPortuguese
+                ? (role === 'business' ? 'Sócio Comercial' : 'Perito Certificador')
+                : (role === 'business' ? 'Business Partner' : (isEngland ? 'Domestic Energy Assessor' : 'BER Assessor'));
+        const marketArea = isSpanish ? 'España' : isPortuguese ? 'Portugal' : (isEngland ? 'England' : 'Ireland');
 
-        const html = isSpanish ? `
+        const html = isPortuguese ? `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <img src="${websiteUrl}/logo.svg" alt="${brandName}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
+                </div>
+                <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Renovação de Subscrição</h2>
+                <p style="font-size: 16px; color: #333;">Olá <strong>${fullName}</strong>,</p>
+                <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                    Este é um lembrete automático de que a sua subscrição como <strong>${roleName}</strong> na plataforma ${brandName}
+                    ${expiryDate ? `expirou ou está prestes a expirar em <strong>${expiryDate}</strong>` : 'expirou'}.
+                </p>
+
+                <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                    Para manter o seu estado ativo no nosso catálogo e continuar a receber leads diretos de certificados energéticos em ${marketArea},
+                    renove a sua membresia através do link seguro abaixo.
+                </p>
+
+                <div style="text-align: center; margin: 40px 0;">
+                    <a href="${paymentUrl}" target="_blank" style="display:inline-block;background-color:#2e7d32;color:#ffffff;padding:16px 35px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:18px;box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
+                        Renovar a Minha Subscrição Agora
+                    </a>
+                </div>
+
+                <div style="background-color: #f0f7f0; padding: 20px; border-radius: 8px; border-left: 5px solid #2e7d32; margin-bottom: 30px;">
+                    <h3 style="margin-top: 0; font-size: 16px; color: #1b5e20;">Benefícios Ativos:</h3>
+                    <ul style="padding-left: 20px; margin-top: 10px; margin-bottom: 0; font-size: 14px; color: #2e7d32; line-height: 1.7;">
+                        <li><strong>Permaneça Visível:</strong> Mantenha a ficha do seu negócio presente para os proprietários.</li>
+                        <li><strong>Alertas de Trabalhos:</strong> Notificações em tempo real para pedidos na sua zona.</li>
+                        <li><strong>Estado Verificado:</strong> Conserve o seu distintivo como sócio de confiança.</li>
+                    </ul>
+                </div>
+
+                <p style="color: #666; font-size: 14px; text-align: center;">
+                    Se o botão não funcionar, copie e cole este link:<br>
+                    <a href="${paymentUrl}" style="color: #2e7d32; word-break: break-all;">${paymentUrl}</a>
+                </p>
+
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                <p style="font-size: 12px; color: #999; text-align: center; line-height: 1.5;">
+                    &copy; ${new Date().getFullYear()} ${brandName}.<br>
+                    Apoiando certificações energéticas sustentáveis em ${marketArea}.
+                </p>
+            </div>
+        ` : isSpanish ? `
             <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
                 <div style="text-align: center; margin-bottom: 25px;">
                     <img src="${websiteUrl}/logo.svg" alt="${brandName}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
@@ -140,7 +186,7 @@ serve(async (req: Request) => {
         await client.send(
             smtpFrom,
             email,
-            isSpanish ? "Acción Requerida: Estado de tu Suscripción" : `Action Required: Your ${brandName} Subscription Status`,
+            isSpanish ? "Acción Requerida: Estado de tu Suscripción" : isPortuguese ? `Ação Necessária: Estado da sua Subscrição ${brandName}` : `Action Required: Your ${brandName} Subscription Status`,
             html
         )
 

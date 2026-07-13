@@ -47,16 +47,53 @@ Deno.serve(async (req: Request) => {
         const isApproval = type === 'approved';
         const isSpanish = tenant === 'spain';
         const isEngland = tenant === 'england';
+        const isPortuguese = tenant === 'portugal';
 
         let subject: string;
         let html: string;
 
         if (isBusiness && isApproval) {
             // ─── APPROVAL EMAIL: sent after admin approves the business ───
-            subject = isSpanish ? `¡Estás Aprobado! – ${config.display_name}` : `You're Approved! – ${config.display_name}`;
+            subject = isSpanish ? `¡Estás Aprobado! – ${config.display_name}` : isPortuguese ? `Está Aprovado! – ${config.display_name}` : `You're Approved! – ${config.display_name}`;
             const loginUrl = `${websiteUrl}/login`;
 
-            if (isSpanish) {
+            if (isPortuguese) {
+                html = `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
+                    <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Está Aprovado! 🎉</h2>
+                    <p style="font-size: 16px; color: #333;">Olá <strong>${fullName}</strong>,</p>
+                    <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                        Boas notícias! O seu registo foi revisto e <strong>aprovado</strong>.
+                        A sua empresa está agora publicada no nosso Catálogo de Certificados Energéticos.
+                    </p>
+                    <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                        Agora pode iniciar sessão no seu Portal de Empresa para editar o perfil do catálogo,
+                        atualizar as suas fotografias e gerir o seu anúncio a qualquer momento.
+                    </p>
+
+                    <div style="text-align: center; margin: 40px 0;">
+                        <a href="${loginUrl}" target="_blank" style="display:inline-block;background-color:#2e7d32;color:#ffffff;padding:16px 35px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:18px;box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
+                            Iniciar Sessão
+                        </a>
+                    </div>
+
+                    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 30px;">
+                        <h3 style="margin-top: 0; font-size: 14px; color: #333; text-transform: uppercase; letter-spacing: 0.5px;">Os seus Dados de Acesso</h3>
+                        <p style="margin: 10px 0; font-size: 14px; color: #555;"><strong>Email:</strong> ${email}</p>
+                        ${password ? `<p style="margin: 10px 0; font-size: 14px; color: #555;"><strong>Palavra-passe:</strong> <code style="background:#eee; padding:2px 4px; border-radius:3px;">${password}</code></p>` : ''}
+                        <p style="margin: 15px 0 0 0; font-size: 12px; color: #777; line-height: 1.4;">
+                            <em>Pode alterar a sua palavra-passe em qualquer momento a partir do painel.</em>
+                        </p>
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                    <p style="font-size: 12px; color: #999; text-align: center; line-height: 1.6;">
+                        &copy; ${new Date().getFullYear()} ${config.display_name}.<br>
+                        Apoiando objetivos de energia sustentável através de certificações profissionais.
+                    </p>
+                </div>
+                `;
+            } else if (isSpanish) {
                 html = `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
                     <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">¡Estás Aprobado! 🎉</h2>
@@ -134,13 +171,50 @@ Deno.serve(async (req: Request) => {
             }
         } else if (isBusiness) {
             // ─── WELCOME EMAIL: sent when admin manually signs up a business ───
-            subject = isSpanish ? `Bienvenido a ${config.display_name} – Completa Tu Registro` : `Welcome to ${config.display_name} – Complete Your Registration`;
+            subject = isSpanish ? `Bienvenido a ${config.display_name} – Completa Tu Registro` : isPortuguese ? `Bem-vindo à ${config.display_name} – Complete o Seu Registo` : `Welcome to ${config.display_name} – Complete Your Registration`;
 
             // Use the magic link if provided, otherwise fallback to business-onboarding page
             const actionUrl = onboardingUrl || `${websiteUrl}/business-onboarding`;
             const loginUrl = `${websiteUrl}/login`;
 
-            if (isSpanish) {
+            if (isPortuguese) {
+                html = `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
+                    <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Bem-vindo à ${config.display_name}</h2>
+                    <p style="font-size: 16px; color: #333;">Olá <strong>${fullName}</strong>,</p>
+                    <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                        Bem-vindo à ${config.display_name}. Clique no link abaixo para preencher o formulário de registo e ser publicado no nosso catálogo.
+                        Esperamos construir uma relação sólida consigo.
+                    </p>
+
+                    <div style="text-align: center; margin: 40px 0;">
+                        <a href="${actionUrl}" target="_blank" style="display:inline-block;background-color:#2e7d32;color:#ffffff;padding:16px 35px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:18px;box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
+                            Completar Formulário de Registo
+                        </a>
+                    </div>
+
+                    <div style="background-color: #f1f8e9; padding: 22px; border-radius: 8px; border: 1px solid #c5e1a5; margin: 30px 0;">
+                        <h3 style="margin-top: 0; font-size: 14px; color: #2e7d32; text-transform: uppercase; letter-spacing: 0.5px;">Os seus Dados de Acesso</h3>
+                        <p style="margin: 10px 0; font-size: 15px; color: #333;"><strong>Email:</strong> ${email}</p>
+                        ${password ? `<p style="margin: 10px 0; font-size: 15px; color: #333;"><strong>Palavra-passe:</strong> <code style="background:#fff; padding:4px 8px; border-radius:4px; border:1px solid #ddd; font-size:15px;">${password}</code></p>` : ''}
+                        <p style="margin: 15px 0 0 0; font-size: 13px; color: #555; line-height: 1.5;">
+                            <strong>Importante:</strong> Utilize estes dados para iniciar sessão em <a href="${loginUrl}" style="color: #2e7d32;">${loginUrl}</a>
+                        </p>
+                    </div>
+
+                    <p style="color: #888; font-size: 13px; text-align: center;">
+                        Link Direto para o Formulário:<br>
+                        <a href="${actionUrl}" style="color: #2e7d32; text-decoration: none; font-size: 11px; word-break: break-all;">${actionUrl}</a>
+                    </p>
+
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                    <p style="font-size: 12px; color: #999; text-align: center; line-height: 1.6;">
+                        &copy; ${new Date().getFullYear()} ${config.display_name}.<br>
+                        Apoiando objetivos de energia sustentável através de certificações profissionais.
+                    </p>
+                </div>
+                `;
+            } else if (isSpanish) {
                 html = `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
                     <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Bienvenido a ${config.display_name}</h2>
@@ -221,12 +295,49 @@ Deno.serve(async (req: Request) => {
             }
         } else {
             // ─── ASSESSOR EMAIL: credentials-first onboarding (FREE, no payment mentions) ───
-            const roleName = isSpanish ? 'Certificador Energético' : (isEngland ? 'Domestic Energy Assessor' : 'BER Assessor');
+            const roleName = isSpanish ? 'Certificador Energético' : (isPortuguese ? 'Perito Certificador' : (isEngland ? 'Domestic Energy Assessor' : 'BER Assessor'));
             const loginUrl = `${websiteUrl}/login`;
 
-            subject = isSpanish ? `Bienvenido a ${config.display_name} – Tus Datos de Acceso` : `Welcome to ${config.display_name} – Your ${roleName} Login Details`;
+            subject = isSpanish ? `Bienvenido a ${config.display_name} – Tus Datos de Acceso` : isPortuguese ? `Bem-vindo à ${config.display_name} – Os seus Dados de Acesso` : `Welcome to ${config.display_name} – Your ${roleName} Login Details`;
 
-            if (isSpanish) {
+            if (isPortuguese) {
+                html = `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
+                    <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Bem-vindo à ${config.display_name}</h2>
+                    <p style="font-size: 16px; color: #333;">Olá <strong>${fullName}</strong>,</p>
+                    <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                        A sua conta como <strong>${roleName}</strong> foi criada com sucesso.
+                        Estamos entusiasmados por tê-lo na nossa rede de profissionais de energia.
+                    </p>
+
+                    <div style="background-color: #f1f8e9; padding: 22px; border-radius: 8px; border: 1px solid #c5e1a5; margin: 30px 0;">
+                        <h3 style="margin-top: 0; font-size: 14px; color: #2e7d32; text-transform: uppercase; letter-spacing: 0.5px;">Os seus Dados de Acesso</h3>
+                        <p style="margin: 10px 0; font-size: 15px; color: #333;"><strong>Email:</strong> ${email}</p>
+                        ${password ? `<p style="margin: 10px 0; font-size: 15px; color: #333;"><strong>Palavra-passe Temporária:</strong> <code style="background:#fff; padding:4px 8px; border-radius:4px; border:1px solid #ddd; font-size:15px;">${password}</code></p>` : ''}
+                        <p style="margin: 15px 0 0 0; font-size: 13px; color: #b71c1c; line-height: 1.5;">
+                            <strong>⚠ Importante:</strong> Por favor altere esta palavra-passe após o primeiro início de sessão nas definições do seu painel, ou utilize "Esqueci-me da palavra-passe" na página de início de sessão a qualquer momento.
+                        </p>
+                    </div>
+
+                    <div style="text-align: center; margin: 35px 0;">
+                        <a href="${loginUrl}" target="_blank" style="display:inline-block;background-color:#2e7d32;color:#ffffff;padding:16px 35px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:18px;box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
+                            Iniciar Sessão
+                        </a>
+                    </div>
+
+                    <p style="color: #888; font-size: 13px; text-align: center;">
+                        URL de Início de Sessão:<br>
+                        <a href="${loginUrl}" style="color: #2e7d32; text-decoration: none; font-size: 12px; word-break: break-all;">${loginUrl}</a>
+                    </p>
+
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                    <p style="font-size: 12px; color: #999; text-align: center; line-height: 1.6;">
+                        &copy; ${new Date().getFullYear()} ${config.display_name}.<br>
+                        Apoiando objetivos de energia sustentável através de certificações profissionais.
+                    </p>
+                </div>
+                `;
+            } else if (isSpanish) {
                 html = `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
                     <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Bienvenido a ${config.display_name}</h2>

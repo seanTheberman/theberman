@@ -89,8 +89,15 @@ Deno.serve(async (req: Request) => {
 
         const { data: asmnt } = await supabase.from('assessments').select('contact_phone').eq('id', assessmentId).single();
         const smsPhone = customerPhone || asmnt?.contact_phone || null;
+        const isPortuguese = tenant === 'portugal';
+        const isSpanish = tenant === 'spain';
         if (smsPhone) {
-            smsSent = await trySendSms(smsPhone, `Hi ${customerName}, your BER assessment request in ${town || county} is now live on ${websiteUrl.replace('https://', '')}!`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
+            const customerSms = isSpanish
+                ? `Hola ${customerName}, tu solicitud de certificado energético en ${town || county} ya está activa en ${websiteUrl.replace('https://', '')}.`
+                : isPortuguese
+                    ? `Olá ${customerName}, o seu pedido de certificado energético em ${town || county} está agora ativo em ${websiteUrl.replace('https://', '')}.`
+                    : `Hi ${customerName}, your BER assessment request in ${town || county} is now live on ${websiteUrl.replace('https://', '')}!`;
+            smsSent = await trySendSms(smsPhone, customerSms, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
         }
 
         for (const c of relevant) {
@@ -98,7 +105,12 @@ Deno.serve(async (req: Request) => {
                 const loc = town || county;
                 const name = c.full_name || 'Assessor';
                 const link = `${websiteUrl}/quote/${assessmentId}?phone=${encodeURIComponent(c.phone)}`;
-                await trySendSms(c.phone, `Hi ${name}, new job in ${loc}! Quote here: ${link}`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
+                const contractorSms = isSpanish
+                    ? `Hola ${name}, nuevo trabajo en ${loc}. Presupuesta aquí: ${link}`
+                    : isPortuguese
+                        ? `Olá ${name}, novo trabalho em ${loc}. Orçamente aqui: ${link}`
+                        : `Hi ${name}, new job in ${loc}! Quote here: ${link}`;
+                await trySendSms(c.phone, contractorSms, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
             }
         }
 

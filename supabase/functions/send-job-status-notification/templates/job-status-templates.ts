@@ -14,30 +14,37 @@ export const generateStatusEmail = (
 ) => {
     const isSpanish = tenant === 'spain';
     const isEngland = tenant === 'england';
+    const isPortuguese = tenant === 'portugal';
     const brandName = displayName;
-    const certificateName = isSpanish ? 'certificado energético' : (isEngland ? 'EPC' : 'BER');
-    const inspectionName = isSpanish ? 'visita' : (isEngland ? 'assessment' : 'inspection');
+    const certificateName = isSpanish ? 'certificado energético' : (isPortuguese ? 'certificado energético' : (isEngland ? 'EPC' : 'BER'));
+    const inspectionName = isSpanish ? 'visita' : (isPortuguese ? 'visita' : (isEngland ? 'assessment' : 'inspection'));
     let title = "";
     let message = "";
-    let buttonText = isSpanish ? "Ver Panel" : "View Dashboard";
+    let buttonText = isSpanish ? "Ver Panel" : isPortuguese ? "Ver Painel" : "View Dashboard";
     let buttonUrl = `${websiteUrl}/dashboard`;
 
     if (status === 'scheduled') {
-        title = isSpanish ? "Visita Programada" : `${inspectionName.charAt(0).toUpperCase() + inspectionName.slice(1)} Scheduled`;
+        title = isSpanish ? "Visita Programada" : isPortuguese ? "Visita Agendada" : `${inspectionName.charAt(0).toUpperCase() + inspectionName.slice(1)} Scheduled`;
         message = isSpanish
             ? `¡Buenas noticias! La visita para tu certificado energético en <strong>${details.town}</strong> ha sido programada para el <strong>${details.inspectionDate}</strong> por <strong>${details.contractorName}</strong>.`
-            : `Good news! Your ${certificateName} ${inspectionName} for the property in <strong>${details.town}</strong> has been scheduled for <strong>${details.inspectionDate}</strong> by <strong>${details.contractorName}</strong>.`;
+            : isPortuguese
+                ? `Boas notícias! A visita para o seu certificado energético em <strong>${details.town}</strong> foi agendada para <strong>${details.inspectionDate}</strong> por <strong>${details.contractorName}</strong>.`
+                : `Good news! Your ${certificateName} ${inspectionName} for the property in <strong>${details.town}</strong> has been scheduled for <strong>${details.inspectionDate}</strong> by <strong>${details.contractorName}</strong>.`;
     } else if (status === 'rescheduled') {
-        title = isSpanish ? "Visita Reprogramada" : `${inspectionName.charAt(0).toUpperCase() + inspectionName.slice(1)} Rescheduled`;
+        title = isSpanish ? "Visita Reprogramada" : isPortuguese ? "Visita Reagendada" : `${inspectionName.charAt(0).toUpperCase() + inspectionName.slice(1)} Rescheduled`;
         message = isSpanish
             ? `Ten en cuenta que la visita para tu certificado energético en <strong>${details.town}</strong> se ha reprogramado al <strong>${details.inspectionDate}</strong>.`
-            : `Please note that your ${certificateName} ${inspectionName} for the property in <strong>${details.town}</strong> has been rescheduled to <strong>${details.inspectionDate}</strong>.`;
+            : isPortuguese
+                ? `Informamos que a visita para o seu certificado energético em <strong>${details.town}</strong> foi reagendada para <strong>${details.inspectionDate}</strong>.`
+                : `Please note that your ${certificateName} ${inspectionName} for the property in <strong>${details.town}</strong> has been rescheduled to <strong>${details.inspectionDate}</strong>.`;
     } else if (status === 'completed') {
-        title = isSpanish ? "Trabajo Completado" : "Job Completed";
+        title = isSpanish ? "Trabajo Completado" : isPortuguese ? "Trabalho Concluído" : "Job Completed";
         message = isSpanish
             ? `Tu certificado energético para la propiedad en <strong>${details.town}</strong> ya está listo. Puedes verlo y descargarlo usando el siguiente enlace.`
-            : `Your ${certificateName} assessment for the property in <strong>${details.town}</strong> is now complete. You can view and download your certificate using the link below.`;
-        buttonText = isSpanish ? "Ver Certificado" : "View Certificate";
+            : isPortuguese
+                ? `O seu certificado energético para o imóvel em <strong>${details.town}</strong> já está pronto. Pode consultá-lo e descarregá-lo através do link abaixo.`
+                : `Your ${certificateName} assessment for the property in <strong>${details.town}</strong> is now complete. You can view and download your certificate using the link below.`;
+        buttonText = isSpanish ? "Ver Certificado" : isPortuguese ? "Ver Certificado" : "View Certificate";
         buttonUrl = details.certificateUrl || buttonUrl;
     }
 
@@ -65,7 +72,7 @@ export const generateStatusEmail = (
             <h1>${title}</h1>
         </div>
         <div class="content">
-            <div class="greeting">${isSpanish ? 'Hola' : 'Hi'} ${customerName},</div>
+            <div class="greeting">${isSpanish ? 'Hola' : isPortuguese ? 'Olá' : 'Hi'} ${customerName},</div>
             <div class="message">
                 ${message}
             </div>
@@ -73,7 +80,7 @@ export const generateStatusEmail = (
                 <a href="${buttonUrl}" class="button">${buttonText}</a>
             </div>
             <div class="message">
-                ${isSpanish ? `Un saludo,<br>El Equipo de ${brandName}` : `Best Regards,<br>${brandName} Team`}
+                ${isSpanish ? `Un saludo,<br>El Equipo de ${brandName}` : isPortuguese ? `Com os melhores cumprimentos,<br>A Equipa ${brandName}` : `Best Regards,<br>${brandName} Team`}
             </div>
         </div>
         <div class="footer">

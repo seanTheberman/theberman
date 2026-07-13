@@ -1,8 +1,9 @@
 export const generateContractorBookingEmail = (contractorName: string, customerName: string, customerAddress: string, price: number, websiteUrl: string = "https://theberman.eu", promoHtml: string = "", tenant: string = 'ireland', displayName: string = 'The Berman') => {
     const isSpanish = tenant === 'spain';
     const isEngland = tenant === 'england';
+    const isPortuguese = tenant === 'portugal';
     const brandName = displayName;
-    const certificateName = isSpanish ? 'certificado energético' : (isEngland ? 'EPC' : 'BER');
+    const certificateName = isSpanish ? 'certificado energético' : (isPortuguese ? 'certificado energético' : (isEngland ? 'EPC' : 'BER'));
     const dashboardUrl = `${websiteUrl}/dashboard/contractor`;
 
     return `
@@ -30,46 +31,46 @@ export const generateContractorBookingEmail = (contractorName: string, customerN
 <body>
     <div class="container">
         <div class="header">
-            <h1>${isSpanish ? '¡Tienes un Nuevo Cliente!' : "You've Been Hired!"}</h1>
+            <h1>${isSpanish ? '¡Tienes un Nuevo Cliente!' : isPortuguese ? 'Tem um Novo Cliente!' : "You've Been Hired!"}</h1>
         </div>
         <div class="content">
-            <div class="greeting">${isSpanish ? 'Hola' : 'Hi'} ${contractorName},</div>
+            <div class="greeting">${isSpanish ? 'Hola' : isPortuguese ? 'Olá' : 'Hi'} ${contractorName},</div>
             <div class="message">
-                ${isSpanish ? `¡Enhorabuena! <strong>${customerName}</strong> ha aceptado tu presupuesto para un certificado energético.` : `Congratulations! <strong>${customerName}</strong> has accepted your quote for a ${certificateName} assessment.`}
+                ${isSpanish ? `¡Enhorabuena! <strong>${customerName}</strong> ha aceptado tu presupuesto para un certificado energético.` : isPortuguese ? `Parabéns! <strong>${customerName}</strong> aceitou o seu orçamento para um certificado energético.` : `Congratulations! <strong>${customerName}</strong> has accepted your quote for a ${certificateName} assessment.`}
             </div>
 
             <div class="highlight-box">
                 <div class="highlight-item">
-                    <span class="highlight-label">${isSpanish ? 'Cliente' : 'Customer'}</span>
+                    <span class="highlight-label">${isSpanish ? 'Cliente' : isPortuguese ? 'Cliente' : 'Customer'}</span>
                     <span class="highlight-value">${customerName}</span>
                 </div>
                 <div class="highlight-item">
-                    <span class="highlight-label">${isSpanish ? 'Dirección de la Propiedad' : 'Property Address'}</span>
+                    <span class="highlight-label">${isSpanish ? 'Dirección de la Propiedad' : isPortuguese ? 'Morada do Imóvel' : 'Property Address'}</span>
                     <span class="highlight-value">${customerAddress}</span>
                 </div>
                 <div class="highlight-item">
-                    <span class="highlight-label">${isSpanish ? 'Precio' : 'Price'}</span>
+                    <span class="highlight-label">${isSpanish ? 'Precio' : isPortuguese ? 'Preço' : 'Price'}</span>
                     <span class="highlight-value">€${price}</span>
                 </div>
             </div>
 
             <div class="message">
-                <strong>${isSpanish ? 'Siguiente Paso:' : 'Next Step:'}</strong><br>
-                ${isSpanish ? 'Inicia sesión en tu panel para ver los datos de contacto completos y acordar la fecha de la visita con el cliente.' : 'Please log in to your dashboard to view the full contact details and schedule the assessment date with the client.'}
+                <strong>${isSpanish ? 'Siguiente Paso:' : isPortuguese ? 'Próximo Passo:' : 'Next Step:'}</strong><br>
+                ${isSpanish ? 'Inicia sesión en tu panel para ver los datos de contacto completos y acordar la fecha de la visita con el cliente.' : isPortuguese ? 'Inicie sessão no seu painel para ver os dados de contacto completos e agendar a data da visita com o cliente.' : 'Please log in to your dashboard to view the full contact details and schedule the assessment date with the client.'}
             </div>
 
             <div class="button-container">
-                <a href="${dashboardUrl}" class="button">${isSpanish ? 'Ir al Panel' : 'Go to Dashboard'}</a>
+                <a href="${dashboardUrl}" class="button">${isSpanish ? 'Ir al Panel' : isPortuguese ? 'Ir para o Painel' : 'Go to Dashboard'}</a>
             </div>
 
             <div class="message">
-                ${isSpanish ? `Un saludo,<br>El Equipo de ${brandName}` : `Best Regards,<br>${brandName} Team`}
+                ${isSpanish ? `Un saludo,<br>El Equipo de ${brandName}` : isPortuguese ? `Com os melhores cumprimentos,<br>A Equipa ${brandName}` : `Best Regards,<br>${brandName} Team`}
             </div>
         </div>
         <div class="footer">
             ${promoHtml}
             <div style="margin-top: 20px; text-align: center; font-size: 12px; color: #aaa;">
-                &copy; ${new Date().getFullYear()} ${brandName}. ${isSpanish ? 'Todos los derechos reservados.' : 'All rights reserved.'}
+                &copy; ${new Date().getFullYear()} ${brandName}. ${isSpanish ? 'Todos los derechos reservados.' : isPortuguese ? 'Todos os direitos reservados.' : 'All rights reserved.'}
             </div>
         </div>
     </div>

@@ -36,6 +36,8 @@ const DOMAIN_TO_TENANT: Record<string, string> = {
   'www.certificado-pt.eu': 'portugal',
   'certificadopt.eu': 'portugal',
   'www.certificadopt.eu': 'portugal',
+  'certificadoenergia.com': 'portugal',
+  'www.certificadoenergia.com': 'portugal',
   // Local dev
   'localhost': 'ireland',
 };
@@ -87,7 +89,7 @@ export function getTenantDisplayName(tenant: string): string {
     'spain': 'Certificado Energético',
     'england': 'EPC Cert',
     'france': 'DPE France',
-    'portugal': 'Certificado Energético',
+    'portugal': 'Certificado Energia',
   };
   return map[tenant] || tenant;
 }
@@ -132,8 +134,8 @@ export function getTenantWebsiteUrl(tenant: string): string {
   }
   if (tenant === 'portugal') {
     const host = getCurrentHostname();
-    if (host && host.includes('pt')) return `https://${host}`;
-    return 'https://certificadopt.eu';
+    if (host && (host.includes('energia') || host.includes('pt'))) return `https://${host}`;
+    return 'https://certificadoenergia.com';
   }
   return 'https://www.theberman.eu';
 }
@@ -149,7 +151,7 @@ export function getTenantEmail(tenant: string): string {
     return 'contact@dpefrance.eu';
   }
   if (tenant === 'portugal') {
-    return 'contact@certificadopt.eu';
+    return 'hello@certificadoenergia.com';
   }
   return 'hello@theberman.eu';
 }
@@ -172,8 +174,8 @@ export function getTenantDomain(tenant: string): string {
   }
   if (tenant === 'portugal') {
     const host = getCurrentHostname();
-    if (host && host.includes('pt')) return host.replace(/^www\./, '');
-    return 'certificadopt.eu';
+    if (host && (host.includes('energia') || host.includes('pt'))) return host.replace(/^www\./, '');
+    return 'certificadoenergia.com';
   }
   return 'theberman.eu';
 }

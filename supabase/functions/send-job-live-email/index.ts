@@ -167,6 +167,8 @@ Deno.serve(async (req: Request) => {
         let smsSent = false;
         let smtpReady = false;
         const isSpanish = tenant === 'spain';
+        const isPortuguese = tenant === 'portugal';
+        const lang: 'en' | 'es' | 'pt' = isPortuguese ? 'pt' : isSpanish ? 'es' : 'en';
 
         // Try SMTP connection — if it fails, SMS still sends
         try {
@@ -188,7 +190,39 @@ Deno.serve(async (req: Request) => {
         // 1. Notify Customer via email (only if SMTP is ready)
         if (smtpReady) {
             try {
-                const customerHtml = isSpanish ? `
+                const customerHtml = isPortuguese ? `
+                    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 0; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
+                        <div style="background-color: #007F00; color: white; padding: 35px 20px; text-align: center;">
+                            <img src="${websiteUrl}/logo.svg" alt="${config.display_name}" style="height: 30px; margin-bottom: 12px; filter: brightness(0) invert(1);">
+                            <h2 style="margin: 0; font-size: 24px; font-weight: 700;">O seu Pedido está Ativo!</h2>
+                        </div>
+                        <div style="padding: 35px 30px; color: #333;">
+                            <p style="font-size: 17px; font-weight: 600; margin-top: 0;">Olá ${customerName},</p>
+                            <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                                O seu pedido de certificado energético em <strong>${town || county}</strong> está agora ativo na nossa rede.
+                            </p>
+
+                            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0;">
+                                <h3 style="margin-top: 0; font-size: 15px; color: #007F00;">O que acontece agora?</h3>
+                                <ol style="padding-left: 20px; margin-bottom: 0; font-size: 14px; color: #555; line-height: 1.8;">
+                                    <li>Os peritos certificadores registados em <strong>${county}</strong> estão a ser notificados.</li>
+                                    <li>Receberá orçamentos diretamente no seu email.</li>
+                                    <li>Compare preços e reserve a sua data preferida online.</li>
+                                </ol>
+                            </div>
+
+                            <p style="font-size: 14px; color: #777;">
+                                Enviar-lhe-emos outro email assim que chegar o primeiro orçamento.
+                            </p>
+
+                            <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+                            ${promoHtml}
+                        </div>
+                        <div style="text-align: center; padding-bottom: 25px; font-size: 11px; color: #aaa;">
+                            &copy; ${new Date().getFullYear()} ${config.display_name}. Impulsionando a eficiência energética.
+                        </div>
+                    </div>
+                ` : isSpanish ? `
                     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 0; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
                         <div style="background-color: #007F00; color: white; padding: 35px 20px; text-align: center;">
                             <img src="${websiteUrl}/logo.svg" alt="${config.display_name}" style="height: 30px; margin-bottom: 12px; filter: brightness(0) invert(1);">
@@ -253,7 +287,7 @@ Deno.serve(async (req: Request) => {
                         </div>
                     </div>
                 `;
-                await client.send(smtpFrom, email, isSpanish ? `Tu trabajo está activo en ${websiteUrl.replace('https://', '')}` : `Your job is live on ${websiteUrl.replace('https://', '')}`, customerHtml);
+                await client.send(smtpFrom, email, isSpanish ? `Tu trabajo está activo en ${websiteUrl.replace('https://', '')}` : isPortuguese ? `O seu trabalho está ativo em ${websiteUrl.replace('https://', '')}` : `Your job is live on ${websiteUrl.replace('https://', '')}`, customerHtml);
                 emailSent = true;
                 console.log(`[send-job-live-email] Notified customer: ${email} (tenant: ${tenant})`);
             } catch (custErr) {
@@ -284,12 +318,39 @@ Deno.serve(async (req: Request) => {
                         .maybeSingle();
                     if (appSetting?.support_email) {
                         posterEmail = appSetting.support_email;
-                        posterName = isSpanish ? 'Administrador' : 'Admin';
+                        posterName = isSpanish ? 'Administrador' : isPortuguese ? 'Administrador' : 'Admin';
                     }
                 }
 
                 if (posterEmail) {
-                    const posterHtml = isSpanish ? `
+                    const posterHtml = isPortuguese ? `
+                        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 0; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
+                            <div style="background-color: #007F00; color: white; padding: 35px 20px; text-align: center;">
+                                <img src="${websiteUrl}/logo.svg" alt="${config.display_name}" style="height: 30px; margin-bottom: 12px; filter: brightness(0) invert(1);">
+                                <h2 style="margin: 0; font-size: 24px; font-weight: 700;">O seu Trabalho Publicado está Ativo</h2>
+                            </div>
+                            <div style="padding: 35px 30px; color: #333;">
+                                <p style="font-size: 17px; font-weight: 600; margin-top: 0;">Olá ${posterName},</p>
+                                <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                                    O trabalho que publicou em <strong>${town || county}</strong> para <strong>${fullAssessment.contact_name || 'um proprietário'}</strong> está agora ativo na nossa rede.
+                                </p>
+                                <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0;">
+                                    <h3 style="margin-top: 0; font-size: 15px; color: #007F00;">O que acontece agora?</h3>
+                                    <ol style="padding-left: 20px; margin-bottom: 0; font-size: 14px; color: #555; line-height: 1.8;">
+                                        <li>Os peritos certificadores registados em <strong>${county}</strong> estão a ser notificados.</li>
+                                        <li>Será copiado em todos os orçamentos recebidos.</li>
+                                        <li>O proprietário também será notificado em cada passo.</li>
+                                    </ol>
+                                </div>
+                                <p style="font-size: 14px; color: #777;">
+                                    Enviar-lhe-emos um email assim que chegar um orçamento.
+                                </p>
+                            </div>
+                            <div style="text-align: center; padding-bottom: 25px; font-size: 11px; color: #aaa;">
+                                &copy; ${new Date().getFullYear()} ${config.display_name}. Impulsionando a eficiência energética.
+                            </div>
+                        </div>
+                    ` : isSpanish ? `
                         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 0; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
                             <div style="background-color: #007F00; color: white; padding: 35px 20px; text-align: center;">
                                 <img src="${websiteUrl}/logo.svg" alt="${config.display_name}" style="height: 30px; margin-bottom: 12px; filter: brightness(0) invert(1);">
@@ -344,7 +405,7 @@ Deno.serve(async (req: Request) => {
                             </div>
                         </div>
                     `;
-                    await client.send(smtpFrom, posterEmail, isSpanish ? `Tu trabajo publicado está activo en ${websiteUrl.replace('https://', '')}` : `Your posted job is live on ${websiteUrl.replace('https://', '')}`, posterHtml);
+                    await client.send(smtpFrom, posterEmail, isSpanish ? `Tu trabajo publicado está activo en ${websiteUrl.replace('https://', '')}` : isPortuguese ? `O seu trabalho publicado está ativo em ${websiteUrl.replace('https://', '')}` : `Your posted job is live on ${websiteUrl.replace('https://', '')}`, posterHtml);
                     console.log(`[send-job-live-email] Notified poster (${fullAssessment.posted_by}): ${posterEmail} (tenant: ${tenant})`);
                 }
             } catch (posterErr) {
@@ -361,7 +422,9 @@ Deno.serve(async (req: Request) => {
             .single()).data?.contact_phone : null);
         const smsResult = await trySendSms(smsPhone, isSpanish
             ? `Hola ${customerName}, tu solicitud de ${config.display_name} en ${town || county} ya está activa en ${websiteUrl.replace('https://', '')}. Los certificadores de tu zona están siendo notificados. Te avisaremos cuando lleguen presupuestos.`
-            : `Hi ${customerName}, your ${config.display_name} assessment request in ${town || county} is now live on ${websiteUrl.replace('https://', '')}! Assessors in your area are being notified. We'll let you know when quotes arrive.`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
+            : isPortuguese
+                ? `Olá ${customerName}, o seu pedido de ${config.display_name} em ${town || county} está agora ativo em ${websiteUrl.replace('https://', '')}. Os peritos da sua zona estão a ser notificados. Aviá-lo-emos quando chegarem orçamentos.`
+                : `Hi ${customerName}, your ${config.display_name} assessment request in ${town || county} is now live on ${websiteUrl.replace('https://', '')}! Assessors in your area are being notified. We'll let you know when quotes arrive.`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
         smsSent = smsResult === true;
         console.log(`[send-job-live-email] Customer SMS to ${smsPhone}: ${smsSent ? 'sent' : 'failed'} (tenant: ${tenant})`);
 
@@ -491,11 +554,13 @@ Deno.serve(async (req: Request) => {
                             contractor.phone,
                             assessmentDetails?.property_size,
                             assessmentDetails?.bedrooms,
-                            isSpanish
+                            lang
                         );
                         const subject = isSpanish
                             ? `Nuevo trabajo ${jobType === 'commercial' ? 'comercial' : 'de vivienda'} en ${jobLocation}`
-                            : `New ${jobType === 'commercial' ? 'Commercial' : 'Domestic'} BER Job in ${jobLocation}`;
+                            : isPortuguese
+                                ? `Novo trabalho ${jobType === 'commercial' ? 'comercial' : 'de habitação'} em ${jobLocation}`
+                                : `New ${jobType === 'commercial' ? 'Commercial' : 'Domestic'} BER Job in ${jobLocation}`;
                         await client.send(smtpFrom, contractor.email, subject, contractorHtml);
                         contractorEmailSentCount++;
                         console.log(`[send-job-live-email] Notified contractor via email: ${contractor.email} (tenant: ${tenant})`);
@@ -506,7 +571,11 @@ Deno.serve(async (req: Request) => {
 
                 // Send SMS with direct quote link (always, independent of SMTP)
                 if (contractor.phone) {
-                    const smsMessage = `Hi ${assessorName}, new job in ${jobLocation}! Quote here: ${quoteLink}`;
+                    const smsMessage = isSpanish
+                        ? `Hola ${assessorName}, nuevo trabajo en ${jobLocation}. Presupuesta aquí: ${quoteLink}`
+                        : isPortuguese
+                            ? `Olá ${assessorName}, novo trabalho em ${jobLocation}. Orçamente aqui: ${quoteLink}`
+                            : `Hi ${assessorName}, new job in ${jobLocation}! Quote here: ${quoteLink}`;
                     const smsSentToContractor = await trySendSms(contractor.phone, smsMessage, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
                     if (smsSentToContractor) contractorSmsSentCount++;
                     console.log(`[send-job-live-email] SMS to contractor ${contractor.phone}: ${smsSentToContractor ? 'sent' : 'failed'} (tenant: ${tenant})`);

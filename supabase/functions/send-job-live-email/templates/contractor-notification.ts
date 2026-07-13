@@ -26,15 +26,50 @@ const SPANISH_PROPERTY_TYPES: Record<string, string> = {
     'Mixed-Use': 'Uso Mixto',
 };
 
-export const generateContractorEmail = (customerCounty: string, customerTown: string, contractorName: string, promoHtml: string, websiteUrl: string = "https://theberman.eu", jobType?: string, eircode?: string, propertyAddress?: string, assessmentId?: string, contractorPhone?: string, propertySize?: string, bedrooms?: number | string, isSpanish: boolean = false) => {
+const PORTUGUESE_PROPERTY_LABELS: Record<string, string> = {
+    'Address': 'Morada',
+    'Eircode': 'Código Postal',
+    'Bedrooms': 'Quartos',
+    'Property Size': 'Dimensão',
+    'Property Details': 'Detalhes do Imóvel',
+};
+
+const PORTUGUESE_PROPERTY_TYPES: Record<string, string> = {
+    'Semi-Detached': 'Geminada',
+    'Mid-Terrace': 'Casa de Gaveto',
+    'End-Terrace': 'Casa Extremo',
+    'Apartment': 'Apartamento',
+    'Piso': 'Piso',
+    'Duplex': 'Duplex',
+    'Detached': 'Isolada',
+    'Bungalow': 'Bungalow',
+    'Multi-Unit': 'Multiunidades',
+    'Other': 'Outro',
+    'Office': 'Escritório',
+    'Retail / Shop': 'Loja / Comércio',
+    'Warehouse / Industrial': 'Armazém / Industrial',
+    'Hospitality': 'Hotelaria',
+    'Healthcare': 'Saúde',
+    'Education': 'Educação',
+    'Mixed-Use': 'Uso Misto',
+};
+
+export const generateContractorEmail = (customerCounty: string, customerTown: string, contractorName: string, promoHtml: string, websiteUrl: string = "https://theberman.eu", jobType?: string, eircode?: string, propertyAddress?: string, assessmentId?: string, contractorPhone?: string, propertySize?: string, bedrooms?: number | string, lang: 'en' | 'es' | 'pt' = 'en') => {
+    const isSpanish = lang === 'es';
+    const isPortuguese = lang === 'pt';
     const isCommercial = jobType === 'commercial';
     const jobTitle = isCommercial
-        ? (isSpanish ? 'Certificado Energético Comercial' : 'Commercial BER Certificate')
-        : (isSpanish ? 'Certificado Energético de Vivienda' : 'Domestic BER Certificate');
-    const locationStr = isSpanish
+        ? (isSpanish ? 'Certificado Energético Comercial' : isPortuguese ? 'Certificado Energético Comercial' : 'Commercial BER Certificate')
+        : (isSpanish ? 'Certificado Energético de Vivienda' : isPortuguese ? 'Certificado Energético de Habitação' : 'Domestic BER Certificate');
+    const locationStr = isSpanish || isPortuguese
         ? `${customerTown}${customerTown && customerCounty ? ', ' : ''}${customerCounty}`
         : `${customerTown}${customerTown && customerCounty ? ', Co. ' : ''}${customerCounty}`;
-    const translatePropertyType = (type: string) => isSpanish ? (SPANISH_PROPERTY_TYPES[type] || type) : type;
+    const labelMap = isSpanish ? SPANISH_PROPERTY_LABELS : isPortuguese ? PORTUGUESE_PROPERTY_LABELS : undefined;
+    const translatePropertyType = (type: string) => {
+        if (isSpanish) return SPANISH_PROPERTY_TYPES[type] || type;
+        if (isPortuguese) return PORTUGUESE_PROPERTY_TYPES[type] || type;
+        return type;
+    };
     // Include ?phone so the assessor can submit without logging in — QuickQuotePage
     // auto-identifies them by phone and attaches the quote to their profile.
     const phoneParam = contractorPhone ? `?phone=${encodeURIComponent(contractorPhone)}` : '';
@@ -47,7 +82,7 @@ export const generateContractorEmail = (customerCounty: string, customerTown: st
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New ${isCommercial ? 'Commercial' : 'Domestic'} BER Job in ${locationStr}</title>
+    <title>${isSpanish ? 'Nuevo' : isPortuguese ? 'Novo' : 'New'} ${isCommercial ? (isSpanish ? 'Trabajo Comercial' : isPortuguese ? 'Trabalho Comercial' : 'Commercial Job') : (isSpanish ? 'Trabajo de Vivienda' : isPortuguese ? 'Trabalho de Habitação' : 'Domestic Job')} ${isSpanish ? 'en' : isPortuguese ? 'em' : 'in'} ${locationStr}</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px 0;">
@@ -71,32 +106,32 @@ export const generateContractorEmail = (customerCounty: string, customerTown: st
                     <tr>
                         <td style="padding: 40px 30px 20px 30px;">
                             <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333; line-height: 1.6;">
-                                ${isSpanish ? 'Hola' : 'Hi'} ${contractorName},
+                                ${isSpanish ? 'Hola' : isPortuguese ? 'Olá' : 'Hi'} ${contractorName},
                             </p>
                             <p style="margin: 0 0 30px 0; font-size: 16px; color: #555555; line-height: 1.8;">
-                                ${isSpanish ? `Un cliente en <strong>${locationStr}</strong> busca un <strong>${jobTitle}</strong>.` : `A client in <strong>${locationStr}</strong> is looking for a <strong>${jobTitle}</strong>.`}
+                                ${isSpanish ? `Un cliente en <strong>${locationStr}</strong> busca un <strong>${jobTitle}</strong>.` : isPortuguese ? `Um cliente em <strong>${locationStr}</strong> procura um <strong>${jobTitle}</strong>.` : `A client in <strong>${locationStr}</strong> is looking for a <strong>${jobTitle}</strong>.`}
                             </p>
                             ${(propertyAddress || propertySize || bedrooms) ? `
                             <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #007F00;">
-                                <h4 style="margin: 0 0 15px 0; font-size: 15px; color: #007F00; font-weight: bold;">${isSpanish ? SPANISH_PROPERTY_LABELS['Property Details'] : 'Property Details'}</h4>
+                                <h4 style="margin: 0 0 15px 0; font-size: 15px; color: #007F00; font-weight: bold;">${labelMap ? labelMap['Property Details'] : 'Property Details'}</h4>
                                 ${propertyAddress ? `
                                 <p style="margin: 0 0 10px 0; font-size: 14px; color: #555555; line-height: 1.6;">
-                                    <strong>${isSpanish ? SPANISH_PROPERTY_LABELS['Address'] : 'Address'}:</strong> ${propertyAddress}
+                                    <strong>${labelMap ? labelMap['Address'] : 'Address'}:</strong> ${propertyAddress}
                                 </p>
                                 ` : ''}
                                 ${eircode ? `
                                 <p style="margin: 0 0 10px 0; font-size: 14px; color: #555555; line-height: 1.6;">
-                                    <strong>${isSpanish ? SPANISH_PROPERTY_LABELS['Eircode'] : 'Eircode'}:</strong> <span style="color: #007F00; font-weight: bold;">${eircode}</span>
+                                    <strong>${labelMap ? labelMap['Eircode'] : 'Eircode'}:</strong> <span style="color: #007F00; font-weight: bold;">${eircode}</span>
                                 </p>
                                 ` : ''}
                                 ${bedrooms ? `
                                 <p style="margin: 0 0 10px 0; font-size: 14px; color: #555555; line-height: 1.6;">
-                                    <strong>${isSpanish ? SPANISH_PROPERTY_LABELS['Bedrooms'] : 'Bedrooms'}:</strong> ${bedrooms}
+                                    <strong>${labelMap ? labelMap['Bedrooms'] : 'Bedrooms'}:</strong> ${bedrooms}
                                 </p>
                                 ` : ''}
                                 ${propertySize ? `
                                 <p style="margin: 0; font-size: 14px; color: #555555; line-height: 1.6;">
-                                    <strong>${isSpanish ? SPANISH_PROPERTY_LABELS['Property Size'] : 'Property Size'}:</strong> ${propertySize}
+                                    <strong>${labelMap ? labelMap['Property Size'] : 'Property Size'}:</strong> ${propertySize}
                                 </p>
                                 ` : ''}
                             </div>
@@ -111,7 +146,7 @@ export const generateContractorEmail = (customerCounty: string, customerTown: st
                                 <tr>
                                     <td style="background-color: #55a355; border-radius: 6px;">
                                         <a href="${dashboardUrl}" target="_blank" style="display: inline-block; padding: 16px 40px; font-size: 18px; font-weight: bold; color: #ffffff; text-decoration: none; letter-spacing: 0.3px;">
-                                            ${isSpanish ? 'Presupuestar Ahora' : 'Quote Now'}
+                                            ${isSpanish ? 'Presupuestar Ahora' : isPortuguese ? 'Orçamentar Agora' : 'Quote Now'}
                                         </a>
                                     </td>
                                 </tr>
@@ -123,7 +158,7 @@ export const generateContractorEmail = (customerCounty: string, customerTown: st
                     <tr>
                         <td style="padding: 0 30px 30px 30px;">
                             <p style="margin: 0; font-size: 15px; color: #555555; line-height: 1.8;">
-                                ${isSpanish ? 'Un saludo,<br>Equipo de Certificado Energético' : 'Best Regards,<br>TheBerman.eu'}
+                                ${isSpanish ? 'Un saludo,<br>Equipo de Certificado Energético' : isPortuguese ? 'Com os melhores cumprimentos,<br>Equipa de Certificado Energético' : 'Best Regards,<br>TheBerman.eu'}
                             </p>
                         </td>
                     </tr>
@@ -135,13 +170,13 @@ export const generateContractorEmail = (customerCounty: string, customerTown: st
                                 <tr>
                                     <td style="padding: 30px; text-align: center;">
                                         <p style="margin: 0 0 5px 0; font-size: 15px; font-weight: bold; color: #333333;">
-                                            ${isSpanish ? '¿Considerando placas solares?' : 'Considering Solar Panels?'}
+                                            ${isSpanish ? '¿Considerando placas solares?' : isPortuguese ? 'A considerar painéis solares?' : 'Considering Solar Panels?'}
                                         </p>
                                         <p style="margin: 0 0 12px 0; font-size: 14px; font-weight: bold; color: #333333;">
-                                            ${isSpanish ? 'Compara las mejores ofertas de energía solar en' : 'Compare the Best Solar Deals at'}
+                                            ${isSpanish ? 'Compara las mejores ofertas de energía solar en' : isPortuguese ? 'Compare as melhores ofertas de energia solar em' : 'Compare the Best Solar Deals at'}
                                         </p>
-                                        <a href="${isSpanish ? 'https://solarquotesspain.com' : 'https://solarquotesireland.com'}" target="_blank" style="display: inline-block; font-size: 15px; font-weight: bold; color: #1a73e8; text-decoration: none;">
-                                            ${isSpanish ? 'SolarQuotesSpain.com' : 'SolarQuotesIreland.com'}
+                                        <a href="${isSpanish ? 'https://solarquotesspain.com' : isPortuguese ? 'https://solarquotesportugal.com' : 'https://solarquotesireland.com'}" target="_blank" style="display: inline-block; font-size: 15px; font-weight: bold; color: #1a73e8; text-decoration: none;">
+                                            ${isSpanish ? 'SolarQuotesSpain.com' : isPortuguese ? 'SolarQuotesPortugal.com' : 'SolarQuotesIreland.com'}
                                         </a>
                                     </td>
                                 </tr>
@@ -165,13 +200,13 @@ export const generateContractorEmail = (customerCounty: string, customerTown: st
                                 W: <a href="${websiteUrl}" style="color: #1a73e8; text-decoration: none;">${websiteUrl.replace('https://', 'www.')}</a>
                             </p>
                             <p style="margin: 0 0 15px 0; font-size: 13px; color: #888888;">
-                                E: <a href="mailto:${isSpanish ? 'info@certificadosenergeticos.eu' : 'info@theberman.eu'}" style="color: #1a73e8; text-decoration: none;">${isSpanish ? 'info@certificadosenergeticos.eu' : 'info@theberman.eu'}</a>
+                                E: <a href="mailto:${isSpanish ? 'info@certificadosenergeticos.eu' : isPortuguese ? 'hello@certificadoenergia.com' : 'info@theberman.eu'}" style="color: #1a73e8; text-decoration: none;">${isSpanish ? 'info@certificadosenergeticos.eu' : isPortuguese ? 'hello@certificadoenergia.com' : 'info@theberman.eu'}</a>
                             </p>
                             <p style="margin: 0 0 15px 0; font-size: 12px; color: #aaaaaa;">
-                                &copy; ${currentYear} ${isSpanish ? 'Certificado Energético' : 'TheBerman.eu'}
+                                &copy; ${currentYear} ${isSpanish ? 'Certificado Energético' : isPortuguese ? 'Certificado Energético' : 'TheBerman.eu'}
                             </p>
                             <p style="margin: 0; font-size: 11px; color: #aaaaaa; line-height: 1.6;">
-                                ${isSpanish ? `Este correo se ha enviado porque estás registrado como certificador energético en ${websiteUrl}. Si no deseas recibir más avisos, puedes <a href="${websiteUrl}/unsubscribe" style="color: #888888; text-decoration: underline;">darte de baja aquí</a>. Dejarás de recibir notificaciones de trabajos, pero podrás seguir accediendo a tu cuenta iniciando sesión en la web con tu dirección de correo.` : `This email was sent because you are a registered BER assessor on TheBerman.eu. If you do not wish to receive updates you can <a href="${websiteUrl}/unsubscribe" style="color: #888888; text-decoration: underline;">unsubscribe here</a>. You will no longer receive job notifications, but you can still access your account by logging in at the website with your email address.`}
+                                ${isSpanish ? `Este correo se ha enviado porque estás registrado como certificador energético en ${websiteUrl}. Si no deseas recibir más avisos, puedes <a href="${websiteUrl}/unsubscribe" style="color: #888888; text-decoration: underline;">darte de baja aquí</a>. Dejarás de recibir notificaciones de trabajos, pero podrás seguir accediendo a tu cuenta iniciando sesión en la web con tu dirección de correo.` : isPortuguese ? `Este email foi enviado porque está registado como perito certificador em ${websiteUrl}. Se não desejar receber mais avisos, pode <a href="${websiteUrl}/unsubscribe" style="color: #888888; text-decoration: underline;">cancelar a subscrição aqui</a>. Deixará de receber notificações de trabalhos, mas poderá continuar a aceder à sua conta iniciando sessão no site com o seu email.` : `This email was sent because you are a registered BER assessor on TheBerman.eu. If you do not wish to receive updates you can <a href="${websiteUrl}/unsubscribe" style="color: #888888; text-decoration: underline;">unsubscribe here</a>. You will no longer receive job notifications, but you can still access your account by logging in at the website with your email address.`}
                             </p>
                         </td>
                     </tr>

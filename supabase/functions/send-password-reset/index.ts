@@ -26,9 +26,10 @@ serve(async (req: Request) => {
         const { email, tenant = 'ireland' } = await req.json()
 
         const isSpanish = tenant === 'spain';
+        const isPortuguese = tenant === 'portugal';
 
         if (!email || !email.includes('@')) {
-            throw new Error(isSpanish ? 'Se requiere un correo válido' : 'Valid email is required');
+            throw new Error(isSpanish ? 'Se requiere un correo válido' : isPortuguese ? 'É necessário um email válido' : 'Valid email is required');
         }
 
         const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -47,7 +48,7 @@ serve(async (req: Request) => {
         if (!profile) {
             // Don't reveal if email exists or not for security
             return new Response(
-                JSON.stringify({ success: true, message: isSpanish ? 'Si este correo existe, se ha enviado un enlace de restablecimiento.' : 'If this email exists, a reset link has been sent.' }),
+                JSON.stringify({ success: true, message: isSpanish ? 'Si este correo existe, se ha enviado un enlace de restablecimiento.' : isPortuguese ? 'Se este email existir, foi enviado um link de redefinição.' : 'If this email exists, a reset link has been sent.' }),
                 { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
         }
@@ -72,7 +73,7 @@ serve(async (req: Request) => {
         // 3. Get tenant config for SMTP
         const config = await getTenantConfig(supabase, tenant);
         if (!config.smtp_hostname || !config.smtp_username || !config.smtp_password) {
-            throw new Error(isSpanish ? 'SMTP no configurado para este tenant' : 'SMTP not configured for this tenant');
+            throw new Error(isSpanish ? 'SMTP no configurado para este tenant' : isPortuguese ? 'SMTP não configurado para este tenant' : 'SMTP not configured for this tenant');
         }
 
         // 4. Send email
@@ -81,15 +82,15 @@ serve(async (req: Request) => {
 
         const emailHtml = `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
-                <h1 style="color: #007F00; text-align: center;">${isSpanish ? 'Solicitud de Restablecimiento de Contraseña' : 'Password Reset Request'}</h1>
-                <p>${isSpanish ? 'Hola,' : 'Hi,'}</p>
-                <p>${isSpanish ? `Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en ${brandName}.` : `We received a request to reset your password for your ${brandName} account.`}</p>
-                <p>${isSpanish ? 'Haz clic en el botón de abajo para establecer una nueva contraseña. Este enlace expirará en 1 hora.' : 'Click the button below to set a new password. This link will expire in 1 hour.'}</p>
+                <h1 style="color: #007F00; text-align: center;">${isSpanish ? 'Solicitud de Restablecimiento de Contraseña' : isPortuguese ? 'Pedido de Redefinição de Palavra-passe' : 'Password Reset Request'}</h1>
+                <p>${isSpanish ? 'Hola,' : isPortuguese ? 'Olá,' : 'Hi,'}</p>
+                <p>${isSpanish ? `Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en ${brandName}.` : isPortuguese ? `Recebemos um pedido para redefinir a palavra-passe da sua conta em ${brandName}.` : `We received a request to reset your password for your ${brandName} account.`}</p>
+                <p>${isSpanish ? 'Haz clic en el botón de abajo para establecer una nueva contraseña. Este enlace expirará en 1 hora.' : isPortuguese ? 'Clique no botão abaixo para definir uma nova palavra-passe. Este link expira em 1 hora.' : 'Click the button below to set a new password. This link will expire in 1 hour.'}</p>
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="${resetUrl}" style="display: inline-block; background: #007F00; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold;">${isSpanish ? 'Restablecer mi contraseña' : 'Reset My Password'}</a>
+                    <a href="${resetUrl}" style="display: inline-block; background: #007F00; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold;">${isSpanish ? 'Restablecer mi contraseña' : isPortuguese ? 'Redefinir a minha palavra-passe' : 'Reset My Password'}</a>
                 </div>
-                <p style="color: #6b7280; font-size: 0.9rem;">${isSpanish ? 'Si no solicitaste esto, puedes ignorar este correo de forma segura.' : "If you didn't request this, you can safely ignore this email."}</p>
-                <p style="color: #6b7280; font-size: 0.9rem;">${isSpanish ? 'Si el botón no funciona, copia y pega este enlace:' : "If the button doesn't work, copy and paste this link:"}</p>
+                <p style="color: #6b7280; font-size: 0.9rem;">${isSpanish ? 'Si no solicitaste esto, puedes ignorar este correo de forma segura.' : isPortuguese ? 'Se não fez este pedido, pode ignorar este email com segurança.' : "If you didn't request this, you can safely ignore this email."}</p>
+                <p style="color: #6b7280; font-size: 0.9rem;">${isSpanish ? 'Si el botón no funciona, copia y pega este enlace:' : isPortuguese ? 'Se o botão não funcionar, copie e cole este link:' : "If the button doesn't work, copy and paste this link:"}</p>
                 <p style="word-break: break-all; color: #007F00; font-size: 0.85rem;">${resetUrl}</p>
             </div>
         `;
@@ -112,7 +113,7 @@ serve(async (req: Request) => {
             await client.send(
                 config.smtp_from,
                 email,
-                isSpanish ? `Restablecer contraseña - ${brandName}` : `Password Reset - ${brandName}`,
+                isSpanish ? `Restablecer contraseña - ${brandName}` : isPortuguese ? `Redefinir palavra-passe - ${brandName}` : `Password Reset - ${brandName}`,
                 emailHtml
             );
             console.log("[send-password-reset] SMTP send command completed");
@@ -125,7 +126,7 @@ serve(async (req: Request) => {
         }
 
         return new Response(
-            JSON.stringify({ success: true, message: isSpanish ? 'Si este correo existe, se ha enviado un enlace de restablecimiento.' : 'If this email exists, a reset link has been sent.' }),
+            JSON.stringify({ success: true, message: isSpanish ? 'Si este correo existe, se ha enviado un enlace de restablecimiento.' : isPortuguese ? 'Se este email existir, foi enviado um link de redefinição.' : 'If this email exists, a reset link has been sent.' }),
             { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
 

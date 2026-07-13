@@ -65,6 +65,7 @@ Deno.serve(async (req: Request) => {
         const smtpFrom = config.smtp_from;
         const websiteUrl = config.website_url;
         const isSpanish = tenant === 'spain';
+        const isPortuguese = tenant === 'portugal';
 
         let smtpClient: CustomSmtpClient | null = null;
 
@@ -111,7 +112,43 @@ Deno.serve(async (req: Request) => {
                         const town = quote.assessment?.town || 'Unknown';
                         const county = quote.assessment?.county || '';
 
-                        const emailHtml = isSpanish ? `
+                        const emailHtml = isPortuguese ? `
+                            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                                <div style="text-align: center; margin-bottom: 30px;">
+                                    <h1 style="color: #1a1a1a; font-size: 24px; margin: 0;">Orçamento Expirado</h1>
+                                </div>
+
+                                <p style="color: #333; font-size: 16px; line-height: 1.6;">
+                                    Olá ${contractorName},
+                                </p>
+
+                                <p style="color: #555; font-size: 15px; line-height: 1.6;">
+                                    O seu orçamento de <strong>€${quote.price + 10}</strong> para o certificado energético em
+                                    <strong>${town}${county ? ', ' + county : ''}</strong> expirou porque o proprietário
+                                    não respondeu no prazo de 5 dias.
+                                </p>
+
+                                <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 25px 0; border: 1px solid #e9ecef;">
+                                    <p style="color: #666; font-size: 14px; margin: 0;">
+                                        <strong>O que acontece agora?</strong><br>
+                                        O trabalho foi republicado na plataforma para que novos peritos possam orçamentar.
+                                        Pode enviar um novo orçamento se ainda estiver interessado.
+                                    </p>
+                                </div>
+
+                                <div style="text-align: center; margin: 30px 0;">
+                                    <a href="${websiteUrl}/login"
+                                       style="display: inline-block; background: #007F00; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px;">
+                                        Ver Trabalhos Disponíveis
+                                    </a>
+                                </div>
+
+                                <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+                                <p style="color: #999; font-size: 12px; text-align: center;">
+                                    Esta é uma notificação automática de ${config.display_name}
+                                </p>
+                            </div>
+                        ` : isSpanish ? `
                             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                                 <div style="text-align: center; margin-bottom: 30px;">
                                     <h1 style="color: #1a1a1a; font-size: 24px; margin: 0;">Presupuesto Caducado</h1>
@@ -180,7 +217,7 @@ Deno.serve(async (req: Request) => {
 
                                 <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
                                 <p style="color: #999; font-size: 12px; text-align: center;">
-                                    This is an automated notification from TheBerman.eu
+                                    This is an automated notification from ${config.display_name}
                                 </p>
                             </div>
                         `;
@@ -188,7 +225,7 @@ Deno.serve(async (req: Request) => {
                         await smtpClient.send(
                             smtpFrom,
                             contractorEmail,
-                            isSpanish ? `Presupuesto Caducado: Trabajo en ${town}` : `Quote Expired: BER Job in ${town}`,
+                            isSpanish ? `Presupuesto Caducado: Trabajo en ${town}` : isPortuguese ? `Orçamento Expirado: Trabalho em ${town}` : `Quote Expired: BER Job in ${town}`,
                             emailHtml
                         );
                         console.log(`[expire-quotes] Notified assessor: ${contractorEmail}`);

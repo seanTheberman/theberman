@@ -51,12 +51,13 @@ serve(async (req: Request) => {
             await client.authenticate(config.smtp_username, config.smtp_password);
 
             const isSpanish = tenant === 'spain';
+            const isPortuguese = tenant === 'portugal';
 
         // 1. Admin Notification
             await client.send(
                 config.smtp_from,
                 adminEmail,
-                isSpanish ? `Nueva Consulta: ${record.name}` : `New Lead: ${record.name}`,
+                isSpanish ? `Nueva Consulta: ${record.name}` : isPortuguese ? `Novo Contacto: ${record.name}` : `New Lead: ${record.name}`,
                 generateAdminEmail(record, sponsors || [], promoHtml, tenant, config)
             );
 
@@ -64,7 +65,7 @@ serve(async (req: Request) => {
             await client.send(
                 config.smtp_from,
                 record.email,
-                isSpanish ? 'Confirmación: Hemos recibido tu consulta' : "Confirmation: We've received your inquiry",
+                isSpanish ? 'Confirmación: Hemos recibido tu consulta' : isPortuguese ? 'Confirmação: Recebemos o seu pedido' : "Confirmation: We've received your inquiry",
                 generateCustomerEmail(record, promoHtml, tenant, config)
             );
 

@@ -23,6 +23,7 @@ Deno.serve(async (req: Request) => {
 
         const tenant = record?.tenant || 'ireland';
         const isSpanish = tenant === 'spain';
+        const isPortuguese = tenant === 'portugal';
 
         const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
         const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -58,26 +59,26 @@ Deno.serve(async (req: Request) => {
             const emailHtml = `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
                     <div style="background-color: #007F00; padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-                        <h1 style="color: white; margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px;">${isSpanish ? 'Últimas Noticias' : 'Breaking News'}</h1>
+                        <h1 style="color: white; margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px;">${isSpanish ? 'Últimas Noticias' : isPortuguese ? 'Últimas Notícias' : 'Breaking News'}</h1>
                     </div>
                     <div style="padding: 30px; border: 1px solid #ddd; border-top: none; border-radius: 0 0 8px 8px;">
                         <img src="${record.image_url}" style="width: 100%; height: auto; border-radius: 8px; margin-bottom: 25px;" />
                         <h2 style="font-size: 26px; font-weight: 800; line-height: 1.2; margin-bottom: 15px; color: #111;">${record.title}</h2>
                         <p style="font-size: 16px; color: #555; line-height: 1.6; margin-bottom: 25px;">${record.excerpt}</p>
                         <div style="text-align: center;">
-                            <a href="${websiteUrl}/news/${record.id}" style="display: inline-block; background-color: #007F00; color: white; padding: 15px 30px; border-radius: 12px; font-size: 16px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 15px rgba(0,127,0,0.2);">${isSpanish ? 'Leer Noticia Completa' : 'Read Full Story'}</a>
+                            <a href="${websiteUrl}/news/${record.id}" style="display: inline-block; background-color: #007F00; color: white; padding: 15px 30px; border-radius: 12px; font-size: 16px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 15px rgba(0,127,0,0.2);">${isSpanish ? 'Leer Noticia Completa' : isPortuguese ? 'Ler Notícia Completa' : 'Read Full Story'}</a>
                         </div>
                     </div>
                     <div style="padding-top: 20px; text-align: center; color: #999; font-size: 12px;">
-                        <p>&copy; 2026 ${brandName}. ${isSpanish ? 'Todos los derechos reservados.' : 'All rights reserved.'}</p>
-                        <p>${isSpanish ? 'Has recibido este correo porque te suscribiste a las actualizaciones de noticias de' : 'You received this because you subscribed to'} ${brandName} News Updates.</p>
+                        <p>&copy; 2026 ${brandName}. ${isSpanish ? 'Todos los derechos reservados.' : isPortuguese ? 'Todos os direitos reservados.' : 'All rights reserved.'}</p>
+                        <p>${isSpanish ? 'Has recibido este correo porque te suscribiste a las actualizaciones de noticias de' : isPortuguese ? 'Recebeu este email porque subscreveu as atualizações de notícias de' : 'You received this because you subscribed to'} ${brandName} News Updates.</p>
                     </div>
                 </div>
             `;
 
             for (const sub of subscribers) {
                 try {
-                    await client.send(smtpFrom, sub.email, `${isSpanish ? 'ÚLTIMA HORA' : 'BREAKING'}: ${record.title}`, emailHtml);
+                    await client.send(smtpFrom, sub.email, `${isSpanish ? 'ÚLTIMA HORA' : isPortuguese ? 'ÚLTIMA HORA' : 'BREAKING'}: ${record.title}`, emailHtml);
                 } catch (sendErr) {
                     console.error(`Failed to send to ${sub.email}:`, sendErr);
                 }

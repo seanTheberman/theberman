@@ -3,6 +3,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { CustomSmtpClient } from "../shared/smtp.ts";
 import { getTenantConfig } from "../shared/tenant.ts";
+import { getLang, pick } from "../shared/lang.ts";
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -65,7 +66,7 @@ Deno.serve(async (req: Request) => {
 
         console.log(`[send-otp] Attempting SMTP connection to ${smtpHostname}:${smtpPort}...`);
         const client = new CustomSmtpClient(config.domain);
-        const isSpanish = tenant === 'spain';
+        const lang = getLang(tenant);
         const brandName = config.display_name;
 
         try {
@@ -79,11 +80,11 @@ Deno.serve(async (req: Request) => {
                 <html>
                 <head>
                     <meta charset="utf-8">
-                    <title>${isSpanish ? 'Código de Verificación' : 'Verification Code'}</title>
+                    <title>${pick(lang, { en: 'Verification Code', es: 'Código de Verificación', pt: 'Código de Verificação' })}</title>
                 </head>
                 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 0; margin: 0; background-color: #f9f9f9; width: 100% !important;">
                     <div style="display: none; max-height: 0px; overflow: hidden;">
-                        ${isSpanish ? `Tu código de verificación de 6 dígitos es ${code}.` : `Your 6-digit verification code is ${code}.`}
+                        ${pick(lang, { en: `Your 6-digit verification code is ${code}.`, es: `Tu código de verificación de 6 dígitos es ${code}.`, pt: `O seu código de verificação de 6 dígitos é ${code}.` })}
                     </div>
                     <center>
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f9f9f9; padding: 40px 0;">
@@ -100,13 +101,13 @@ Deno.serve(async (req: Request) => {
                                         <tr>
                                             <td style="padding: 0 40px 40px 40px; text-align: center;">
                                                 <p style="color: #4A4A4A; font-size: 16px; line-height: 24px; margin: 0 0 30px 0;">
-                                                    ${isSpanish ? 'Usa el siguiente código de verificación para completar tu inicio de sesión.' : 'Please use the following verification code to complete your login.'}
+                                                    ${pick(lang, { en: 'Please use the following verification code to complete your login.', es: 'Usa el siguiente código de verificación para completar tu inicio de sesión.', pt: 'Utilize o seguinte código de verificação para concluir o seu início de sessão.' })}
                                                 </p>
                                                 <div style="background-color: #f0fdf4; border-radius: 8px; padding: 25px; display: inline-block; border: 1px solid #dcfce7;">
                                                     <span style="font-family: 'Courier New', Courier, monospace; font-size: 42px; font-weight: bold; letter-spacing: 12px; color: #007F00; margin-left: 12px;">${code}</span>
                                                 </div>
                                                 <p style="color: #9B9B9B; font-size: 14px; margin: 30px 0 0 0;">
-                                                    ${isSpanish ? 'Este código expirará en <strong>10 minutos</strong>.' : 'This code will expire in <strong>10 minutes</strong>.'}
+                                                    ${pick(lang, { en: 'This code will expire in <strong>10 minutes</strong>.', es: 'Este código expirará en <strong>10 minutos</strong>.', pt: 'Este código expira em <strong>10 minutos</strong>.' })}
                                                 </p>
                                             </td>
                                         </tr>
@@ -114,11 +115,11 @@ Deno.serve(async (req: Request) => {
                                         <tr>
                                             <td style="padding: 20px 40px; background-color: #fcfcfc; border-top: 1px solid #eeeeee; text-align: center;">
                                                 <p style="color: #9B9B9B; font-size: 12px; line-height: 18px; margin: 0;">
-                                                    &copy; ${new Date().getFullYear()} ${brandName}. ${isSpanish ? 'Todos los derechos reservados.' : 'All rights reserved.'}<br>
-                                                    ${isSpanish ? 'Especialistas en Certificados de Eficiencia Energética.' : 'Building Energy Rating Specialists, Ireland.'}
+                                                    &copy; ${new Date().getFullYear()} ${brandName}. ${pick(lang, { en: 'All rights reserved.', es: 'Todos los derechos reservados.', pt: 'Todos os direitos reservados.' })}<br>
+                                                    ${pick(lang, { en: 'Building Energy Rating Specialists, Ireland.', es: 'Especialistas en Certificados de Eficiencia Energética.', pt: 'Especialistas em Certificação Energética.' })}
                                                 </p>
                                                 <p style="color: #CCCCCC; font-size: 10px; margin: 10px 0 0 0; text-transform: uppercase; letter-spacing: 1px;">
-                                                    ${isSpanish ? 'Este es un mensaje de seguridad automático. Por favor, no respondas.' : 'This is an automated security message. Please do not reply.'}
+                                                    ${pick(lang, { en: 'This is an automated security message. Please do not reply.', es: 'Este es un mensaje de seguridad automático. Por favor, no respondas.', pt: 'Esta é uma mensagem de segurança automática. Por favor, não responda.' })}
                                                 </p>
                                             </td>
                                         </tr>
@@ -132,7 +133,7 @@ Deno.serve(async (req: Request) => {
             `;
 
             console.log(`[send-otp] Sending email from ${authenticatedEmail} to ${email}...`);
-            await client.send(authenticatedEmail, email, isSpanish ? 'Tu Código de Verificación' : 'Your Verification Code', emailHtml);
+            await client.send(authenticatedEmail, email, pick(lang, { en: 'Your Verification Code', es: 'Tu Código de Verificación', pt: 'O seu Código de Verificação' }), emailHtml);
             console.log('[send-otp] Email sent successfully');
             await client.close();
 

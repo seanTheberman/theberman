@@ -82,7 +82,10 @@ serve(async (req: Request) => {
 
         // 2. Create Catalogue Listing
         const slug = companyName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now().toString(36);
-        const fullAddress = businessAddress + (county ? `, Co. ${county}` : '');
+        const isPortugueseDesc = tenant === 'portugal';
+        const fullAddress = isPortugueseDesc
+            ? businessAddress + (county ? `, ${county}` : '')
+            : businessAddress + (county ? `, Co. ${county}` : '');
 
         const { data: listing, error: listError } = await supabase
             .from('catalogue_listings')
@@ -90,7 +93,7 @@ serve(async (req: Request) => {
                 name: companyName,
                 slug,
                 company_name: companyName,
-                description: description || `${companyName} - Professional services provider.`,
+                description: description || (isPortugueseDesc ? `${companyName} - Prestador de serviços profissionais.` : `${companyName} - Professional services provider.`),
                 email: user_email,
                 phone: phone,
                 address: fullAddress,
@@ -139,6 +142,7 @@ serve(async (req: Request) => {
         }
 
         const isSpanish = tenant === 'spain';
+        const isPortuguese = tenant === 'portugal';
 
         // 4. Send Confirmation Emails
         const config = await getTenantConfig(supabase, tenant);
@@ -150,7 +154,29 @@ serve(async (req: Request) => {
         const websiteUrl = config.website_url || 'https://theberman.eu';
         const brandName = config.display_name;
 
-        const userEmailHtml = isSpanish ? `
+        const userEmailHtml = isPortuguese ? `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
+                <h1 style="color: #007F00; text-align: center;">Bem-vindo(a) à ${brandName}!</h1>
+                <p>Olá ${user_full_name},</p>
+                <p>O registo do seu negócio está concluído e a sua ficha está ativa no nosso Catálogo de Eficiência Energética.</p>
+
+                <div style="background-color: #f9fafb; padding: 15px; border-radius: 0.5rem; margin: 20px 0;">
+                    <h2 style="font-size: 1.1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">Detalhes da Ficha</h2>
+                    <p><strong>Empresa:</strong> ${companyName}</p>
+                    <p><strong>Estado:</strong> Ativa e Verificada</p>
+                </div>
+
+                <p>Já pode iniciar sessão para gerir o seu perfil e ver os leads no seu painel.</p>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="${websiteUrl}/login" style="background-color: #007F00; color: white; padding: 12px 24px; text-decoration: none; border-radius: 0.5rem; font-weight: bold;">Ir para o Painel</a>
+                </div>
+
+                <p style="margin-top: 40px; font-size: 0.8rem; color: #6b7280; text-align: center;">
+                    Se tiver alguma dúvida, contacte-nos em ${smtpFrom}
+                </p>
+            </div>
+        ` : isSpanish ? `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
                 <h1 style="color: #007F00; text-align: center;">¡Bienvenido a ${brandName}!</h1>
                 <p>Hola ${user_full_name},</p>
@@ -209,12 +235,36 @@ serve(async (req: Request) => {
             await client.send(
                 smtpFrom,
                 user_email,
-                isSpanish ? 'Registro Completado - Perfil de Negocio Activo' : 'Registration Successful - Business Profile Active',
+                isSpanish ? 'Registro Completado - Perfil de Negocio Activo' : isPortuguese ? 'Registo Concluído - Perfil de Negócio Ativo' : 'Registration Successful - Business Profile Active',
                 userEmailHtml
             );
 
             // Email 2: To Admin (Notification)
-            const adminEmailHtml = isSpanish ? `
+            const adminEmailHtml = isPortuguese ? `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
+                    <h1 style="color: #4F46E5; text-align: center;">Novo Registo de Negócio</h1>
+                    <p>Um novo negócio registou-se e pagou com sucesso na ${brandName}.</p>
+
+                    <div style="background-color: #f3f4f6; padding: 15px; border-radius: 0.5rem; margin: 20px 0;">
+                        <h2 style="font-size: 1.1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">Detalhes do Negócio</h2>
+                        <p><strong>Empresa:</strong> ${companyName}</p>
+                        <p><strong>Contacto:</strong> ${user_full_name}</p>
+                        <p><strong>Email:</strong> ${user_email}</p>
+                        <p><strong>Telefone:</strong> ${phone}</p>
+                        <p><strong>Distrito:</strong> ${county}</p>
+                    </div>
+
+                    <div style="background-color: #ebf5ff; padding: 15px; border-radius: 0.5rem; margin: 20px 0;">
+                        <h2 style="font-size: 1.1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">Confirmação de Pagamento</h2>
+                        <p><strong>ID de Pagamento Stripe:</strong> <code style="background: #fff; padding: 2px 4px; border-radius: 4px;">${paymentIntentId}</code></p>
+                        <p><strong>Estado:</strong> Pago e Ativo</p>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 30px;">
+                        <p style="color: #6b7280; font-size: 0.9rem;">Inicie sessão no seu painel de administração para rever este registo.</p>
+                    </div>
+                </div>
+            ` : isSpanish ? `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
                     <h1 style="color: #4F46E5; text-align: center;">Nuevo Registro de Negocio</h1>
                     <p>Un nuevo negocio se ha registrado y pagado correctamente en ${brandName}.</p>
@@ -267,7 +317,7 @@ serve(async (req: Request) => {
             await client.send(
                 smtpFrom,
                 adminEmail,
-                isSpanish ? `NOTIFICACIÓN: Nuevo registro de negocio - ${companyName}` : `NOTIFICATION: New Business Signup - ${companyName}`,
+                isSpanish ? `NOTIFICACIÓN: Nuevo registro de negocio - ${companyName}` : isPortuguese ? `NOTIFICAÇÃO: Novo registo de negócio - ${companyName}` : `NOTIFICATION: New Business Signup - ${companyName}`,
                 adminEmailHtml
             );
 

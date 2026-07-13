@@ -44,9 +44,12 @@ Deno.serve(async (req: Request) => {
         }
 
         const html = generateCredentialsHtml(fullName, email, password, resolvedLoginUrl, tenant, config.display_name, config.website_url);
+        const isPortuguese = tenant === 'portugal';
         const subject = isSpanish
             ? `Tus Credenciales de Acceso - ${config.display_name}`
-            : (isEngland ? `Your DEA Login Credentials - ${config.display_name}` : `Your BER Assessor Login Credentials - ${config.display_name}`);
+            : isPortuguese
+                ? `As suas Credenciais de Acesso - ${config.display_name}`
+                : (isEngland ? `Your DEA Login Credentials - ${config.display_name}` : `Your BER Assessor Login Credentials - ${config.display_name}`);
 
         let lastError: any = null;
         for (let attempt = 1; attempt <= 3; attempt++) {

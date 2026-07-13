@@ -35,9 +35,10 @@ Deno.serve(async (req: Request) => {
         const websiteUrl = (config.website_url || 'https://theberman.eu').replace(/\/$/, '');
         const smtpFrom = config.smtp_from || `${config.display_name} <${smtpUsername}>`;
         const isSpanish = tenant === 'spain';
+        const isPortuguese = tenant === 'portugal';
         const brandName = config.display_name;
         const catalogueName = `${brandName} Home Energy Catalogue`;
-        const marketArea = isSpanish ? 'España' : 'Ireland';
+        const marketArea = isSpanish ? 'España' : isPortuguese ? 'Portugal' : 'Ireland';
 
         if (!smtpHostname || !smtpUsername || !smtpPassword) {
             throw new Error(`SMTP credentials missing for tenant ${tenant}`);
@@ -49,14 +50,114 @@ Deno.serve(async (req: Request) => {
 
         const isFreeRegistration = registrationAmount === 0 || registrationAmount === undefined;
         const feeText = isFreeRegistration
-            ? (isSpanish ? 'GRATIS' : 'FREE')
+            ? (isSpanish ? 'GRATIS' : isPortuguese ? 'GRÁTIS' : 'FREE')
             : `€${registrationAmount.toFixed(2)}`;
 
         const subject = isSpanish
             ? `¡Tu negocio ha sido añadido al Catálogo de ${brandName}!`
-            : `Your Business Has Been Added to ${brandName} Catalogue!`;
+            : isPortuguese
+                ? `O seu negócio foi adicionado ao Catálogo de ${brandName}!`
+                : `Your Business Has Been Added to ${brandName} Catalogue!`;
 
-        const html = isSpanish ? `
+        const html = isPortuguese ? `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <img src="${websiteUrl}/logo.svg" alt="${brandName}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
+                </div>
+                <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Bem-vindo(a) ao ${catalogueName}!</h2>
+                <p style="font-size: 16px; color: #333;">Estimada equipa da <strong>${companyName}</strong>,</p>
+                <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                    Boas notícias! O seu negócio foi adicionado com sucesso ao ${catalogueName}, a plataforma de confiança em ${marketArea} para ligar proprietários a profissionais de energia certificados.
+                </p>
+
+                <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #eee; margin: 20px 0;">
+                    <h3 style="margin-top: 0; font-size: 16px; color: #333;">Detalhes da sua Ficha:</h3>
+                    <table style="width: 100%; font-size: 14px; color: #555;">
+                        <tr style="vertical-align: top;">
+                            <td style="padding: 5px 10px 5px 0;"><strong>Empresa:</strong></td>
+                            <td style="padding: 5px 0;">${companyName}</td>
+                        </tr>
+                        ${email ? `
+                        <tr style="vertical-align: top;">
+                            <td style="padding: 5px 10px 5px 0;"><strong>Email:</strong></td>
+                            <td style="padding: 5px 0;">${email}</td>
+                        </tr>` : ''}
+                        ${phone ? `
+                        <tr style="vertical-align: top;">
+                            <td style="padding: 5px 10px 5px 0;"><strong>Telefone:</strong></td>
+                            <td style="padding: 5px 0;">${phone}</td>
+                        </tr>` : ''}
+                        ${address ? `
+                        <tr style="vertical-align: top;">
+                            <td style="padding: 5px 10px 5px 0;"><strong>Morada:</strong></td>
+                            <td style="padding: 5px 0;">${address}</td>
+                        </tr>` : ''}
+                        ${website ? `
+                        <tr style="vertical-align: top;">
+                            <td style="padding: 5px 10px 5px 0;"><strong>Website:</strong></td>
+                            <td style="padding: 5px 0;"><a href="${website}" style="color: #2e7d32; text-decoration: none;">${website}</a></td>
+                        </tr>` : ''}
+                    </table>
+                </div>
+
+                <div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; border: 1px solid #c8e6c9; margin: 20px 0;">
+                    <h3 style="margin-top: 0; font-size: 16px; color: #2e7d32;">🎉 Oferta Especial de Registo!</h3>
+                    <p style="font-size: 15px; color: #2e7d32; font-weight: bold; margin-bottom: 10px;">
+                        Taxa de Registo do seu Negócio: <span style="font-size: 18px;">${feeText}</span>
+                    </p>
+                    <p style="font-size: 14px; color: #555; line-height: 1.6; margin: 0;">
+                        ${isFreeRegistration
+                            ? 'Foi selecionado para um <strong>registo de negócio GRÁTIS</strong>. Crie a sua conta hoje para reclamar a sua ficha e começar a receber consultas de clientes.'
+                            : `Foi selecionado para uma taxa de registo especial de <strong>€${registrationAmount.toFixed(2)}</strong>. Esta é uma tarifa exclusiva para o seu negócio.`}
+                    </p>
+                </div>
+
+                <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                    A sua ficha está agora <strong>ativa e visível</strong> para proprietários em ${marketArea} que procuram serviços de melhoria energética. Isto significa que potenciais clientes já podem encontrá-lo e contactá-lo através da nossa plataforma.
+                </p>
+
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${catalogueUrl}" target="_blank" style="display:inline-block;background-color:#2e7d32;color:#ffffff;padding:16px 35px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:18px;box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
+                        Ver a sua Ficha de Negócio
+                    </a>
+                </div>
+
+                <div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; border: 1px solid #c8e6c9; margin: 20px 0;">
+                    <h3 style="margin-top: 0; font-size: 16px; color: #2e7d32;">🚀 O que vem a seguir?</h3>
+                    <ul style="font-size: 14px; color: #555; line-height: 1.6; padding-left: 20px;">
+                        <li><strong>Reveja a sua ficha:</strong> Verifique se todos os dados estão corretos</li>
+                        <li><strong>Reclame a sua ficha:</strong> Crie uma conta para gerir o perfil do seu negócio</li>
+                        <li><strong>Receba consultas:</strong> Os proprietários podem contactá-lo diretamente a partir da plataforma</li>
+                        <li><strong>Melhore o seu perfil:</strong> Adicione mais fotografias, serviços e testemunhos</li>
+                    </ul>
+                </div>
+
+                <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                    Para ter o controlo total da sua ficha, acompanhar as consultas e atualizar a informação do seu negócio, recomendamos que crie uma conta de empresa.
+                </p>
+
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${websiteUrl}/signup?role=business" target="_blank" style="display:inline-block;background-color:#1976d2;color:#ffffff;padding:14px 30px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:16px;box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
+                        Criar Conta de Empresa
+                    </a>
+                </div>
+
+                <p style="font-size: 14px; color: #777; line-height: 1.6; margin-top: 30px;">
+                    Esta ficha foi adicionada por <strong>${adminName || `A Equipa ${brandName}`}</strong>. Se tiver alguma dúvida ou precisar de atualizar a sua informação, não hesite em contactar-nos.
+                </p>
+
+                <p style="color: #888; font-size: 13px; text-align: center; margin-top: 30px;">
+                    Ver a sua ficha:<br>
+                    <a href="${catalogueUrl}" style="color: #2e7d32; text-decoration: none; font-size: 11px; word-break: break-all;">${catalogueUrl}</a>
+                </p>
+
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                <p style="font-size: 12px; color: #999; text-align: center; line-height: 1.6;">
+                    &copy; ${new Date().getFullYear()} ${brandName}.<br>
+                    A ligar proprietários a profissionais de energia de confiança em ${marketArea}.
+                </p>
+            </div>
+        ` : isSpanish ? `
             <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
                 <div style="text-align: center; margin-bottom: 25px;">
                     <img src="${websiteUrl}/logo.svg" alt="${brandName}" style="height: 40px; filter: grayscale(1) brightness(0.2);">

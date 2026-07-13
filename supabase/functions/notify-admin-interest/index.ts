@@ -36,6 +36,7 @@ serve(async (req: Request) => {
         const smtpUsername = config.smtp_username;
         const smtpPassword = config.smtp_password;
         const smtpFrom = config.smtp_from;
+        const isPortuguese = tenant === 'portugal';
 
         const client = new CustomSmtpClient(config.domain);
         try {
@@ -46,7 +47,27 @@ serve(async (req: Request) => {
             const { data: settings } = await supabase.from('app_settings').select('support_email').maybeSingle();
             const adminEmail = settings?.support_email || config.smtp_username;
 
-            const adminEmailHtml = `
+            const adminEmailHtml = isPortuguese ? `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
+                    <h1 style="color: #F59E0B; text-align: center;">Novo Interesse: ${type === 'business' ? 'Registo de Empresa' : 'Registo de Perito'}</h1>
+                    <p>Um novo ${type === 'business' ? 'negócio' : 'perito'} iniciou o processo de registo mas ainda não completou o pagamento.</p>
+
+                    <div style="background-color: #fffbeb; padding: 15px; border-radius: 0.5rem; margin: 20px 0; border: 1px solid #fef3c7;">
+                        <h2 style="font-size: 1.1rem; border-bottom: 1px solid #fef3c7; padding-bottom: 10px;">Detalhes Recebidos</h2>
+                        <p><strong>Nome:</strong> ${user_full_name}</p>
+                        <p><strong>Email:</strong> ${user_email}</p>
+                        <p><strong>Empresa:</strong> ${companyName || 'N/A'}</p>
+                        <p><strong>Telefone:</strong> ${phone || 'N/A'}</p>
+                        <p><strong>Distrito:</strong> ${county || 'N/A'}</p>
+                    </div>
+
+                    <p style="color: #6b7280; font-size: 0.9rem;">O utilizador foi redirecionado para a página de pagamento. Pode querer contactá-lo se não completar o registo nas próximas 24 horas.</p>
+
+                    <div style="text-align: center; margin-top: 30px;">
+                        <p style="color: #6b7280; font-size: 0.9rem;">Inicie sessão no painel de administração para seguir este contacto.</p>
+                    </div>
+                </div>
+            ` : `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
                     <h1 style="color: #F59E0B; text-align: center;">New Interest: ${type === 'business' ? 'Business Registration' : 'Assessor Registration'}</h1>
                     <p>A new ${type} has started the registration process but has not completed payment yet.</p>
@@ -71,7 +92,7 @@ serve(async (req: Request) => {
             await client.send(
                 smtpFrom,
                 adminEmail,
-                `INTEREST: New ${type === 'business' ? 'Business' : 'Assessor'} signup started - ${companyName || user_full_name}`,
+                isPortuguese ? `INTERESSE: Novo registo de ${type === 'business' ? 'empresa' : 'perito'} iniciado - ${companyName || user_full_name}` : `INTEREST: New ${type === 'business' ? 'Business' : 'Assessor'} signup started - ${companyName || user_full_name}`,
                 adminEmailHtml
             );
 
