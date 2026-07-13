@@ -31,6 +31,7 @@ export async function getTenantConfig(supabase: any, tenant: string) {
         phone_country_code: data.phone_country_code || '+353',
         website_url: data.website_url || `https://${data.domain}`,
         currency: data.currency,
+        logo_url: data.logo_url || (data.tenant === 'portugal' ? `${data.website_url || `https://${data.domain}`}/certificado-energia-logo.svg` : `${data.website_url || `https://${data.domain}`}/logo.svg`),
     };
 }
 
@@ -63,5 +64,6 @@ export async function getTenantConfigByDomain(supabase: any, domain: string) {
         phone_country_code: data.phone_country_code || '+353',
         website_url: data.website_url || `https://${data.domain}`,
         currency: data.currency,
+        logo_url: data.logo_url || (data.tenant === 'portugal' ? `${data.website_url || `https://${data.domain}`}/certificado-energia-logo.svg` : `${data.website_url || `https://${data.domain}`}/logo.svg`),
     };
 }

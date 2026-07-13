@@ -22,8 +22,9 @@ import toast from 'react-hot-toast';
 const tenant = getTenantFromDomain();
 const isEngland = tenant === 'england';
 const isSpanish = tenant === 'spain';
-const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : 'The Berman';
-const regNumberLabel = isEngland ? 'Assessor ID' : isSpanish ? 'CEE CAT #' : 'SEAI #';
+const isPortuguese = tenant === 'portugal';
+const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : isPortuguese ? 'Certificado Energia' : 'The Berman';
+const regNumberLabel = isEngland ? 'Assessor ID' : isSpanish ? 'CEE CAT #' : isPortuguese ? 'N.º ADENE' : 'SEAI #';
 
 const PublicAssessorProfile = () => {
     const { id } = useParams();
@@ -208,10 +209,10 @@ const PublicAssessorProfile = () => {
                                 <span className="w-8 h-8 bg-blue-50 text-[#007EA7] rounded-lg flex items-center justify-center">
                                     <MessageCircle size={18} />
                                 </span>
-                                About the Assessor
+                                {isSpanish ? 'Sobre el Certificador' : isPortuguese ? 'Sobre o Perito' : isEngland ? 'About the Assessor' : 'About the Assessor'}
                             </h2>
                             <div className="bg-white p-8 md:p-10 rounded-[2rem] border border-gray-50 shadow-sm leading-relaxed text-gray-600 font-medium text-lg">
-                                {profile.about_me || `This assessor has not provided a detailed biography yet, but they are a licensed and verified professional on ${brandName} platform.`}
+                                {profile.about_me || (isSpanish ? `Este certificador aún no ha proporcionado una biografía detallada, pero es un profesional licenciado y verificado en la plataforma ${brandName}.` : isPortuguese ? `Este perito ainda não forneceu uma biografia detalhada, mas é um profissional licenciado e verificado na plataforma ${brandName}.` : `This assessor has not provided a detailed biography yet, but they are a licensed and verified professional on ${brandName} platform.`)}
                             </div>
                         </div>
 
@@ -222,20 +223,20 @@ const PublicAssessorProfile = () => {
                                     <span className="w-8 h-8 bg-green-50 text-green-600 rounded-lg flex items-center justify-center">
                                         <Shield size={18} />
                                     </span>
-                                    Qualifications
+                                    {isSpanish ? 'Cualificaciones' : isPortuguese ? 'Qualificações' : 'Qualifications'}
                                 </h3>
                                 <div className="bg-white p-6 rounded-[2rem] border border-gray-50 shadow-sm space-y-4">
                                     <div className="flex items-center gap-3 text-sm font-bold text-gray-600">
                                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                        {isSpanish ? 'Certificador Licenciado' : isEngland ? 'Licensed EPC Assessor' : 'Licensed BER Assessor'}
+                                        {isSpanish ? 'Certificador Licenciado' : isPortuguese ? 'Perito Certificado Licenciado' : isEngland ? 'Licensed EPC Assessor' : 'Licensed BER Assessor'}
                                     </div>
                                     <div className="flex items-center gap-3 text-sm font-bold text-gray-600">
                                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                        {isSpanish ? 'Socio Registrado CEE CAT' : isEngland ? 'Accredited Partner' : 'SEAI Registered Partner'}
+                                        {isSpanish ? 'Socio Registrado CEE CAT' : isPortuguese ? 'Parceiro Registado ADENE' : isEngland ? 'Accredited Partner' : 'SEAI Registered Partner'}
                                     </div>
                                     <div className="flex items-center gap-3 text-sm font-bold text-gray-600">
                                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                        {isSpanish ? 'Seguro Verificado' : 'Verified Insurance Coverage'}
+                                        {isSpanish ? 'Seguro Verificado' : isPortuguese ? 'Seguro Verificado' : 'Verified Insurance Coverage'}
                                     </div>
                                 </div>
                             </div>
@@ -245,13 +246,13 @@ const PublicAssessorProfile = () => {
                                     <span className="w-8 h-8 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center">
                                         <MapPin size={18} />
                                     </span>
-                                    Service Areas
+                                    {isSpanish ? 'Zonas de Servicio' : isPortuguese ? 'Áreas de Serviço' : 'Service Areas'}
                                 </h3>
                                 <div className="bg-white p-6 rounded-[2rem] border border-gray-50 shadow-sm">
                                     <div className="flex flex-wrap gap-2">
                                         {[profile.home_county, 'Meath', 'Kildare', 'Wicklow'].filter(Boolean).map((area: any) => (
                                             <span key={area} className="px-3 py-1.5 bg-gray-50 text-gray-600 text-xs font-bold rounded-lg border border-gray-100">
-                                                Co. {area}
+                                                {isPortuguese ? area : `Co. ${area}`}
                                             </span>
                                         ))}
                                     </div>
@@ -264,28 +265,28 @@ const PublicAssessorProfile = () => {
                     <div className="lg:col-span-4">
                         <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-xl border border-gray-100 sticky top-32">
                             <div className="mb-8">
-                                <h3 className="text-2xl font-black text-gray-900 leading-tight">Get A Quote</h3>
-                                <p className="text-gray-500 text-sm mt-2 font-medium">Request a quote directly from this assessor.</p>
+                                <h3 className="text-2xl font-black text-gray-900 leading-tight">{isSpanish ? 'Solicitar Presupuesto' : isPortuguese ? 'Peça um Orçamento' : 'Get A Quote'}</h3>
+                                <p className="text-gray-500 text-sm mt-2 font-medium">{isSpanish ? 'Solicita un presupuesto directamente a este certificador.' : isPortuguese ? 'Peça um orçamento diretamente a este perito.' : 'Request a quote directly from this assessor.'}</p>
                             </div>
 
                             <form onSubmit={handleLeadSubmit} className="space-y-5">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Your Name</label>
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{isSpanish ? 'Tu Nombre' : isPortuguese ? 'O seu Nome' : 'Your Name'}</label>
                                     <input
                                         required
                                         type="text"
-                                        placeholder="Enter your name"
+                                        placeholder={isSpanish ? 'Introduce tu nombre' : isPortuguese ? 'Introduza o seu nome' : 'Enter your name'}
                                         value={formData.name}
                                         onChange={e => setFormData({ ...formData, name: e.target.value })}
                                         className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#007EA7] focus:bg-white rounded-2xl outline-none font-bold text-sm transition-all"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{isSpanish ? 'Correo Electrónico' : isPortuguese ? 'Email' : 'Email Address'}</label>
                                     <input
                                         required
                                         type="email"
-                                        placeholder="name@example.com"
+                                        placeholder={isPortuguese ? 'nome@exemplo.com' : 'name@example.com'}
                                         value={formData.email}
                                         onChange={e => setFormData({ ...formData, email: e.target.value })}
                                         className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#007EA7] focus:bg-white rounded-2xl outline-none font-bold text-sm transition-all"
@@ -293,7 +294,7 @@ const PublicAssessorProfile = () => {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Phone</label>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{isSpanish ? 'Teléfono' : isPortuguese ? 'Telefone' : 'Phone'}</label>
                                         <input
                                             required
                                             type="tel"
@@ -304,11 +305,11 @@ const PublicAssessorProfile = () => {
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Eircode</label>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{isSpanish ? 'Código Postal' : isPortuguese ? 'Código Postal' : 'Eircode'}</label>
                                         <input
                                             required
                                             type="text"
-                                            placeholder="A65 F123"
+                                            placeholder={isSpanish ? '28001' : isPortuguese ? '1000-001' : 'A65 F123'}
                                             value={formData.eircode}
                                             onChange={e => setFormData({ ...formData, eircode: e.target.value.toUpperCase() })}
                                             className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#007EA7] focus:bg-white rounded-2xl outline-none font-bold text-sm transition-all"
@@ -316,10 +317,10 @@ const PublicAssessorProfile = () => {
                                     </div>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Message (Optional)</label>
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{isSpanish ? 'Mensaje (Opcional)' : isPortuguese ? 'Mensagem (Opcional)' : 'Message (Optional)'}</label>
                                     <textarea
                                         rows={3}
-                                        placeholder="Any specific details about your property?"
+                                        placeholder={isSpanish ? '¿Algún detalle específico sobre tu propiedad?' : isPortuguese ? 'Algum detalhe específico sobre o seu imóvel?' : 'Any specific details about your property?'}
                                         value={formData.message}
                                         onChange={e => setFormData({ ...formData, message: e.target.value })}
                                         className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#007EA7] focus:bg-white rounded-2xl outline-none font-bold text-sm transition-all resize-none"
@@ -333,13 +334,13 @@ const PublicAssessorProfile = () => {
                                     {isSubmitting ? (
                                         <Loader2 className="w-5 h-5 animate-spin" />
                                     ) : (
-                                        <>Request Quote <ChevronRight size={16} /></>
+                                        <>{isSpanish ? 'Solicitar Presupuesto' : isPortuguese ? 'Pedir Orçamento' : 'Request Quote'} <ChevronRight size={16} /></>
                                     )}
                                 </button>
 
                                 <div className="flex items-center gap-2 justify-center text-[10px] text-gray-400 font-bold uppercase tracking-widest">
                                     <Check size={12} className="text-green-500" />
-                                    No upfront payment required
+                                    {isSpanish ? 'No se requiere pago por adelantado' : isPortuguese ? 'Sem pagamento antecipado' : 'No upfront payment required'}
                                 </div>
                             </form>
                         </div>
@@ -350,12 +351,12 @@ const PublicAssessorProfile = () => {
             {/* Trust Footer */}
             <footer className="bg-white border-t border-gray-100 py-12 mt-20">
                 <div className="max-w-7xl mx-auto px-6 text-center">
-                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">{brandName} Licensed Professional Network</p>
+                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">{isPortuguese ? `${brandName} Rede de Profissionais Licenciados` : `${brandName} Licensed Professional Network`}</p>
                     <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-30 grayscale">
-                        <span className="font-black text-lg italic tracking-tight">{isSpanish ? 'CEE CAT REGISTRADO' : isEngland ? 'ACCREDITED' : 'SEAI REGISTERED'}</span>
-                        <span className="font-black text-lg italic tracking-tight">{isSpanish ? 'CERTIFICADO' : isEngland ? 'CERTIFIED' : 'NSAI CERTIFIED'}</span>
-                        <span className="font-black text-lg italic tracking-tight">{isSpanish ? 'MIEMBRO' : isEngland ? 'MEMBER' : 'BIA MEMBER'}</span>
-                        <span className="font-black text-lg italic tracking-tight">{isSpanish ? 'SOCIO IEA' : 'IEA PARTNER'}</span>
+                        <span className="font-black text-lg italic tracking-tight">{isSpanish ? 'CEE CAT REGISTRADO' : isPortuguese ? 'ADENE REGISTADO' : isEngland ? 'ACCREDITED' : 'SEAI REGISTERED'}</span>
+                        <span className="font-black text-lg italic tracking-tight">{isSpanish ? 'CERTIFICADO' : isPortuguese ? 'CERTIFICADO' : isEngland ? 'CERTIFIED' : 'NSAI CERTIFIED'}</span>
+                        <span className="font-black text-lg italic tracking-tight">{isSpanish ? 'MIEMBRO' : isPortuguese ? 'MEMBRO' : isEngland ? 'MEMBER' : 'BIA MEMBER'}</span>
+                        <span className="font-black text-lg italic tracking-tight">{isSpanish ? 'SOCIO IEA' : isPortuguese ? 'PARCEIRO ADENE' : 'IEA PARTNER'}</span>
                     </div>
                 </div>
             </footer>

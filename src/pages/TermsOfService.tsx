@@ -9,7 +9,7 @@ const TermsOfService = () => {
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
     const tenantDomain = getTenantDomain(tenant);
-    const brand = isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Cert' : isFrance ? 'DPE France' : isPortugal ? 'Certificado Energético' : 'The Berman';
+    const brand = isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Cert' : isFrance ? 'DPE France' : isPortugal ? 'Certificado Energia' : 'The Berman';
     const lastUpdated = isSpanish ? '2 de febrero de 2026' : isFrance ? '2 février 2026' : isPortugal ? '2 de fevereiro de 2026' : 'February 2, 2026';
     const regAuthority = isSpanish ? 'CEE CAT' : isEngland ? 'accredited' : isFrance ? 'DPE' : isPortugal ? 'ADENE' : 'SEAI';
 

@@ -7,7 +7,8 @@ const RegistrationPending = () => {
     const tenant = getTenantFromDomain();
     const isEngland = tenant === 'england';
     const isSpanish = tenant === 'spain';
-    const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : 'The Berman';
+    const isPortuguese = tenant === 'portugal';
+    const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : isPortuguese ? 'Certificado Energia' : 'The Berman';
     const { signOut, user } = useAuth();
     const navigate = useNavigate();
 
@@ -28,12 +29,14 @@ const RegistrationPending = () => {
 
                 <div className="space-y-4">
                     <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">
-                        {isSpanish ? <>Registro <span className="text-[#007F00]">Pendiente</span></> : <>Registration <span className="text-[#007F00]">Pending</span></>}
+                        {isSpanish ? <>Registro <span className="text-[#007F00]">Pendiente</span></> : isPortuguese ? <>Registo <span className="text-[#007F00]">Pendente</span></> : <>Registration <span className="text-[#007F00]">Pending</span></>}
                     </h1>
                     <p className="text-gray-600 font-medium leading-relaxed">
                         {isSpanish
                             ? <>Gracias por tu interés en unirte al Catálogo de Eficiencia Energética de {brandName}. Tu solicitud para <strong>{user?.email}</strong> está siendo revisada por nuestro equipo.</>
-                            : <>Thank you for your interest in joining {brandName} Home Energy Catalogue. Your application for <strong>{user?.email}</strong> is currently being reviewed by our team.</>}
+                            : isPortuguese
+                                ? <>Obrigado pelo seu interesse em juntar-se ao Catálogo de Eficiência Energética da {brandName}. A sua candidatura para <strong>{user?.email}</strong> está a ser revista pela nossa equipa.</>
+                                : <>Thank you for your interest in joining {brandName} Home Energy Catalogue. Your application for <strong>{user?.email}</strong> is currently being reviewed by our team.</>}
                     </p>
                 </div>
 
@@ -43,9 +46,9 @@ const RegistrationPending = () => {
                             <Mail className="text-[#007F00]" size={20} />
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{isSpanish ? 'Próximos Pasos' : 'Next Steps'}</p>
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{isSpanish ? 'Próximos Pasos' : isPortuguese ? 'Próximos Passos' : 'Next Steps'}</p>
                             <p className="text-sm text-gray-700 font-medium">
-                                {isSpanish ? 'Un miembro de nuestro equipo se pondrá en contacto contigo en breve para completar tu registro y verificar los datos de tu negocio.' : 'A member of our team will be in contact with you shortly to complete your registration and verify your business details.'}
+                                {isSpanish ? 'Un miembro de nuestro equipo se pondrá en contacto contigo en breve para completar tu registro y verificar los datos de tu negocio.' : isPortuguese ? 'Um membro da nossa equipa entrará em contacto consigo em breve para completar o seu registo e verificar os dados da sua empresa.' : 'A member of our team will be in contact with you shortly to complete your registration and verify your business details.'}
                             </p>
                         </div>
                     </div>
@@ -56,7 +59,7 @@ const RegistrationPending = () => {
                         onClick={() => navigate('/')}
                         className="w-full bg-[#007F00] hover:bg-green-800 text-white font-black py-4 rounded-2xl transition-all shadow-xl shadow-green-100 flex items-center justify-center gap-2 group active:scale-95"
                     >
-                        {isSpanish ? 'Volver al Inicio' : 'Return to Homepage'}
+                        {isSpanish ? 'Volver al Inicio' : isPortuguese ? 'Voltar ao Início' : 'Return to Homepage'}
                         <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                     </button>
 
@@ -65,12 +68,12 @@ const RegistrationPending = () => {
                         className="w-full flex items-center justify-center gap-2 text-gray-400 hover:text-red-500 font-bold text-sm transition-colors py-2"
                     >
                         <LogOut size={16} />
-                        {isSpanish ? 'Cerrar Sesión' : 'Sign Out'}
+                        {isSpanish ? 'Cerrar Sesión' : isPortuguese ? 'Terminar Sessão' : 'Sign Out'}
                     </button>
                 </div>
 
                 <div className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] pt-8">
-                    {brandName} {isSpanish ? 'Gestión Energética del Hogar' : 'Home Energy Management'}
+                    {brandName} {isSpanish ? 'Gestión Energética del Hogar' : isPortuguese ? 'Gestão de Energia' : 'Home Energy Management'}
                 </div>
             </div>
         </div>

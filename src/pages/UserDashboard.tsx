@@ -66,13 +66,28 @@ const UserDashboard = () => {
     const { t, isSpanish } = useTranslation();
     const tenant = getTenantFromDomain();
     const isEngland = tenant === 'england';
-    const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : 'The Berman';
+    const isPortuguese = tenant === 'portugal';
+    const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : isPortuguese ? 'Certificado Energia' : 'The Berman';
+    const logoUrl = isPortuguese ? '/certificado-energia-logo.svg' : '/logo.svg';
+    const assessmentLabel = isEngland ? 'EPC' : isSpanish ? 'Certificación Energética' : isPortuguese ? 'Certificado Energético' : 'BER';
     const { user, signOut, profile } = useAuth();
     const navigate = useNavigate();
     const [assessments, setAssessments] = useState<Assessment[]>([]);
 
     const getStatusLabel = (status: string, isExpired?: boolean) => {
-        if (isExpired) return isSpanish ? 'Caducado' : 'Expired';
+        if (isExpired) return isSpanish ? 'Caducado' : isPortuguese ? 'Expirado' : 'Expired';
+        if (isPortuguese) {
+            const map: Record<string, string> = {
+                draft: 'Rascunho',
+                submitted: 'Submetido',
+                pending_quote: 'Pendente de Orçamento',
+                quote_accepted: 'Orçamento Aceite',
+                scheduled: 'Agendado',
+                completed: 'Concluído',
+                live: 'Ativo',
+            };
+            return map[status] || status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
         if (!isSpanish) return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
         const map: Record<string, string> = {
             draft: 'Borrador',
@@ -87,6 +102,10 @@ const UserDashboard = () => {
     };
 
     const getQuoteStatusLabel = (status: string) => {
+        if (isPortuguese) {
+            const map: Record<string, string> = { pending: 'Pendente', accepted: 'Aceite', rejected: 'Rejeitado' };
+            return map[status] || status.charAt(0).toUpperCase() + status.slice(1);
+        }
         if (!isSpanish) return status.charAt(0).toUpperCase() + status.slice(1);
         const map: Record<string, string> = {
             pending: 'Pendiente',
@@ -402,13 +421,13 @@ const UserDashboard = () => {
                 <div className="container mx-auto px-6 h-20 flex justify-between items-center">
                     <div className="flex items-center gap-8">
                         <Link to="/" className="relative flex-shrink-0">
-                            <img src="/logo.svg" alt={`${brandName} Logo`} className="h-10 w-auto relative z-10" />
+                            <img src={logoUrl} alt={`${brandName} Logo`} className="h-10 w-auto relative z-10" />
                         </Link>
                         <div className="hidden xl:block">
-                            <h1 className="text-lg font-bold text-white leading-tight">{isSpanish ? 'Mi Panel' : 'My Dashboard'}</h1>
+                            <h1 className="text-lg font-bold text-white leading-tight">{isSpanish ? 'Mi Panel' : isPortuguese ? 'O Meu Painel' : 'My Dashboard'}</h1>
                             <span className="text-[10px] text-gray-400 flex items-center gap-1.5 uppercase tracking-widest font-bold">
                                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
-                                {isSpanish ? 'Estado de Cuenta Activo' : 'Active Account Status'}
+                                {isSpanish ? 'Estado de Cuenta Activo' : isPortuguese ? 'Estado da Conta Ativo' : 'Active Account Status'}
                             </span>
                         </div>
                     </div>
@@ -420,21 +439,21 @@ const UserDashboard = () => {
                                 className="bg-white/5 p-2.5 rounded-xl hover:bg-white/10 transition-colors border border-white/10 flex items-center gap-2 text-white/70"
                             >
                                 {isMenuOpen ? <X size={20} className="text-[#5CB85C]" /> : <Menu size={20} className="text-[#5CB85C]" />}
-                                <span className="text-[11px] font-black uppercase tracking-[0.15em] hidden sm:block">{isSpanish ? 'Menú' : 'Menu'}</span>
+                                <span className="text-[11px] font-black uppercase tracking-[0.15em] hidden sm:block">{isSpanish ? 'Menú' : isPortuguese ? 'Menu' : 'Menu'}</span>
                             </button>
 
                             {isMenuOpen && (
                                 <div className="absolute right-0 top-full mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
                                     <div className="p-2 space-y-1 border-b border-gray-50 bg-gray-50/30">
                                         <div className="px-4 py-3">
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Sesión iniciada como' : 'Signed in as'}</p>
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Sesión iniciada como' : isPortuguese ? 'Sessão iniciada como' : 'Signed in as'}</p>
                                             <p className="text-sm font-bold text-gray-900 truncate">{user?.email}</p>
                                         </div>
                                     </div>
                                     <div className="p-2 space-y-1">
                                         {[
-                                            { id: 'assessments', label: isSpanish ? 'Mis Certificaciones' : 'My Assessments', icon: Home },
-                                            { id: 'quotes', label: isSpanish ? 'Mis Presupuestos' : 'My Quotes', icon: FileText },
+                                            { id: 'assessments', label: isSpanish ? 'Mis Certificaciones' : isPortuguese ? 'Os Meus Certificados' : 'My Assessments', icon: Home },
+                                            { id: 'quotes', label: isSpanish ? 'Mis Presupuestos' : isPortuguese ? 'Os Meus Orçamentos' : 'My Quotes', icon: FileText },
                                         ].map((item) => (
                                             <button
                                                 key={item.id}
@@ -469,7 +488,7 @@ const UserDashboard = () => {
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20">
                         <div className="w-12 h-12 border-4 border-gray-100 border-t-[#007F00] rounded-full animate-spin mb-4"></div>
-                        <p className="text-gray-500 font-medium">Loading your assessments...</p>
+                        <p className="text-gray-500 font-medium">{isSpanish ? 'Cargando tus certificaciones...' : isPortuguese ? 'A carregar os seus certificados...' : 'Loading your assessments...'}</p>
                     </div>
                 ) : assessments.length === 0 ? (
                     /* Empty State Dashboard */
@@ -478,9 +497,9 @@ const UserDashboard = () => {
                             <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-8 text-[#007F00]">
                                 <User size={48} strokeWidth={1.5} />
                             </div>
-                            <h2 className="text-3xl font-bold text-gray-900 mb-3">{isSpanish ? '¡Bienvenido de Nuevo!' : 'Welcome Back!'}</h2>
+                            <h2 className="text-3xl font-bold text-gray-900 mb-3">{isSpanish ? '¡Bienvenido de Nuevo!' : isPortuguese ? 'Bem-vindo de Volta!' : 'Welcome Back!'}</h2>
                             <p className="text-gray-500 text-lg mb-10 max-w-lg mx-auto leading-relaxed">
-                                {isSpanish ? 'Este es tu panel personal. El seguimiento de tus certificaciones energéticas aparecerá aquí pronto.' : 'This is your personal dashboard. Tracking of your BER assessments will appear here soon.'}
+                                {isSpanish ? 'Este es tu panel personal. El seguimiento de tus certificaciones energéticas aparecerá aquí pronto.' : isPortuguese ? 'Este é o seu painel pessoal. O acompanhamento dos seus certificados energéticos aparecerá aqui em breve.' : 'This is your personal dashboard. Tracking of your BER assessments will appear here soon.'}
                             </p>
 
                             <div className="bg-[#F8FAFC] border border-gray-100 rounded-2xl p-8 text-left flex flex-col md:flex-row gap-6 items-center">
@@ -488,9 +507,9 @@ const UserDashboard = () => {
                                     <FileText size={32} strokeWidth={1.5} />
                                 </div>
                                 <div className="flex-1 text-center md:text-left">
-                                    <h4 className="text-xl font-bold text-gray-900 mb-2">{isSpanish ? 'No Hay Certificaciones Activas' : 'No Active Assessments'}</h4>
+                                    <h4 className="text-xl font-bold text-gray-900 mb-2">{isSpanish ? 'No Hay Certificaciones Activas' : isPortuguese ? 'Sem Certificados Ativos' : 'No Active Assessments'}</h4>
                                     <p className="text-gray-500 leading-relaxed">
-                                        {isSpanish ? 'No tienes certificaciones energéticas pendientes. Contáctanos para solicitar una y mejorar la eficiencia energética de tu hogar.' : "You don't have any pending BER assessments. Contact us to schedule one and improve your home's energy efficiency."}
+                                        {isSpanish ? 'No tienes certificaciones energéticas pendientes. Contáctanos para solicitar una y mejorar la eficiencia energética de tu hogar.' : isPortuguese ? 'Não tem certificados energéticos pendentes. Contacte-nos para solicitar um e melhorar a eficiência energética da sua casa.' : "You don't have any pending BER assessments. Contact us to schedule one and improve your home's energy efficiency."}
                                     </p>
                                 </div>
                             </div>
@@ -499,7 +518,7 @@ const UserDashboard = () => {
                                 onClick={() => navigate('/get-quote')}
                                 className="mt-12 inline-flex items-center gap-2 bg-[#007F00] text-white px-8 py-4 rounded-full font-bold hover:bg-[#006600] transition-all shadow-lg shadow-green-100 hover:shadow-green-200 hover:-translate-y-0.5 active:translate-y-0"
                             >
-                                {isSpanish ? 'Solicitar una Certificación Energética' : 'Schedule a BER Assessment'}
+                                {isSpanish ? 'Solicitar una Certificación Energética' : isPortuguese ? 'Solicitar um Certificado Energético' : `Schedule a ${assessmentLabel} Assessment`}
                             </button>
                         </div>
                     </div>
@@ -511,10 +530,10 @@ const UserDashboard = () => {
                                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                                     <div className="flex-1">
                                         <h2 className="text-3xl font-black text-gray-900 mb-2">
-                                            {view === 'assessments' ? (isSpanish ? 'Mis Certificaciones Energéticas' : 'My BER Assessments') : (isSpanish ? 'Presupuestos Recibidos' : 'Received Quotes')}
+                                            {view === 'assessments' ? (isSpanish ? 'Mis Certificaciones Energéticas' : isPortuguese ? 'Os Meus Certificados Energéticos' : `My ${assessmentLabel} Assessments`) : (isSpanish ? 'Presupuestos Recibidos' : isPortuguese ? 'Orçamentos Recebidos' : 'Received Quotes')}
                                         </h2>
                                         <p className="text-gray-500 font-medium max-w-2xl">
-                                            {view === 'assessments' ? (isSpanish ? 'Sigue el progreso de tu certificación energética y consulta las evaluaciones programadas.' : 'Track the progress of your property certification and view scheduled assessments.') : (isSpanish ? 'Revisa y gestiona presupuestos de nuestros certificadores energéticos verificados.' : 'Review and manage quotes from our verified professional BER Assessors.')}
+                                            {view === 'assessments' ? (isSpanish ? 'Sigue el progreso de tu certificación energética y consulta las evaluaciones programadas.' : isPortuguese ? 'Acompanhe o progresso da sua certificação energética e veja as avaliações agendadas.' : `Track the progress of your property certification and view scheduled ${assessmentLabel.toLowerCase()} assessments.`) : (isSpanish ? 'Revisa y gestiona presupuestos de nuestros certificadores energéticos verificados.' : isPortuguese ? 'Revise e gerencie orçamentos dos nossos peritos certificados verificados.' : `Review and manage quotes from our verified professional ${assessmentLabel} Assessors.`)}
                                         </p>
                                     </div>
                                     <button
@@ -522,7 +541,7 @@ const UserDashboard = () => {
                                         className="bg-[#007F00] text-white px-8 py-4 rounded-full font-bold hover:bg-[#006600] transition-all shadow-lg shadow-green-100 hover:shadow-green-200 hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
                                     >
                                         <Home size={20} />
-                                        {isSpanish ? 'Nueva Certificación' : 'New Assessment'}
+                                        {isSpanish ? 'Nueva Certificación' : isPortuguese ? 'Novo Certificado' : `New ${assessmentLabel}`}
                                     </button>
                                 </div>
                             </div>
@@ -535,7 +554,7 @@ const UserDashboard = () => {
                                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                     <input
                                         type="text"
-                                        placeholder={isSpanish ? 'Buscar por ciudad, comunidad autónoma, tipo o dirección...' : 'Search by town, county, type, or address...'}
+                                        placeholder={isSpanish ? 'Buscar por ciudad, comunidad autónoma, tipo o dirección...' : isPortuguese ? 'Pesquisar por cidade, região, tipo ou morada...' : 'Search by town, county, type, or address...'}
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         className="w-full pl-11 pr-4 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] transition-all shadow-sm"

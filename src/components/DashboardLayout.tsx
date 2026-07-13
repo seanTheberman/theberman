@@ -45,8 +45,11 @@ const DashboardLayout = ({
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [desktopExpanded, setDesktopExpanded] = useState(true);
-    const isEngland = getTenantFromDomain() === 'england';
-    const brandName = isEngland ? 'EPC Cert' : 'The Berman';
+    const tenant = getTenantFromDomain();
+    const isEngland = tenant === 'england';
+    const isPortuguese = tenant === 'portugal';
+    const brandName = isEngland ? 'EPC Cert' : isPortuguese ? 'Certificado Energia' : 'The Berman';
+    const logoUrl = isPortuguese ? '/certificado-energia-logo.svg' : '/logo.svg';
 
     const handleSignOut = async () => {
         await signOut();
@@ -80,7 +83,7 @@ const DashboardLayout = ({
                                 Certificado Energético.EU
                             </span>
                         ) : (
-                            <img src="/logo.svg" alt={brandName} className="h-7 w-auto" />
+                            <img src={logoUrl} alt={brandName} className="h-7 w-auto" />
                         )}
                     </Link>
                     <div className={`flex items-center justify-center ${desktopExpanded ? 'md:hidden' : 'md:flex'} lg:hidden`}>
@@ -89,7 +92,7 @@ const DashboardLayout = ({
                                 Certificado Energético.EU
                             </span>
                         ) : (
-                            <img src="/logo.svg" alt={brandName} className="h-7 w-auto" />
+                            <img src={logoUrl} alt={brandName} className="h-7 w-auto" />
                         )}
                     </div>
                     {/* Close on mobile */}

@@ -199,7 +199,7 @@ const Admin = () => {
         { id: 'spain', label: 'Spain', domain: 'certificadoenergético.eu' },
         { id: 'england', label: 'England', domain: 'epccert.com' },
         { id: 'france', label: 'France', domain: 'dpefrance.eu' },
-        { id: 'portugal', label: 'Portugal', domain: 'certificadopt.eu' },
+        { id: 'portugal', label: 'Portugal', domain: 'certificadoenergia.com' },
     ];
 
     // Selected items
@@ -1554,7 +1554,7 @@ const Admin = () => {
             if (error) throw error;
 
             const assessmentTenant = selectedAssessment.tenant || selectedTenant;
-            const brandName = assessmentTenant === 'england' ? 'EPC Cert' : assessmentTenant === 'spain' ? 'Certificado Energético' : assessmentTenant === 'france' ? 'DPE France' : assessmentTenant === 'portugal' ? 'Certificado Energético' : 'The Berman';
+            const brandName = assessmentTenant === 'england' ? 'EPC Cert' : assessmentTenant === 'spain' ? 'Certificado Energético' : assessmentTenant === 'france' ? 'DPE France' : assessmentTenant === 'portugal' ? 'Certificado Energia' : 'The Berman';
             await supabase.functions.invoke('send-job-status-notification', {
                 body: { assessmentId: selectedAssessment.id, status: isRescheduled ? 'rescheduled' : 'scheduled', details: { inspectionDate: selectedDate, contractorName: `${brandName} Team` }, tenant: assessmentTenant }
             }).catch(err => console.error('Failed to trigger status notification:', err));
@@ -1579,7 +1579,7 @@ const Admin = () => {
             if (error) throw error;
 
             const assessmentTenant2 = selectedAssessment.tenant || selectedTenant;
-            const brandName2 = assessmentTenant2 === 'england' ? 'EPC Cert' : assessmentTenant2 === 'spain' ? 'Certificado Energético' : assessmentTenant2 === 'france' ? 'DPE France' : assessmentTenant2 === 'portugal' ? 'Certificado Energético' : 'The Berman';
+            const brandName2 = assessmentTenant2 === 'england' ? 'EPC Cert' : assessmentTenant2 === 'spain' ? 'Certificado Energético' : assessmentTenant2 === 'france' ? 'DPE France' : assessmentTenant2 === 'portugal' ? 'Certificado Energia' : 'The Berman';
             await supabase.functions.invoke('send-job-status-notification', {
                 body: { assessmentId: selectedAssessment.id, status: 'completed', details: { certificateUrl: certUrl, contractorName: `${brandName2} Team` }, tenant: assessmentTenant2 }
             }).catch(err => console.error('Failed to trigger status notification:', err));
@@ -1604,7 +1604,7 @@ const Admin = () => {
             const clientEmail = selectedAssessment.user?.email || selectedAssessment.contact_email;
             if (!clientEmail) { toast.error('Client email not found'); return; }
             const assessmentTenant3 = selectedAssessment.tenant || selectedTenant;
-            const assessmentLabel = assessmentTenant3 === 'spain' ? 'Certificado Energético' : assessmentTenant3 === 'england' ? 'EPC' : assessmentTenant3 === 'france' ? 'DPE' : assessmentTenant3 === 'portugal' ? 'Certificado Energético' : 'BER';
+            const assessmentLabel = assessmentTenant3 === 'spain' ? 'Certificado Energético' : assessmentTenant3 === 'england' ? 'EPC' : assessmentTenant3 === 'france' ? 'DPE' : assessmentTenant3 === 'portugal' ? 'Certificado Energia' : 'BER';
             const subject = `Update regarding your ${assessmentLabel} Assessment - ${selectedAssessment.property_address}`;
 
             const { data, error } = await supabase.functions.invoke('send-admin-message', {
@@ -2136,10 +2136,10 @@ const Admin = () => {
                 {/* Logo */}
                 <div className="h-14 flex items-center justify-between px-4 border-b border-white/10 flex-shrink-0">
                     <Link to="/" className={`block ${desktopExpanded ? 'md:block' : 'md:hidden'} lg:block`}>
-                        <img src="/logo.svg" alt={selectedTenant === 'england' ? 'EPC Cert' : selectedTenant === 'spain' ? 'Certificado Energético' : selectedTenant === 'france' ? 'DPE France' : selectedTenant === 'portugal' ? 'Certificado Energético' : 'The Berman'} className="h-7 w-auto" />
+                        <img src={selectedTenant === 'portugal' ? '/certificado-energia-logo.svg' : '/logo.svg'} alt={selectedTenant === 'england' ? 'EPC Cert' : selectedTenant === 'spain' ? 'Certificado Energético' : selectedTenant === 'france' ? 'DPE France' : selectedTenant === 'portugal' ? 'Certificado Energia' : 'The Berman'} className="h-7 w-auto" />
                     </Link>
                     <div className={`flex items-center justify-center ${desktopExpanded ? 'md:hidden' : 'md:flex'} lg:hidden`}>
-                        <img src="/logo.svg" alt={selectedTenant === 'england' ? 'EPC Cert' : selectedTenant === 'spain' ? 'Certificado Energético' : selectedTenant === 'france' ? 'DPE France' : selectedTenant === 'portugal' ? 'Certificado Energético' : 'The Berman'} className="h-7 w-auto" />
+                        <img src={selectedTenant === 'portugal' ? '/certificado-energia-logo.svg' : '/logo.svg'} alt={selectedTenant === 'england' ? 'EPC Cert' : selectedTenant === 'spain' ? 'Certificado Energético' : selectedTenant === 'france' ? 'DPE France' : selectedTenant === 'portugal' ? 'Certificado Energia' : 'The Berman'} className="h-7 w-auto" />
                     </div>
                     {/* Close on mobile */}
                     <button onClick={() => setSidebarOpen(false)} className="md:hidden text-white/40 hover:text-white p-1">

@@ -49,6 +49,7 @@ const HireAgent = () => {
     const tenant = getTenantFromDomain();
     const isSpanish = tenant === 'spain';
     const isEngland = tenant === 'england';
+    const isPortuguese = tenant === 'portugal';
     const townsByCounty = getTownsForTenant(tenant);
     const tenantEmail = getTenantEmail(tenant);
     const tenantDomain = getTenantDomain(tenant);
@@ -286,12 +287,14 @@ const HireAgent = () => {
                     {
                         '@context': 'https://schema.org',
                         '@type': 'Organization',
-                        name: isEngland ? 'EPC Cert' : 'The BER Man',
+                        name: isEngland ? 'EPC Cert' : isPortuguese ? 'Certificado Energia' : 'The BER Man',
                         url: tenantDomain,
-                        logo: isEngland ? 'https://www.epccert.com/logo.png' : 'https://www.theberman.eu/logo.svg',
+                        logo: isEngland ? 'https://www.epccert.com/logo.png' : isPortuguese ? 'https://certificadoenergia.com/certificado-energia-logo.svg' : 'https://www.theberman.eu/logo.svg',
                         sameAs: isEngland
                             ? ['https://www.facebook.com/epccert', 'https://www.instagram.com/epccert']
-                            : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
+                            : isPortuguese
+                                ? []
+                                : ['https://www.facebook.com/people/The-Berman/61578159843471/', 'https://www.instagram.com/thebermanireland'],
                     },
                 ]}
             />

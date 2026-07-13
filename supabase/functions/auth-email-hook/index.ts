@@ -89,6 +89,7 @@ Deno.serve(async (req: Request) => {
         }
 
         const websiteUrl = (config.website_url || `https://${config.domain}`).replace(/\/$/, '');
+        const logoUrl = config.logo_url || `${websiteUrl}/logo.svg`;
         const isSpanish = tenant === 'spain';
         const isEngland = tenant === 'england';
         const isPortuguese = tenant === 'portugal';
@@ -109,32 +110,32 @@ Deno.serve(async (req: Request) => {
                 : isPortuguese
                     ? `Confirme a sua conta – ${brandName}`
                     : `Confirm your account – ${brandName}`;
-            html = buildConfirmationEmail(userEmail, confirmationUrl, effectiveRedirect, websiteUrl, brandName, isSpanish, isEngland, isPortuguese);
+            html = buildConfirmationEmail(userEmail, confirmationUrl, effectiveRedirect, websiteUrl, brandName, isSpanish, isEngland, isPortuguese, logoUrl);
         } else if (actionType === 'recovery') {
             subject = isSpanish
                 ? `Restablece tu contraseña – ${brandName}`
                 : isPortuguese
                     ? `Redefina a sua palavra-passe – ${brandName}`
                     : `Reset your password – ${brandName}`;
-            html = buildRecoveryEmail(userEmail, confirmationUrl, effectiveRedirect, websiteUrl, brandName, isSpanish, isEngland, isPortuguese);
+            html = buildRecoveryEmail(userEmail, confirmationUrl, effectiveRedirect, websiteUrl, brandName, isSpanish, isEngland, isPortuguese, logoUrl);
         } else if (actionType === 'magiclink') {
             subject = isSpanish
                 ? `Tu enlace de acceso – ${brandName}`
                 : isPortuguese
                     ? `O seu link de acesso – ${brandName}`
                     : `Your sign-in link – ${brandName}`;
-            html = buildMagicLinkEmail(userEmail, confirmationUrl, effectiveRedirect, websiteUrl, brandName, isSpanish, isEngland, isPortuguese);
+            html = buildMagicLinkEmail(userEmail, confirmationUrl, effectiveRedirect, websiteUrl, brandName, isSpanish, isEngland, isPortuguese, logoUrl);
         } else if (actionType === 'email_change') {
             subject = isSpanish
                 ? `Confirma tu nuevo email – ${brandName}`
                 : isPortuguese
                     ? `Confirme o seu novo email – ${brandName}`
                     : `Confirm your new email – ${brandName}`;
-            html = buildConfirmationEmail(userEmail, confirmationUrl, effectiveRedirect, websiteUrl, brandName, isSpanish, isEngland, isPortuguese);
+            html = buildConfirmationEmail(userEmail, confirmationUrl, effectiveRedirect, websiteUrl, brandName, isSpanish, isEngland, isPortuguese, logoUrl);
         } else {
             // Generic fallback
             subject = `${brandName} – Verification`;
-            html = buildConfirmationEmail(userEmail, confirmationUrl, effectiveRedirect, websiteUrl, brandName, isSpanish, isEngland, isPortuguese);
+            html = buildConfirmationEmail(userEmail, confirmationUrl, effectiveRedirect, websiteUrl, brandName, isSpanish, isEngland, isPortuguese, logoUrl);
         }
 
         // Send via custom SMTP
@@ -169,13 +170,14 @@ function buildConfirmationEmail(
     brandName: string,
     isSpanish: boolean,
     isEngland: boolean,
-    isPortuguese: boolean = false
+    isPortuguese: boolean = false,
+    logoUrl: string = `${websiteUrl}/logo.svg`
 ): string {
     if (isPortuguese) {
         return `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
             <div style="text-align: center; margin-bottom: 25px;">
-                <img src="${websiteUrl}/logo.svg" alt="${brandName}" style="height: 40px;">
+                <img src="${logoUrl}" alt="${brandName}" style="height: 40px;">
             </div>
             <h1 style="color: #007F00; text-align: center; font-size: 24px;">Confirme a sua conta</h1>
             <p style="font-size: 16px; color: #333;">Olá,</p>
@@ -198,7 +200,7 @@ function buildConfirmationEmail(
         return `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
             <div style="text-align: center; margin-bottom: 25px;">
-                <img src="${websiteUrl}/logo.svg" alt="${brandName}" style="height: 40px;">
+                <img src="${logoUrl}" alt="${brandName}" style="height: 40px;">
             </div>
             <h1 style="color: #007F00; text-align: center; font-size: 24px;">Confirma tu cuenta</h1>
             <p style="font-size: 16px; color: #333;">Hola,</p>
@@ -221,7 +223,7 @@ function buildConfirmationEmail(
     return `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
         <div style="text-align: center; margin-bottom: 25px;">
-            <img src="${websiteUrl}/logo.svg" alt="${brandName}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
+            <img src="${logoUrl}" alt="${brandName}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
         </div>
         <h1 style="color: #007F00; text-align: center; font-size: 24px;">Confirm your account</h1>
         <p style="font-size: 16px; color: #333;">Hi,</p>
@@ -249,13 +251,14 @@ function buildRecoveryEmail(
     brandName: string,
     isSpanish: boolean,
     isEngland: boolean,
-    isPortuguese: boolean = false
+    isPortuguese: boolean = false,
+    logoUrl: string = `${websiteUrl}/logo.svg`
 ): string {
     if (isPortuguese) {
         return `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
             <div style="text-align: center; margin-bottom: 25px;">
-                <img src="${websiteUrl}/logo.svg" alt="${brandName}" style="height: 40px;">
+                <img src="${logoUrl}" alt="${brandName}" style="height: 40px;">
             </div>
             <h1 style="color: #007F00; text-align: center; font-size: 24px;">Redefina a sua palavra-passe</h1>
             <p style="font-size: 16px; color: #333;">Olá,</p>
@@ -281,7 +284,7 @@ function buildRecoveryEmail(
         return `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
             <div style="text-align: center; margin-bottom: 25px;">
-                <img src="${websiteUrl}/logo.svg" alt="${brandName}" style="height: 40px;">
+                <img src="${logoUrl}" alt="${brandName}" style="height: 40px;">
             </div>
             <h1 style="color: #007F00; text-align: center; font-size: 24px;">Restablece tu contraseña</h1>
             <p style="font-size: 16px; color: #333;">Hola,</p>
@@ -307,7 +310,7 @@ function buildRecoveryEmail(
     return `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
         <div style="text-align: center; margin-bottom: 25px;">
-            <img src="${websiteUrl}/logo.svg" alt="${brandName}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
+            <img src="${logoUrl}" alt="${brandName}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
         </div>
         <h1 style="color: #007F00; text-align: center; font-size: 24px;">Reset your password</h1>
         <p style="font-size: 16px; color: #333;">Hi,</p>
@@ -338,13 +341,14 @@ function buildMagicLinkEmail(
     brandName: string,
     isSpanish: boolean,
     isEngland: boolean,
-    isPortuguese: boolean = false
+    isPortuguese: boolean = false,
+    logoUrl: string = `${websiteUrl}/logo.svg`
 ): string {
     if (isPortuguese) {
         return `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
             <div style="text-align: center; margin-bottom: 25px;">
-                <img src="${websiteUrl}/logo.svg" alt="${brandName}" style="height: 40px;">
+                <img src="${logoUrl}" alt="${brandName}" style="height: 40px;">
             </div>
             <h1 style="color: #007F00; text-align: center; font-size: 24px;">O seu link de acesso</h1>
             <p style="font-size: 16px; color: #333;">Olá,</p>
@@ -364,7 +368,7 @@ function buildMagicLinkEmail(
         return `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
             <div style="text-align: center; margin-bottom: 25px;">
-                <img src="${websiteUrl}/logo.svg" alt="${brandName}" style="height: 40px;">
+                <img src="${logoUrl}" alt="${brandName}" style="height: 40px;">
             </div>
             <h1 style="color: #007F00; text-align: center; font-size: 24px;">Tu enlace de acceso</h1>
             <p style="font-size: 16px; color: #333;">Hola,</p>
@@ -384,7 +388,7 @@ function buildMagicLinkEmail(
     return `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
         <div style="text-align: center; margin-bottom: 25px;">
-            <img src="${websiteUrl}/logo.svg" alt="${brandName}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
+            <img src="${logoUrl}" alt="${brandName}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
         </div>
         <h1 style="color: #007F00; text-align: center; font-size: 24px;">Your sign-in link</h1>
         <p style="font-size: 16px; color: #333;">Hi,</p>

@@ -10,11 +10,13 @@ import { Loader2, ArrowLeft, X, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getTenantFromDomain } from '../lib/tenant';
 
-const getUpdatePasswordSchema = (isSpanish: boolean) => z.object({
-    password: z.string().min(6, isSpanish ? 'La contraseña debe tener al menos 6 caracteres' : 'Password must be at least 6 characters'),
+const tenant = getTenantFromDomain();
+
+const getUpdatePasswordSchema = (isSpanish: boolean, isPortuguese: boolean) => z.object({
+    password: z.string().min(6, isSpanish ? 'La contraseña debe tener al menos 6 caracteres' : isPortuguese ? 'A palavra-passe deve ter pelo menos 6 caracteres' : 'Password must be at least 6 characters'),
     confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-    message: isSpanish ? 'Las contraseñas no coinciden' : "Passwords don't match",
+    message: isSpanish ? 'Las contraseñas no coinciden' : isPortuguese ? 'As palavras-passe não coincidem' : "Passwords don't match",
     path: ["confirmPassword"],
 });
 
@@ -31,9 +33,11 @@ const UpdatePassword = () => {
     const [customToken, setCustomToken] = useState<string | null>(null);
     const [customEmail, setCustomEmail] = useState<string | null>(null);
     const [resetSuccess, setResetSuccess] = useState(false);
-    const isSpanish = getTenantFromDomain() === 'spain';
-    const isEngland = getTenantFromDomain() === 'england';
-    const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : 'The Berman';
+    const isSpanish = tenant === 'spain';
+    const isPortuguese = tenant === 'portugal';
+    const isEngland = tenant === 'england';
+    const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : isPortuguese ? 'Certificado Energia' : 'The Berman';
+    const logoUrl = isPortuguese ? '/certificado-energia-logo.svg' : '/logo.svg';
 
     // Detect custom token from email link (/update-password?token=xyz&email=abc)
     useEffect(() => {
@@ -107,7 +111,7 @@ const UpdatePassword = () => {
         }
     }, [user, navigate]);
 
-    const updatePasswordSchema = getUpdatePasswordSchema(isSpanish);
+    const updatePasswordSchema = getUpdatePasswordSchema(isSpanish, isPortuguese);
 
     const {
         register,
@@ -122,7 +126,7 @@ const UpdatePassword = () => {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
                 <Loader2 className="animate-spin text-[#007F00] mb-4" size={40} />
-                <p className="text-gray-600 font-medium">{isSpanish ? 'Verificando tu enlace seguro...' : 'Verifying your secure link...'}</p>
+                <p className="text-gray-600 font-medium">{isSpanish ? 'Verificando tu enlace seguro...' : isPortuguese ? 'A verificar o seu link seguro...' : 'Verifying your secure link...'}</p>
             </div>
         );
     }
@@ -147,10 +151,10 @@ const UpdatePassword = () => {
                     <div className="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
                         <X size={32} />
                     </div>
-                    <h2 className="text-2xl font-serif font-bold text-gray-900 mb-2">{isSpanish ? 'Sesión no válida' : 'Invalid Session'}</h2>
-                    <p className="text-gray-500 mb-8">{isSpanish ? 'Este enlace no es válido o ha caducado. Por favor, utiliza el enlace "Olvidaste tu contraseña" en la página de inicio de sesión o contacta con soporte.' : 'This link is invalid or has expired. Please use the "Forgot Password" link on the login page or contact support.'}</p>
+                    <h2 className="text-2xl font-serif font-bold text-gray-900 mb-2">{isSpanish ? 'Sesión no válida' : isPortuguese ? 'Sessão Inválida' : 'Invalid Session'}</h2>
+                    <p className="text-gray-500 mb-8">{isSpanish ? 'Este enlace no es válido o ha caducado. Por favor, utiliza el enlace "Olvidaste tu contraseña" en la página de inicio de sesión o contacta con soporte.' : isPortuguese ? 'Este link é inválido ou expirou. Por favor, utilize o link "Esqueceu-se da palavra-passe?" na página de início de sessão ou contacte o suporte.' : 'This link is invalid or has expired. Please use the "Forgot Password" link on the login page or contact support.'}</p>
                     <Link to="/login" className="inline-flex items-center gap-2 text-white bg-[#007F00] px-8 py-3 rounded-xl font-bold hover:bg-green-800 transition-all">
-                        {isSpanish ? 'Ir al inicio de sesión' : 'Go to Login'}
+                        {isSpanish ? 'Ir al inicio de sesión' : isPortuguese ? 'Ir para início de sessão' : 'Go to Login'}
                     </Link>
                 </div>
             </div>
@@ -165,9 +169,9 @@ const UpdatePassword = () => {
                     body: { token: customToken, email: customEmail, password: data.password }
                 });
                 if (error) throw error;
-                if (!result?.success) throw new Error(result?.error || (isSpanish ? 'No se pudo restablecer la contraseña' : 'Failed to reset password'));
+                if (!result?.success) throw new Error(result?.error || (isSpanish ? 'No se pudo restablecer la contraseña' : isPortuguese ? 'Não foi possível redefinir a palavra-passe' : 'Failed to reset password'));
 
-                toast.success(isSpanish ? '¡Contraseña actualizada!' : 'Password updated successfully!');
+                toast.success(isSpanish ? '¡Contraseña actualizada!' : isPortuguese ? 'Palavra-passe atualizada!' : 'Password updated successfully!');
                 setResetSuccess(true);
                 return;
             }
@@ -181,7 +185,7 @@ const UpdatePassword = () => {
                 await new Promise(resolve => setTimeout(resolve, 500));
                 const { data: secondCheck } = await supabase.auth.getSession();
                 if (!secondCheck.session) {
-                    throw new Error(isSpanish ? 'No se encontró la sesión de autenticación. Intenta iniciar sesión o haz clic en el enlace de nuevo.' : 'Authentication session not found. Please try logging in or click the link again.');
+                    throw new Error(isSpanish ? 'No se encontró la sesión de autenticación. Intenta iniciar sesión o haz clic en el enlace de nuevo.' : isPortuguese ? 'Sessão de autenticação não encontrada. Tente iniciar sessão ou clique no link novamente.' : 'Authentication session not found. Please try logging in or click the link again.');
                 }
             }
 
@@ -206,7 +210,7 @@ const UpdatePassword = () => {
             const role = profile?.role;
             const regStatus = profile?.registration_status;
 
-            toast.success(isSpanish ? '¡Contraseña actualizada! Completando tu perfil a continuación.' : 'Password updated! Completing your profile next.');
+            toast.success(isSpanish ? '¡Contraseña actualizada! Completando tu perfil a continuación.' : isPortuguese ? 'Palavra-passe atualizada! A completar o seu perfil a seguir.' : 'Password updated! Completing your profile next.');
 
             // If onboarding not done yet → go to onboarding page (pre-filled)
             if (regStatus === 'pending') {
@@ -226,7 +230,7 @@ const UpdatePassword = () => {
                 else navigate('/dashboard/user', { replace: true });
             }
         } catch (err: any) {
-            toast.error(err.message || (isSpanish ? 'No se pudo actualizar la contraseña' : 'Failed to update password'));
+            toast.error(err.message || (isSpanish ? 'No se pudo actualizar la contraseña' : isPortuguese ? 'Não foi possível atualizar a palavra-passe' : 'Failed to update password'));
         }
     };
 
@@ -241,25 +245,25 @@ const UpdatePassword = () => {
                 <div className="relative z-10">
                     <Link to="/" className="flex items-center gap-3 group w-fit">
                         <div className="relative">
-                            <img src="/logo.svg" alt={`${brandName} Logo`} className="h-12 w-auto brightness-0 invert" />
+                            <img src={logoUrl} alt={`${brandName} Logo`} className="h-12 w-auto brightness-0 invert" />
                         </div>
                         <span className="text-2xl font-serif font-bold text-white">{brandName}</span>
                     </Link>
 
                     <div className="mt-20">
                         <h1 className="text-5xl font-serif font-bold text-white leading-tight mb-6">
-                            {isSpanish ? 'Nueva Contraseña,' : 'New Password,'} <br />
-                            <span className="text-[#9ACD32]">{isSpanish ? 'Nuevo Comienzo.' : 'New Start.'}</span>
+                            {isSpanish ? 'Nueva Contraseña,' : isPortuguese ? 'Nova Palavra-passe,' : 'New Password,'} <br />
+                            <span className="text-[#9ACD32]">{isSpanish ? 'Nuevo Comienzo.' : isPortuguese ? 'Novo Começo.' : 'New Start.'}</span>
                         </h1>
                         <p className="text-green-100 text-lg max-w-md leading-relaxed">
-                            {isSpanish ? 'Crea una contraseña segura para proteger tu cuenta.' : 'Create a strong password to keep your account secure.'}
+                            {isSpanish ? 'Crea una contraseña segura para proteger tu cuenta.' : isPortuguese ? 'Crie uma palavra-passe segura para proteger a sua conta.' : 'Create a strong password to keep your account secure.'}
                         </p>
                     </div>
                 </div>
 
                 <div className="relative z-10 flex gap-6 text-green-200 text-sm font-medium">
-                    <span>{isSpanish ? 'Política de Privacidad' : 'Privacy Policy'}</span>
-                    <span>{isSpanish ? 'Términos de Servicio' : 'Terms of Service'}</span>
+                    <span>{isSpanish ? 'Política de Privacidad' : isPortuguese ? 'Política de Privacidade' : 'Privacy Policy'}</span>
+                    <span>{isSpanish ? 'Términos de Servicio' : isPortuguese ? 'Termos de Serviço' : 'Terms of Service'}</span>
                 </div>
             </div>
 
@@ -267,12 +271,12 @@ const UpdatePassword = () => {
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-12 relative">
                 <div className="max-w-md w-full">
                     <Link to="/" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#007F00] transition-colors mb-8 font-medium">
-                        <ArrowLeft size={16} /> {isSpanish ? 'Volver al inicio' : 'Back to Home'}
+                        <ArrowLeft size={16} /> {isSpanish ? 'Volver al inicio' : isPortuguese ? 'Voltar ao início' : 'Back to Home'}
                     </Link>
 
                     <div className="mb-10">
-                        <h2 className="text-3xl font-serif font-bold text-gray-900 mb-3">{isSpanish ? 'Actualizar Contraseña' : 'Update Password'}</h2>
-                        <p className="text-gray-500">{isSpanish ? 'Por favor, introduce tu nueva contraseña.' : 'Please enter your new password.'}</p>
+                        <h2 className="text-3xl font-serif font-bold text-gray-900 mb-3">{isSpanish ? 'Actualizar Contraseña' : isPortuguese ? 'Atualizar Palavra-passe' : 'Update Password'}</h2>
+                        <p className="text-gray-500">{isSpanish ? 'Por favor, introduce tu nueva contraseña.' : isPortuguese ? 'Por favor, introduza a sua nova palavra-passe.' : 'Please enter your new password.'}</p>
                     </div>
 
                     {resetSuccess ? (
@@ -280,21 +284,21 @@ const UpdatePassword = () => {
                             <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <CheckCircle className="text-[#007F00]" size={32} />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">{isSpanish ? '¡Contraseña Actualizada!' : 'Password Updated!'}</h3>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">{isSpanish ? '¡Contraseña Actualizada!' : isPortuguese ? 'Palavra-passe Atualizada!' : 'Password Updated!'}</h3>
                             <p className="text-gray-500 mb-6">
-                                {isSpanish ? 'Tu contraseña ha sido actualizada. Por favor, inicia sesión con tu nueva contraseña.' : 'Your password has been updated. Please log in with your new password.'}
+                                {isSpanish ? 'Tu contraseña ha sido actualizada. Por favor, inicia sesión con tu nueva contraseña.' : isPortuguese ? 'A sua palavra-passe foi atualizada. Por favor, inicie sessão com a sua nova palavra-passe.' : 'Your password has been updated. Please log in with your new password.'}
                             </p>
                             <Link
                                 to="/login"
                                 className="inline-flex items-center justify-center w-full bg-[#007F00] text-white font-bold py-3.5 rounded-xl hover:bg-green-800 transition-all shadow-lg"
                             >
-                                {isSpanish ? 'Ir al inicio de sesión' : 'Go to Login'}
+                                {isSpanish ? 'Ir al inicio de sesión' : isPortuguese ? 'Ir para início de sessão' : 'Go to Login'}
                             </Link>
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                             <div className="space-y-1">
-                                <label className="text-sm font-bold text-gray-700">{isSpanish ? 'Nueva Contraseña' : 'New Password'}</label>
+                                <label className="text-sm font-bold text-gray-700">{isSpanish ? 'Nueva Contraseña' : isPortuguese ? 'Nova Palavra-passe' : 'New Password'}</label>
                             <div className="relative">
                                 <input
                                     {...register('password')}
@@ -314,7 +318,7 @@ const UpdatePassword = () => {
                         </div>
 
                         <div className="space-y-1">
-                            <label className="text-sm font-bold text-gray-700">{isSpanish ? 'Confirmar Contraseña' : 'Confirm Password'}</label>
+                            <label className="text-sm font-bold text-gray-700">{isSpanish ? 'Confirmar Contraseña' : isPortuguese ? 'Confirmar Palavra-passe' : 'Confirm Password'}</label>
                             <div className="relative">
                                 <input
                                     {...register('confirmPassword')}
@@ -341,10 +345,10 @@ const UpdatePassword = () => {
                             {isSubmitting ? (
                                 <>
                                     <Loader2 className="animate-spin" size={20} />
-                                    {isSpanish ? 'Actualizando...' : 'Updating...'}
+                                    {isSpanish ? 'Actualizando...' : isPortuguese ? 'A atualizar...' : 'Updating...'}
                                 </>
                             ) : (
-                                isSpanish ? 'Actualizar Contraseña' : 'Update Password'
+                                isSpanish ? 'Actualizar Contraseña' : isPortuguese ? 'Atualizar Palavra-passe' : 'Update Password'
                             )}
                         </button>
                     </form>

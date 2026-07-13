@@ -7,9 +7,12 @@ import { supabase } from '../lib/supabase';
 const tenant = getTenantFromDomain();
 const isEngland = tenant === 'england';
 const isSpanish = tenant === 'spain';
-const assessmentLabel = isEngland ? 'EPC' : isSpanish ? 'Certificado Energético' : 'BER';
-const assessorLabel = isEngland ? 'Domestic Energy Assessor' : isSpanish ? 'Certificador Energético' : 'BER Assessor';
-const regAuthority = isSpanish ? 'CEE CAT' : isEngland ? 'accredited' : 'SEAI';
+const isPortuguese = tenant === 'portugal';
+const assessmentLabel = isEngland ? 'EPC' : isSpanish ? 'Certificado Energético' : isPortuguese ? 'Certificado Energético' : 'BER';
+const assessorLabel = isEngland ? 'Domestic Energy Assessor' : isSpanish ? 'Certificador Energético' : isPortuguese ? 'Perito Certificado' : 'BER Assessor';
+const regAuthority = isSpanish ? 'CEE CAT' : isEngland ? 'accredited' : isPortuguese ? 'ADENE' : 'SEAI';
+const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : isPortuguese ? 'Certificado Energia' : 'The Berman';
+const logoUrl = isPortuguese ? '/certificado-energia-logo.svg' : '/logo.svg';
 import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, AlertCircle, Settings, MessageCircle, User, Menu, Plus, Search } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { DatePicker } from '../components/ui/DatePicker';
@@ -622,7 +625,7 @@ const ContractorDashboard = () => {
                 <header className="bg-white border-b border-gray-200 sticky top-0 z-[9999] shadow-sm">
                     <div className="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
                         <Link to="/" className="flex-shrink-0">
-                            <img src="/logo.svg" alt="The Berman Logo" className="h-9 w-auto" />
+                            <img src={logoUrl} alt={`${brandName} Logo`} className="h-9 w-auto" />
                         </Link>
                         <nav className="hidden md:flex items-center gap-6">
                             <Link to="/" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">Home</Link>
@@ -701,10 +704,10 @@ const ContractorDashboard = () => {
                 <div className="container mx-auto px-6 h-20 flex justify-between items-center">
                     <div className="flex items-center gap-8">
                         <Link to="/" className="relative flex-shrink-0">
-                            <img src="/logo.svg" alt="The Berman Logo" className="h-10 w-auto relative z-10" />
+                            <img src={logoUrl} alt={`${brandName} Logo`} className="h-10 w-auto relative z-10" />
                         </Link>
                         <div className="hidden xl:block">
-                            <h1 className="text-lg font-bold text-white leading-tight">{isSpanish ? 'Portal del Certificador' : 'Assessor Portal'}</h1>
+                            <h1 className="text-lg font-bold text-white leading-tight">{isSpanish ? 'Portal del Certificador' : isPortuguese ? 'Portal do Perito' : 'Assessor Portal'}</h1>
                             <span className="text-[10px] text-gray-400 flex items-center gap-1.5 uppercase tracking-widest font-bold">
                                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
                                 {isSpanish ? 'Red de Certificación Activa' : 'Live Assessment Network'}
@@ -726,16 +729,16 @@ const ContractorDashboard = () => {
                                 <div className="absolute right-0 top-full mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
                                     <div className="p-2 space-y-1 border-b border-gray-50 bg-gray-50/30">
                                         <div className="px-4 py-3">
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Sesión iniciada como' : 'Signed in as'}</p>
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Sesión iniciada como' : isPortuguese ? 'Sessão iniciada como' : 'Signed in as'}</p>
                                             <p className="text-sm font-bold text-gray-900 truncate">{user?.email}</p>
                                         </div>
                                     </div>
                                     <div className="p-2 space-y-1">
                                         {[
-                                            { id: 'available', label: isSpanish ? 'Trabajos Disponibles' : 'Available Jobs', icon: Briefcase },
-                                            { id: 'my_quotes', label: isSpanish ? 'Mis Presupuestos' : 'My Quotes', icon: ClipboardList },
-                                            { id: 'active', label: isSpanish ? 'Mis Clientes' : 'My Clients', icon: User },
-                                            { id: 'settings', label: isSpanish ? 'Ajustes' : 'Settings', icon: Settings },
+                                            { id: 'available', label: isSpanish ? 'Trabajos Disponibles' : isPortuguese ? 'Trabalhos Disponíveis' : 'Available Jobs', icon: Briefcase },
+                                            { id: 'my_quotes', label: isSpanish ? 'Mis Presupuestos' : isPortuguese ? 'Os Meus Orçamentos' : 'My Quotes', icon: ClipboardList },
+                                            { id: 'active', label: isSpanish ? 'Mis Clientes' : isPortuguese ? 'Os Meus Clientes' : 'My Clients', icon: User },
+                                            { id: 'settings', label: isSpanish ? 'Ajustes' : isPortuguese ? 'Configurações' : 'Settings', icon: Settings },
                                         ].map((item) => (
                                             <button
                                                 key={item.id}
@@ -950,8 +953,8 @@ const ContractorDashboard = () => {
                                     <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6 text-gray-300">
                                         <ClipboardList size={40} />
                                     </div>
-                                    <h3 className="text-xl font-bold text-gray-900 mb-2">You haven't sent any quotes</h3>
-                                    <p className="text-gray-500 max-w-sm">Tap on "Available Jobs" to find homeowners looking for {assessmentLabel} assessments.</p>
+                                    <h3 className="text-xl font-bold text-gray-900 mb-2">{isSpanish ? 'Aún no has enviado presupuestos' : isPortuguese ? 'Ainda não enviou orçamentos' : "You haven't sent any quotes"}</h3>
+                                    <p className="text-gray-500 max-w-sm">{isSpanish ? 'Toca en "Trabajos Disponibles" para encontrar propietarios que buscan evaluaciones de' : isPortuguese ? 'Clique em "Trabalhos Disponíveis" para encontrar proprietários à procura de avaliações de' : 'Tap on "Available Jobs" to find homeowners looking for'} {assessmentLabel.toLowerCase()}.</p>
                                 </div>
                             ) : (
                                 <div className="space-y-6">

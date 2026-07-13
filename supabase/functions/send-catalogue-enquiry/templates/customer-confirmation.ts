@@ -1,5 +1,5 @@
 
-export const generateCustomerConfirmationEmail = (record: any, businessName: string, tenant: string = 'ireland', websiteUrl: string = 'https://theberman.eu', brandName: string = 'The Berman') => {
+export const generateCustomerConfirmationEmail = (record: any, businessName: string, tenant: string = 'ireland', websiteUrl: string = 'https://theberman.eu', brandName: string = 'The Berman', _logoUrl?: string) => {
     const isSpanish = tenant === 'spain';
     const isPortuguese = tenant === 'portugal';
     const catalogueName = `${brandName} Catalogue`;

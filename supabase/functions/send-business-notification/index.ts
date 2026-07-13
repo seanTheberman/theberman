@@ -33,11 +33,12 @@ Deno.serve(async (req: Request) => {
         const smtpUsername = config.smtp_username;
         const smtpPassword = config.smtp_password;
         const websiteUrl = (config.website_url || 'https://theberman.eu').replace(/\/$/, '');
+        const logoUrl = config.logo_url;
         const smtpFrom = config.smtp_from || `${config.display_name} <${smtpUsername}>`;
         const isSpanish = tenant === 'spain';
         const isPortuguese = tenant === 'portugal';
         const brandName = config.display_name;
-        const catalogueName = `${brandName} Home Energy Catalogue`;
+        const catalogueName = isSpanish ? `${brandName} Catálogo de Eficiencia Energética` : isPortuguese ? `Catálogo de Eficiência Energética ${brandName}` : `${brandName} Home Energy Catalogue`;
         const marketArea = isSpanish ? 'España' : isPortuguese ? 'Portugal' : 'Ireland';
 
         if (!smtpHostname || !smtpUsername || !smtpPassword) {
@@ -62,7 +63,7 @@ Deno.serve(async (req: Request) => {
         const html = isPortuguese ? `
             <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
                 <div style="text-align: center; margin-bottom: 25px;">
-                    <img src="${websiteUrl}/logo.svg" alt="${brandName}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
+                    <img src="${logoUrl}" alt="${brandName}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
                 </div>
                 <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Bem-vindo(a) ao ${catalogueName}!</h2>
                 <p style="font-size: 16px; color: #333;">Estimada equipa da <strong>${companyName}</strong>,</p>
@@ -160,7 +161,7 @@ Deno.serve(async (req: Request) => {
         ` : isSpanish ? `
             <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
                 <div style="text-align: center; margin-bottom: 25px;">
-                    <img src="${websiteUrl}/logo.svg" alt="${brandName}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
+                    <img src="${logoUrl}" alt="${brandName}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
                 </div>
                 <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">¡Bienvenido al ${catalogueName}!</h2>
                 <p style="font-size: 16px; color: #333;">Estimado equipo de <strong>${companyName}</strong>,</p>
@@ -258,7 +259,7 @@ Deno.serve(async (req: Request) => {
         ` : `
             <div style="font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #ffffff;">
                 <div style="text-align: center; margin-bottom: 25px;">
-                    <img src="${websiteUrl}/logo.svg" alt="${brandName}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
+                    <img src="${logoUrl}" alt="${brandName}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
                 </div>
                 <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Welcome to ${catalogueName}!</h2>
                 <p style="font-size: 16px; color: #333;">Dear <strong>${companyName}</strong> Team,</p>

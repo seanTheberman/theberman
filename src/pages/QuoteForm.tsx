@@ -24,10 +24,10 @@ const QuoteForm = () => {
 
                 <div className="text-center mb-12">
                     <h1 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 mb-4">
-                        {isSpanish ? 'Solicita tu Presupuesto' : `Get Your ${ratingName} Quote`}
+                        {isSpanish ? 'Solicita tu Presupuesto' : tenant === 'portugal' ? `Peça o seu Orçamento para ${ratingName}` : `Get Your ${ratingName} Quote`}
                     </h1>
                     <p className="text-gray-500 max-w-2xl mx-auto">
-                        {isSpanish ? 'Rellena el formulario para recibir presupuestos competitivos de certificadores acreditados en tu zona.' : `Complete the form below to receive competitive quotes from ${assessorDesc} in your area.`}
+                        {isSpanish ? 'Rellena el formulario para recibir presupuestos competitivos de certificadores acreditados en tu zona.' : tenant === 'portugal' ? `Preencha o formulário abaixo para receber orçamentos competitivos de ${assessorDesc} na sua zona.` : `Complete the form below to receive competitive quotes from ${assessorDesc} in your area.`}
                     </p>
                 </div>
 

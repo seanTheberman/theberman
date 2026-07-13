@@ -10,6 +10,9 @@ import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { supabase } from '../lib/supabase';
 import { getTenantFromDomain } from '../lib/tenant';
 
+const TENANT = getTenantFromDomain();
+const TENANT_LOGO_URL = TENANT === 'portugal' ? '/certificado-energia-logo.svg' : '/logo.svg';
+
 // Fix Leaflet marker icons icon issue
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -450,7 +453,7 @@ const RegionPage = () => {
                     {/* Map Overlays for specific pixel-perfect feel */}
                     <div className="absolute bottom-8 left-8 z-[10] flex flex-col gap-2">
                         <div className="bg-white/90 backdrop-blur-md p-2 rounded-xl shadow-2xl border border-white/20">
-                            <img src="/logo.svg" className="h-8 w-auto grayscale opacity-50" />
+                            <img src={TENANT_LOGO_URL} className="h-8 w-auto grayscale opacity-50" />
                         </div>
                     </div>
                 </div>

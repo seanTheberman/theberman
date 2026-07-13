@@ -103,6 +103,7 @@ Deno.serve(async (req: Request) => {
         // Load tenant config (SMTP/Twilio credentials)
         const config = await getTenantConfig(supabase, tenant);
         const websiteUrl = config.website_url;
+        const logoUrl = config.logo_url;
         const smtpFrom = config.smtp_from || `${config.display_name} <${config.smtp_username}>`;
 
         // Idempotency guard: only proceed if this assessment has not already been notified.
@@ -193,7 +194,7 @@ Deno.serve(async (req: Request) => {
                 const customerHtml = isPortuguese ? `
                     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 0; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
                         <div style="background-color: #007F00; color: white; padding: 35px 20px; text-align: center;">
-                            <img src="${websiteUrl}/logo.svg" alt="${config.display_name}" style="height: 30px; margin-bottom: 12px; filter: brightness(0) invert(1);">
+                            <img src="${logoUrl}" alt="${config.display_name}" style="height: 30px; margin-bottom: 12px; filter: brightness(0) invert(1);">
                             <h2 style="margin: 0; font-size: 24px; font-weight: 700;">O seu Pedido está Ativo!</h2>
                         </div>
                         <div style="padding: 35px 30px; color: #333;">
@@ -225,7 +226,7 @@ Deno.serve(async (req: Request) => {
                 ` : isSpanish ? `
                     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 0; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
                         <div style="background-color: #007F00; color: white; padding: 35px 20px; text-align: center;">
-                            <img src="${websiteUrl}/logo.svg" alt="${config.display_name}" style="height: 30px; margin-bottom: 12px; filter: brightness(0) invert(1);">
+                            <img src="${logoUrl}" alt="${config.display_name}" style="height: 30px; margin-bottom: 12px; filter: brightness(0) invert(1);">
                             <h2 style="margin: 0; font-size: 24px; font-weight: 700;">¡Tu Solicitud está Activa!</h2>
                         </div>
                         <div style="padding: 35px 30px; color: #333;">
@@ -257,7 +258,7 @@ Deno.serve(async (req: Request) => {
                 ` : `
                     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 0; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
                         <div style="background-color: #007F00; color: white; padding: 35px 20px; text-align: center;">
-                            <img src="${websiteUrl}/logo.svg" alt="${config.display_name}" style="height: 30px; margin-bottom: 12px; filter: brightness(0) invert(1);">
+                            <img src="${logoUrl}" alt="${config.display_name}" style="height: 30px; margin-bottom: 12px; filter: brightness(0) invert(1);">
                             <h2 style="margin: 0; font-size: 24px; font-weight: 700;">Your BER Request is Live!</h2>
                         </div>
                         <div style="padding: 35px 30px; color: #333;">
@@ -326,7 +327,7 @@ Deno.serve(async (req: Request) => {
                     const posterHtml = isPortuguese ? `
                         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 0; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
                             <div style="background-color: #007F00; color: white; padding: 35px 20px; text-align: center;">
-                                <img src="${websiteUrl}/logo.svg" alt="${config.display_name}" style="height: 30px; margin-bottom: 12px; filter: brightness(0) invert(1);">
+                                <img src="${logoUrl}" alt="${config.display_name}" style="height: 30px; margin-bottom: 12px; filter: brightness(0) invert(1);">
                                 <h2 style="margin: 0; font-size: 24px; font-weight: 700;">O seu Trabalho Publicado está Ativo</h2>
                             </div>
                             <div style="padding: 35px 30px; color: #333;">
@@ -353,7 +354,7 @@ Deno.serve(async (req: Request) => {
                     ` : isSpanish ? `
                         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 0; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
                             <div style="background-color: #007F00; color: white; padding: 35px 20px; text-align: center;">
-                                <img src="${websiteUrl}/logo.svg" alt="${config.display_name}" style="height: 30px; margin-bottom: 12px; filter: brightness(0) invert(1);">
+                                <img src="${logoUrl}" alt="${config.display_name}" style="height: 30px; margin-bottom: 12px; filter: brightness(0) invert(1);">
                                 <h2 style="margin: 0; font-size: 24px; font-weight: 700;">Tu Trabajo Publicado está Activo</h2>
                             </div>
                             <div style="padding: 35px 30px; color: #333;">
@@ -380,7 +381,7 @@ Deno.serve(async (req: Request) => {
                     ` : `
                         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 0; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
                             <div style="background-color: #007F00; color: white; padding: 35px 20px; text-align: center;">
-                                <img src="${websiteUrl}/logo.svg" alt="${config.display_name}" style="height: 30px; margin-bottom: 12px; filter: brightness(0) invert(1);">
+                                <img src="${logoUrl}" alt="${config.display_name}" style="height: 30px; margin-bottom: 12px; filter: brightness(0) invert(1);">
                                 <h2 style="margin: 0; font-size: 24px; font-weight: 700;">Your Posted Job is Now Live</h2>
                             </div>
                             <div style="padding: 35px 30px; color: #333;">

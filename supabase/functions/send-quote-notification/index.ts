@@ -34,6 +34,7 @@ Deno.serve(async (req: Request) => {
         // Load tenant config
         const config = await getTenantConfig(supabase, tenant);
         const websiteUrl = config.website_url;
+        const logoUrl = config.logo_url;
         const smtpFrom = config.smtp_from || `${config.display_name} <${config.smtp_username}>`;
 
         // 1. Fetch Assessment & Homeowner Details
@@ -72,7 +73,7 @@ Deno.serve(async (req: Request) => {
             const isPortuguese = tenant === 'portugal';
 
             // 3. Generate Email HTML for homeowner
-            const emailHtml = generateHomeownerQuoteEmail(assessment.contact_name, websiteUrl, promoHtml, tenant, config.display_name);
+            const emailHtml = generateHomeownerQuoteEmail(assessment.contact_name, websiteUrl, promoHtml, tenant, config.display_name, logoUrl);
 
             // 4. Send Email to homeowner
             await client.send(smtpFrom, assessment.contact_email, isSpanish ? 'Has recibido un presupuesto.' : isPortuguese ? 'Recebeu um orçamento.' : 'BER quote received.', emailHtml);
@@ -105,7 +106,7 @@ Deno.serve(async (req: Request) => {
                     }
 
                     if (posterEmail) {
-                        const posterHtml = generatePosterQuoteEmail(posterName, websiteUrl, promoHtml, tenant, config.display_name);
+                        const posterHtml = generatePosterQuoteEmail(posterName, websiteUrl, promoHtml, tenant, config.display_name, logoUrl);
                         await client.send(smtpFrom, posterEmail, isSpanish ? 'Nuevo presupuesto en tu trabajo publicado.' : isPortuguese ? 'Novo orçamento no seu trabalho publicado.' : 'New quote on your posted job.', posterHtml);
                         console.log(`[send-quote-notification] Copied poster (${assessment.posted_by}): ${posterEmail} (tenant: ${tenant})`);
                     }

@@ -92,7 +92,9 @@ const BusinessDashboard = () => {
     const { isSpanish } = useTranslation();
     const tenant = getTenantFromDomain();
     const isEngland = tenant === 'england';
-    const brandName = isEngland ? 'EPC Cert' : 'The Berman';
+    const isPortuguese = tenant === 'portugal';
+    const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : isPortuguese ? 'Certificado Energia' : 'The Berman';
+    const logoUrl = isPortuguese ? '/certificado-energia-logo.svg' : '/logo.svg';
     const navigate = useNavigate();
     const [listing, setListing] = useState<CatalogueListing | null>(null);
     const [loading, setLoading] = useState(true);
@@ -417,13 +419,13 @@ const BusinessDashboard = () => {
                 <header className="bg-white border-b border-gray-200 sticky top-0 z-[9999] shadow-sm">
                     <div className="max-w-7xl mx-auto px-6 h-16 flex justify-between items-center">
                         <Link to="/" className="flex-shrink-0">
-                            <img src="/logo.svg" alt={`${brandName} Logo`} className="h-9 w-auto" />
+                            <img src={logoUrl} alt={`${brandName} Logo`} className="h-9 w-auto" />
                         </Link>
                         <nav className="hidden md:flex items-center gap-6">
-                            <Link to="/" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">{isSpanish ? 'Inicio' : 'Home'}</Link>
-                            <Link to="/catalogue" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">{isSpanish ? 'Catálogo' : 'Catalogue'}</Link>
-                            <Link to="/news" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">{isSpanish ? 'Noticias' : 'News'}</Link>
-                            <Link to="/contact-us" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">{isSpanish ? 'Contacto' : 'Contact'}</Link>
+                            <Link to="/" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">{isSpanish ? 'Inicio' : isPortuguese ? 'Início' : 'Home'}</Link>
+                            <Link to="/catalogue" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">{isSpanish ? 'Catálogo' : isPortuguese ? 'Catálogo' : 'Catalogue'}</Link>
+                            <Link to="/news" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">{isSpanish ? 'Noticias' : isPortuguese ? 'Notícias' : 'News'}</Link>
+                            <Link to="/contact-us" className="text-sm font-medium text-gray-600 hover:text-[#007F00] transition-colors">{isSpanish ? 'Contacto' : isPortuguese ? 'Contacto' : 'Contact'}</Link>
                         </nav>
                         <button onClick={handleSignOut} className="text-sm font-bold text-gray-500 hover:text-red-500 transition-colors flex items-center gap-2">
                             <LogOut size={16} /> {isSpanish ? 'Cerrar Sesión' : 'Sign Out'}
@@ -472,7 +474,7 @@ const BusinessDashboard = () => {
                                     {isSpanish ? 'Explorar Web' : 'Explore Website'}
                                 </Link>
                                 <button onClick={handleSignOut} className="flex-1 py-3 px-6 border border-gray-200 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors">
-                                    {isSpanish ? 'Cerrar Sesión' : 'Sign Out'}
+                                    {isSpanish ? 'Cerrar Sesión' : isPortuguese ? 'Terminar Sessão' : 'Sign Out'}
                                 </button>
                             </div>
                         </div>
@@ -510,7 +512,7 @@ const BusinessDashboard = () => {
                 <div className="container mx-auto px-6 h-20 flex justify-between items-center">
                     <div className="flex items-center gap-4 md:gap-8">
                         <Link to="/" className="hover:opacity-80 transition-opacity shrink-0">
-                            <img src="/logo.svg" alt={brandName} className="h-16 w-auto relative z-10" />
+                            <img src={logoUrl} alt={brandName} className="h-16 w-auto relative z-10" />
                         </Link>
 
                         <div className="h-10 w-px bg-white/10 hidden lg:block"></div>
@@ -518,10 +520,10 @@ const BusinessDashboard = () => {
                         <div className="hidden sm:block">
                             <div className="flex items-center gap-3">
                                 <h1 className="text-xl font-black text-white uppercase tracking-tight leading-none">
-                                    {isSpanish ? 'Gestionar Perfil' : 'Manage Profile'}
+                                    {isSpanish ? 'Gestionar Perfil' : isPortuguese ? 'Gerir Perfil' : 'Manage Profile'}
                                 </h1>
                                 <span className="px-2 py-0.5 bg-[#007F00]/20 text-[#007F00] text-[9px] font-black rounded uppercase tracking-widest border border-[#007F00]/30">
-                                    {isSpanish ? 'Portal de Empresa' : 'Business Portal'}
+                                    {isSpanish ? 'Portal de Empresa' : isPortuguese ? 'Portal de Negócio' : 'Business Portal'}
                                 </span>
                             </div>
                             <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mt-1">{listing.company_name}</p>
@@ -536,7 +538,7 @@ const BusinessDashboard = () => {
                         >
                             <div className="w-2 h-2 rounded-full bg-[#9ACD32] group-hover:animate-pulse"></div>
                             <span className="text-sm font-black text-white uppercase tracking-wider">
-                                {isSpanish ? 'Ver ' : 'View '}<span className="text-[#9ACD32]">{isSpanish ? 'Página Pública' : 'Public Page'}</span>
+                                {isSpanish ? 'Ver ' : isPortuguese ? 'Ver ' : 'View '}<span className="text-[#9ACD32]">{isSpanish ? 'Página Pública' : isPortuguese ? 'Página Pública' : 'Public Page'}</span>
                             </span>
                         </Link>
 
@@ -556,7 +558,7 @@ const BusinessDashboard = () => {
                     <div className={`absolute right-6 top-full mt-4 w-64 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl border border-gray-100 overflow-hidden transform origin-top transition-all duration-300 ease-out ${isMenuOpen ? 'scale-y-100 opacity-100' : 'scale-y-95 opacity-0 pointer-events-none'}`}>
                         <div className="py-2">
                             <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/50">
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Conectado como' : 'Logged in as'}</p>
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Conectado como' : isPortuguese ? 'Ligado como' : 'Logged in as'}</p>
                                 <p className="text-xs font-bold text-gray-900 truncate">{user?.email}</p>
                             </div>
                             <button
@@ -564,7 +566,7 @@ const BusinessDashboard = () => {
                                 className="w-full px-6 py-4 text-left text-sm font-black uppercase tracking-widest text-red-500 hover:bg-red-50 flex items-center gap-3 transition-colors"
                             >
                                 <LogOut size={16} />
-                                {isSpanish ? 'Cerrar Sesión' : 'Sign Out'}
+                                {isSpanish ? 'Cerrar Sesión' : isPortuguese ? 'Terminar Sessão' : 'Sign Out'}
                             </button>
                         </div>
                     </div>
@@ -580,19 +582,19 @@ const BusinessDashboard = () => {
                             onClick={() => document.getElementById('basic-info')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                             className="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-gray-600 hover:bg-white hover:text-[#007F00] hover:shadow-sm transition-all whitespace-nowrap"
                         >
-                            <Building2 size={14} /> {isSpanish ? 'Datos Básicos' : 'Basic Details'}
+                            <Building2 size={14} /> {isSpanish ? 'Datos Básicos' : isPortuguese ? 'Dados Básicos' : 'Basic Details'}
                         </button>
                         <button
                             onClick={() => document.getElementById('visuals')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                             className="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-[#007EA7] bg-[#007EA7]/5 border border-[#007EA7]/10 hover:bg-[#007EA7] hover:text-white transition-all whitespace-nowrap shadow-sm"
                         >
-                            <ImageIcon size={14} /> {isSpanish ? 'Medios del Catálogo' : 'Catalogue Media'}
+                            <ImageIcon size={14} /> {isSpanish ? 'Medios del Catálogo' : isPortuguese ? 'Mídia do Catálogo' : 'Catalogue Media'}
                         </button>
                         <button
                             onClick={() => document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                             className="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-gray-600 hover:bg-white hover:text-orange-600 transition-all whitespace-nowrap"
                         >
-                            <Tags size={14} /> {isSpanish ? 'Categorías' : 'Categories'}
+                            <Tags size={14} /> {isSpanish ? 'Categorías' : isPortuguese ? 'Categorias' : 'Categories'}
                         </button>
                         <button
                             onClick={() => document.getElementById('locations')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}

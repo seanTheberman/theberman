@@ -1,4 +1,4 @@
-export const generateHomeownerQuoteEmail = (customerName: string, websiteUrl: string = "https://theberman.eu", promoHtml: string = "", tenant: string = 'ireland', displayName: string = 'The Berman') => {
+export const generateHomeownerQuoteEmail = (customerName: string, websiteUrl: string = "https://theberman.eu", promoHtml: string = "", tenant: string = 'ireland', displayName: string = 'The Berman', logoUrl?: string) => {
     const isSpanish = tenant === 'spain';
     const isPortuguese = tenant === 'portugal';
     const brandName = displayName;
@@ -14,7 +14,7 @@ export const generateHomeownerQuoteEmail = (customerName: string, websiteUrl: st
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f7f4;">
     <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <div style="background-color: #007F00; color: white; padding: 40px 20px; text-align: center;">
-            <img src="${websiteUrl}/logo.svg" alt="${brandName}" style="height: 35px; margin-bottom: 15px; filter: brightness(0) invert(1);">
+            <img src="${logoUrl || `${websiteUrl}/logo.svg`}" alt="${brandName}" style="height: 35px; margin-bottom: 15px; filter: brightness(0) invert(1);">
             <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">${isSpanish ? 'Has Recibido un Nuevo Presupuesto' : isPortuguese ? 'Recebeu um Novo Orçamento' : 'New BER Quote Received'}</h1>
         </div>
 
