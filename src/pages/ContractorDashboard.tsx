@@ -8,12 +8,13 @@ const tenant = getTenantFromDomain();
 const isEngland = tenant === 'england';
 const isSpanish = tenant === 'spain';
 const isPortuguese = tenant === 'portugal';
+const SHOW_LOYALTY_PROGRAM = false; // Hidden until further notice
 const assessmentLabel = isEngland ? 'EPC' : isSpanish ? 'Certificado Energético' : isPortuguese ? 'Certificado Energético' : 'BER';
 const assessorLabel = isEngland ? 'Domestic Energy Assessor' : isSpanish ? 'Certificador Energético' : isPortuguese ? 'Perito Certificado' : 'BER Assessor';
 const regAuthority = isSpanish ? 'CEE CAT' : isEngland ? 'accredited' : isPortuguese ? 'ADENE' : 'SEAI';
 const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : isPortuguese ? 'Certificado Energia' : 'The Berman';
 const logoUrl = isPortuguese ? '/certificado-energia-logo.svg' : '/logo.svg';
-import { LogOut, HardHat, ClipboardList, CheckCircle2, Clock, X, TrendingUp, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, AlertCircle, Settings, MessageCircle, User, Menu, Plus, Search } from 'lucide-react';
+import { LogOut, HardHat, ClipboardList, Clock, X, TrendingUp, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, AlertCircle, Settings, MessageCircle, User, Menu, Plus, Search } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { DatePicker } from '../components/ui/DatePicker';
 import { geocodeAddress } from '../lib/geocoding';
@@ -63,7 +64,7 @@ interface Quote {
         scheduled_date: string | null;
         completed_at?: string | null;
         user_id: string;
-        status: 'live' | 'submitted' | 'pending_quote' | 'quote_accepted' | 'scheduled' | 'completed';
+        status: 'live' | 'submitted' | 'pending_quote' | 'quote_accepted' | 'scheduled' | 'completed' | 'expired';
         eircode?: string;
     };
     is_loyalty_payout?: boolean;
@@ -75,7 +76,7 @@ interface Assessment {
     town: string;
     county: string;
     property_type: string;
-    status: 'live' | 'submitted' | 'pending_quote' | 'quote_accepted' | 'scheduled' | 'completed';
+    status: 'live' | 'submitted' | 'pending_quote' | 'quote_accepted' | 'scheduled' | 'completed' | 'expired';
     created_at: string;
     scheduled_date: string | null;
     completed_at?: string | null;
@@ -1470,39 +1471,40 @@ const ContractorDashboard = () => {
                             )
                         ) : view === 'settings' ? (
                             <div className="animate-in fade-in duration-700 bg-gray-100 min-h-screen pb-20">
-                                {/* Loyalty Progress Banner */}
-                                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 md:rounded-3xl p-8 text-white shadow-xl relative overflow-hidden md:m-6 md:mt-6">
-                                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                                        <div className="flex-1 text-center md:text-left">
-                                            <h2 className="text-2xl font-black mb-2 flex items-center justify-center md:justify-start gap-2">
-                                                <TrendingUp className="text-blue-200" />
-                                                {isSpanish ? 'Programa de Fidelidad del Certificador' : isPortuguese ? 'Programa de Fidelidade do Perito' : 'Assessor Loyalty Program'}
-                                            </h2>
-                                            <p className="text-blue-100 font-medium">
-                                                {isSpanish ? 'Completa 10 evaluaciones y la tasa de plataforma del 11º trabajo va por nuestra cuenta.' : isPortuguese ? 'Conclua 10 avaliações e a taxa de plataforma do 11º trabalho é por nossa conta.' : 'Complete 10 assessments and your 11th job\'s platform fee is on us!'}
-                                                <span className="block text-sm text-blue-200 opacity-80 mt-1">{isSpanish ? 'Mantén un seguimiento de tu progreso hacia tu próximo trabajo gratuito.' : isPortuguese ? 'Acompanhe o seu progresso em direção ao próximo trabalho gratuito.' : 'Keep track of your progress toward your next free job.'}</span>
-                                            </p>
-                                        </div>
-                                        <div className="flex flex-col items-center justify-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 min-w-[200px] w-full md:w-auto">
-                                            <div className="text-4xl font-black mb-1">{(stats.loyaltyJobs % 11) > 10 ? 0 : (stats.loyaltyJobs % 11)}/10</div>
-                                            <div className="text-[10px] font-black uppercase tracking-widest text-blue-200 mb-4">{isSpanish ? 'Trabajos hacia tarifa gratis' : isPortuguese ? 'Trabalhos até isenção de taxa' : 'Jobs toward fee-free'}</div>
-                                            <div className="w-full bg-white/20 h-2 rounded-full overflow-hidden">
-                                                <div
-                                                    className="bg-green-400 h-full transition-all duration-1000"
-                                                    style={{ width: `${Math.min((stats.loyaltyJobs % 11) * 10, 100)}%` }}
-                                                ></div>
+                                {SHOW_LOYALTY_PROGRAM && (
+                                    <div className="bg-gradient-to-r from-blue-600 to-indigo-700 md:rounded-3xl p-8 text-white shadow-xl relative overflow-hidden md:m-6 md:mt-6">
+                                        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                                            <div className="flex-1 text-center md:text-left">
+                                                <h2 className="text-2xl font-black mb-2 flex items-center justify-center md:justify-start gap-2">
+                                                    <TrendingUp className="text-blue-200" />
+                                                    {isSpanish ? 'Programa de Fidelidad del Certificador' : isPortuguese ? 'Programa de Fidelidade do Perito' : 'Assessor Loyalty Program'}
+                                                </h2>
+                                                <p className="text-blue-100 font-medium">
+                                                    {isSpanish ? 'Completa 10 evaluaciones y la tasa de plataforma del 11º trabajo va por nuestra cuenta.' : isPortuguese ? 'Conclua 10 avaliações e a taxa de plataforma do 11º trabalho é por nossa conta.' : 'Complete 10 assessments and your 11th job\'s platform fee is on us!'}
+                                                    <span className="block text-sm text-blue-200 opacity-80 mt-1">{isSpanish ? 'Mantén un seguimiento de tu progreso hacia tu próximo trabajo gratuito.' : isPortuguese ? 'Acompanhe o seu progresso em direção ao próximo trabalho gratuito.' : 'Keep track of your progress toward your next free job.'}</span>
+                                                </p>
                                             </div>
-                                            {stats.loyaltyJobs % 11 === 10 && (
-                                                <div className="mt-3 text-[10px] font-black bg-green-500 text-white px-3 py-1 rounded-full animate-bounce">
-                                                {isSpanish ? '¡PRÓXIMO TRABAJO GRATIS!' : isPortuguese ? 'PRÓXIMO TRABALHO GRÁTIS!' : 'NEXT JOB IS FREE!'}
+                                            <div className="flex flex-col items-center justify-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 min-w-[200px] w-full md:w-auto">
+                                                <div className="text-4xl font-black mb-1">{(stats.loyaltyJobs % 11) > 10 ? 0 : (stats.loyaltyJobs % 11)}/10</div>
+                                                <div className="text-[10px] font-black uppercase tracking-widest text-blue-200 mb-4">{isSpanish ? 'Trabajos hacia tarifa gratis' : isPortuguese ? 'Trabalhos até isenção de taxa' : 'Jobs toward fee-free'}</div>
+                                                <div className="w-full bg-white/20 h-2 rounded-full overflow-hidden">
+                                                    <div
+                                                        className="bg-green-400 h-full transition-all duration-1000"
+                                                        style={{ width: `${Math.min((stats.loyaltyJobs % 11) * 10, 100)}%` }}
+                                                    ></div>
                                                 </div>
-                                            )}
+                                                {stats.loyaltyJobs % 11 === 10 && (
+                                                    <div className="mt-3 text-[10px] font-black bg-green-500 text-white px-3 py-1 rounded-full animate-bounce">
+                                                    {isSpanish ? '¡PRÓXIMO TRABAJO GRATIS!' : isPortuguese ? 'PRÓXIMO TRABALHO GRÁTIS!' : 'NEXT JOB IS FREE!'}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
+                                        {/* Decorative Background Elements */}
+                                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+                                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-400/10 rounded-full -ml-24 -mb-24 blur-3xl"></div>
                                     </div>
-                                    {/* Decorative Background Elements */}
-                                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-                                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-400/10 rounded-full -ml-24 -mb-24 blur-3xl"></div>
-                                </div>
+                                )}
                                 {/* SMS Notifications Banner */}
                                 <div className="bg-[#E6F4EA] border-b border-gray-200 py-12 px-4 text-center">
                                     <div className="flex items-center justify-center gap-2 mb-2">
@@ -2141,13 +2143,7 @@ const ContractorDashboard = () => {
                                                 <p className="text-sm text-green-700 text-center italic">{isSpanish ? 'Incluye tarifas de' : isPortuguese ? 'Inclui taxas de'} {regAuthority}.</p>
                                                 <p className="text-sm text-green-700 text-center italic">{isSpanish ? 'Incluye IVA (si estás registrado).' : isPortuguese ? 'Inclui IVA (se registado).' : 'Include VAT (if registered).'}</p>
                                                 <p className="text-sm text-green-700 text-center font-bold">
-                                                    {(profile?.completed_jobs_count || 0) % 11 === 10 ? (
-                                                        <span className="flex items-center justify-center gap-1.5 text-blue-600 bg-blue-50 py-1 rounded-lg border border-blue-100 animate-pulse">
-                                                            <CheckCircle2 size={14} /> {isSpanish ? 'TRABAJO DE FIDELIDAD:' : isPortuguese ? 'TRABALHO DE FIDELIDADE:' : 'LOYALTY JOB:'} {formatCurrency(0)} {isSpanish ? 'TASA DE PLATAFORMA' : isPortuguese ? 'TAXA DE PLATAFORMA' : 'PLATFORM FEE'}
-                                                        </span>
-                                                    ) : (
-                                                        <span className="italic">{isSpanish ? 'Incluye' : isPortuguese ? 'Inclui'} {formatCurrency(25)} {isSpanish ? 'tasa de plataforma.' : isPortuguese ? 'taxa de plataforma.' : 'platform fee.'}</span>
-                                                    )}
+                                                    <span className="italic">{isSpanish ? 'Incluye' : isPortuguese ? 'Inclui' : 'Includes'} {formatCurrency(25)} {isSpanish ? 'tasa de plataforma.' : isPortuguese ? 'taxa de plataforma.' : 'platform fee.'}</span>
                                                 </p>
 
                                                 <div className="relative mt-4">
