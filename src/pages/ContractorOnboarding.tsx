@@ -191,7 +191,7 @@ const ContractorOnboarding = () => {
         // Otherwise, pre-fill from existing profile (data admin already entered)
         supabase
             .from('profiles')
-            .select('phone, county, town, seai_number, assessor_type, company_name, website_url')
+            .select('phone, county, town, seai_number, assessor_type, company_name, website_url, preferred_counties, preferred_towns, insurance_holder, vat_registered, about_me')
             .eq('id', user.id)
             .maybeSingle()
             .then(({ data: profile }) => {
@@ -204,12 +204,17 @@ const ContractorOnboarding = () => {
                     seaiNumber: profile.seai_number || prev.seaiNumber,
                     // assessor_type stored as "Both", "Domestic Assessor", "Commercial Assessor" or "Domestic Assessor & Commercial Assessor"
                     assessorTypes: profile.assessor_type
-                        ? profile.assessor_type === 'Both' 
+                        ? profile.assessor_type === 'Both'
                             ? ['Domestic Assessor', 'Commercial Assessor']
                             : profile.assessor_type.split(' & ').filter(Boolean)
                         : prev.assessorTypes,
                     companyName: profile.company_name || prev.companyName,
                     website: profile.website_url || prev.website,
+                    serviceAreas: profile.preferred_counties?.length ? profile.preferred_counties : prev.serviceAreas,
+                    preferredTowns: profile.preferred_towns?.length ? profile.preferred_towns : prev.preferredTowns,
+                    insuranceHolder: profile.insurance_holder ?? prev.insuranceHolder,
+                    vatRegistered: profile.vat_registered ?? prev.vatRegistered,
+                    bio: profile.about_me || prev.bio,
                 }));
             });
     }, [user]);
