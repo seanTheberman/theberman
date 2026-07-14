@@ -1512,7 +1512,7 @@ const ContractorDashboard = () => {
                                         <MessageCircle className="text-green-800 fill-green-800" size={24} />
                                     </div>
                                     <p className="text-sm text-green-700">
-                                        {isSpanish ? 'Actualmente estás recibiendo notificaciones de trabajos por SMS en' : isPortuguese ? 'Está atualmente a receber notificações de trabalhos por SMS em'} <span className="font-bold underline">{profile?.phone}</span>.
+                                        {isSpanish ? 'Actualmente estás recibiendo notificaciones de trabajos por SMS en' : isPortuguese ? 'Está atualmente a receber notificações de trabalhos por SMS em' : 'You are currently receiving job notifications by SMS at'} <span className="font-bold underline">{profile?.phone}</span>.
                                         <button
                                             onClick={async () => {
                                                 const { error } = await supabase
@@ -1535,7 +1535,7 @@ const ContractorDashboard = () => {
                                 {/* County Preferences */}
                                 <div className="py-12 px-4 text-center">
                                     <h3 className="text-gray-600 font-medium mb-8 flex items-center justify-center gap-2 text-lg">
-                                        {isSpanish ? 'Áreas de Servicio / Provincias' : isPortuguese ? 'Áreas de Serviço / Distritos'} <span className="text-red-500">*</span> <MapPin className="text-gray-700 fill-gray-700" size={24} />
+                                        {isSpanish ? 'Áreas de Servicio / Provincias' : isPortuguese ? 'Áreas de Serviço / Distritos' : 'Service Areas / Counties'} <span className="text-red-500">*</span> <MapPin className="text-gray-700 fill-gray-700" size={24} />
                                     </h3>
                                     <p className="text-sm text-gray-500 mb-6">{isSpanish ? 'Selecciona tu ubicación preferida donde quieres recibir notificaciones de trabajos. Debes seleccionar al menos una.' : isPortuguese ? 'Selecione a sua localização preferida onde quer receber notificações de trabalhos. Deve selecionar pelo menos uma.' : 'Select your Preference location where you want to receive job notifications. You must select at least one.'}</p>
                                     <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 px-4">
@@ -1602,13 +1602,13 @@ const ContractorDashboard = () => {
                                 {/* My Profile Form */}
                                 <div className="max-w-3xl mx-auto px-4 text-center">
                                     <h3 className="text-gray-600 font-medium mb-8 flex items-center justify-center gap-2 text-lg">
-                                        {isSpanish ? 'Mi Perfil' : isPortuguese ? 'O Meu Perfil'} <div className="bg-gray-700 rounded-full p-1"><Settings className="text-white w-4 h-4" /></div>
+                                        {isSpanish ? 'Mi Perfil' : isPortuguese ? 'O Meu Perfil' : 'My Profile'} <div className="bg-gray-700 rounded-full p-1"><Settings className="text-white w-4 h-4" /></div>
                                     </h3>
 
                                     <div className="space-y-6 text-left">
                                         <div>
                                             <label className="block text-xs font-medium text-gray-700 mb-1 ml-1">{isSpanish ? 'Sobre Mí' : isPortuguese ? 'Sobre Mim' : 'About Me'}</label>
-                                            <p className="text-[10px] text-gray-500 mb-2 ml-1">{isSpanish ? 'La información que envíes a continuación se muestra en la sección \'Sobre\' de tu perfil de' : isPortuguese ? 'A informação que enviar abaixo é apresentada na secção \'Sobre\' do seu perfil de'} {assessorLabel.toLowerCase()} {isSpanish ? 'en el sitio web (máx 200 palabras).' : isPortuguese ? 'no site (máx 200 palavras).' : 'profile on the website (max 200 words).'}</p>
+                                            <p className="text-[10px] text-gray-500 mb-2 ml-1">{isSpanish ? 'La información que envíes a continuación se muestra en la sección \'Sobre\' de tu perfil de' : isPortuguese ? 'A informação que enviar abaixo é apresentada na secção \'Sobre\' do seu perfil de' : "The information you submit below is displayed in the 'About' section of your "} {assessorLabel.toLowerCase()} {isSpanish ? 'en el sitio web (máx 200 palabras).' : isPortuguese ? 'no site (máx 200 palavras).' : 'profile on the website (max 200 words).'}</p>
                                             <textarea
                                                 value={profile?.about_me || ''}
                                                 onChange={(e) => setProfile({ ...profile, about_me: e.target.value })}
@@ -2014,11 +2014,11 @@ const ContractorDashboard = () => {
                                         <h2 className="text-2xl font-bold text-gray-800 mb-2">{isSpanish ? 'Fecha más temprana para la inspección.' : isPortuguese ? 'Data mais próxima para a inspeção.' : 'Earliest date you can do the survey.'}</h2>
                                         {myQuotes.find(q => q.assessment_id === selectedJob.id) && (
                                             <p className="text-sm font-medium text-green-700 mb-4 bg-green-50 py-2 px-4 rounded-full inline-block">
-                                                {isSpanish ? 'Tu presupuesto anterior fue' : isPortuguese ? 'O seu orçamento anterior foi'} <span className="underline font-bold">{formatCurrency(myQuotes.find(q => q.assessment_id === selectedJob.id)?.price)}</span>
+                                                {isSpanish ? 'Tu presupuesto anterior fue' : isPortuguese ? 'O seu orçamento anterior foi' : 'Your previous quote was'} <span className="underline font-bold">{formatCurrency(myQuotes.find(q => q.assessment_id === selectedJob.id)?.price)}</span>
                                             </p>
                                         )}
                                         <p className="text-sm text-gray-600">
-                                            {isSpanish ? 'La' : isPortuguese ? 'A'} <span className="text-amber-600 underline">{isSpanish ? 'fecha destacada' : isPortuguese ? 'data destacada'}</span> {isSpanish ? 'es la fecha y hora preferida del cliente.' : isPortuguese ? 'é a data e hora preferida do cliente.' : "is the customer's preferred date & time."}
+                                            {isSpanish ? 'La' : isPortuguese ? 'A' : 'The'} <span className="text-amber-600 underline">{isSpanish ? 'fecha destacada' : isPortuguese ? 'data destacada' : 'highlighted date'}</span> {isSpanish ? 'es la fecha y hora preferida del cliente.' : isPortuguese ? 'é a data e hora preferida do cliente.' : "is the customer's preferred date & time."}
                                             {isSpanish ? 'Selecciona la fecha más temprana en la que estés disponible, incluso si es anterior a la fecha preferida del cliente.' : isPortuguese ? 'Selecione a data mais próxima em que está disponível, mesmo que seja antes da data preferida do cliente.' : "Select the earliest date that you are available, even if it's before the customer's preferred date."}
                                         </p>
                                     </div>
@@ -2079,12 +2079,12 @@ const ContractorDashboard = () => {
                                         >
                                             <X size={24} />
                                         </button>
-                                        <h2 className="text-xl font-bold text-green-800">{isSpanish ? 'Presupuesto para este trabajo en' : isPortuguese ? 'Orçamento para este trabalho em'} {selectedJob.town}, {isSpanish ? 'Prov.' : isPortuguese ? 'Dist.' : 'Co.'} {selectedJob.county}</h2>
+                                        <h2 className="text-xl font-bold text-green-800">{isSpanish ? 'Presupuesto para este trabajo en' : isPortuguese ? 'Orçamento para este trabalho em' : 'Quote for this job in'} {selectedJob.town}, {isSpanish ? 'Prov.' : isPortuguese ? 'Dist.' : 'Co.'} {selectedJob.county}</h2>
                                         {(() => {
                                             const previousQuote = myQuotes.find(q => q.assessment_id === selectedJob.id);
                                             return previousQuote ? (
                                                 <p className="text-sm font-medium text-green-700">
-                                                    {isSpanish ? 'Tu presupuesto anterior fue' : isPortuguese ? 'O seu orçamento anterior foi'} <span className="underline font-bold">{formatCurrency(previousQuote.price)}</span>
+                                                    {isSpanish ? 'Tu presupuesto anterior fue' : isPortuguese ? 'O seu orçamento anterior foi' : 'Your previous quote was'} <span className="underline font-bold">{formatCurrency(previousQuote.price)}</span>
                                                 </p>
                                             ) : (
                                                 <p className="text-sm text-green-600">{isSpanish ? 'Envía tu presupuesto a continuación.' : isPortuguese ? 'Envie o seu orçamento abaixo.' : 'Submit your quote below.'}</p>
@@ -2140,7 +2140,7 @@ const ContractorDashboard = () => {
                                                 <h3 className="font-bold text-green-800 text-center">{isSpanish ? 'Tu Presupuesto' : isPortuguese ? 'O Seu Orçamento' : 'Your Quote'}</h3>
                                             </div>
                                             <div className="p-6 space-y-4">
-                                                <p className="text-sm text-green-700 text-center italic">{isSpanish ? 'Incluye tarifas de' : isPortuguese ? 'Inclui taxas de'} {regAuthority}.</p>
+                                                <p className="text-sm text-green-700 text-center italic">{isSpanish ? 'Incluye tarifas de' : isPortuguese ? 'Inclui taxas de' : 'Includes fees for'} {regAuthority}.</p>
                                                 <p className="text-sm text-green-700 text-center italic">{isSpanish ? 'Incluye IVA (si estás registrado).' : isPortuguese ? 'Inclui IVA (se registado).' : 'Include VAT (if registered).'}</p>
                                                 <p className="text-sm text-green-700 text-center font-bold">
                                                     <span className="italic">{isSpanish ? 'Incluye' : isPortuguese ? 'Inclui' : 'Includes'} {formatCurrency(25)} {isSpanish ? 'tasa de plataforma.' : isPortuguese ? 'taxa de plataforma.' : 'platform fee.'}</span>
@@ -2169,11 +2169,11 @@ const ContractorDashboard = () => {
                                                         className="mt-1 w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500"
                                                     />
                                                     <label htmlFor="termsCheck" className="text-sm text-gray-600">
-                                                        {isSpanish ? 'Acepto los' : isPortuguese ? 'Aceito os'} <a href="/assessor-terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">{isSpanish ? 'términos de uso' : isPortuguese ? 'termos de utilização' : 'terms of use'}</a>
+                                                        {isSpanish ? 'Acepto los' : isPortuguese ? 'Aceito os' : 'I agree to the'} <a href="/assessor-terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">{isSpanish ? 'términos de uso' : isPortuguese ? 'termos de utilização' : 'terms of use'}</a>
                                                     </label>
                                                 </div>
                                                 <p className="text-sm text-gray-500 text-center">
-                                                    {isSpanish ? 'y estoy disponible desde' : isPortuguese ? 'e estou disponível desde'} {selectedAvailabilityDate ? new Date(selectedAvailabilityDate).toLocaleDateString(isSpanish ? 'es-ES' : isPortuguese ? 'pt-PT' : 'en-IE', { weekday: 'short', day: '2-digit', month: 'short' }) : (isSpanish ? 'la fecha seleccionada' : isPortuguese ? 'a data selecionada' : 'selected date')}.
+                                                    {isSpanish ? 'y estoy disponible desde' : isPortuguese ? 'e estou disponível desde' : 'and I am available from'} {selectedAvailabilityDate ? new Date(selectedAvailabilityDate).toLocaleDateString(isSpanish ? 'es-ES' : isPortuguese ? 'pt-PT' : 'en-IE', { weekday: 'short', day: '2-digit', month: 'short' }) : (isSpanish ? 'la fecha seleccionada' : isPortuguese ? 'a data selecionada' : 'selected date')}.
                                                 </p>
 
                                                 <button
