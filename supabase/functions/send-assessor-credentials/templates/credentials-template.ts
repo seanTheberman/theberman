@@ -54,11 +54,10 @@ export const generateCredentialsHtml = (fullName: string, email: string, passwor
                 <p>Registro de ${roleName}</p>
             </div>
             <div class="content">
-                <p class="greeting">Hola ${fullName.split(' ')[0]},</p>
-                
+                <p class="greeting">Hola ${fullName},</p>
+
                 <p class="body-text">
-                    Has sido registrado como <strong>${roleName}</strong> en la plataforma
-                    <strong>${brandName}</strong>. A continuación están tus credenciales de acceso para comenzar.
+                    Muchas gracias por atendernos al teléfono recientemente, si deseas recibir solicitudes de presupuestos para realizar Certificados en Eficiencia Energética a través de nuestra plataforma por favor sigue los pasos indicados abajo para tu registro.
                 </p>
 
                 <div class="credentials-box">
@@ -93,12 +92,13 @@ export const generateCredentialsHtml = (fullName: string, email: string, passwor
                 </p>
 
                 <p class="body-text">
-                    Saludos cordiales,<br>
-                    <strong>El Equipo de ${brandName}</strong>
+                    Muchas gracias,<br>
+                    <strong>el equipo de certificados energéticos.eu</strong><br>
+                    <span style="font-size:13px; color:#888;">Powered by the BERman.</span>
                 </p>
             </div>
             <div class="footer">
-                <p>&copy; ${new Date().getFullYear()} ${brandName}. Todos los derechos reservados.</p>
+                <p>&copy; ${new Date().getFullYear()} certificados energéticos.eu. Todos los derechos reservados.</p>
                 <div class="footer-links">
                     <a href="${websiteUrl}">Visitar Sitio Web</a>
                 </div>
