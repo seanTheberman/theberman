@@ -95,17 +95,11 @@ Deno.serve(async (req: Request) => {
             throw new Error(`Missing validation messages for tenant: ${tenant}`);
         }
 
-        // For contractors, require at least one service area (county or town)
+        // Admin-created contractors only need email, full name and phone at creation time.
+        // The assessor will provide their registration number, assessor type and service areas
+        // when they complete onboarding after first login.
         if (role === 'contractor') {
-            if ((!preferredCounties || preferredCounties.length === 0) && (!preferredTowns || preferredTowns.length === 0)) {
-                throw new Error(validationMessages.serviceAreaRequired);
-            }
-            if (!seaiNumber) {
-                throw new Error(validationMessages.registrationRequired);
-            }
-            if (!assessorType) {
-                throw new Error(validationMessages.assessorTypeRequired);
-            }
+            // No mandatory service area / registration number / assessor type here.
         }
 
         // Always generate a strong unique temporary password per user unless the caller explicitly provided one.
@@ -144,7 +138,8 @@ Deno.serve(async (req: Request) => {
             county: county,
             town: town,
             tenant: tenant,
-            registration_status: role === 'contractor' ? 'completed' : 'pending',
+            // Admin-created contractors must complete onboarding before accessing the dashboard.
+            registration_status: 'pending',
             is_active: true,
         };
 
@@ -152,12 +147,13 @@ Deno.serve(async (req: Request) => {
         if (role === 'contractor') {
             profileData = {
                 ...profileData,
-                seai_number: seaiNumber,
-                assessor_type: assessorType,
-                company_name: companyName,
+                seai_number: seaiNumber || null,
+                assessor_type: assessorType || null,
+                company_name: companyName || null,
                 preferred_counties: preferredCounties || [],
                 preferred_towns: preferredTowns || [],
-                subscription_status: 'active',
+                // Keep subscription inactive until the assessor completes onboarding.
+                subscription_status: 'inactive',
                 stripe_payment_id: 'FREE_ASSESSOR',
             };
         } else if (role === 'business') {

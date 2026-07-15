@@ -18,7 +18,7 @@ import { LogOut, HardHat, ClipboardList, Clock, X, TrendingUp, Briefcase, Calend
 import { useNavigate, Link } from 'react-router-dom';
 import { DatePicker } from '../components/ui/DatePicker';
 import { geocodeAddress } from '../lib/geocoding';
-import { getCountiesForTenant } from '../lib/tenantData';
+import { getCountiesForTenant, getTownsForTenant } from '../lib/tenantData';
 
 import toast from 'react-hot-toast';
 
@@ -110,6 +110,7 @@ interface Assessment {
 }
 
 const COUNTIES = getCountiesForTenant(tenant);
+const TOWNS_DATA = getTownsForTenant(tenant);
 
 const ContractorDashboard = () => {
     const { t, isSpanish } = useTranslation();
@@ -246,6 +247,7 @@ const ContractorDashboard = () => {
                     preferred_counties: profileData.preferred_counties?.length
                         ? profileData.preferred_counties
                         : (profileData.county ? [profileData.county] : []),
+                    preferred_towns: profileData.preferred_towns || [],
                 });
             }
 
@@ -361,7 +363,13 @@ const ContractorDashboard = () => {
             let filteredAvailableJobs = activeJobs?.filter(j => !quotedIds.has(j.id)) || [];
 
             // 2. Apply location preference filtering if configured
-            if (profileData?.preferred_counties && profileData.preferred_counties.length > 0) {
+            // If specific towns/localities are selected, only show jobs in those towns.
+            // Otherwise fall back to the broader county/region selection.
+            if (profileData?.preferred_towns && profileData.preferred_towns.length > 0) {
+                filteredAvailableJobs = filteredAvailableJobs.filter(job =>
+                    job.town && profileData.preferred_towns.includes(job.town)
+                );
+            } else if (profileData?.preferred_counties && profileData.preferred_counties.length > 0) {
                 filteredAvailableJobs = filteredAvailableJobs.filter(job =>
                     profileData.preferred_counties.includes(job.county)
                 );
@@ -1557,15 +1565,20 @@ const ContractorDashboard = () => {
                                                             newCounties = [...current, county];
                                                         }
 
+                                                        // Remove any towns that belong to counties no longer selected
+                                                        const townsToKeep = newCounties.flatMap((c: string) => TOWNS_DATA[c] || []);
+                                                        const newTowns = (profile?.preferred_towns || []).filter((t: string) => townsToKeep.includes(t));
+
                                                         // Update local state first for immediate UI response
-                                                        setProfile({ ...profile, preferred_counties: newCounties });
+                                                        setProfile({ ...profile, preferred_counties: newCounties, preferred_towns: newTowns });
 
                                                         // Auto-save to database
                                                         try {
                                                             const { error } = await supabase
                                                                 .from('profiles')
                                                                 .update({
-                                                                    preferred_counties: newCounties
+                                                                    preferred_counties: newCounties,
+                                                                    preferred_towns: newTowns
                                                                 })
                                                                 .eq('id', user?.id);
 
@@ -1595,6 +1608,83 @@ const ContractorDashboard = () => {
                                         })}
                                     </div>
                                 </div>
+
+                                {/* Preferred Towns / Localities */}
+                                {profile?.preferred_counties && profile.preferred_counties.length > 0 && (
+                                    <div className="py-12 px-4 text-center bg-white/50">
+                                        <h3 className="text-gray-600 font-medium mb-6 flex items-center justify-center gap-2 text-lg">
+                                            {isSpanish ? 'Ciudades / Localidades Preferidas' : isPortuguese ? 'Cidades / Localidades Preferidas' : 'Preferred Towns / Localities'} <span className="text-gray-300 text-sm">({isSpanish ? 'opcional' : isPortuguese ? 'opcional' : 'optional'})</span> <MapPin className="text-gray-700 fill-gray-700" size={22} />
+                                        </h3>
+                                        <p className="text-sm text-gray-500 mb-6">
+                                            {isSpanish ? 'Selecciona ciudades específicas dentro de tus comunidades para recibir trabajos más localizados.' : isPortuguese ? 'Selecione cidades específicas dentro das suas regiões para receber trabalhos mais direcionados.' : 'Select specific towns within your counties to receive more targeted jobs.'}
+                                        </p>
+                                        <div className="max-w-7xl mx-auto space-y-6 text-left px-4">
+                                            {profile.preferred_counties.map((county: string) => {
+                                                const towns = TOWNS_DATA[county] || [];
+                                                if (towns.length === 0) return null;
+                                                const selectedTowns = profile?.preferred_towns?.filter((t: string) => towns.includes(t)) || [];
+                                                const allSelected = selectedTowns.length === towns.length;
+                                                return (
+                                                    <div key={county} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                                                        <div className="flex items-center justify-between mb-3">
+                                                            <h4 className="font-bold text-gray-700">{county}</h4>
+                                                            <button
+                                                                type="button"
+                                                                onClick={async () => {
+                                                                    const newTowns = allSelected
+                                                                        ? (profile?.preferred_towns || []).filter((t: string) => !towns.includes(t))
+                                                                        : [...new Set([...(profile?.preferred_towns || []), ...towns])];
+                                                                    setProfile({ ...profile, preferred_towns: newTowns });
+                                                                    try {
+                                                                        const { error } = await supabase.from('profiles').update({ preferred_towns: newTowns }).eq('id', user?.id);
+                                                                        if (error) throw error;
+                                                                    } catch (err) {
+                                                                        console.error('Failed to save preferred towns:', err);
+                                                                        toast.error(isSpanish ? 'Error al guardar ciudades preferidas' : isPortuguese ? 'Erro ao guardar cidades preferidas' : 'Failed to save preferred towns');
+                                                                    }
+                                                                }}
+                                                                className="text-xs font-bold text-[#007F00] hover:underline"
+                                                            >
+                                                                {allSelected
+                                                                    ? (isSpanish ? 'Quitar todas' : isPortuguese ? 'Limpar todas' : 'Clear all')
+                                                                    : (isSpanish ? 'Seleccionar todas' : isPortuguese ? 'Selecionar todas' : 'Select all')}
+                                                            </button>
+                                                        </div>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {towns.map(town => {
+                                                                const isSelected = profile?.preferred_towns?.includes(town) || false;
+                                                                return (
+                                                                    <button
+                                                                        key={town}
+                                                                        type="button"
+                                                                        onClick={async () => {
+                                                                            const current = profile?.preferred_towns || [];
+                                                                            const newTowns = current.includes(town) ? current.filter((t: string) => t !== town) : [...current, town];
+                                                                            setProfile({ ...profile, preferred_towns: newTowns });
+                                                                            try {
+                                                                                const { error } = await supabase.from('profiles').update({ preferred_towns: newTowns }).eq('id', user?.id);
+                                                                                if (error) throw error;
+                                                                            } catch (err) {
+                                                                                console.error('Failed to save preferred town:', err);
+                                                                                toast.error(isSpanish ? 'Error al guardar ciudad' : isPortuguese ? 'Erro ao guardar cidade' : 'Failed to save town');
+                                                                            }
+                                                                        }}
+                                                                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-all ${isSelected
+                                                                            ? 'bg-[#007F00] text-white border-[#007F00]'
+                                                                            : 'bg-white text-gray-600 border-gray-200 hover:border-[#007F00] hover:text-[#007F00]'
+                                                                            }`}
+                                                                    >
+                                                                        {town}
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* My Profile Separator */}
                                 <div className="border-t border-white mb-8"></div>

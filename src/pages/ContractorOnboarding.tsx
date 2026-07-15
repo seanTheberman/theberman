@@ -326,23 +326,34 @@ const ContractorOnboarding = () => {
 
             sessionStorage.setItem('pending_assessor_registration', JSON.stringify(registrationData));
 
-            // Update profile with pending status — admin will manually activate
+            const isAdminCreated = user?.user_metadata?.is_admin_created === true;
+
+            // Update profile — admin-created users are activated immediately after onboarding.
+            const profileUpdate: any = {
+                role: 'contractor',
+                phone: formData.phone,
+                home_county: formData.homeCounty,
+                seai_number: formData.seaiNumber,
+                insurance_holder: formData.insuranceHolder,
+                vat_registered: formData.vatRegistered,
+                assessor_type: formData.assessorTypes.length === 2 ? 'Both' : formData.assessorTypes.join(' & '),
+                preferred_counties: formData.serviceAreas,
+                preferred_towns: formData.preferredTowns,
+                company_name: formData.companyName,
+                website_url: formData.website,
+            };
+
+            if (isAdminCreated) {
+                profileUpdate.registration_status = 'completed';
+                profileUpdate.subscription_status = 'active';
+                profileUpdate.is_active = true;
+            } else {
+                profileUpdate.registration_status = 'pending';
+            }
+
             const { error: profileUpdateError } = await supabase
                 .from('profiles')
-                .update({
-                    role: 'contractor',
-                    registration_status: 'pending',
-                    phone: formData.phone,
-                    home_county: formData.homeCounty,
-                    seai_number: formData.seaiNumber,
-                    insurance_holder: formData.insuranceHolder,
-                    vat_registered: formData.vatRegistered,
-                    assessor_type: formData.assessorTypes.length === 2 ? 'Both' : formData.assessorTypes.join(' & '),
-                    preferred_counties: formData.serviceAreas,
-                    preferred_towns: formData.preferredTowns,
-                    company_name: formData.companyName,
-                    website_url: formData.website,
-                })
+                .update(profileUpdate)
                 .eq('id', user?.id);
 
             if (profileUpdateError) {
@@ -350,7 +361,10 @@ const ContractorOnboarding = () => {
                 throw profileUpdateError;
             }
 
-            toast.success(lbl.registrationSubmitted);
+            toast.success(isAdminCreated
+                ? (isSpanish ? '¡Registro completado! Redirigiendo a tu panel...' : tenant === 'portugal' ? 'Registo concluído! A redirecionar para o painel...' : 'Registration completed! Redirecting to your dashboard...')
+                : lbl.registrationSubmitted
+            );
             await refreshProfile();
             sessionStorage.removeItem(`pending_assessor_registration_${user?.id}`);
             navigate('/dashboard/ber-assessor', { replace: true });

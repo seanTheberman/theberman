@@ -149,9 +149,8 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Assessor Type</label>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Assessor Type <span className="text-gray-300">(optional)</span></label>
                                     <select
-                                        required
                                         value={newUserFormData.assessorType}
                                         onChange={(e) => setNewUserFormData({ ...newUserFormData, assessorType: e.target.value })}
                                         className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#007F00]/20 focus:border-[#007F00] bg-white"
@@ -178,8 +177,8 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
                             </div>
 
                             <div className="mt-6">
-                                <label className="block text-[10px] font-black text-red-600 uppercase tracking-widest mb-3">Service Areas ({countyLabel}) *</label>
-                                <p className="text-xs text-gray-500 mb-3">Select at least one {countyLabel.toLowerCase().slice(0, -1)} where this assessor can work</p>
+                                <label className="block text-[10px] font-black text-gray-600 uppercase tracking-widest mb-3">Service Areas ({countyLabel}) <span className="text-gray-300">(optional)</span></label>
+                                <p className="text-xs text-gray-500 mb-3">Select {countyLabel.toLowerCase().slice(0, -1)} where this assessor can work. The assessor can also choose these later during onboarding.</p>
                                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-40 overflow-y-auto p-2 border border-gray-200 rounded-xl bg-gray-50">
                                     {COUNTIES.map(county => (
                                         <button
