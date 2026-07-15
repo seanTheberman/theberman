@@ -285,7 +285,7 @@ export const generateCredentialsHtml = (fullName: string, email: string, passwor
                     <ol>
                         <li><strong>Log in</strong> using the credentials above</li>
                         <li><strong>Complete your registration</strong> by filling in your assessor details</li>
-                        <li>Start receiving BER assessment jobs!</li>
+                        <li>Start receiving EPC assessment jobs!</li>
                     </ol>
                 </div>
 
