@@ -722,13 +722,19 @@ const ContractorOnboarding = () => {
                         </div>
 
                         {/* Preferred Towns (optional) */}
-                        {formData.serviceAreas.length > 0 && (
-                            <div className="pt-6">
-                                <label className="block text-lg font-bold text-gray-900 mb-4">
-                                    {isSpanish ? 'Ciudades Preferidas (Opcional)' : tenant === 'portugal' ? 'Cidades Preferidas (Opcional)' : 'Preferred Towns (Optional)'}
-                                </label>
-                                <p className="text-sm text-gray-500 mb-4">{isSpanish ? 'Selecciona ciudades específicas dentro de tus comunidades para recibir trabajos más localizados.' : tenant === 'portugal' ? 'Selecione cidades específicas dentro das suas regiões para receber trabalhos mais direcionados.' : 'Select specific towns within your counties to receive more targeted jobs.'}</p>
-                                {formData.serviceAreas.map(county => {
+                        <div className="pt-6">
+                            <label className="block text-lg font-bold text-gray-900 mb-4">
+                                {isSpanish ? 'Ciudades / Localidades Preferidas (Opcional)' : tenant === 'portugal' ? 'Cidades / Localidades Preferidas (Opcional)' : 'Preferred Towns / Localities (Optional)'}
+                            </label>
+                            <p className="text-sm text-gray-500 mb-4">{isSpanish ? 'Selecciona ciudades específicas dentro de tus comunidades para recibir trabajos más localizados.' : tenant === 'portugal' ? 'Selecione cidades específicas dentro das suas regiões para receber trabalhos mais direcionados.' : 'Select specific towns/localities within your counties to receive more targeted jobs.'}</p>
+
+                            {formData.serviceAreas.length === 0 && (
+                                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+                                    {isSpanish ? 'Selecciona al menos una comunidad arriba para ver sus ciudades y localidades.' : tenant === 'portugal' ? 'Selecione pelo menos uma região acima para ver as suas cidades e localidades.' : 'Select at least one county/region above to see its towns and localities.'}
+                                </div>
+                            )}
+
+                            {formData.serviceAreas.map(county => {
                                     const towns = TOWNS_DATA[county];
                                     if (!towns || towns.length === 0) return null;
                                     const selectedTowns = formData.preferredTowns.filter(t => towns.includes(t));
@@ -770,7 +776,6 @@ const ContractorOnboarding = () => {
                                 })}
                                 <p className="text-xs text-gray-500 mt-2 text-right">{formData.preferredTowns.length} {isSpanish ? 'ciudades seleccionadas' : tenant === 'portugal' ? 'cidades selecionadas' : 'towns selected'}</p>
                             </div>
-                        )}
 
                         <div className="pt-8">
                             <button

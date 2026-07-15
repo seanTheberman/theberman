@@ -1610,16 +1610,22 @@ const ContractorDashboard = () => {
                                 </div>
 
                                 {/* Preferred Towns / Localities */}
-                                {profile?.preferred_counties && profile.preferred_counties.length > 0 && (
-                                    <div className="py-12 px-4 text-center bg-white/50">
-                                        <h3 className="text-gray-600 font-medium mb-6 flex items-center justify-center gap-2 text-lg">
-                                            {isSpanish ? 'Ciudades / Localidades Preferidas' : isPortuguese ? 'Cidades / Localidades Preferidas' : 'Preferred Towns / Localities'} <span className="text-gray-300 text-sm">({isSpanish ? 'opcional' : isPortuguese ? 'opcional' : 'optional'})</span> <MapPin className="text-gray-700 fill-gray-700" size={22} />
-                                        </h3>
-                                        <p className="text-sm text-gray-500 mb-6">
-                                            {isSpanish ? 'Selecciona ciudades específicas dentro de tus comunidades para recibir trabajos más localizados.' : isPortuguese ? 'Selecione cidades específicas dentro das suas regiões para receber trabalhos mais direcionados.' : 'Select specific towns within your counties to receive more targeted jobs.'}
-                                        </p>
-                                        <div className="max-w-7xl mx-auto space-y-6 text-left px-4">
-                                            {profile.preferred_counties.map((county: string) => {
+                                <div className="py-12 px-4 text-center bg-white/50">
+                                    <h3 className="text-gray-600 font-medium mb-6 flex items-center justify-center gap-2 text-lg">
+                                        {isSpanish ? 'Ciudades / Localidades Preferidas' : isPortuguese ? 'Cidades / Localidades Preferidas' : 'Preferred Towns / Localities'} <span className="text-gray-300 text-sm">({isSpanish ? 'opcional' : isPortuguese ? 'opcional' : 'optional'})</span> <MapPin className="text-gray-700 fill-gray-700" size={22} />
+                                    </h3>
+                                    <p className="text-sm text-gray-500 mb-6">
+                                        {isSpanish ? 'Selecciona ciudades específicas dentro de tus comunidades para recibir trabajos más localizados.' : isPortuguese ? 'Selecione cidades específicas dentro das suas regiões para receber trabalhos mais direcionados.' : 'Select specific towns/localities within your counties to receive more targeted jobs.'}
+                                    </p>
+
+                                    {(!profile?.preferred_counties || profile.preferred_counties.length === 0) && (
+                                        <div className="max-w-2xl mx-auto bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+                                            {isSpanish ? 'Selecciona al menos una comunidad arriba para ver sus ciudades y localidades.' : isPortuguese ? 'Selecione pelo menos uma região acima para ver as suas cidades e localidades.' : 'Select at least one county/region above to see its towns and localities.'}
+                                        </div>
+                                    )}
+
+                                    <div className="max-w-7xl mx-auto space-y-6 text-left px-4">
+                                        {profile?.preferred_counties?.map((county: string) => {
                                                 const towns = TOWNS_DATA[county] || [];
                                                 if (towns.length === 0) return null;
                                                 const selectedTowns = profile?.preferred_towns?.filter((t: string) => towns.includes(t)) || [];
@@ -1684,7 +1690,6 @@ const ContractorDashboard = () => {
                                             })}
                                         </div>
                                     </div>
-                                )}
 
                                 {/* My Profile Separator */}
                                 <div className="border-t border-white mb-8"></div>
