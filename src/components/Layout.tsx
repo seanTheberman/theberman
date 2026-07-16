@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Mail, Facebook, Instagram, Linkedin, ChevronRight, Globe, MapPin, Phone } from 'lucide-react';
+import { Menu, X, Mail, Facebook, Instagram, Linkedin, ChevronRight, Globe, MapPin, Phone, MessageCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from '../hooks/useTranslation';
 import { getTenantDisplayName, getTenantWebsiteUrl, getTenantEmail, getTenantDomain } from '../lib/tenant';
@@ -712,6 +712,22 @@ const Layout = () => {
                     </div>
                 </div>
             </footer>
+
+            {/* Floating WhatsApp CTA */}
+            <a
+                href={`https://wa.me/34613907509?text=${encodeURIComponent(isSpanish ? 'Hola, me gustaría más información sobre certificados energéticos.' : tenant === 'portugal' ? 'Olá, gostaria de mais informações sobre certificados energéticos.' : 'Hi, I would like more information about energy certificates.')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="fixed bottom-5 right-5 z-50 flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebe5d] text-white rounded-full shadow-lg transition-all hover:scale-105 group"
+                aria-label="WhatsApp"
+            >
+                <span className="flex items-center justify-center w-12 h-12 shrink-0">
+                    <MessageCircle size={24} className="fill-white text-white" />
+                </span>
+                <span className="max-w-0 overflow-hidden whitespace-nowrap text-sm font-bold transition-all duration-300 group-hover:max-w-[200px] group-hover:pr-4">
+                    {isSpanish ? 'Escríbenos' : tenant === 'portugal' ? 'Escreve-nos' : 'Chat with us'}
+                </span>
+            </a>
         </div>
     );
 };
