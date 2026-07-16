@@ -250,9 +250,9 @@ const PublicAssessorProfile = () => {
                                 </h3>
                                 <div className="bg-white p-6 rounded-[2rem] border border-gray-50 shadow-sm">
                                     <div className="flex flex-wrap gap-2">
-                                        {[profile.home_county, 'Meath', 'Kildare', 'Wicklow'].filter(Boolean).map((area: any) => (
+                                        {(profile.preferred_counties?.length ? profile.preferred_counties : [profile.home_county]).filter(Boolean).map((area: any) => (
                                             <span key={area} className="px-3 py-1.5 bg-gray-50 text-gray-600 text-xs font-bold rounded-lg border border-gray-100">
-                                                {isPortuguese ? area : `Co. ${area}`}
+                                                {isSpanish || isPortuguese ? area : `Co. ${area}`}
                                             </span>
                                         ))}
                                     </div>

@@ -52,7 +52,8 @@ import { getTenantFromDomain } from './lib/tenant';
 
 const FaqRedirect = () => {
     const tenant = getTenantFromDomain();
-    return <Navigate to={tenant === 'england' ? '/epc-faq' : '/ber-faqs/'} replace />;
+    const dest = tenant === 'england' ? '/epc-faq' : '/ber-faqs/';
+    return <Navigate to={{ pathname: dest, search: window.location.search }} replace />;
 };
 
 function App() {
@@ -78,7 +79,7 @@ function App() {
                 <Routes>
                     <Route path="/" element={<Layout />}>
                         <Route index element={<Home />} />
-                        <Route path="about" element={<Navigate to="/about-us" replace />} />
+                        <Route path="about" element={<Navigate to={{ pathname: '/about-us', search: window.location.search }} replace />} />
                         <Route path="about-us" element={<About />} />
                         <Route path="services" element={<Services />} />
                         <Route path="pricing" element={<Pricing />} />

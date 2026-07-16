@@ -551,7 +551,7 @@ export const CMS_PAGES: PageDefinition[] = [
         id: 'about',
         label: 'About',
         labels: { spain: 'Nosotros', france: 'À Propos', portugal: 'Sobre' },
-        path: '/about',
+        path: '/about-us',
         sections: [
             {
                 id: 'hero',
@@ -791,7 +791,7 @@ export const CMS_PAGES: PageDefinition[] = [
         id: 'faq',
         label: 'FAQ',
         labels: { spain: 'FAQ', france: 'FAQ', portugal: 'FAQ' },
-        path: '/faq',
+        path: '/ber-faqs',
         sections: [
             {
                 id: 'hero',
