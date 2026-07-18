@@ -1,10 +1,41 @@
 // Vercel Edge Middleware — Multi-tenant SEO Fix
 // Injects: canonical, title, meta description, OG tags, hreflang, JSON-LD schema
+// Also handles: Meta CAPI, GTM, cookie consent, Meta Pixel
 // Zero changes to the React app needed.
 
 export const config = { matcher: '/((?!_next|assets|favicon|logo|robots).*)' };
 
 const PUBLIC_FILE = /\.(?:avif|css|csv|gif|ico|jpe?g|js|json|map|pdf|png|svg|txt|webmanifest|woff2?|xml)$/i;
+
+// ─── Meta Conversions API (Server-Side) ───────────────────────────────────────
+const META_PIXEL_ID  = '1597842568530965';
+const META_CAPI_TOKEN = 'EAAWtpErNdrcBR4BBM0EMYCiZB6TSLpDYWaTZAT9QXEGKpJIfmZCsRCN0YPouekzreTdxACfkZCObm1i5dztNKzNZAGgrLvF02hd254DcwXQ7prKNy8NusteZBwaa4ZC0P6t6DwGCqGqI3bbEjLrWTRSpZA5OtJ6eJ0LormwfZA0KpT2vsdX6RQRiHU51h7xRk6q34ywZDZD';
+
+async function sendMetaCAPI(eventName, eventId, req, canonicalUrl) {
+  try {
+    const ip  = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || '';
+    const ua  = req.headers.get('user-agent') || '';
+    const payload = {
+      data: [{
+        event_name:    eventName,
+        event_time:    Math.floor(Date.now() / 1000),
+        event_id:      eventId,
+        event_source_url: canonicalUrl,
+        action_source: 'website',
+        user_data: {
+          client_ip_address: ip,
+          client_user_agent: ua,
+        },
+      }],
+    };
+    await fetch(
+      `https://graph.facebook.com/v19.0/${META_PIXEL_ID}/events?access_token=${META_CAPI_TOKEN}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }
+    );
+  } catch (e) {
+    // Non-blocking — never fail a page load due to CAPI errors
+  }
+}
 
 // ─── Page metadata map (Ireland) ─────────────────────────────────────────────
 const PAGE_META_IE = {
@@ -1652,6 +1683,89 @@ export default async function middleware(req) {
   else if (tenant === 'spain') gscCode = 'KoLJU_4hf55xdAgYYjqQ6ip3pK4huH5JPZj4Omhc30o';
   
   const gscMeta = gscCode ? `<meta name="google-site-verification" content="${gscCode}" />` : '';
+  const fbMeta = tenant === 'ireland' ? '<meta name="facebook-domain-verification" content="vzxrqz9dqomp4g8iphshju59so27v8" />' : '';
+
+  // ── Meta CAPI — determine event type based on page ───────────────────────
+  const metaEventId = `mw-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
+  const isContactPage = ['/contact-us', '/contacto', '/get-quote', '/hire-agent', '/asesor-energetico'].includes(path);
+  const isThankYou = path.includes('thank') || path.includes('success') || path.includes('confirmation');
+  const isViewContent = path.startsWith('/catalogue') || path.startsWith('/directorio') || path.startsWith('/locations') || path.startsWith('/ubicaciones');
+  const isBlog = path.startsWith('/blog') || path.startsWith('/noticias') || path.startsWith('/news');
+
+  let metaEventName = 'PageView';
+  let metaEventValue = null;
+  if (isThankYou)         { metaEventName = 'Lead';        metaEventValue = { value: 150, currency: 'EUR' }; }
+  else if (isContactPage) { metaEventName = 'Contact'; }
+  else if (isViewContent || isBlog) { metaEventName = 'ViewContent'; }
+
+  // Fire server-side CAPI — Ireland only
+  if (tenant === 'ireland') {
+    sendMetaCAPI(metaEventName, metaEventId, req, canonical);
+  }
+
+  // ── Browser Meta Pixel — Ireland only, all events with deduplication ─────
+  const metaBrowserEvent = metaEventName === 'Lead'
+    ? `fbq('track', 'Lead', ${JSON.stringify(metaEventValue || {})}, {eventID: '${metaEventId}'});` 
+    : metaEventName === 'Contact'
+    ? `fbq('track', 'Contact', {}, {eventID: '${metaEventId}'});` 
+    : metaEventName === 'ViewContent'
+    ? `fbq('track', 'ViewContent', {content_name: '${title.replace(/'/g, "\\'")}', content_type: 'website'}, {eventID: '${metaEventId}'});` 
+    : `fbq('track', 'PageView', {}, {eventID: '${metaEventId}'});`;
+
+  // ── GTM IDs ──────────────────────────────────────────────────────────────
+  let gtmId = '';
+  if (tenant === 'england') gtmId = 'GTM-WZVH9HVD';
+  else if (tenant === 'spain') gtmId = 'GTM-TL8C5GNJ';
+  else if (tenant === 'ireland') gtmId = 'GTM-NK5NJ78J';
+
+  // ── Cookie Consent Banner — Ireland only (GDPR required) ─────────────────
+  const cookieConsentBanner = tenant === 'ireland' ? `
+<!-- Cookie Consent by TermsFeed -->
+<script type="text/javascript" src="https://www.termsfeed.com/public/cookie-consent/4.2.0/cookie-consent.js" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">
+document.addEventListener('DOMContentLoaded', function () {
+  cookieconsent.run({"notice_banner_type":"interstitial","consent_type":"express","palette":"light","language":"en","page_load_consent_levels":["strictly-necessary"],"notice_banner_reject_button_hide":false,"preferences_center_close_button_hide":false,"page_refresh_confirmation_buttons":false,"website_name":"https://www.theberman.eu/","website_privacy_policy_url":"https://www.theberman.eu/privacy"});
+});
+</script>
+<noscript>Free cookie consent management tool by <a href="https://www.termsfeed.com/">TermsFeed Generator</a></noscript>
+<!-- End Cookie Consent -->` : '';
+
+  // GTM — Ireland fires after consent, England/Spain fire immediately
+  const gtmHead = tenant === 'ireland' ? `
+<!-- Google Tag Manager + Meta Pixel — loads after cookie consent -->
+<script type="text/plain" data-cookieconsent="targeting">
+(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','${gtmId}');
+</script>
+<script type="text/plain" data-cookieconsent="targeting">
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '${META_PIXEL_ID}');
+${metaBrowserEvent}
+</script>` : gtmId ? `
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','${gtmId}');</script>
+<!-- End Google Tag Manager -->` : '';
+
+  const gtmBody = gtmId ? `
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=${gtmId}"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->` : '';
 
   const injected = html.replace(
     /<title>[^<]*<\/title>/,
@@ -1694,7 +1808,10 @@ export default async function middleware(req) {
     `<meta name="author" content="${siteName}" />`
   ).replace(
     '</head>',
-    `  <meta name="description" content="${desc}" />\n  <link rel="canonical" href="${canonical}" />\n  <meta property="og:title" content="${title}" />\n  <meta property="og:description" content="${desc}" />\n  <meta property="og:url" content="${canonical}" />\n  <meta property="og:image" content="${ogImage}" />\n  <meta property="og:locale" content="${locale}" />\n  <meta property="og:site_name" content="${siteName}" />\n  <meta property="og:type" content="website" />\n  <meta name="twitter:card" content="summary_large_image" />\n  <meta name="twitter:title" content="${title}" />\n  <meta name="twitter:description" content="${desc}" />\n  <meta name="twitter:image" content="${ogImage}" />\n  ${gscMeta}\n  ${hreflangTags(path, tenant)}\n  ${schemaBlock}\n</head>`
+    `  <meta name="description" content="${desc}" />\n  <link rel="canonical" href="${canonical}" />\n  <meta property="og:title" content="${title}" />\n  <meta property="og:description" content="${desc}" />\n  <meta property="og:url" content="${canonical}" />\n  <meta property="og:image" content="${ogImage}" />\n  <meta property="og:locale" content="${locale}" />\n  <meta property="og:site_name" content="${siteName}" />\n  <meta property="og:type" content="website" />\n  <meta name="twitter:card" content="summary_large_image" />\n  <meta name="twitter:title" content="${title}" />\n  <meta name="twitter:description" content="${desc}" />\n  <meta name="twitter:image" content="${ogImage}" />\n  ${gscMeta}\n  ${fbMeta}\n  ${hreflangTags(path, tenant)}\n  ${schemaBlock}\n  ${cookieConsentBanner}\n  ${gtmHead}\n</head>`
+  ).replace(
+    /<body([^>]*)>/i,
+    `<body$1>${gtmBody}`
   );
 
   return new Response(injected, {

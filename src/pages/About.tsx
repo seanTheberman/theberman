@@ -1,6 +1,7 @@
 import { Globe, ArrowRight, Shield, Zap, Euro, Clock, CheckCircle, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEOHead from '../components/SEOHead';
+import InternalLinks from '../components/InternalLinks';
 import { getTenantFromDomain } from '../lib/tenant';
 import { usePageContent, cmsValue } from '../hooks/usePageContent';
 
@@ -336,6 +337,7 @@ const About = () => {
             </section>
             </>
             )}
+            <InternalLinks page="about" />
         </div>
     );
 };

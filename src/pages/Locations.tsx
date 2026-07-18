@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { MapPin, ArrowRight } from 'lucide-react';
 import SEOHead from '../components/SEOHead';
+import InternalLinks from '../components/InternalLinks';
 import { getTenantFromDomain } from '../lib/tenant';
 import { getCountiesForTenant } from '../lib/tenantData';
 
@@ -116,6 +117,7 @@ const Locations = () => {
                     ))}
                 </div>
             </div>
+            <InternalLinks page="locations" />
         </div>
     );
 };

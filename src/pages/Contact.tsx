@@ -10,6 +10,7 @@ import {
 import toast from 'react-hot-toast';
 import { getTownsForTenant } from '../lib/tenantData';
 import SEOHead from '../components/SEOHead';
+import InternalLinks from '../components/InternalLinks';
 import { getTenantFromDomain, getTenantEmail, getTenantDomain } from '../lib/tenant';
 import { getPhonePlaceholder } from '../lib/phoneFormats';
 import { usePageContent, cmsValue } from '../hooks/usePageContent';
@@ -417,6 +418,7 @@ const Contact = () => {
             </section>
             </>
             )}
+            <InternalLinks page="contact" />
         </div>
     );
 };

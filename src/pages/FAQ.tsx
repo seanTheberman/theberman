@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import SEOHead from '../components/SEOHead';
+import InternalLinks from '../components/InternalLinks';
 import { getTenantFromDomain, getTenantEmail } from '../lib/tenant';
 import { usePageContent, cmsValue } from '../hooks/usePageContent';
 
@@ -275,6 +276,7 @@ const FAQ = () => {
             </div>
             </>
             )}
+            <InternalLinks page="faq" />
         </div>
     );
 };

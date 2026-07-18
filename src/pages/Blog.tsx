@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Search, X } from 'lucide-react';
 import SEOHead from '../components/SEOHead';
 import ArticleNewsletter from '../components/ArticleNewsletter';
+import InternalLinks from '../components/InternalLinks';
 import { getTenantFromDomain } from '../lib/tenant';
 import { usePageContent, cmsValue } from '../hooks/usePageContent';
 
@@ -424,6 +425,7 @@ const BlogPage = () => {
 
             {/* Newsletter */}
             <ArticleNewsletter />
+            <InternalLinks page="blog" />
             </>
             )}
         </div>

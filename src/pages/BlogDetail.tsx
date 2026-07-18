@@ -6,6 +6,7 @@ import SEOHead from '../components/SEOHead';
 import ArticleSocialShare from '../components/ArticleSocialShare';
 import ArticleCTABanner from '../components/ArticleCTABanner';
 import ArticleNewsletter from '../components/ArticleNewsletter';
+import InternalLinks from '../components/InternalLinks';
 import { getTenantFromDomain, getTenantDisplayName } from '../lib/tenant';
 
 interface BlogArticle {
@@ -356,6 +357,7 @@ const BlogDetail = () => {
 
             <ArticleCTABanner />
             <ArticleNewsletter />
+            <InternalLinks page="blogDetail" />
         </div>
     );
 };

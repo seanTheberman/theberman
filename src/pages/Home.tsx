@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 import { useTranslation } from '../hooks/useTranslation';
 import { usePageContent, cmsValue } from '../hooks/usePageContent';
 import SEOHead from '../components/SEOHead';
+import InternalLinks from '../components/InternalLinks';
 
 interface PromoSettings {
     is_enabled: boolean;
@@ -783,6 +784,7 @@ const HomePage = () => {
             )}
             </>
             )}
+            <InternalLinks page="home" />
         </div >
     );
 };
