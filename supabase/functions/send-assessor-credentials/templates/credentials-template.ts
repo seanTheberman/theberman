@@ -3,7 +3,7 @@ export const generateCredentialsHtml = (fullName: string, email: string, passwor
     const isEngland = tenant === 'england';
     const isPortuguese = tenant === 'portugal';
     const isFrench = tenant === 'france';
-    const brandName = displayName;
+    const brandName = isSpanish ? 'certificadosenergeticos.eu' : displayName;
     const roleName = isSpanish ? 'Certificador Energético' : (isPortuguese ? 'Perito Certificador' : (isFrench ? 'Diagnostiqueur DPE' : (isEngland ? 'Domestic Energy Assessor' : 'BER Assessor')));
 
     if (isSpanish) {
@@ -91,7 +91,7 @@ export const generateCredentialsHtml = (fullName: string, email: string, passwor
                 </p>
             </div>
             <div class="footer">
-                <p>&copy; ${new Date().getFullYear()} certificados energéticos.eu. Todos los derechos reservados.</p>
+                <p>&copy; ${new Date().getFullYear()} certificadosenergeticos.eu. Todos los derechos reservados.</p>
                 <div class="footer-links">
                     <a href="${websiteUrl}">Visitar Sitio Web</a>
                 </div>

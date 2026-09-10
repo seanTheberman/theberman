@@ -47,7 +47,7 @@ Deno.serve(async (req: Request) => {
         const html = generateCredentialsHtml(fullName, email, password, resolvedLoginUrl, tenant, config.display_name, config.website_url);
         const isPortuguese = tenant === 'portugal';
         const subject = isSpanish
-            ? `Tus Credenciales de Acceso - ${config.display_name}`
+            ? `Tus Credenciales de Acceso - certificadosenergeticos.eu`
             : isPortuguese
                 ? `As suas Credenciais de Acesso - ${config.display_name}`
                 : isFrench

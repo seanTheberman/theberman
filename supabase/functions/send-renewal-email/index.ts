@@ -146,21 +146,21 @@ serve(async (req: Request) => {
                 <div style="text-align: center; margin-bottom: 25px;">
                     <img src="${websiteUrl}/logo.svg" alt="${brandName}" style="height: 40px; filter: grayscale(1) brightness(0.2);">
                 </div>
-                <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Renovación de Suscripción</h2>
+                <h2 style="color: #2e7d32; margin-top: 0; text-align: center; font-size: 24px;">Renovación de Adhesión</h2>
                 <p style="font-size: 16px; color: #333;">Hola <strong>${fullName}</strong>,</p>
                 <p style="font-size: 15px; color: #555; line-height: 1.6;">
-                    Este es un recordatorio automático de que tu suscripción como <strong>${roleName}</strong> en la plataforma ${brandName}
+                    Este es un recordatorio automático de que tu adhesión como <strong>${roleName}</strong> en la plataforma ${brandName}
                     ${expiryDate ? `caducó o está a punto de caducar el <strong>${expiryDate}</strong>` : 'ha caducado'}.
                 </p>
 
                 <p style="font-size: 15px; color: #555; line-height: 1.6;">
                     Para mantener tu estado activo en nuestro catálogo y seguir recibiendo leads directos de certificados energéticos en ${marketArea},
-                    renueva tu membresía a través del enlace seguro de abajo.
+                    renueva tu adhesión a través del enlace seguro de abajo.
                 </p>
 
                 <div style="text-align: center; margin: 40px 0;">
                     <a href="${paymentUrl}" target="_blank" style="display:inline-block;background-color:#2e7d32;color:#ffffff;padding:16px 35px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:18px;box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
-                        Renovar Mi Membresía Ahora
+                        Renovar Mi Adhesión Ahora
                     </a>
                 </div>
 
@@ -232,7 +232,7 @@ serve(async (req: Request) => {
         await client.send(
             smtpFrom,
             email,
-            isSpanish ? "Acción Requerida: Estado de tu Suscripción" : isPortuguese ? `Ação Necessária: Estado da sua Subscrição ${brandName}` : isFrench ? `Action Requise : Statut de votre Abonnement ${brandName}` : `Action Required: Your ${brandName} Subscription Status`,
+            isSpanish ? "Acción Requerida: Estado de tu Adhesión" : isPortuguese ? `Ação Necessária: Estado da sua Subscrição ${brandName}` : isFrench ? `Action Requise : Statut de votre Abonnement ${brandName}` : `Action Required: Your ${brandName} Subscription Status`,
             html
         )
 
