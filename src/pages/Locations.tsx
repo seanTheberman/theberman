@@ -6,7 +6,7 @@ import { getTenantFromDomain } from '../lib/tenant';
 import { getCountiesForTenant } from '../lib/tenantData';
 
 const makeSlug = (name: string) =>
-    name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 const Locations = () => {
     const tenant = getTenantFromDomain();

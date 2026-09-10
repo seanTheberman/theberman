@@ -48,16 +48,22 @@ const LocationPage = () => {
         ? englandCityMap[rawCountyName.toLowerCase()]
         : rawCountyName;
 
-    const townName = town
-        ? town.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-        : '';
+    // Normalize slugs by removing diacritics (important for Spanish locations)
+    const normalizeSlug = (v: string) =>
+        v.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
-    // Case-insensitive county matching
+    // Find real county name from the slug
     const countyKey = mappedCountyName
-        ? Object.keys(locationData).find(k => k.toLowerCase() === mappedCountyName.toLowerCase())
+        ? Object.keys(locationData).find(k => normalizeSlug(k) === normalizeSlug(mappedCountyName))
         : undefined;
     const countyName = countyKey || mappedCountyName;
     const townsInCounty = countyKey ? (locationData[countyKey] || []) : [];
+
+    let townName = town
+        ? town.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+        : '';
+    const townKey = town ? townsInCounty.find(t => normalizeSlug(t) === normalizeSlug(town)) : undefined;
+    if (townKey) townName = townKey;
 
     // Display name for England popular cities (show 'London' not 'Greater London')
     // Maps from the URL slug to the friendly display name
@@ -142,9 +148,8 @@ const LocationPage = () => {
 
     // Unknown location → real 404. Prevents random URLs (via the :county catch-all
     // route) from rendering an auto-generated location page instead of Not Found.
-    const normalizeSlug = (v: string) => v.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
     const isKnownCounty = !!countyKey;
-    const isKnownTown = !town || townsInCounty.some(t => normalizeSlug(t) === normalizeSlug(town));
+    const isKnownTown = !town || !!townKey;
     if (!isKnownCounty || !isKnownTown) {
         // A custom location page saved in the DB is still allowed to render
         if (!dbChecked) return null;
