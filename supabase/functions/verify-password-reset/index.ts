@@ -15,7 +15,8 @@ serve(async (req: Request) => {
     }
 
     try {
-        const { token, email, password } = await req.json()
+        const { token, email: rawEmail, password } = await req.json()
+        const email = (rawEmail || '').trim().toLowerCase();
 
         if (!token || !email || !password) {
             throw new Error("Token, email, and password are required");
@@ -64,11 +65,15 @@ serve(async (req: Request) => {
             throw new Error("User not found in profiles");
         }
 
-        // 3. Update password via Admin API
+        // 3. Update password (and sync the auth email to the profile email) via Admin API.
+        // If the auth users table and profiles table have drifted (e.g. admin edits or
+        // typos), this forces the login credential to match the email the user just
+        // used to request the reset, so they can actually sign in afterwards.
         const { error: updateError } = await supabase.auth.admin.updateUserById(profile.id, {
+            email: profile.email,
             password: password,
             user_metadata: { requires_password_change: false },
-            email_confirm: true, // Ensure email is confirmed
+            email_confirm: true, // Ensure email is confirmed without sending a new verification
         });
 
         if (updateError) throw updateError;

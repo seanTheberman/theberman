@@ -23,7 +23,8 @@ serve(async (req: Request) => {
     }
 
     try {
-        const { email, tenant = 'ireland' } = await req.json()
+        const { email: rawEmail, tenant = 'ireland' } = await req.json()
+        const email = (rawEmail || '').trim().toLowerCase();
 
         const isSpanish = tenant === 'spain';
         const isPortuguese = tenant === 'portugal';

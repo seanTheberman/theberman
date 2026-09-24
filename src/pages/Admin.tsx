@@ -1028,7 +1028,7 @@ const Admin = () => {
                 const emailBody = isAssessorRole
                     ? {
                         fullName: newUserFormData.fullName,
-                        email: newUserFormData.email,
+                        email: fnData.user?.email || newUserFormData.email,
                         password: fnData.password,
                         loginUrl: fnData.loginUrl || fnData.magicLink,
                         tenant: selectedTenant,
@@ -1094,9 +1094,19 @@ const Admin = () => {
                 ? 'MANUAL_BY_ADMIN'
                 : (editForm.stripe_payment_id || undefined);
 
+            // The email is the login credential: change it in Auth first so the
+            // profile email and the login email can never drift apart.
+            const newEmail = editForm.email?.trim().toLowerCase() || undefined;
+            if (newEmail && newEmail !== selectedUser.email?.trim().toLowerCase()) {
+                const { data: syncData, error: syncError } = await supabase.functions.invoke('reset-user-password', {
+                    body: { userId: selectedUser.id, email: newEmail, syncEmailOnly: true }
+                });
+                if (syncError || !syncData?.success) throw new Error(syncData?.error || syncError?.message || 'Failed to update login email');
+            }
+
             const { error } = await supabase.from('profiles').update({
                 full_name: editForm.full_name || undefined,
-                email: editForm.email || undefined,
+                email: newEmail,
                 phone: editForm.phone || undefined,
                 subscription_status: editForm.subscription_status,
                 subscription_start_date: editForm.subscription_start_date,
@@ -1110,7 +1120,7 @@ const Admin = () => {
 
             const updates = {
                 full_name: editForm.full_name || undefined,
-                email: editForm.email || undefined,
+                email: newEmail,
                 phone: editForm.phone || undefined,
                 subscription_status: editForm.subscription_status,
                 subscription_start_date: editForm.subscription_start_date,
@@ -1124,7 +1134,7 @@ const Admin = () => {
             setSelectedUser(null);
             toast.success('Profile updated successfully');
         } catch (error: any) {
-            toast.error('Failed to update profile');
+            toast.error(error?.message ? `Failed to update profile: ${error.message}` : 'Failed to update profile');
         } finally {
             setIsUpdating(false);
         }
@@ -1236,11 +1246,11 @@ const Admin = () => {
             if (!resetData?.success) throw new Error(resetData?.error || 'Failed to reset password');
             const tempPassword = resetData.password;
 
-            // Send the credentials email
+            // Send the credentials email to the exact login email that was just set
             const { data, error } = await supabase.functions.invoke('send-assessor-credentials', {
                 body: {
                     fullName: u.full_name,
-                    email: u.email,
+                    email: resetData.email || u.email,
                     password: tempPassword,
                     loginUrl,
                     tenant: tenantForEmail,
@@ -1280,7 +1290,7 @@ const Admin = () => {
             const { data, error } = await supabase.functions.invoke('send-onboarding-link', {
                 body: {
                     fullName: u.full_name,
-                    email: u.email,
+                    email: resetData.email || u.email,
                     password: tempPassword,
                     onboardingUrl,
                     role: 'business',

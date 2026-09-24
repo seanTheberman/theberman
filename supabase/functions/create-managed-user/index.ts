@@ -10,7 +10,7 @@ const corsHeaders = {
 }
 
 function generateSecurePassword(length = 12): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
     const randomBytes = new Uint8Array(length);
     crypto.getRandomValues(randomBytes);
     let password = '';
@@ -76,7 +76,8 @@ Deno.serve(async (req: Request) => {
         }
 
         const body = await req.json();
-        const { fullName, email, password: providedPassword, phone, role, county, town, seaiNumber, assessorType, companyName, businessAddress, website, companyNumber, vatNumber, description, preferredCounties, preferredTowns, tenant } = body;
+        const { fullName, email: rawEmail, password: providedPassword, phone, role, county, town, seaiNumber, assessorType, companyName, businessAddress, website, companyNumber, vatNumber, description, preferredCounties, preferredTowns, tenant } = body;
+        const email = rawEmail?.trim().toLowerCase();
         const validationMessages = contractorValidationMessages[tenant];
 
         if (!email || !fullName || !role || !tenant) {
