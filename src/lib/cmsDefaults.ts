@@ -714,7 +714,7 @@ export const CMS_PAGES: PageDefinition[] = [
                 defaults: {
                     ireland: { phone: '', email: 'hello@theberman.eu', address: '', business_hours: '', map_url: '' },
                     spain: { phone: '', email: 'hola@theberman.eu', address: '', business_hours: '', map_url: '' },
-                    england: { phone: '', email: 'hello@epccert.com', address: '', business_hours: '', map_url: '' },
+                    england: { phone: '+44 1217260031', email: 'hello@epccert.com', address: 'Kings Court, 33 King Street, Blackburn BB2 2DH', business_hours: '', map_url: 'https://www.google.com/maps/search/?api=1&query=Kings+Court+33+King+Street+Blackburn+BB2+2DH' },
                     france: { phone: '', email: 'contact@dpefrance.eu', address: '', business_hours: '', map_url: '' },
                     portugal: { phone: '', email: 'hello@certificadoenergia.com', address: '', business_hours: '', map_url: '' },
                 },

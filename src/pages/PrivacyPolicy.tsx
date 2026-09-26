@@ -90,7 +90,7 @@ const PrivacyPolicy = () => {
         contactIntro: 'If you have any questions or concerns about this Privacy Policy or our data practices, please contact our Data Protection Officer at:',
         emailLabel: 'Email',
         addressLabel: 'Address',
-        address: 'London, England',
+        address: 'Kings Court, 33 King Street, Blackburn BB2 2DH, England',
     } : isPortugal ? {
         seoTitle: 'Política de Privacidade',
         seoDesc: 'Política de Privacidade do Certificado Energia. Comprometemo-nos a proteger os seus dados pessoais de acordo com a legislação portuguesa e o RGPD.',

@@ -760,6 +760,18 @@ const Layout = () => {
                                         <span>Portugal</span>
                                     </li>
                                 )}
+                                {tenant === 'england' && (
+                                    <>
+                                        <li className="flex items-start gap-3 text-gray-400 text-sm">
+                                            <Phone className="text-[#9ACD32] mt-0.5" size={16} />
+                                            <a href="tel:+441217260031" className="hover:text-white transition">+44 121 726 0031</a>
+                                        </li>
+                                        <li className="flex items-start gap-3 text-gray-400 text-sm">
+                                            <MapPin className="text-[#9ACD32] mt-0.5" size={16} />
+                                            <span>Kings Court, 33 King Street, Blackburn BB2 2DH</span>
+                                        </li>
+                                    </>
+                                )}
                             </ul>
                         </div>
                     </div>

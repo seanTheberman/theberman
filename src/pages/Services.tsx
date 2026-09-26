@@ -14,7 +14,7 @@ const Services = () => {
     const brand = isSpanish ? 'Certificado Energ\u00e9tico' : isEngland ? 'EPC Cert' : isFrance ? 'DPE Cert France' : isPortugal ? 'Certificado Energia' : 'The Berman';
     const serviceName = isSpanish ? 'Certificado Energ\u00e9tico' : isEngland ? 'EPC Certificate' : isFrance ? 'DPE' : isPortugal ? 'Certificado Energético' : 'BER Certificate';
     const baseUrl = isEngland ? 'https://www.epccert.com' : isSpanish ? 'https://www.xn--certificadoenergtico-q2b.eu' : isFrance ? 'https://www.dpecert.fr' : isPortugal ? 'https://www.certificadoenergia.com' : 'https://www.theberman.eu';
-    const locale = isEngland ? 'London' : isSpanish ? 'Madrid' : isFrance ? 'Paris' : isPortugal ? 'Portugal' : 'Dublin';
+    const locale = isEngland ? 'Blackburn' : isSpanish ? 'Madrid' : isFrance ? 'Paris' : isPortugal ? 'Portugal' : 'Dublin';
     const country = isEngland ? 'GB' : isSpanish ? 'ES' : isFrance ? 'FR' : isPortugal ? 'PT' : 'IE';
 
     const title = isSpanish ? 'Nuestros Servicios - Certificados Energ\u00e9ticos Expertos' : isEngland ? 'EPC Certificates | Domestic & Commercial EPC Assessments' : isFrance ? 'Nos Services - DPE Experts' : isPortugal ? 'Os nossos Serviços - Certificados Energéticos' : 'BER Services Ireland | Certificates, Ratings & Assessors';
@@ -158,7 +158,10 @@ const Services = () => {
             '@type': 'LocalBusiness',
             name: brand,
             url: baseUrl,
-            address: { '@type': 'PostalAddress', addressCountry: country, addressLocality: locale },
+            address: isEngland
+                ? { '@type': 'PostalAddress', streetAddress: 'Kings Court, 33 King Street', addressLocality: 'Blackburn', postalCode: 'BB2 2DH', addressCountry: 'GB' }
+                : { '@type': 'PostalAddress', addressCountry: country, addressLocality: locale },
+            telephone: isEngland ? '+44 1217260031' : undefined,
         },
         areaServed: { '@type': 'Country', name: isEngland ? 'United Kingdom' : isSpanish ? 'Spain' : isFrance ? 'France' : isPortugal ? 'Portugal' : 'Ireland' },
         serviceType: serviceName,

@@ -343,6 +343,9 @@ function orgSchema(tenant) {
           url: 'https://www.epccert.com/',
           logo: 'https://www.epccert.com/epc-logo-trimmed.png',
           description: "England's leading EPC certificate platform. Compare quotes from accredited Energy Performance Certificate assessors nationwide.",
+          address: { '@type': 'PostalAddress', streetAddress: 'Kings Court, 33 King Street', addressLocality: 'Blackburn', postalCode: 'BB2 2DH', addressCountry: 'GB' },
+          telephone: '+44 1217260031',
+          email: 'hello@epccert.com',
           areaServed: { '@type': 'Country', name: 'England' },
           knowsAbout: ['EPC Certificate','Energy Performance Certificate','MEES','Domestic Energy Assessor','Commercial EPC'],
           hasOfferCatalog: {
