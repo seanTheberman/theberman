@@ -34,7 +34,7 @@ const TENANT_CONFIG: Record<string, { siteName: string; baseUrl: string; ogImage
         ogImage: 'https://www.epccert.com/logo.png',
         locale: 'en_GB',
         currency: 'GBP',
-        gaId: 'G-XXXXXXXXXX',
+        gaId: 'G-646SPKGTGV',
     },
     portugal: {
         siteName: 'Certificado Energia',

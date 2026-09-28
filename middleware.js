@@ -1221,7 +1221,12 @@ p{font-size:1.1rem;color:#94a3b8;line-height:1.6;margin-bottom:0.5rem}
   else if (tenant === 'spain') gscCode = 'KoLJU_4hf55xdAgYYjqQ6ip3pK4huH5JPZj4Omhc30o';
 
   const gscMeta = gscCode ? `<meta name="google-site-verification" content="${gscCode}" />` : '';
-  const fbMeta = tenant === 'ireland' ? '<meta name="facebook-domain-verification" content="vzxrqz9dqomp4g8iphshju59so27v8" />' : '';
+  const FB_DOMAIN_VERIFICATION = {
+    ireland: 'vzxrqz9dqomp4g8iphshju59so27v8',
+    england: '3w7n74pjbj6sx5c8z2cxske6yuuv5r',
+  };
+  const fbToken = FB_DOMAIN_VERIFICATION[tenant];
+  const fbMeta = fbToken ? `<meta name="facebook-domain-verification" content="${fbToken}" />` : '';
 
   // Meta Pixel is now managed via Google Tag Manager (GTM) per domain.
   // No server-side CAPI or pixel injection from middleware.
@@ -1231,7 +1236,7 @@ p{font-size:1.1rem;color:#94a3b8;line-height:1.6;margin-bottom:0.5rem}
   // IMPORTANT: Developer must remove GTM-57CD932S from the React app (it was the old hardcoded one)
   // This middleware now controls GTM for all three sites
   let gtmId = 'GTM-NK5NJ78J'; // Ireland (theberman.eu) — user\'s main container
-  if (tenant === 'england') gtmId = 'GTM-WZVH9HVD';
+  if (tenant === 'england') gtmId = 'GTM-NNLZTHX6';
   else if (tenant === 'spain') gtmId = 'GTM-TL8C5GNJ';
 
   // GTM — fires immediately on page load
