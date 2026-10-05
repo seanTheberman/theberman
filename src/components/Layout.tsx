@@ -377,6 +377,7 @@ const Layout = () => {
                                 // TODO: Confirm correct Portuguese phone number with Sean before publishing
                                 portugal: { number: '+351920123456', display: '+351 920 123 456', label: 'Fale Connosco' },
                                 france: { number: '+33123456789', display: '+33 1 23 45 67 89', label: 'Appelez-nous' },
+                                england: { number: '+447464782668', display: '+44 7464 782668', label: 'Talk to Us' },
                             };
                             const cfg = phoneConfig[tenant] || { number: '0818213131', display: '0818213131', label: 'Talk to Us' };
                             return (
@@ -393,7 +394,7 @@ const Layout = () => {
 
                         {/* Mobile: icon-only phone button */}
                         <a
-                            href={`tel:${tenant === 'france' ? '+33123456789' : tenant === 'portugal' ? '+351920123456' : isSpanish ? '+34613907509' : '0818213131'}`}
+                            href={`tel:${tenant === 'france' ? '+33123456789' : tenant === 'portugal' ? '+351920123456' : tenant === 'england' ? '+447464782668' : isSpanish ? '+34613907509' : '0818213131'}`}
                             className="flex sm:hidden items-center justify-center w-10 h-10 bg-[#007F00] hover:bg-[#006600] rounded-full text-white transition-colors"
                         >
                             <Phone size={16} />
@@ -791,7 +792,7 @@ const Layout = () => {
                 const whatsappConfig: Record<string, { number: string; message: string; label: string }> = {
                     spain: { number: '34613907509', message: 'Hola, me gustaría más información sobre certificados energéticos.', label: 'Escríbenos' },
                     portugal: { number: '351920123456', message: 'Olá, gostaria de mais informações sobre certificados energéticos.', label: 'Escreve-nos' },
-                    england: { number: '441515288866', message: 'Hi, I would like more information about EPC certificates.', label: 'Chat with us' },
+                    england: { number: '447464782668', message: 'Hi, I would like more information about EPC certificates.', label: 'Chat with us' },
                     france: { number: '33000000000', message: 'Bonjour, j\'aimerais plus d\'informations sur les DPE.', label: 'Écrivez-nous' },
                 };
                 const cfg = whatsappConfig[tenant] || { number: '353818213131', message: 'Hi, I would like more information about BER certificates.', label: 'Chat with us' };
