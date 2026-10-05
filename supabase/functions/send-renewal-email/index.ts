@@ -211,7 +211,7 @@ serve(async (req: Request) => {
                     <h3 style="margin-top: 0; font-size: 16px; color: #1b5e20;">Active Benefits:</h3>
                     <ul style="padding-left: 20px; margin-top: 10px; margin-bottom: 0; font-size: 14px; color: #2e7d32; line-height: 1.7;">
                         <li><strong>Stay Visible:</strong> Keep your business listing top-of-mind for homeowners.</li>
-                        <li><strong>Live Job Alerts:</strong> Real-time notifications for BER requests in your area.</li>
+                        <li><strong>Live Job Alerts:</strong> Real-time notifications for ${isEngland ? 'EPC' : 'BER'} requests in your area.</li>
                         <li><strong>Verified Status:</strong> Maintain your badge as a trusted ${brandName} partner.</li>
                     </ul>
                 </div>

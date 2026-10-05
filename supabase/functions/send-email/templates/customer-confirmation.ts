@@ -3,6 +3,7 @@ export const generateCustomerEmail = (record: any, promoHtml: string, tenant: st
     const isSpanish = tenant === 'spain';
     const isPortuguese = tenant === 'portugal';
     const isFrench = tenant === 'france';
+    const isEngland = tenant === 'england';
     const brandName = config?.display_name || 'The Berman';
     const websiteUrl = (config?.website_url || 'https://theberman.eu').replace(/\/$/, '');
     return `
@@ -28,7 +29,7 @@ export const generateCustomerEmail = (record: any, promoHtml: string, tenant: st
                         ? `Obrigado por nos contactar! Recebemos o seu pedido de certificado energético em <strong>${record.town}</strong>. A nossa equipa está a rever os seus dados e enviar-lhe-emos orçamentos personalizados em breve.`
                         : isFrench
                             ? `Merci de nous avoir contactés ! Nous avons reçu votre demande de DPE à <strong>${record.town}</strong>. Notre équipe examine vos données et vous enverra des devis personnalisés prochainement.`
-                            : `Thank you for reaching out! We've received your inquiry for a BER assessment in <strong>${record.town}</strong>. Our team is currently reviewing your details and we will get back to you with tailored quotes shortly.`}
+                            : `Thank you for reaching out! We've received your inquiry for ${isEngland ? 'an EPC' : 'a BER'} assessment in <strong>${record.town}</strong>. Our team is currently reviewing your details and we will get back to you with tailored quotes shortly.`}
             </p>
 
             <div style="background-color: #fdfdfd; border: 1px solid #eee; padding: 25px; border-radius: 10px; margin: 30px 0;">
@@ -77,7 +78,7 @@ export const generateCustomerEmail = (record: any, promoHtml: string, tenant: st
 
         <div style="text-align: center; padding: 0 30px 35px 30px; font-size: 12px; color: #999;">
             &copy; ${new Date().getFullYear()} ${brandName}. ${isSpanish ? 'Todos los derechos reservados.' : isPortuguese ? 'Todos os direitos reservados.' : isFrench ? 'Tous droits réservés.' : 'All rights reserved.'}<br/>
-            ${isSpanish ? 'Promoviendo la eficiencia energética en España.' : isPortuguese ? 'Promovendo a eficiência energética em Portugal.' : isFrench ? 'Promouvons l\'efficacité énergétique en France.' : 'Promoting energy efficiency across Ireland.'}
+            ${isSpanish ? 'Promoviendo la eficiencia energética en España.' : isPortuguese ? 'Promovendo a eficiência energética em Portugal.' : isFrench ? 'Promouvons l\'efficacité énergétique en France.' : isEngland ? 'Promoting energy efficiency across England.' : 'Promoting energy efficiency across Ireland.'}
         </div>
     </div>
 </body>

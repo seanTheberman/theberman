@@ -2,6 +2,7 @@ export const generatePosterQuoteEmail = (posterName: string, websiteUrl: string 
     const isSpanish = tenant === 'spain';
     const isPortuguese = tenant === 'portugal';
     const isFrench = tenant === 'france';
+    const isEngland = tenant === 'england';
     const brandName = displayName;
     const dashboardUrl = `${websiteUrl}/dashboard/business`;
 
@@ -23,12 +24,12 @@ export const generatePosterQuoteEmail = (posterName: string, websiteUrl: string 
             <p style="font-size: 18px; font-weight: 600; margin-bottom: 20px; color: #1a1a1a;">${isSpanish ? 'Hola' : isPortuguese ? 'Olá' : isFrench ? 'Bonjour' : 'Hi'} ${posterName},</p>
 
             <p style="font-size: 16px; color: #444; margin-bottom: 25px;">
-                ${isSpanish ? 'Un certificador energético local ha enviado un presupuesto profesional en un trabajo que publicaste. El propietario también ha sido notificado.' : isPortuguese ? 'Um perito certificador local enviou um orçamento profissional num trabalho que publicou. O proprietário também foi notificado.' : isFrench ? 'Un diagnostiqueur local a soumis un devis professionnel sur une mission que vous avez publiée. Le propriétaire a également été notifié.' : 'A local BER Assessor has submitted a professional quote on a job you posted. The homeowner has also been notified.'}
+                ${isSpanish ? 'Un certificador energético local ha enviado un presupuesto profesional en un trabajo que publicaste. El propietario también ha sido notificado.' : isPortuguese ? 'Um perito certificador local enviou um orçamento profissional num trabalho que publicou. O proprietário também foi notificado.' : isFrench ? 'Un diagnostiqueur local a soumis un devis professionnel sur une mission que vous avez publiée. Le propriétaire a également été notifié.' : isEngland ? 'An accredited EPC assessor has submitted a professional quote on a job you posted. The homeowner has also been notified.' : 'A local BER Assessor has submitted a professional quote on a job you posted. The homeowner has also been notified.'}
             </p>
 
             <div style="background-color: #f9fff9; border: 1px solid #d4edda; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
                 <p style="margin: 0; font-size: 15px; color: #155724; line-height: 1.5;">
-                    <strong>${isSpanish ? 'Precio Transparente:' : isPortuguese ? 'Preço Transparente:' : isFrench ? 'Prix Transparent :' : 'Transparent Pricing:'}</strong> ${isSpanish ? 'Este presupuesto incluye todos los honorarios aplicables. El precio que ve el propietario es el precio final, sin extras ocultos.' : isPortuguese ? 'Este orçamento inclui todas as taxas aplicáveis. O preço que o proprietário vê é o preço final — sem extras ocultos.' : isFrench ? 'Ce devis inclut tous les frais applicables. Le prix que voit le propriétaire est le prix final — sans frais cachés.' : 'This quote includes all applicable SEAI fees. The price you see is the final price the homeowner pays—no hidden extras.'}
+                    <strong>${isSpanish ? 'Precio Transparente:' : isPortuguese ? 'Preço Transparente:' : isFrench ? 'Prix Transparent :' : 'Transparent Pricing:'}</strong> ${isSpanish ? 'Este presupuesto incluye todos los honorarios aplicables. El precio que ve el propietario es el precio final, sin extras ocultos.' : isPortuguese ? 'Este orçamento inclui todas as taxas aplicáveis. O preço que o proprietário vê é o preço final — sem extras ocultos.' : isFrench ? 'Ce devis inclut tous les frais applicables. Le prix que voit le propriétaire est le prix final — sans frais cachés.' : isEngland ? 'This quote includes all applicable fees and VAT. The price you see is the final price the homeowner pays—no hidden extras.' : 'This quote includes all applicable SEAI fees. The price you see is the final price the homeowner pays—no hidden extras.'}
                 </p>
             </div>
 
@@ -51,7 +52,7 @@ export const generatePosterQuoteEmail = (posterName: string, websiteUrl: string 
             ${promoHtml}
             <div style="margin-top: 25px; text-align: center; font-size: 12px; color: #999;">
                 &copy; ${new Date().getFullYear()} ${brandName}. ${isSpanish ? 'Todos los derechos reservados.' : isPortuguese ? 'Todos os direitos reservados.' : isFrench ? 'Tous droits réservés.' : 'All rights reserved.'}<br>
-                ${isSpanish ? 'Conectando propietarios con certificadores energéticos certificados en España.' : isPortuguese ? 'A ligar proprietários a peritos certificadores de energia em Portugal.' : isFrench ? 'Connectant les propriétaires à des diagnostiqueurs certifiés en France.' : 'Connecting homeowners with certified energy assessors across Ireland.'}
+                ${isSpanish ? 'Conectando propietarios con certificadores energéticos certificados en España.' : isPortuguese ? 'A ligar proprietários a peritos certificadores de energia em Portugal.' : isFrench ? 'Connectant les propriétaires à des diagnostiqueurs certifiés en France.' : isEngland ? 'Connecting property owners with accredited EPC assessors across England.' : 'Connecting homeowners with certified energy assessors across Ireland.'}
             </div>
         </div>
     </div>

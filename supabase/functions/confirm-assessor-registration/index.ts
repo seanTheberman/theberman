@@ -87,8 +87,11 @@ serve(async (req: Request) => {
 
         if (!listing) {
             const isPortugueseDesc = tenant === 'portugal';
+            const isEnglandDesc = tenant === 'england';
             const assessorDescription = isPortugueseDesc
             ? `${user_full_name || 'Perito Certificador'} é um perito certificador registado com sede em ${homeTown || ''}, ${homeCounty || ''}.`
+            : isEnglandDesc
+            ? `${user_full_name || 'EPC Assessor'} is an accredited EPC assessor based in ${homeTown || ''}, ${homeCounty || ''}.`
             : `${user_full_name || 'BER Assessor'} is a registered BER Assessor based in ${homeTown || ''}, Co. ${homeCounty || ''}.`
 
             const { data: newListing, error: listError } = await supabase
@@ -100,7 +103,7 @@ serve(async (req: Request) => {
                     company_name: companyName || user_full_name || '',
                     description: assessorDescription,
                     is_active: true,
-                    address: `${homeTown || ''}, Co. ${homeCounty || ''}`,
+                    address: tenant === 'england' ? `${homeTown || ''}, ${homeCounty || ''}` : `${homeTown || ''}, Co. ${homeCounty || ''}`,
                     website: website || '',
                     features: features || [],
                     social_media: {
@@ -121,7 +124,7 @@ serve(async (req: Request) => {
                 .update({
                     phone: phone,
                     company_name: companyName || undefined,
-                    address: `${homeTown}, Co. ${homeCounty}`,
+                    address: tenant === 'england' ? `${homeTown}, ${homeCounty}` : `${homeTown}, Co. ${homeCounty}`,
                     website: website || '',
                     features: features || []
                 })
@@ -250,7 +253,7 @@ serve(async (req: Request) => {
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; rounded-lg: 1rem;">
                 <h1 style="color: #007F00; text-align: center;">Registration Successful!</h1>
                 <p>Hello ${user_full_name},</p>
-                <p>Congratulations! Your registration as a BER Assessor on the ${brandName} platform is now complete and your membership is active.</p>
+                <p>Congratulations! Your registration as ${tenant === 'england' ? 'an EPC assessor' : 'a BER Assessor'} on the ${brandName} platform is now complete and your membership is active.</p>
 
                 <div style="background-color: #f9fafb; padding: 15px; border-radius: 0.5rem; margin: 20px 0;">
                     <h2 style="font-size: 1.1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">Membership Details</h2>
@@ -363,7 +366,7 @@ serve(async (req: Request) => {
             ` : `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 1rem;">
                     <h1 style="color: #4F46E5; text-align: center;">New Assessor Registration</h1>
-                    <p>A new BER Assessor has successfully registered and paid on ${brandName}.</p>
+                    <p>A new ${tenant === 'england' ? 'EPC assessor' : 'BER Assessor'} has successfully registered and paid on ${brandName}.</p>
 
                     <div style="background-color: #f3f4f6; padding: 15px; border-radius: 0.5rem; margin: 20px 0;">
                         <h2 style="font-size: 1.1rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">Assessor Details</h2>

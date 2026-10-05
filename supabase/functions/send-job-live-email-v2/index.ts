@@ -99,7 +99,7 @@ Deno.serve(async (req: Request) => {
                     ? `Olá ${customerName}, o seu pedido de certificado energético em ${town || county} está agora ativo em ${websiteUrl.replace('https://', '')}.`
                     : isFrench
                         ? `Bonjour ${customerName}, votre demande de DPE à ${town || county} est maintenant active sur ${websiteUrl.replace('https://', '')}.`
-                        : `Hi ${customerName}, your BER assessment request in ${town || county} is now live on ${websiteUrl.replace('https://', '')}!`;
+                        : `Hi ${customerName}, your ${tenant === 'england' ? 'EPC' : 'BER'} assessment request in ${town || county} is now live on ${websiteUrl.replace('https://', '')}!`;
             smsSent = await trySendSms(smsPhone, customerSms, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
         }
 

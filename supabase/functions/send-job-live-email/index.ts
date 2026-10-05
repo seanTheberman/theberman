@@ -170,6 +170,7 @@ Deno.serve(async (req: Request) => {
         const isSpanish = tenant === 'spain';
         const isPortuguese = tenant === 'portugal';
         const isFrench = tenant === 'france';
+        const isEngland = tenant === 'england';
         const lang: 'en' | 'es' | 'pt' | 'fr' = isFrench ? 'fr' : isPortuguese ? 'pt' : isSpanish ? 'es' : 'en';
 
         // Try SMTP connection — if it fails, SMS still sends
@@ -292,12 +293,12 @@ Deno.serve(async (req: Request) => {
                     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 0; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
                         <div style="background-color: #007F00; color: white; padding: 35px 20px; text-align: center;">
                             <img src="${logoUrl}" alt="${config.display_name}" style="height: 30px; margin-bottom: 12px; filter: brightness(0) invert(1);">
-                            <h2 style="margin: 0; font-size: 24px; font-weight: 700;">Your BER Request is Live!</h2>
+                            <h2 style="margin: 0; font-size: 24px; font-weight: 700;">${isEngland ? 'Your EPC Request is Live!' : 'Your BER Request is Live!'}</h2>
                         </div>
                         <div style="padding: 35px 30px; color: #333;">
                             <p style="font-size: 17px; font-weight: 600; margin-top: 0;">Hi ${customerName},</p>
                             <p style="font-size: 15px; color: #555; line-height: 1.6;">
-                                Your request for a BER assessment in <strong>${town || county}</strong> is now active on our network.
+                                Your request for ${isEngland ? 'an EPC' : 'a BER'} assessment in <strong>${town || county}</strong> is now active on our network.
                             </p>
 
                             <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0;">
@@ -617,7 +618,8 @@ Deno.serve(async (req: Request) => {
                             contractor.phone,
                             assessmentDetails?.property_size,
                             assessmentDetails?.bedrooms,
-                            lang
+                            lang,
+                            tenant
                         );
                         const subject = isSpanish
                             ? `Nuevo trabajo ${jobType === 'commercial' ? 'comercial' : 'de vivienda'} en ${jobLocation}`
@@ -625,7 +627,7 @@ Deno.serve(async (req: Request) => {
                                 ? `Novo trabalho ${jobType === 'commercial' ? 'comercial' : 'de habitação'} em ${jobLocation}`
                                 : isFrench
                                     ? `Nouvelle mission ${jobType === 'commercial' ? 'commerciale' : 'résidentielle'} à ${jobLocation}`
-                                    : `New ${jobType === 'commercial' ? 'Commercial' : 'Domestic'} BER Job in ${jobLocation}`;
+                                    : `New ${jobType === 'commercial' ? 'Commercial' : 'Domestic'} ${isEngland ? 'EPC' : 'BER'} Job in ${jobLocation}`;
                         await client.send(smtpFrom, contractor.email, subject, contractorHtml);
                         contractorEmailSentCount++;
                         console.log(`[send-job-live-email] Notified contractor via email: ${contractor.email} (tenant: ${tenant})`);

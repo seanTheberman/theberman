@@ -82,15 +82,16 @@ const PORTUGUESE_PROPERTY_TYPES: Record<string, string> = {
     'Mixed-Use': 'Uso Misto',
 };
 
-export const generateContractorEmail = (customerCounty: string, customerTown: string, contractorName: string, promoHtml: string, websiteUrl: string = "https://theberman.eu", jobType?: string, eircode?: string, propertyAddress?: string, assessmentId?: string, contractorPhone?: string, propertySize?: string, bedrooms?: number | string, lang: 'en' | 'es' | 'pt' | 'fr' = 'en') => {
+export const generateContractorEmail = (customerCounty: string, customerTown: string, contractorName: string, promoHtml: string, websiteUrl: string = "https://theberman.eu", jobType?: string, eircode?: string, propertyAddress?: string, assessmentId?: string, contractorPhone?: string, propertySize?: string, bedrooms?: number | string, lang: 'en' | 'es' | 'pt' | 'fr' = 'en', tenant: string = 'ireland') => {
     const isSpanish = lang === 'es';
     const isPortuguese = lang === 'pt';
     const isFrench = lang === 'fr';
+    const isEngland = tenant === 'england';
     const isCommercial = jobType === 'commercial';
     const jobTitle = isCommercial
-        ? (isSpanish ? 'Certificado Energético Comercial' : isPortuguese ? 'Certificado Energético Comercial' : isFrench ? 'DPE Professionnel' : 'Commercial BER Certificate')
-        : (isSpanish ? 'Certificado Energético de Vivienda' : isPortuguese ? 'Certificado Energético de Habitação' : isFrench ? 'DPE Résidentiel' : 'Domestic BER Certificate');
-    const locationStr = isSpanish || isPortuguese || isFrench
+        ? (isSpanish ? 'Certificado Energético Comercial' : isPortuguese ? 'Certificado Energético Comercial' : isFrench ? 'DPE Professionnel' : isEngland ? 'Commercial EPC Certificate' : 'Commercial BER Certificate')
+        : (isSpanish ? 'Certificado Energético de Vivienda' : isPortuguese ? 'Certificado Energético de Habitação' : isFrench ? 'DPE Résidentiel' : isEngland ? 'Domestic EPC Certificate' : 'Domestic BER Certificate');
+    const locationStr = isSpanish || isPortuguese || isFrench || isEngland
         ? `${customerTown}${customerTown && customerCounty ? ', ' : ''}${customerCounty}`
         : `${customerTown}${customerTown && customerCounty ? ', Co. ' : ''}${customerCounty}`;
     const labelMap = isSpanish ? SPANISH_PROPERTY_LABELS : isPortuguese ? PORTUGUESE_PROPERTY_LABELS : isFrench ? FRENCH_PROPERTY_LABELS : undefined;
@@ -151,7 +152,7 @@ export const generateContractorEmail = (customerCounty: string, customerTown: st
                                 ` : ''}
                                 ${eircode ? `
                                 <p style="margin: 0 0 10px 0; font-size: 14px; color: #555555; line-height: 1.6;">
-                                    <strong>${labelMap ? labelMap['Eircode'] : 'Eircode'}:</strong> <span style="color: #007F00; font-weight: bold;">${eircode}</span>
+                                    <strong>${labelMap ? labelMap['Eircode'] : isEngland ? 'Postcode' : 'Eircode'}:</strong> <span style="color: #007F00; font-weight: bold;">${eircode}</span>
                                 </p>
                                 ` : ''}
                                 ${bedrooms ? `
@@ -188,12 +189,13 @@ export const generateContractorEmail = (customerCounty: string, customerTown: st
                     <tr>
                         <td style="padding: 0 30px 30px 30px;">
                             <p style="margin: 0; font-size: 15px; color: #555555; line-height: 1.8;">
-                                ${isSpanish ? 'Un saludo,<br>Equipo de Certificado Energético' : isPortuguese ? 'Com os melhores cumprimentos,<br>Equipa de Certificado Energético' : isFrench ? 'Cordialement,<br>Équipe DPE Cert France' : 'Best Regards,<br>TheBerman.eu'}
+                                ${isSpanish ? 'Un saludo,<br>Equipo de Certificado Energético' : isPortuguese ? 'Com os melhores cumprimentos,<br>Equipa de Certificado Energético' : isFrench ? 'Cordialement,<br>Équipe DPE Cert France' : isEngland ? 'Best Regards,<br>EPC Cert' : 'Best Regards,<br>TheBerman.eu'}
                             </p>
                         </td>
                     </tr>
 
-                    <!-- SOLAR CROSS-PROMO -->
+                    <!-- SOLAR CROSS-PROMO (Ireland product — hidden for England) -->
+                    ${isEngland ? '' : `
                     <tr>
                         <td style="padding: 0;">
                             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8f8f8; border-top: 1px solid #eeeeee; border-bottom: 1px solid #eeeeee;">
@@ -212,7 +214,7 @@ export const generateContractorEmail = (customerCounty: string, customerTown: st
                                 </tr>
                             </table>
                         </td>
-                    </tr>
+                    </tr>`}
 
                     <!-- SPONSORS / DYNAMIC PROMOS -->
                     ${promoHtml ? `
@@ -230,13 +232,13 @@ export const generateContractorEmail = (customerCounty: string, customerTown: st
                                 W: <a href="${websiteUrl}" style="color: #1a73e8; text-decoration: none;">${websiteUrl.replace('https://', 'www.')}</a>
                             </p>
                             <p style="margin: 0 0 15px 0; font-size: 13px; color: #888888;">
-                                E: <a href="mailto:${isSpanish ? 'info@certificadosenergeticos.eu' : isPortuguese ? 'hello@certificadoenergia.com' : isFrench ? 'contact@dpecert.fr' : 'info@theberman.eu'}" style="color: #1a73e8; text-decoration: none;">${isSpanish ? 'info@certificadosenergeticos.eu' : isPortuguese ? 'hello@certificadoenergia.com' : isFrench ? 'contact@dpecert.fr' : 'info@theberman.eu'}</a>
+                                E: <a href="mailto:${isSpanish ? 'info@certificadosenergeticos.eu' : isPortuguese ? 'hello@certificadoenergia.com' : isFrench ? 'contact@dpecert.fr' : isEngland ? 'hello@epccert.com' : 'info@theberman.eu'}" style="color: #1a73e8; text-decoration: none;">${isSpanish ? 'info@certificadosenergeticos.eu' : isPortuguese ? 'hello@certificadoenergia.com' : isFrench ? 'contact@dpecert.fr' : isEngland ? 'hello@epccert.com' : 'info@theberman.eu'}</a>
                             </p>
                             <p style="margin: 0 0 15px 0; font-size: 12px; color: #aaaaaa;">
-                                &copy; ${currentYear} ${isSpanish ? 'Certificado Energético' : isPortuguese ? 'Certificado Energético' : isFrench ? 'DPE Cert France' : 'TheBerman.eu'}
+                                &copy; ${currentYear} ${isSpanish ? 'Certificado Energético' : isPortuguese ? 'Certificado Energético' : isFrench ? 'DPE Cert France' : isEngland ? 'EPC Cert' : 'TheBerman.eu'}
                             </p>
                             <p style="margin: 0; font-size: 11px; color: #aaaaaa; line-height: 1.6;">
-                                ${isSpanish ? `Este correo se ha enviado porque estás registrado como certificador energético en ${websiteUrl}. Si no deseas recibir más avisos, puedes <a href="${websiteUrl}/unsubscribe" style="color: #888888; text-decoration: underline;">darte de baja aquí</a>. Dejarás de recibir notificaciones de trabajos, pero podrás seguir accediendo a tu cuenta iniciando sesión en la web con tu dirección de correo.` : isPortuguese ? `Este email foi enviado porque está registado como perito certificador em ${websiteUrl}. Se não desejar receber mais avisos, pode <a href="${websiteUrl}/unsubscribe" style="color: #888888; text-decoration: underline;">cancelar a subscrição aqui</a>. Deixará de receber notificações de trabalhos, mas poderá continuar a aceder à sua conta iniciando sessão no site com o seu email.` : isFrench ? `Cet e-mail a été envoyé car vous êtes inscrit comme diagnostiqueur DPE sur ${websiteUrl}. Si vous ne souhaitez plus recevoir d'avis, vous pouvez <a href="${websiteUrl}/unsubscribe" style="color: #888888; text-decoration: underline;">vous désabonner ici</a>. Vous ne recevrez plus de notifications de missions, mais vous pourrez toujours accéder à votre compte en vous connectant sur le site avec votre adresse e-mail.` : `This email was sent because you are a registered BER assessor on TheBerman.eu. If you do not wish to receive updates you can <a href="${websiteUrl}/unsubscribe" style="color: #888888; text-decoration: underline;">unsubscribe here</a>. You will no longer receive job notifications, but you can still access your account by logging in at the website with your email address.`}
+                                ${isSpanish ? `Este correo se ha enviado porque estás registrado como certificador energético en ${websiteUrl}. Si no deseas recibir más avisos, puedes <a href="${websiteUrl}/unsubscribe" style="color: #888888; text-decoration: underline;">darte de baja aquí</a>. Dejarás de recibir notificaciones de trabajos, pero podrás seguir accediendo a tu cuenta iniciando sesión en la web con tu dirección de correo.` : isPortuguese ? `Este email foi enviado porque está registado como perito certificador em ${websiteUrl}. Se não desejar receber mais avisos, pode <a href="${websiteUrl}/unsubscribe" style="color: #888888; text-decoration: underline;">cancelar a subscrição aqui</a>. Deixará de receber notificações de trabalhos, mas poderá continuar a aceder à sua conta iniciando sessão no site com o seu email.` : isFrench ? `Cet e-mail a été envoyé car vous êtes inscrit comme diagnostiqueur DPE sur ${websiteUrl}. Si vous ne souhaitez plus recevoir d'avis, vous pouvez <a href="${websiteUrl}/unsubscribe" style="color: #888888; text-decoration: underline;">vous désabonner ici</a>. Vous ne recevrez plus de notifications de missions, mais vous pourrez toujours accéder à votre compte en vous connectant sur le site avec votre adresse e-mail.` : isEngland ? `This email was sent because you are a registered EPC assessor on EPCCert.com. If you do not wish to receive updates you can <a href="${websiteUrl}/unsubscribe" style="color: #888888; text-decoration: underline;">unsubscribe here</a>. You will no longer receive job notifications, but you can still access your account by logging in at the website with your email address.` : `This email was sent because you are a registered BER assessor on TheBerman.eu. If you do not wish to receive updates you can <a href="${websiteUrl}/unsubscribe" style="color: #888888; text-decoration: underline;">unsubscribe here</a>. You will no longer receive job notifications, but you can still access your account by logging in at the website with your email address.`}
                             </p>
                         </td>
                     </tr>

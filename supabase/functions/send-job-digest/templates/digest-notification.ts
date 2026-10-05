@@ -96,7 +96,7 @@ export const generateDigestEmail = (
       <td style="padding: 12px; border-bottom: 1px solid #eee; color: #333;">${job.property_type || 'N/A'}</td>
       <td style="padding: 12px; border-bottom: 1px solid #eee; color: #333;">${job.ber_purpose || 'N/A'}</td>
       <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">
-        <a href="${websiteUrl}/contractor" style="background-color: #007F00; color: white; padding: 8px 12px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-block;">${t.quoteHere}</a>
+        <a href="${websiteUrl}/quote/${job.id}" style="background-color: #007F00; color: white; padding: 8px 12px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-block;">${t.quoteHere}</a>
       </td>
     </tr>
   `).join('');
@@ -138,7 +138,7 @@ export const generateDigestEmail = (
     </table>
 
     <div style="text-align: center; margin-top: 30px;">
-      <a href="${websiteUrl}/contractor" style="background-color: #007F00; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">${t.viewAllJobs}</a>
+      <a href="${websiteUrl}/dashboard/ber-assessor" style="background-color: #007F00; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">${t.viewAllJobs}</a>
     </div>
   </div>
 

@@ -128,6 +128,7 @@ Deno.serve(async (req: Request) => {
         const isSpanish = tenant === 'spain';
         const isPortuguese = tenant === 'portugal';
         const isFrench = tenant === 'france';
+        const isEngland = tenant === 'england';
 
         let smtpClient: CustomSmtpClient | null = null;
 
@@ -293,7 +294,7 @@ Deno.serve(async (req: Request) => {
                                 </p>
 
                                 <p style="color: #555; font-size: 15px; line-height: 1.6;">
-                                    Your quote of <strong>€${quote.price + 10}</strong> for the BER assessment in
+                                    Your quote of <strong>${isEngland ? '£' : '€'}${quote.price + 10}</strong> for the ${isEngland ? 'EPC' : 'BER'} assessment in
                                     <strong>${town}${county ? ', ' + county : ''}</strong> has expired as the job
                                     is no longer active.
                                 </p>
@@ -323,7 +324,7 @@ Deno.serve(async (req: Request) => {
                         await smtpClient.send(
                             smtpFrom,
                             contractorEmail,
-                            isSpanish ? `Presupuesto Caducado: Trabajo en ${town}` : isPortuguese ? `Orçamento Expirado: Trabalho em ${town}` : isFrench ? `Devis Expiré : Mission à ${town}` : `Quote Expired: BER Job in ${town}`,
+                            isSpanish ? `Presupuesto Caducado: Trabajo en ${town}` : isPortuguese ? `Orçamento Expirado: Trabalho em ${town}` : isFrench ? `Devis Expiré : Mission à ${town}` : `Quote Expired: ${isEngland ? 'EPC' : 'BER'} Job in ${town}`,
                             emailHtml
                         );
                         console.log(`[expire-quotes] Notified assessor: ${contractorEmail}`);
