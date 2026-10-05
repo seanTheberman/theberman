@@ -22,7 +22,7 @@ export const generateStatusEmail = (
     let title = "";
     let message = "";
     let buttonText = isSpanish ? "Ver Panel" : isPortuguese ? "Ver Painel" : isFrench ? "Voir le Tableau de Bord" : "View Dashboard";
-    let buttonUrl = `${websiteUrl}/dashboard`;
+    let buttonUrl = `${websiteUrl}/dashboard/user`;
 
     if (status === 'scheduled') {
         title = isSpanish ? "Visita Programada" : isPortuguese ? "Visita Agendada" : isFrench ? "Visite Programmée" : `${inspectionName.charAt(0).toUpperCase() + inspectionName.slice(1)} Scheduled`;

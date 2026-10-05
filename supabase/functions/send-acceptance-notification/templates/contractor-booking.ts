@@ -5,7 +5,7 @@ export const generateContractorBookingEmail = (contractorName: string, customerN
     const isFrench = tenant === 'france';
     const brandName = displayName;
     const certificateName = isSpanish ? 'certificado energético' : (isPortuguese ? 'certificado energético' : (isEngland ? 'EPC' : (isFrench ? 'DPE' : 'BER')));
-    const dashboardUrl = `${websiteUrl}/dashboard/contractor`;
+    const dashboardUrl = `${websiteUrl}/dashboard/ber-assessor`;
 
     return `
 <!DOCTYPE html>
