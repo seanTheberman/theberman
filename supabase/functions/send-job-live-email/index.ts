@@ -589,10 +589,10 @@ Deno.serve(async (req: Request) => {
 
             console.log(`[send-job-live-email] Notifying ${dedupedContractors.length} contractors in ${town} (tenant: ${tenant}, total contractors scanned: ${contractors.length})`);
 
-            // Get assessment details for Eircode
+            // Get assessment details for the property box
             const { data: assessmentDetails } = await supabase
                 .from('assessments')
-                .select('eircode, property_address, property_size, bedrooms')
+                .select('eircode, property_address, property_type, property_size, bedrooms, building_type, building_complexity, ber_purpose, assessment_purpose')
                 .eq('id', assessmentId)
                 .eq('tenant', tenant)
                 .single();
@@ -619,7 +619,12 @@ Deno.serve(async (req: Request) => {
                             assessmentDetails?.property_size,
                             assessmentDetails?.bedrooms,
                             lang,
-                            tenant
+                            tenant,
+                            {
+                                buildingType: assessmentDetails?.building_type || assessmentDetails?.property_type,
+                                buildingComplexity: assessmentDetails?.building_complexity,
+                                purpose: assessmentDetails?.assessment_purpose || assessmentDetails?.ber_purpose,
+                            }
                         );
                         const subject = isSpanish
                             ? `Nuevo trabajo ${jobType === 'commercial' ? 'comercial' : 'de vivienda'} en ${jobLocation}`

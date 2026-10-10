@@ -2156,26 +2156,80 @@ const ContractorDashboard = () => {
                                     </p>
                                 </div>
                                 <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Código Postal' : isPortuguese ? 'Código Postal' : isFrench ? 'Code Postal' : 'Eircode'}</span>
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Código Postal' : isPortuguese ? 'Código Postal' : isFrench ? 'Code Postal' : isEngland ? 'Postcode' : 'Eircode'}</span>
                                     <p className="text-sm font-bold text-blue-600">{selectedJob.eircode || 'N/A'}</p>
                                 </div>
-                                <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Tamaño' : isPortuguese ? 'Área' : isFrench ? 'Surface' : 'Size'}</span>
-                                    <p className="text-sm font-bold text-gray-900">{selectedJob.property_size}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Habitaciones' : isPortuguese ? 'Quartos' : isFrench ? 'Chambres' : 'Bedrooms'}</span>
-                                    <p className="text-sm font-bold text-gray-900">{selectedJob.bedrooms}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Finalidad' : isPortuguese ? 'Finalidade' : isFrench ? 'Objet' : 'Purpose'}</span>
-                                    <p className="text-sm font-bold text-gray-900">{selectedJob.ber_purpose}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Bomba Calor' : isPortuguese ? 'Bomba Calor' : isFrench ? 'Pompe à Chaleur' : 'Heat Pump'}</span>
-                                    <p className="text-sm font-bold text-gray-900">{selectedJob.heat_pump}</p>
-                                </div>
+                                {selectedJob.job_type === 'commercial' ? (
+                                    <>
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Tipo de Edificio' : isPortuguese ? 'Tipo de Edifício' : isFrench ? 'Type de Bâtiment' : 'Building Type'}</span>
+                                            <p className="text-sm font-bold text-gray-900">{selectedJob.building_type || selectedJob.property_type || '-'}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Superficie' : isPortuguese ? 'Área Útil' : isFrench ? 'Surface au Sol' : 'Floor Area'}</span>
+                                            <p className="text-sm font-bold text-gray-900">{selectedJob.floor_area || selectedJob.property_size || '-'}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Complejidad' : isPortuguese ? 'Complexidade' : isFrench ? 'Complexité' : 'Complexity'}</span>
+                                            <p className="text-sm font-bold text-gray-900">{selectedJob.building_complexity || '-'}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Finalidad' : isPortuguese ? 'Finalidade' : isFrench ? 'Objet' : 'Purpose'}</span>
+                                            <p className="text-sm font-bold text-gray-900">{selectedJob.assessment_purpose || selectedJob.ber_purpose || '-'}</p>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Tipo' : isPortuguese ? 'Tipo' : isFrench ? 'Type' : 'Type'}</span>
+                                            <p className="text-sm font-bold text-gray-900">{selectedJob.property_type || '-'}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Tamaño' : isPortuguese ? 'Área' : isFrench ? 'Surface' : 'Size'}</span>
+                                            <p className="text-sm font-bold text-gray-900">{selectedJob.property_size}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Habitaciones' : isPortuguese ? 'Quartos' : isFrench ? 'Chambres' : 'Bedrooms'}</span>
+                                            <p className="text-sm font-bold text-gray-900">{selectedJob.bedrooms}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Finalidad' : isPortuguese ? 'Finalidade' : isFrench ? 'Objet' : 'Purpose'}</span>
+                                            <p className="text-sm font-bold text-gray-900">{selectedJob.ber_purpose}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isSpanish ? 'Bomba Calor' : isPortuguese ? 'Bomba Calor' : isFrench ? 'Pompe à Chaleur' : 'Heat Pump'}</span>
+                                            <p className="text-sm font-bold text-gray-900">{selectedJob.heat_pump}</p>
+                                        </div>
+                                    </>
+                                )}
                             </div>
+
+                            {(selectedJob.heating_cooling_systems?.length > 0 || selectedJob.existing_docs?.length > 0) && (
+                                <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        {selectedJob.heating_cooling_systems?.length > 0 && (
+                                            <div className="space-y-2">
+                                                <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest block">{isSpanish ? 'Sistemas de Climatización' : isPortuguese ? 'Sistemas de Climatização' : isFrench ? 'Systèmes de Chauffage/Clim' : 'Heating & Cooling Systems'}</span>
+                                                <div className="flex flex-wrap gap-1">
+                                                    {selectedJob.heating_cooling_systems.map((s: string, i: number) => (
+                                                        <span key={i} className="text-[10px] bg-white border border-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-medium">{s}</span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {selectedJob.existing_docs?.length > 0 && (
+                                            <div className="space-y-2">
+                                                <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest block">{isSpanish ? 'Documentación Existente' : isPortuguese ? 'Documentação Existente' : isFrench ? 'Documentation Existante' : 'Existing Documentation'}</span>
+                                                <div className="flex flex-wrap gap-1">
+                                                    {selectedJob.existing_docs.map((d: string, i: number) => (
+                                                        <span key={i} className="text-[10px] bg-white border border-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-medium">{d}</span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
                                 <div className="grid md:grid-cols-2 gap-6">
@@ -2211,6 +2265,13 @@ const ContractorDashboard = () => {
                                     "{selectedJob.property_address}"
                                 </p>
                             </div>
+
+                            {selectedJob.notes && (
+                                <div className="bg-amber-50/60 rounded-2xl p-6 border border-amber-100">
+                                    <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest block mb-2">{isSpanish ? 'Notas del Cliente' : isPortuguese ? 'Notas do Cliente' : isFrench ? 'Notes du Client' : 'Notes from Customer'}</span>
+                                    <p className="text-sm font-medium text-gray-800 leading-relaxed whitespace-pre-line">{selectedJob.notes}</p>
+                                </div>
+                            )}
 
                             <div className="flex flex-col gap-4">
                                 <div className="flex gap-4">
@@ -2355,33 +2416,66 @@ const ContractorDashboard = () => {
                                                     <span className="font-medium text-gray-800">{selectedJob.town}, {isSpanish ? 'Prov.' : isPortuguese ? 'Dist.' : isFrench ? 'Région' : 'Co.'} {selectedJob.county}</span>
                                                 </div>
                                                 <div className="flex justify-between px-4 py-3">
-                                                    <span className="text-gray-600">{isSpanish ? 'Código Postal:' : isPortuguese ? 'Código Postal:' : isFrench ? 'Code Postal :' : 'Eircode:'}</span>
+                                                    <span className="text-gray-600">{isSpanish ? 'Código Postal:' : isPortuguese ? 'Código Postal:' : isFrench ? 'Code Postal :' : isEngland ? 'Postcode:' : 'Eircode:'}</span>
                                                     <span className="font-medium text-blue-600">{selectedJob.eircode || 'N/A'}</span>
                                                 </div>
+                                                {selectedJob.job_type === 'commercial' ? (
+                                                    <>
+                                                        <div className="flex justify-between px-4 py-3">
+                                                            <span className="text-gray-600">{isSpanish ? 'Tipo de Edificio:' : isPortuguese ? 'Tipo de Edifício:' : isFrench ? 'Type de Bâtiment :' : 'Building Type:'}</span>
+                                                            <span className="font-medium text-gray-800">{selectedJob.building_type || selectedJob.property_type || '-'}</span>
+                                                        </div>
+                                                        <div className="flex justify-between px-4 py-3">
+                                                            <span className="text-gray-600">{isSpanish ? 'Superficie:' : isPortuguese ? 'Área Útil:' : isFrench ? 'Surface au Sol :' : 'Floor Area:'}</span>
+                                                            <span className="font-medium text-gray-800">{selectedJob.floor_area || selectedJob.property_size || '-'}</span>
+                                                        </div>
+                                                        <div className="flex justify-between px-4 py-3">
+                                                            <span className="text-gray-600">{isSpanish ? 'Complejidad:' : isPortuguese ? 'Complexidade:' : isFrench ? 'Complexité :' : 'Complexity:'}</span>
+                                                            <span className="font-medium text-gray-800">{selectedJob.building_complexity || '-'}</span>
+                                                        </div>
+                                                        <div className="flex justify-between px-4 py-3">
+                                                            <span className="text-gray-600">{isSpanish ? 'Finalidad:' : isPortuguese ? 'Finalidade:' : isFrench ? 'Objet :' : 'Purpose:'}</span>
+                                                            <span className="font-medium text-gray-800">{selectedJob.assessment_purpose || selectedJob.ber_purpose || '-'}</span>
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <div className="flex justify-between px-4 py-3">
+                                                            <span className="text-gray-600">{isSpanish ? 'Tipo de Propiedad:' : isPortuguese ? 'Tipo de Propriedade:' : isFrench ? 'Type de Propriété :' : 'Property Type:'}</span>
+                                                            <span className="font-medium text-gray-800">{selectedJob.property_type}</span>
+                                                        </div>
+                                                        <div className="flex justify-between px-4 py-3">
+                                                            <span className="text-gray-600">{isSpanish ? 'Tamaño:' : isPortuguese ? 'Área:' : isFrench ? 'Surface :' : 'Size:'}</span>
+                                                            <span className="font-medium text-gray-800">{selectedJob.property_size}</span>
+                                                        </div>
+                                                        <div className="flex justify-between px-4 py-3">
+                                                            <span className="text-gray-600">{isSpanish ? 'Hab.:' : isPortuguese ? 'Quartos:' : isFrench ? 'Chambres :' : 'Beds:'}</span>
+                                                            <span className="font-medium text-gray-800">{selectedJob.bedrooms}</span>
+                                                        </div>
+                                                        <div className="flex justify-between px-4 py-3">
+                                                            <span className="text-gray-600">{isSpanish ? 'Bomba Calor:' : isPortuguese ? 'Bomba Calor:' : isFrench ? 'Pompe à Chaleur :' : 'Heat Pump:'}</span>
+                                                            <span className="font-medium text-gray-800">{selectedJob.heat_pump || (isSpanish ? 'Ninguna' : isPortuguese ? 'Nenhuma' : isFrench ? 'Aucune' : 'None')}</span>
+                                                        </div>
+                                                        <div className="flex justify-between px-4 py-3">
+                                                            <span className="text-gray-600">{isSpanish ? 'Añadidos:' : isPortuguese ? 'Extras:' : isFrench ? 'Extras :' : 'Additions:'}</span>
+                                                            <span className="font-medium text-gray-800">{selectedJob.additional_features?.length ? selectedJob.additional_features.join(', ') : (isSpanish ? 'Ninguna' : isPortuguese ? 'Nenhuma' : isFrench ? 'Aucun' : 'None')}</span>
+                                                        </div>
+                                                        <div className="flex justify-between px-4 py-3">
+                                                            <span className="text-gray-600">{isSpanish ? 'Finalidad:' : isPortuguese ? 'Finalidade:' : isFrench ? 'Objet :' : 'Purpose:'}</span>
+                                                            <span className="font-medium text-gray-800">{selectedJob.ber_purpose}</span>
+                                                        </div>
+                                                    </>
+                                                )}
                                                 <div className="flex justify-between px-4 py-3">
-                                                    <span className="text-gray-600">{isSpanish ? 'Tipo de Propiedad:' : isPortuguese ? 'Tipo de Propriedade:' : isFrench ? 'Type de Propriété :' : 'Property Type:'}</span>
-                                                    <span className="font-medium text-gray-800">{selectedJob.property_type}</span>
+                                                    <span className="text-gray-600">{isSpanish ? 'Fecha Preferida:' : isPortuguese ? 'Data Preferida:' : isFrench ? 'Date Souhaitée :' : 'Preferred Date:'}</span>
+                                                    <span className="font-medium text-gray-800">{selectedJob.preferred_date ? `${selectedJob.preferred_date}${selectedJob.preferred_time ? ` ${selectedJob.preferred_time}` : ''}` : (isSpanish ? 'Flexible' : isPortuguese ? 'Flexível' : isFrench ? 'Flexible' : 'Flexible')}</span>
                                                 </div>
-                                                <div className="flex justify-between px-4 py-3">
-                                                    <span className="text-gray-600">{isSpanish ? 'Tamaño:' : isPortuguese ? 'Área:' : isFrench ? 'Surface :' : 'Size:'}</span>
-                                                    <span className="font-medium text-gray-800">{selectedJob.property_size}</span>
-                                                </div>
-                                                <div className="flex justify-between px-4 py-3">
-                                                    <span className="text-gray-600">{isSpanish ? 'Hab.:' : isPortuguese ? 'Quartos:' : isFrench ? 'Chambres :' : 'Beds:'}</span>
-                                                    <span className="font-medium text-gray-800">{selectedJob.bedrooms}</span>
-                                                </div>
-                                                <div className="flex justify-between px-4 py-3">
-                                                    <span className="text-gray-600">{isSpanish ? 'Bomba Calor:' : isPortuguese ? 'Bomba Calor:' : isFrench ? 'Pompe à Chaleur :' : 'Heat Pump:'}</span>
-                                                    <span className="font-medium text-gray-800">{selectedJob.heat_pump || (isSpanish ? 'Ninguna' : isPortuguese ? 'Nenhuma' : isFrench ? 'Aucune' : 'None')}</span>
-                                                </div>
-                                                <div className="flex justify-between px-4 py-3">
-                                                    <span className="text-gray-600">{isSpanish ? 'Añadidos:' : isPortuguese ? 'Extras:' : isFrench ? 'Extras :' : 'Additions:'}</span>
-                                                    <span className="font-medium text-gray-800">{selectedJob.additional_features?.length ? selectedJob.additional_features.join(', ') : (isSpanish ? 'Ninguna' : isPortuguese ? 'Nenhuma' : isFrench ? 'Aucun' : 'None')}</span>
-                                                </div>
-                                                <div className="flex justify-between px-4 py-3">
-                                                    <span className="text-gray-600">{isSpanish ? 'Finalidad:' : isPortuguese ? 'Finalidade:' : isFrench ? 'Objet :' : 'Purpose:'}</span>
-                                                    <span className="font-medium text-gray-800">{selectedJob.ber_purpose}</span>
-                                                </div>
+                                                {selectedJob.notes && (
+                                                    <div className="px-4 py-3">
+                                                        <span className="text-gray-600 block mb-1">{isSpanish ? 'Notas del Cliente:' : isPortuguese ? 'Notas do Cliente:' : isFrench ? 'Notes du Client :' : 'Notes from Customer:'}</span>
+                                                        <span className="font-medium text-gray-800 text-sm whitespace-pre-line">{selectedJob.notes}</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
 

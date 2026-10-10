@@ -4,6 +4,10 @@ const SPANISH_PROPERTY_LABELS: Record<string, string> = {
     'Bedrooms': 'Habitaciones',
     'Property Size': 'Tamaño',
     'Property Details': 'Detalles de la Propiedad',
+    'Building Type': 'Tipo de Edificio',
+    'Floor Area': 'Superficie',
+    'Complexity': 'Complejidad',
+    'Purpose': 'Finalidad',
 };
 
 const SPANISH_PROPERTY_TYPES: Record<string, string> = {
@@ -32,6 +36,10 @@ const FRENCH_PROPERTY_LABELS: Record<string, string> = {
     'Bedrooms': 'Chambres',
     'Property Size': 'Surface',
     'Property Details': 'Détails de la Propriété',
+    'Building Type': 'Type de Bâtiment',
+    'Floor Area': 'Surface au Sol',
+    'Complexity': 'Complexité',
+    'Purpose': 'Objet',
 };
 
 const FRENCH_PROPERTY_TYPES: Record<string, string> = {
@@ -60,6 +68,10 @@ const PORTUGUESE_PROPERTY_LABELS: Record<string, string> = {
     'Bedrooms': 'Quartos',
     'Property Size': 'Dimensão',
     'Property Details': 'Detalhes do Imóvel',
+    'Building Type': 'Tipo de Edifício',
+    'Floor Area': 'Área Útil',
+    'Complexity': 'Complexidade',
+    'Purpose': 'Finalidade',
 };
 
 const PORTUGUESE_PROPERTY_TYPES: Record<string, string> = {
@@ -82,7 +94,7 @@ const PORTUGUESE_PROPERTY_TYPES: Record<string, string> = {
     'Mixed-Use': 'Uso Misto',
 };
 
-export const generateContractorEmail = (customerCounty: string, customerTown: string, contractorName: string, promoHtml: string, websiteUrl: string = "https://theberman.eu", jobType?: string, eircode?: string, propertyAddress?: string, assessmentId?: string, contractorPhone?: string, propertySize?: string, bedrooms?: number | string, lang: 'en' | 'es' | 'pt' | 'fr' = 'en', tenant: string = 'ireland') => {
+export const generateContractorEmail = (customerCounty: string, customerTown: string, contractorName: string, promoHtml: string, websiteUrl: string = "https://theberman.eu", jobType?: string, eircode?: string, propertyAddress?: string, assessmentId?: string, contractorPhone?: string, propertySize?: string, bedrooms?: number | string, lang: 'en' | 'es' | 'pt' | 'fr' = 'en', tenant: string = 'ireland', commercialDetails?: { buildingType?: string; buildingComplexity?: string; purpose?: string }) => {
     const isSpanish = lang === 'es';
     const isPortuguese = lang === 'pt';
     const isFrench = lang === 'fr';
@@ -142,7 +154,7 @@ export const generateContractorEmail = (customerCounty: string, customerTown: st
                             <p style="margin: 0 0 30px 0; font-size: 16px; color: #555555; line-height: 1.8;">
                                 ${isSpanish ? `Un cliente en <strong>${locationStr}</strong> busca un <strong>${jobTitle}</strong>.` : isPortuguese ? `Um cliente em <strong>${locationStr}</strong> procura um <strong>${jobTitle}</strong>.` : isFrench ? `Un client à <strong>${locationStr}</strong> recherche un <strong>${jobTitle}</strong>.` : `A client in <strong>${locationStr}</strong> is looking for a <strong>${jobTitle}</strong>.`}
                             </p>
-                            ${(propertyAddress || propertySize || bedrooms) ? `
+                            ${(propertyAddress || propertySize || bedrooms || commercialDetails?.buildingType) ? `
                             <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #007F00;">
                                 <h4 style="margin: 0 0 15px 0; font-size: 15px; color: #007F00; font-weight: bold;">${labelMap ? labelMap['Property Details'] : 'Property Details'}</h4>
                                 ${propertyAddress ? `
@@ -155,14 +167,29 @@ export const generateContractorEmail = (customerCounty: string, customerTown: st
                                     <strong>${labelMap ? labelMap['Eircode'] : isEngland ? 'Postcode' : 'Eircode'}:</strong> <span style="color: #007F00; font-weight: bold;">${eircode}</span>
                                 </p>
                                 ` : ''}
-                                ${bedrooms ? `
+                                ${isCommercial && commercialDetails?.buildingType ? `
+                                <p style="margin: 0 0 10px 0; font-size: 14px; color: #555555; line-height: 1.6;">
+                                    <strong>${labelMap ? labelMap['Building Type'] : 'Building Type'}:</strong> ${commercialDetails.buildingType}
+                                </p>
+                                ` : ''}
+                                ${!isCommercial && bedrooms ? `
                                 <p style="margin: 0 0 10px 0; font-size: 14px; color: #555555; line-height: 1.6;">
                                     <strong>${labelMap ? labelMap['Bedrooms'] : 'Bedrooms'}:</strong> ${bedrooms}
                                 </p>
                                 ` : ''}
                                 ${propertySize ? `
+                                <p style="margin: 0 0 10px 0; font-size: 14px; color: #555555; line-height: 1.6;">
+                                    <strong>${isCommercial ? (labelMap ? labelMap['Floor Area'] : 'Floor Area') : (labelMap ? labelMap['Property Size'] : 'Property Size')}:</strong> ${propertySize}
+                                </p>
+                                ` : ''}
+                                ${isCommercial && commercialDetails?.buildingComplexity ? `
+                                <p style="margin: 0 0 10px 0; font-size: 14px; color: #555555; line-height: 1.6;">
+                                    <strong>${labelMap ? labelMap['Complexity'] : 'Complexity'}:</strong> ${commercialDetails.buildingComplexity}
+                                </p>
+                                ` : ''}
+                                ${commercialDetails?.purpose ? `
                                 <p style="margin: 0; font-size: 14px; color: #555555; line-height: 1.6;">
-                                    <strong>${labelMap ? labelMap['Property Size'] : 'Property Size'}:</strong> ${propertySize}
+                                    <strong>${labelMap ? labelMap['Purpose'] : 'Purpose'}:</strong> ${commercialDetails.purpose}
                                 </p>
                                 ` : ''}
                             </div>

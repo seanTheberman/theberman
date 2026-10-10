@@ -25,6 +25,10 @@ interface Assessment {
     building_type?: string;
     floor_area?: string;
     building_complexity?: string;
+    assessment_purpose?: string;
+    heating_cooling_systems?: string[];
+    existing_docs?: string[];
+    notes?: string;
 }
 
 interface QuoteData {
@@ -42,6 +46,7 @@ const QuickQuotePage = () => {
     const isSpanish = tenant === 'spain';
     const isPortuguese = tenant === 'portugal';
     const isFrench = tenant === 'france';
+    const isEngland = tenant === 'england';
     
     // Phone pre-filled from SMS link — skip the contact step
     const phoneFromUrl = searchParams.get('phone') || '';
@@ -325,18 +330,38 @@ const QuickQuotePage = () => {
                             <MapPin className="text-gray-400 mt-1" size={18} />
                             <div>
                                 <p className="font-medium text-gray-900">{assessment.property_address}</p>
-                                <p className="text-sm text-gray-600">{assessment.town}, {isSpanish ? '' : isPortuguese ? '' : isFrench ? '' : 'Co. '}{assessment.county}</p>
+                                <p className="text-sm text-gray-600">{assessment.town}, {isSpanish || isPortuguese || isFrench || isEngland ? '' : 'Co. '}{assessment.county}</p>
                                 {assessment.eircode && (
-                                    <p className="text-sm text-green-600 font-medium">{isSpanish ? 'Código Postal' : isPortuguese ? 'Código Postal' : isFrench ? 'Code Postal' : 'Eircode'}: {assessment.eircode}</p>
+                                    <p className="text-sm text-green-600 font-medium">{isSpanish ? 'Código Postal' : isPortuguese ? 'Código Postal' : isFrench ? 'Code Postal' : isEngland ? 'Postcode' : 'Eircode'}: {assessment.eircode}</p>
                                 )}
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
                             <Home className="text-gray-400 mt-1" size={18} />
                             <div>
-                                <p className="font-medium text-gray-900">{assessment.property_type}</p>
-                                <p className="text-sm text-gray-600">{assessment.property_size}</p>
-                                <p className="text-sm text-gray-600">{assessment.bedrooms} {isSpanish ? 'habitaciones' : isPortuguese ? 'quartos' : isFrench ? 'chambres' : 'bedrooms'}</p>
+                                {assessment.job_type === 'commercial' ? (
+                                    <>
+                                        <p className="font-medium text-gray-900">{assessment.building_type || assessment.property_type}</p>
+                                        <p className="text-sm text-gray-600">{isSpanish ? 'Superficie' : isPortuguese ? 'Área útil' : isFrench ? 'Surface' : 'Floor area'}: {assessment.floor_area || assessment.property_size}</p>
+                                        {assessment.building_complexity && (
+                                            <p className="text-sm text-gray-600">{isSpanish ? 'Complejidad' : isPortuguese ? 'Complexidade' : isFrench ? 'Complexité' : 'Complexity'}: {assessment.building_complexity}</p>
+                                        )}
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="font-medium text-gray-900">{assessment.property_type}</p>
+                                        <p className="text-sm text-gray-600">{assessment.property_size}</p>
+                                        {assessment.bedrooms != null && (
+                                            <p className="text-sm text-gray-600">{assessment.bedrooms} {isSpanish ? 'habitaciones' : isPortuguese ? 'quartos' : isFrench ? 'chambres' : 'bedrooms'}</p>
+                                        )}
+                                    </>
+                                )}
+                                {(assessment.assessment_purpose || assessment.ber_purpose) && (
+                                    <p className="text-sm text-gray-600 mt-1">{isSpanish ? 'Finalidad' : isPortuguese ? 'Finalidade' : isFrench ? 'Objet' : 'Purpose'}: <span className="font-medium">{assessment.assessment_purpose || assessment.ber_purpose}</span></p>
+                                )}
+                                {assessment.job_type !== 'commercial' && assessment.heat_pump && (
+                                    <p className="text-sm text-gray-600">{isSpanish ? 'Bomba de calor' : isPortuguese ? 'Bomba de calor' : isFrench ? 'Pompe à chaleur' : 'Heat pump'}: {assessment.heat_pump}</p>
+                                )}
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
@@ -359,6 +384,36 @@ const QuickQuotePage = () => {
                             </div>
                         </div>
                     </div>
+
+                    {(assessment.additional_features?.length > 0 || assessment.heating_cooling_systems?.length > 0 || assessment.existing_docs?.length > 0) && (
+                        <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {assessment.job_type !== 'commercial' && assessment.additional_features?.length > 0 && (
+                                <div>
+                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{isSpanish ? 'Añadidos' : isPortuguese ? 'Extras' : isFrench ? 'Extras' : 'Additional features'}</p>
+                                    <p className="text-sm text-gray-700">{assessment.additional_features.join(', ')}</p>
+                                </div>
+                            )}
+                            {assessment.heating_cooling_systems?.length > 0 && (
+                                <div>
+                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{isSpanish ? 'Climatización' : isPortuguese ? 'Climatização' : isFrench ? 'Chauffage/Clim' : 'Heating & cooling'}</p>
+                                    <p className="text-sm text-gray-700">{assessment.heating_cooling_systems.join(', ')}</p>
+                                </div>
+                            )}
+                            {assessment.existing_docs?.length > 0 && (
+                                <div>
+                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{isSpanish ? 'Documentación' : isPortuguese ? 'Documentação' : isFrench ? 'Documentation' : 'Existing docs'}</p>
+                                    <p className="text-sm text-gray-700">{assessment.existing_docs.join(', ')}</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {assessment.notes && (
+                        <div className="mt-4 pt-4 border-t border-gray-100">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{isSpanish ? 'Notas del Cliente' : isPortuguese ? 'Notas do Cliente' : isFrench ? 'Notes du Client' : 'Notes from customer'}</p>
+                            <p className="text-sm text-gray-700 whitespace-pre-line">{assessment.notes}</p>
+                        </div>
+                    )}
                 </div>
 
                 {/* Step 1: Quote Form */}
