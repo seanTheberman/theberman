@@ -385,24 +385,24 @@ const QuickQuotePage = () => {
                         </div>
                     </div>
 
-                    {(assessment.additional_features?.length > 0 || assessment.heating_cooling_systems?.length > 0 || assessment.existing_docs?.length > 0) && (
+                    {((assessment.additional_features?.length ?? 0) > 0 || (assessment.heating_cooling_systems?.length ?? 0) > 0 || (assessment.existing_docs?.length ?? 0) > 0) && (
                         <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {assessment.job_type !== 'commercial' && assessment.additional_features?.length > 0 && (
+                            {assessment.job_type !== 'commercial' && (assessment.additional_features?.length ?? 0) > 0 && (
                                 <div>
                                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{isSpanish ? 'Añadidos' : isPortuguese ? 'Extras' : isFrench ? 'Extras' : 'Additional features'}</p>
-                                    <p className="text-sm text-gray-700">{assessment.additional_features.join(', ')}</p>
+                                    <p className="text-sm text-gray-700">{assessment.additional_features?.join(', ')}</p>
                                 </div>
                             )}
-                            {assessment.heating_cooling_systems?.length > 0 && (
+                            {(assessment.heating_cooling_systems?.length ?? 0) > 0 && (
                                 <div>
                                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{isSpanish ? 'Climatización' : isPortuguese ? 'Climatização' : isFrench ? 'Chauffage/Clim' : 'Heating & cooling'}</p>
-                                    <p className="text-sm text-gray-700">{assessment.heating_cooling_systems.join(', ')}</p>
+                                    <p className="text-sm text-gray-700">{assessment.heating_cooling_systems?.join(', ')}</p>
                                 </div>
                             )}
-                            {assessment.existing_docs?.length > 0 && (
+                            {(assessment.existing_docs?.length ?? 0) > 0 && (
                                 <div>
                                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{isSpanish ? 'Documentación' : isPortuguese ? 'Documentação' : isFrench ? 'Documentation' : 'Existing docs'}</p>
-                                    <p className="text-sm text-gray-700">{assessment.existing_docs.join(', ')}</p>
+                                    <p className="text-sm text-gray-700">{assessment.existing_docs?.join(', ')}</p>
                                 </div>
                             )}
                         </div>

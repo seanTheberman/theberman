@@ -2204,24 +2204,24 @@ const ContractorDashboard = () => {
                                 )}
                             </div>
 
-                            {(selectedJob.heating_cooling_systems?.length > 0 || selectedJob.existing_docs?.length > 0) && (
+                            {((selectedJob.heating_cooling_systems?.length ?? 0) > 0 || (selectedJob.existing_docs?.length ?? 0) > 0) && (
                                 <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
                                     <div className="grid md:grid-cols-2 gap-6">
-                                        {selectedJob.heating_cooling_systems?.length > 0 && (
+                                        {(selectedJob.heating_cooling_systems?.length ?? 0) > 0 && (
                                             <div className="space-y-2">
                                                 <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest block">{isSpanish ? 'Sistemas de Climatización' : isPortuguese ? 'Sistemas de Climatização' : isFrench ? 'Systèmes de Chauffage/Clim' : 'Heating & Cooling Systems'}</span>
                                                 <div className="flex flex-wrap gap-1">
-                                                    {selectedJob.heating_cooling_systems.map((s: string, i: number) => (
+                                                    {selectedJob.heating_cooling_systems?.map((s: string, i: number) => (
                                                         <span key={i} className="text-[10px] bg-white border border-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-medium">{s}</span>
                                                     ))}
                                                 </div>
                                             </div>
                                         )}
-                                        {selectedJob.existing_docs?.length > 0 && (
+                                        {(selectedJob.existing_docs?.length ?? 0) > 0 && (
                                             <div className="space-y-2">
                                                 <span className="text-[10px] font-black text-[#007EA7] uppercase tracking-widest block">{isSpanish ? 'Documentación Existente' : isPortuguese ? 'Documentação Existente' : isFrench ? 'Documentation Existante' : 'Existing Documentation'}</span>
                                                 <div className="flex flex-wrap gap-1">
-                                                    {selectedJob.existing_docs.map((d: string, i: number) => (
+                                                    {selectedJob.existing_docs?.map((d: string, i: number) => (
                                                         <span key={i} className="text-[10px] bg-white border border-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-medium">{d}</span>
                                                     ))}
                                                 </div>
