@@ -505,7 +505,7 @@ Deno.serve(async (req: Request) => {
 
         const { data: contractors } = await supabase
             .from('profiles')
-            .select('id, email, full_name, phone, preferred_towns, preferred_counties, assessor_type')
+            .select('id, email, full_name, phone, preferred_towns, preferred_counties, county, home_county, assessor_type')
             .eq('role', 'contractor')
             .eq('is_active', true)
             .eq('tenant', tenant)
@@ -524,7 +524,7 @@ Deno.serve(async (req: Request) => {
             .single();
 
         if (contractors && contractors.length > 0) {
-            const norm = (s: any) => (typeof s === 'string' ? s.trim().toLowerCase() : '');
+            const norm = (s: any) => (typeof s === 'string' ? s.trim().toLowerCase().replace(/[.,;]+$/, '') : '');
             const targetTown = norm(town);
             const targetCounty = norm(county);
 
@@ -534,15 +534,21 @@ Deno.serve(async (req: Request) => {
                     return false;
                 }
 
-                // Must have at least one preference configured (towns or counties)
+                // Must have at least one preference configured (towns or counties).
+                // If none configured, fall back to the contractor's own county/home_county
+                // so assessors who never set preferences still get notified about local jobs.
                 const prefTownsNorm = Array.isArray(c.preferred_towns)
                     ? c.preferred_towns.map(norm).filter(Boolean)
                     : [];
-                const prefCountiesNorm = Array.isArray(c.preferred_counties)
+                let prefCountiesNorm = Array.isArray(c.preferred_counties)
                     ? c.preferred_counties.map(norm).filter(Boolean)
                     : [];
+                const fallbackCounty = norm(c.county || c.home_county);
+                if (prefCountiesNorm.length === 0 && fallbackCounty) {
+                    prefCountiesNorm = [fallbackCounty];
+                }
                 if (prefTownsNorm.length === 0 && prefCountiesNorm.length === 0) {
-                    console.log(`[send-job-live-email] Skipping ${c.email}: no preferred_towns or preferred_counties configured`);
+                    console.log(`[send-job-live-email] Skipping ${c.email}: no preferred_towns, preferred_counties or county configured`);
                     return false;
                 }
 

@@ -274,7 +274,7 @@ const ContractorDashboard = () => {
                     home_county: profileData.home_county || profileData.county || '',
                     preferred_counties: profileData.preferred_counties?.length
                         ? profileData.preferred_counties
-                        : (profileData.county ? [profileData.county] : []),
+                        : ((profileData.county || profileData.home_county) ? [profileData.county || profileData.home_county] : []),
                     preferred_towns: profileData.preferred_towns || [],
                 });
             }
@@ -407,16 +407,16 @@ const ContractorDashboard = () => {
             const quotedIds = new Set(quotes?.map(q => q.assessment_id) || []);
             let filteredAvailableJobs = activeJobs?.filter(j => !quotedIds.has(j.id)) || [];
 
-            // 2. Apply location preference filtering if configured
-            // If specific towns/localities are selected, only show jobs in those towns.
-            // Otherwise fall back to the broader county/region selection.
-            if (profileData?.preferred_towns && profileData.preferred_towns.length > 0) {
+            // 2. Apply location preference filtering if configured.
+            // Job matches if its town is in preferred_towns OR its county is in
+            // preferred_counties — the same rule the notification emails use.
+            const normLoc = (s?: string | null) => (s || '').trim().toLowerCase().replace(/[.,;]+$/, '');
+            const prefTownsNorm = (profileData?.preferred_towns || []).map(normLoc).filter(Boolean);
+            const prefCountiesNorm = (profileData?.preferred_counties || []).map(normLoc).filter(Boolean);
+            if (prefTownsNorm.length > 0 || prefCountiesNorm.length > 0) {
                 filteredAvailableJobs = filteredAvailableJobs.filter(job =>
-                    job.town && profileData.preferred_towns.includes(job.town)
-                );
-            } else if (profileData?.preferred_counties && profileData.preferred_counties.length > 0) {
-                filteredAvailableJobs = filteredAvailableJobs.filter(job =>
-                    profileData.preferred_counties.includes(job.county)
+                    (job.town && prefTownsNorm.includes(normLoc(job.town))) ||
+                    (job.county && prefCountiesNorm.includes(normLoc(job.county)))
                 );
             }
 

@@ -95,7 +95,7 @@ Deno.serve(async (req: Request) => {
             // 1. Only active, fully-onboarded contractors for this tenant.
             const { data: contractors, error: contractorsError } = await supabase
                 .from('profiles')
-                .select('id, email, full_name, phone, preferred_counties, preferred_towns, assessor_type, is_active, registration_status')
+                .select('id, email, full_name, phone, preferred_counties, preferred_towns, county, home_county, assessor_type, is_active, registration_status')
                 .eq('role', 'contractor')
                 .eq('tenant', tenant)
                 .eq('is_active', true)
@@ -214,15 +214,20 @@ Deno.serve(async (req: Request) => {
                         .map((q: any) => q.assessment_id),
                 );
 
-                // Must have at least one preferred town configured. No town prefs = no reminders.
+                // Must have at least one location configured. If none, fall back to the
+                // contractor's own county/home_county (same rule as send-job-live-email).
                 const prefTownsNorm = Array.isArray(contractor.preferred_towns)
                     ? contractor.preferred_towns.map(norm).filter(Boolean)
                     : [];
-                const prefCountiesNorm = Array.isArray(contractor.preferred_counties)
+                let prefCountiesNorm = Array.isArray(contractor.preferred_counties)
                     ? contractor.preferred_counties.map(norm).filter(Boolean)
                     : [];
+                const fallbackCounty = norm(contractor.county || contractor.home_county);
+                if (prefCountiesNorm.length === 0 && fallbackCounty) {
+                    prefCountiesNorm = [fallbackCounty];
+                }
                 if (prefTownsNorm.length === 0 && prefCountiesNorm.length === 0) {
-                    console.log(`[send-job-reminder-cron] Skipping ${contractor.email}: no preferred_towns/counties configured.`);
+                    console.log(`[send-job-reminder-cron] Skipping ${contractor.email}: no preferred_towns/counties or county configured.`);
                     continue;
                 }
 
