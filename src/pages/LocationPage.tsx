@@ -10,6 +10,9 @@ interface LocationPageData {
     hero_title: string;
     hero_subtitle: string;
     intro_text: string;
+    body_text?: string;
+    cta_heading?: string;
+    cta_subtitle?: string;
     seo_title: string;
     seo_description: string;
     meta_keywords: string;
@@ -84,17 +87,41 @@ const LocationPage = () => {
         ? englandDisplayMap[rawCountyName.toLowerCase()]
         : countyName.replace(/\b\w/g, c => c.toUpperCase());
 
-    // Load custom location page content from DB
+    // Load custom location page content from DB.
+    // Town pages look up their own row first (by 'county/town' slug, then by
+    // town name); county pages match on location_name. No row → generated text.
     useEffect(() => {
         const fetchLocationPage = async () => {
             if (!countyName) return;
             try {
-                const { data } = await supabase
-                    .from('location_pages')
-                    .select('*')
-                    .eq('tenant', tenant)
-                    .eq('location_name', countyName)
-                    .maybeSingle();
+                let data = null;
+                if (townName) {
+                    const slug = `${normalizeSlug(countyName)}/${normalizeSlug(townName)}`;
+                    const bySlug = await supabase
+                        .from('location_pages')
+                        .select('*')
+                        .eq('tenant', tenant)
+                        .eq('slug', slug)
+                        .maybeSingle();
+                    data = bySlug.data;
+                    if (!data) {
+                        const byName = await supabase
+                            .from('location_pages')
+                            .select('*')
+                            .eq('tenant', tenant)
+                            .eq('location_name', townName)
+                            .maybeSingle();
+                        data = byName.data;
+                    }
+                } else {
+                    const byName = await supabase
+                        .from('location_pages')
+                        .select('*')
+                        .eq('tenant', tenant)
+                        .eq('location_name', countyName)
+                        .maybeSingle();
+                    data = byName.data;
+                }
                 if (data) setCustomData(data);
             } catch {
                 // Ignore errors, fallback to generated content
@@ -103,7 +130,7 @@ const LocationPage = () => {
             }
         };
         fetchLocationPage();
-    }, [countyName, tenant]);
+    }, [countyName, townName, tenant]);
 
     // Tenant-specific labels
     const labels = {
@@ -154,6 +181,10 @@ const LocationPage = () => {
         // A custom location page saved in the DB is still allowed to render
         if (!dbChecked) return null;
         if (!customData) return <NotFound />;
+    }
+    // Admin-disabled custom page → hidden
+    if (customData && customData.is_active === false) {
+        return <NotFound />;
     }
 
     const heroTitle = customData?.hero_title || `${labels.assessor} ${labels.in} ${townName || displayName}`;
@@ -242,13 +273,13 @@ const LocationPage = () => {
                         <div className="prose prose-lg text-gray-700 mb-8">
                             <p>{introText}</p>
                             <p>
-                                {isSpanish
+                                {customData?.body_text || (isSpanish
                                     ? `Todos nuestros técnicos están debidamente certificados y tienen experiencia en la evaluación de eficiencia energética de propiedades en ${countyName}.`
                                     : isFrance
                                         ? `Tous nos diagnostiqueurs sont pleinement certifiés et expérimentés dans le diagnostic de performance énergétique des propriétés en ${countyName}.`
                                         : isPortugal
                                             ? `Todos os nossos peritos são plenamente qualificados e experientes na avaliação energética de imóveis em ${countyName}.`
-                                            : `All our assessors are fully certified and experienced in energy rating properties in ${countyName}.`
+                                            : `All our assessors are fully certified and experienced in energy rating properties in ${countyName}.`)
                                 }
                             </p>
                         </div>
@@ -289,16 +320,16 @@ const LocationPage = () => {
             <div className="bg-gray-900 text-white py-16">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <h2 className="text-3xl font-bold mb-4">
-                        {isSpanish ? '¿Listo para obtener su certificado?' : isFrance ? 'Prêt à obtenir votre DPE ?' : isPortugal ? 'Pronto para obter o seu certificado?' : 'Ready to Get Your Certificate?'}
+                        {customData?.cta_heading || (isSpanish ? '¿Listo para obtener su certificado?' : isFrance ? 'Prêt à obtenir votre DPE ?' : isPortugal ? 'Pronto para obter o seu certificado?' : 'Ready to Get Your Certificate?')}
                     </h2>
                     <p className="text-xl opacity-90 mb-8">
-                        {isSpanish
+                        {customData?.cta_subtitle || (isSpanish
                             ? 'Compare precios de técnicos certificados en minutos'
                             : isFrance
                                 ? 'Comparez les devis de diagnostiqueurs certifiés en quelques minutes'
                                 : isPortugal
                                     ? 'Compare orçamentos de peritos qualificados em minutos'
-                                    : 'Compare prices from certified assessors in minutes'
+                                    : 'Compare prices from certified assessors in minutes')
                         }
                     </p>
                     <Link

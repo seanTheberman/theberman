@@ -3,6 +3,7 @@ import { supabase } from '../../../lib/supabase';
 import { uploadImageToCloudinary } from '../../../lib/cloudinary';
 import { CMS_PAGES, getDefaultsForTenant, getPageLabel, getSectionLabel, getSectionDescription } from '../../../lib/cmsDefaults';
 import type { FieldDefinition, PageDefinition, SectionDefinition } from '../../../lib/cmsDefaults';
+import { getTownsForTenant } from '../../../lib/tenantData';
 import {
     ChevronDown, ChevronRight, Save, RotateCcw, Monitor, Smartphone,
     Loader2, Upload, ExternalLink, AlertCircle
@@ -27,39 +28,59 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
     const [saving, setSaving] = useState(false);
     const [uploadingField, setUploadingField] = useState<string | null>(null);
     const [hasChanges, setHasChanges] = useState(false);
+    const [selectedCounty, setSelectedCounty] = useState('');
+    const [selectedTown, setSelectedTown] = useState('');
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
-    // Sample location used for visual editor preview per tenant
-    const getSampleLocation = (tenant: string): string => {
-        const map: Record<string, string> = {
-            ireland: 'Dublin',
-            england: 'Greater London',
-            spain: 'Comunidad de Madrid',
-            france: 'Île-de-France',
-            portugal: 'Lisboa',
-        };
-        return map[tenant] || 'Dublin';
-    };
+    // Normalize slugs the same way LocationPage resolves URLs
+    const normalizeSlug = (v: string) =>
+        v.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
-    const getSampleLocationPath = (tenant: string): string => {
-        return '/' + getSampleLocation(tenant).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    };
+    const countyOptions = Object.keys(getTownsForTenant(selectedTenant)).sort();
+    const townOptions = selectedCounty ? (getTownsForTenant(selectedTenant)[selectedCounty] || []) : [];
+
+    // The location row being edited: county page, or county/town page
+    const locationName = selectedTown || selectedCounty;
+    const locationSlug = selectedCounty
+        ? (selectedTown ? `${normalizeSlug(selectedCounty)}/${normalizeSlug(selectedTown)}` : normalizeSlug(selectedCounty))
+        : '';
 
     // Load content from DB for current page + tenant
     const loadPageContent = useCallback(async () => {
         setLoading(true);
         try {
             if (selectedPage.id === 'location') {
-                // Location pages load from location_pages table
-                const sampleLoc = getSampleLocation(selectedTenant);
-                const { data, error } = await supabase
-                    .from('location_pages')
-                    .select('*')
-                    .eq('tenant', selectedTenant)
-                    .eq('location_name', sampleLoc)
-                    .maybeSingle();
+                // Location pages load from location_pages table for the
+                // currently selected county (or county/town).
+                if (!selectedCounty) { setSectionData({}); setOriginalData({}); return; }
 
-                if (error) throw error;
+                let data: any = null;
+                if (selectedTown) {
+                    const bySlug = await supabase
+                        .from('location_pages')
+                        .select('*')
+                        .eq('tenant', selectedTenant)
+                        .eq('slug', locationSlug)
+                        .maybeSingle();
+                    data = bySlug.data;
+                    if (!data) {
+                        const byName = await supabase
+                            .from('location_pages')
+                            .select('*')
+                            .eq('tenant', selectedTenant)
+                            .eq('location_name', selectedTown)
+                            .maybeSingle();
+                        data = byName.data;
+                    }
+                } else {
+                    const byName = await supabase
+                        .from('location_pages')
+                        .select('*')
+                        .eq('tenant', selectedTenant)
+                        .eq('location_name', selectedCounty)
+                        .maybeSingle();
+                    data = byName.data;
+                }
 
                 const map: PageSectionMap = {};
                 for (const section of selectedPage.sections) {
@@ -74,6 +95,9 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
                         map[section.id] = {
                             ...defaults,
                             intro_text: data?.intro_text || defaults.intro_text,
+                            body_text: data?.body_text || defaults.body_text,
+                            cta_heading: data?.cta_heading || defaults.cta_heading,
+                            cta_subtitle: data?.cta_subtitle || defaults.cta_subtitle,
                         };
                     } else if (section.id === 'seo') {
                         map[section.id] = {
@@ -122,12 +146,22 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
         } finally {
             setLoading(false);
         }
-    }, [selectedPage, selectedTenant]);
+    }, [selectedPage, selectedTenant, selectedCounty, selectedTown, locationSlug]);
 
     useEffect(() => {
         loadPageContent();
         setExpandedSection(null);
     }, [loadPageContent]);
+
+    // Reset the location pickers when the tenant or page changes
+    useEffect(() => {
+        setSelectedCounty('');
+        setSelectedTown('');
+        if (selectedPage.id === 'location') {
+            const first = Object.keys(getTownsForTenant(selectedTenant)).sort()[0] || '';
+            setSelectedCounty(first);
+        }
+    }, [selectedTenant, selectedPage]);
 
     // Update a field value
     const updateField = (sectionId: string, key: string, value: any) => {
@@ -143,8 +177,8 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
         setSaving(true);
         try {
             if (selectedPage.id === 'location') {
+                if (!selectedCounty) { toast.error('Select a location first'); setSaving(false); return; }
                 // Save location page data to location_pages table
-                const sampleLoc = getSampleLocation(selectedTenant);
                 const hero = sectionData['hero'] || {};
                 const content = sectionData['content'] || {};
                 const seo = sectionData['seo'] || {};
@@ -153,6 +187,9 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
                     hero_title: hero.hero_title || '',
                     hero_subtitle: hero.hero_subtitle || '',
                     intro_text: content.intro_text || '',
+                    body_text: content.body_text || '',
+                    cta_heading: content.cta_heading || '',
+                    cta_subtitle: content.cta_subtitle || '',
                     seo_title: seo.seo_title || '',
                     seo_description: seo.seo_description || '',
                     meta_keywords: seo.meta_keywords || '',
@@ -160,12 +197,19 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
                     updated_at: new Date().toISOString(),
                 };
 
-                const { data: existing } = await supabase
-                    .from('location_pages')
-                    .select('id')
-                    .eq('tenant', selectedTenant)
-                    .eq('location_name', sampleLoc)
-                    .maybeSingle();
+                // Match the row the way LocationPage looks it up
+                let existing: { id: string } | null = null;
+                if (selectedTown) {
+                    const bySlug = await supabase.from('location_pages').select('id').eq('tenant', selectedTenant).eq('slug', locationSlug).maybeSingle();
+                    existing = bySlug.data;
+                    if (!existing) {
+                        const byName = await supabase.from('location_pages').select('id').eq('tenant', selectedTenant).eq('location_name', selectedTown).maybeSingle();
+                        existing = byName.data;
+                    }
+                } else {
+                    const byName = await supabase.from('location_pages').select('id').eq('tenant', selectedTenant).eq('location_name', selectedCounty).maybeSingle();
+                    existing = byName.data;
+                }
 
                 if (existing) {
                     const { error } = await supabase
@@ -178,13 +222,13 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
                         .from('location_pages')
                         .insert({
                             tenant: selectedTenant,
-                            location_name: sampleLoc,
-                            slug: sampleLoc.toLowerCase().replace(/\s+/g, '-'),
+                            location_name: locationName,
+                            slug: locationSlug,
                             ...payload,
                         });
                     if (error) throw error;
                 }
-                toast.success('Location page saved successfully!');
+                toast.success(`Location page for ${locationName} saved!`);
             } else {
                 for (const section of selectedPage.sections) {
                     const content = sectionData[section.id];
@@ -287,7 +331,7 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
             ? `${window.location.protocol}//${hostname}:${window.location.port}`
             : `${window.location.protocol}//${window.location.host}`;
         const path = selectedPage.id === 'location'
-            ? getSampleLocationPath(selectedTenant)
+            ? (locationSlug ? `/${locationSlug}` : '/')
             : selectedPage.path;
         const separator = path.includes('?') ? '&' : '?';
         return `${base}${path}${separator}tenant=${selectedTenant}`;
@@ -311,6 +355,29 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
                             <option key={p.id} value={p.id}>{getPageLabel(p, selectedTenant)} Page</option>
                         ))}
                     </select>
+
+                    {/* Location pickers - only for the Location page */}
+                    {selectedPage.id === 'location' && (
+                        <>
+                            <select
+                                value={selectedCounty}
+                                onChange={(e) => { setSelectedCounty(e.target.value); setSelectedTown(''); }}
+                                className="text-sm font-bold bg-blue-50 border border-blue-200 text-blue-800 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-blue-100 transition-colors max-w-[180px]"
+                            >
+                                <option value="">Select county/region…</option>
+                                {countyOptions.map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                            <select
+                                value={selectedTown}
+                                onChange={(e) => setSelectedTown(e.target.value)}
+                                disabled={!selectedCounty}
+                                className="text-sm font-bold bg-blue-50 border border-blue-200 text-blue-800 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-blue-100 transition-colors max-w-[180px] disabled:opacity-40"
+                            >
+                                <option value="">Whole county</option>
+                                {townOptions.map(t => <option key={t} value={t}>{t}</option>)}
+                            </select>
+                        </>
+                    )}
 
                     {/* Device Toggle */}
                     <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
