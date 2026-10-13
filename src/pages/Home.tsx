@@ -391,26 +391,31 @@ const HomePage = () => {
             {/* ASSESSOR CTA SECTION */}
             <aside className="py-20 bg-gray-50 border-b border-gray-100">
                 <div className="container mx-auto px-6 text-center">
-                    {tenant === 'england' ? (
-                        <>
-                        <h3 className="text-3xl md:text-4xl font-black text-[#007F00] mb-4">Join Your Network of <Link to="/services" className="hover:underline">Accredited EPC Assessors</Link></h3>
-                        <p className="text-gray-600 font-medium mb-8 max-w-2xl mx-auto">
-                            Expand your reach by <Link to="/contact-us" className="text-[#007F00] font-bold hover:underline">joining our network of accredited EPC assessors</Link>. Receive local assessment opportunities and connect with property owners across England.
-                        </p>
-                        </>
-                    ) : (
-                    <>
-                    <p className="text-3xl md:text-4xl font-black text-[#007F00] mb-4">{isSpanish ? <Link to="/energy-advisor" className="hover:underline">¿Eres técnico certificador?</Link> : (tenant === 'portugal' ? 'Junte-se à sua rede de avaliadores credenciados de Certificados de Desempenho Energético.' : c('assessor_cta', 'heading', tenant === 'france' ? 'Vous Êtes Diagnostiqueur DPE ?' : 'Are You a BER Assessor?'))}</p>
+                    <h3 className="text-3xl md:text-4xl font-black text-[#007F00] mb-4">
+                        {isSpanish
+                            ? <Link to="/energy-advisor" className="hover:underline">{c('assessor_cta', 'heading', '¿Eres técnico certificador?')}</Link>
+                            : c('assessor_cta', 'heading', tenant === 'england'
+                                ? 'Join Your Network of Accredited EPC Assessors'
+                                : tenant === 'portugal'
+                                    ? 'Junte-se à sua rede de avaliadores credenciados de Certificados de Desempenho Energético.'
+                                    : tenant === 'france'
+                                        ? 'Vous Êtes Diagnostiqueur DPE ?'
+                                        : 'Are You a BER Assessor?')}
+                    </h3>
                     <p className="text-gray-600 font-medium mb-8 max-w-2xl mx-auto">
-                        {isSpanish ? (
-                            <>Regístrate y recibe leads de <Link to="/contact-us" className="text-[#007F00] font-bold hover:underline">propietarios que buscan certificados energéticos</Link>, directamente en tu teléfono.</>
-                        ) : (tenant === 'portugal' ? <>Registe-se na plataforma <Link to="/energy-advisor" className="text-[#007F00] font-bold hover:underline">Certificado Energia</Link> e receba pedidos de clientes da sua região diretamente no seu dispositivo.</> : c('assessor_cta', 'description', (tenant === 'france' ? 'Inscrivez-vous et recevez des missions locales directement sur votre téléphone.' : 'SEAI-registered assessors can join our nationwide network and connect with property owners looking for BER assessments in their area.')))}
+                        {c('assessor_cta', 'description', isSpanish
+                            ? 'Regístrate y recibe leads de propietarios que buscan certificados energéticos, directamente en tu teléfono.'
+                            : tenant === 'england'
+                                ? 'Expand your reach by joining our network of accredited EPC assessors. Receive local assessment opportunities and connect with property owners across England.'
+                                : tenant === 'portugal'
+                                    ? 'Registe-se na plataforma Certificado Energia e receba pedidos de clientes da sua região diretamente no seu dispositivo.'
+                                    : tenant === 'france'
+                                        ? 'Inscrivez-vous et recevez des missions locales directement sur votre téléphone.'
+                                        : 'SEAI-registered assessors can join our nationwide network and connect with property owners looking for BER assessments in their area.')}
                     </p>
-                    </>
-                    )}
                     <Link to={isSpanish ? '/get-quote' : (tenant === 'england' ? '/contact-us' : (tenant === 'ireland' ? '/about-us' : c('assessor_cta', 'cta_url', '/signup?role=contractor')))}>
                         <button className="px-12 py-4 border-2 border-[#007F00] text-[#007F00] hover:bg-[#007F00] hover:text-white font-black rounded-xl transition-all shadow-sm hover:shadow-lg transform hover:-translate-y-0.5 cursor-pointer">
-                            {isSpanish ? 'Registrarse como Técnico' : (tenant === 'ireland' ? 'Register as a BER Assessor' : c('assessor_cta', 'cta_text', (tenant === 'england' ? 'Join as an EPC Assessor' : tenant === 'france' ? 'Rejoindre Maintenant' : 'Register as an Assessor')))}
+                            {c('assessor_cta', 'cta_text', isSpanish ? 'Registrarse como Técnico' : tenant === 'ireland' ? 'Register as a BER Assessor' : tenant === 'england' ? 'Join as an EPC Assessor' : tenant === 'france' ? 'Rejoindre Maintenant' : 'Register as an Assessor')}
                         </button>
                     </Link>
                 </div>
@@ -474,25 +479,31 @@ const HomePage = () => {
                                 ))}
                             </h2>
                             <p className="text-lg md:text-xl text-gray-500 font-medium leading-relaxed mb-10 max-w-2xl">
-                                {isSpanish ? (
-                                    <>Accede a nuestra <Link to="/energy-advisor" className="text-[#007F00] font-bold hover:underline">red de especialistas en eficiencia energética</Link>. Desde <Link to="/services" className="text-[#007F00] font-bold hover:underline">instaladores de placas solares</Link> hasta especialistas en aislamiento, encuentra el colaborador adecuado para el camino de tu hogar hacia la eficiencia.</>
-                                ) : (tenant === 'england' ? <>Access our curated network of trusted home energy specialists. From solar panel installers to insulation experts, find the right partner to improve your property&apos;s energy efficiency and <Link to="/energy-advisor" className="text-[#007F00] font-bold hover:underline">support better EPC performance</Link>.</> : (tenant === 'portugal' ? <>Aceda ao <Link to="/energy-advisor" className="text-[#007F00] font-bold hover:underline">catálogo de empresas e profissionais</Link> Certificado Energia. Desde instaladores de painéis solares a especialistas em isolamento, encontre o parceiro ideal para melhorar a eficiência energética da sua casa.</> : c('catalogue_promo', 'description', (tenant === 'england' ? "Access our curated network of trusted home energy specialists. From solar panel installers to insulation experts, find the right partner to improve your property's energy efficiency and support better EPC performance." : tenant === 'france' ? "Accédez à notre réseau sélectionné d'entreprises certifiées en efficacité énergétique. Des installateurs de panneaux solaires aux spécialistes de l'isolation, trouvez le bon partenaire pour le parcours d'efficacité énergétique de votre maison." : "Access our curated catalogue of certified home energy businesses. From solar panel installers to insulation specialists, find the right partner for your home's journey to efficiency."))))}
+                                {c('catalogue_promo', 'description', isSpanish
+                                    ? 'Accede a nuestra red de especialistas en eficiencia energética. Desde instaladores de placas solares hasta especialistas en aislamiento, encuentra el colaborador adecuado para el camino de tu hogar hacia la eficiencia.'
+                                    : tenant === 'england'
+                                        ? "Access our curated network of trusted home energy specialists. From solar panel installers to insulation experts, find the right partner to improve your property's energy efficiency and support better EPC performance."
+                                        : tenant === 'portugal'
+                                            ? 'Aceda ao catálogo de empresas e profissionais Certificado Energia. Desde instaladores de painéis solares a especialistas em isolamento, encontre o parceiro ideal para melhorar a eficiência energética da sua casa.'
+                                            : tenant === 'france'
+                                                ? "Accédez à notre réseau sélectionné d'entreprises certifiées en efficacité énergétique. Des installateurs de panneaux solaires aux spécialistes de l'isolation, trouvez le bon partenaire pour le parcours d'efficacité énergétique de votre maison."
+                                                : "Access our curated catalogue of certified home energy businesses. From solar panel installers to insulation specialists, find the right partner for your home's journey to efficiency.")}
                             </p>
                             <div className="flex flex-wrap gap-4">
                                 <Link to="/catalogue">
                                     <button className="px-10 py-5 bg-[#007F00] text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-[#006400] transition-all shadow-xl shadow-green-100 flex items-center gap-3 active:scale-95 cursor-pointer">
-                                        {isSpanish ? 'Explora nuestro catálogo' : (tenant === 'england' || tenant === 'ireland' || tenant === 'portugal' ? 'Explore Our Catalogue' : tenant === 'france' ? 'Explorer le Catalogue' : 'Browse Catalogue')}
+                                        {c('catalogue_promo', 'cta1_text', isSpanish ? 'Explora nuestro catálogo' : (tenant === 'england' || tenant === 'ireland' || tenant === 'portugal' ? 'Explore Our Catalogue' : tenant === 'france' ? 'Explorer le Catalogue' : 'Browse Catalogue'))}
                                         <ArrowRight size={18} />
                                     </button>
                                 </Link>
                                 <Link to={isSpanish ? '/contact-us' : (tenant === 'england' ? '/contact-us' : (tenant === 'ireland' ? '/about-us' : tenant === 'portugal' ? '/contact-us' : '/signup?role=business'))}>
                                     <button className="px-10 py-5 bg-white text-gray-900 border-2 border-[#007F00] font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-green-50 transition-all flex items-center gap-3 active:scale-95 cursor-pointer">
-                                        {isSpanish ? 'Registra tu Negocio' : tenant === 'france' ? 'Inscrire votre Entreprise' : tenant === 'portugal' ? 'Registe a sua empresa' : 'Register your Business'}
+                                        {c('catalogue_promo', 'cta2_text', isSpanish ? 'Registra tu Negocio' : tenant === 'france' ? 'Inscrire votre Entreprise' : tenant === 'portugal' ? 'Registe a sua empresa' : 'Register your Business')}
                                     </button>
                                 </Link>
                                 <Link to="/energy-advisor">
                                     <button className="px-10 py-5 bg-white text-gray-900 border-2 border-gray-100 font-black text-xs uppercase tracking-widest rounded-2xl hover:border-[#007F00] transition-all flex items-center gap-3 active:scale-95 cursor-pointer">
-                                        {isSpanish ? 'Habla con un Asesor' : tenant === 'france' ? 'Parler à un Conseiller' : tenant === 'portugal' ? 'Fale com um Consultor' : 'Speak to Advisor'}
+                                        {c('catalogue_promo', 'cta3_text', isSpanish ? 'Habla con un Asesor' : tenant === 'france' ? 'Parler à un Conseiller' : tenant === 'portugal' ? 'Fale com um Consultor' : 'Speak to Advisor')}
                                     </button>
                                 </Link>
                             </div>
@@ -513,8 +524,8 @@ const HomePage = () => {
                                                 <Search size={24} />
                                             </div>
                                             <div>
-                                                <h4 className="text-lg font-black text-gray-900 leading-none">{isSpanish ? 'Búsqueda Inteligente' : tenant === 'france' ? 'Recherche Intelligente' : tenant === 'portugal' ? 'Pesquisa Inteligente' : 'Smart Search'}</h4>
-                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">{isSpanish ? 'Por Comunidad Autónoma y Tipo de Servicio' : tenant === 'france' ? 'Par Région et Type de Service' : tenant === 'portugal' ? 'Por Região e Tipo de Serviço' : 'By County & Service Type'}</p>
+                                                <h4 className="text-lg font-black text-gray-900 leading-none">{c('catalogue_promo', 'smart_search_title', isSpanish ? 'Búsqueda Inteligente' : tenant === 'france' ? 'Recherche Intelligente' : tenant === 'portugal' ? 'Pesquisa Inteligente' : 'Smart Search')}</h4>
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">{c('catalogue_promo', 'smart_search_subtitle', isSpanish ? 'Por Comunidad Autónoma y Tipo de Servicio' : tenant === 'france' ? 'Par Région et Type de Service' : tenant === 'portugal' ? 'Por Região e Tipo de Serviço' : 'By County & Service Type')}</p>
                                             </div>
                                         </div>
                                         <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -549,7 +560,7 @@ const HomePage = () => {
                         </div>
                         <Link to={isSpanish ? '/faq' : (tenant === 'england' ? '/epc-faq' : '/faq')}>
                             <button className="mt-12 text-[#007F00] font-black border-b-2 border-[#007F00] pb-1 hover:text-[#006400] transition-all flex items-center gap-2 group cursor-pointer">
-                                {isSpanish ? 'Ver todas las preguntas frecuentes' : tenant === 'france' ? 'Voir toutes les questions' : tenant === 'portugal' ? 'Ver todas as perguntas' : 'View All FAQs'}
+                                {c('faq', 'view_all_text', isSpanish ? 'Ver todas las preguntas frecuentes' : tenant === 'france' ? 'Voir toutes les questions' : tenant === 'portugal' ? 'Ver todas as perguntas' : 'View All FAQs')}
                                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                             </button>
                         </Link>
@@ -566,7 +577,7 @@ const HomePage = () => {
                         </div>
                         <Link to="/get-quote">
                             <button className="w-full bg-[#007F00] hover:bg-green-600 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-green-900/40 transform hover:-translate-y-1 cursor-pointer">
-                                {isSpanish ? 'Pide Presupuesto Online' : tenant === 'france' ? 'Demander un Devis en Ligne' : tenant === 'portugal' ? 'Pedir Orçamento Online' : 'Get a Quote Online'}
+                                {c('faq', 'cta_button', isSpanish ? 'Pide Presupuesto Online' : tenant === 'france' ? 'Demander un Devis en Ligne' : tenant === 'portugal' ? 'Pedir Orçamento Online' : 'Get a Quote Online')}
                             </button>
                         </Link>
                     </div>
@@ -578,17 +589,17 @@ const HomePage = () => {
                 <section className="py-24 bg-white border-t border-gray-100">
                     <div className="container mx-auto px-6">
                         <div className="text-center mb-16">
-                            <span className="text-[#007F00] font-bold uppercase tracking-widest text-sm mb-4 block">The <Link to="/services" className="hover:underline">EPC Cert</Link> Advantage</span>
-                            <h2 className="text-4xl md:text-5xl font-black text-gray-900">Why Arrange Your EPC Assessment Through EPC Cert?</h2>
+                            <span className="text-[#007F00] font-bold uppercase tracking-widest text-sm mb-4 block">{c('why_choose', 'tag', 'The EPC Cert Advantage')}</span>
+                            <h2 className="text-4xl md:text-5xl font-black text-gray-900">{c('why_choose', 'heading', 'Why Arrange Your EPC Assessment Through EPC Cert?')}</h2>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {[
-                                { emoji: '💬', title: 'Compare Multiple EPC Quotes', desc: 'Receive quotes from accredited EPC assessors and choose the option that best suits your property and budget.', link: '/get-quote' },
-                                { emoji: '📅', title: 'Fast Assessment', desc: 'Arrange an EPC assessment quickly with flexible appointment times to suit your schedule.', link: '/get-quote' },
-                                { emoji: '✅', title: 'Accredited EPC Assessors', desc: 'All assessors are accredited, vetted and qualified to issue Energy Performance Certificates in England.', link: '/energy-advisor' },
-                                { emoji: '💻', title: 'Simple Online Booking', desc: 'Request quotes, review assessor details and confirm your EPC assessment online at your convenience.', link: '/get-quote' },
-                                { emoji: '⭐', title: 'Trusted by Property Owners', desc: 'Rated highly by homeowners, landlords and estate agents across England for reliable EPC assessment services.', link: '/catalogue' },
-                                { emoji: '🗓️', title: 'Flexible Appointment Times', desc: 'Choose a date and time that works for you when booking your EPC assessment through EPC Cert.', link: '/contact-us' },
+                                { emoji: '💬', title: c('why_choose', 'card1_title', 'Compare Multiple EPC Quotes'), desc: c('why_choose', 'card1_desc', 'Receive quotes from accredited EPC assessors and choose the option that best suits your property and budget.'), link: '/get-quote' },
+                                { emoji: '📅', title: c('why_choose', 'card2_title', 'Fast Assessment'), desc: c('why_choose', 'card2_desc', 'Arrange an EPC assessment quickly with flexible appointment times to suit your schedule.'), link: '/get-quote' },
+                                { emoji: '✅', title: c('why_choose', 'card3_title', 'Accredited EPC Assessors'), desc: c('why_choose', 'card3_desc', 'All assessors are accredited, vetted and qualified to issue Energy Performance Certificates in England.'), link: '/energy-advisor' },
+                                { emoji: '💻', title: c('why_choose', 'card4_title', 'Simple Online Booking'), desc: c('why_choose', 'card4_desc', 'Request quotes, review assessor details and confirm your EPC assessment online at your convenience.'), link: '/get-quote' },
+                                { emoji: '⭐', title: c('why_choose', 'card5_title', 'Trusted by Property Owners'), desc: c('why_choose', 'card5_desc', 'Rated highly by homeowners, landlords and estate agents across England for reliable EPC assessment services.'), link: '/catalogue' },
+                                { emoji: '🗓️', title: c('why_choose', 'card6_title', 'Flexible Appointment Times'), desc: c('why_choose', 'card6_desc', 'Choose a date and time that works for you when booking your EPC assessment through EPC Cert.'), link: '/contact-us' },
                             ].map((item, i) => (
                                 <Link key={i} to={item.link} className="bg-gray-50 rounded-3xl p-8 border border-gray-100 hover:border-[#007F00]/20 hover:shadow-lg transition-all block cursor-pointer">
                                     <div className="text-4xl mb-4">{item.emoji}</div>
@@ -607,17 +618,17 @@ const HomePage = () => {
                     <div className="container mx-auto px-6">
                         <div className="text-center mb-16">
                             <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
-                                <Link to="/services" className="hover:underline">¿Por qué elegir nuestro servicio de Certificado Energético?</Link>
+                                <Link to="/services" className="hover:underline">{c('why_choose', 'heading', '¿Por qué elegir nuestro servicio de Certificado Energético?')}</Link>
                             </h2>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                             {[
-                                { title: "Compara Presupuestos", desc: "Recibe presupuestos de certificadores y elige la opción que mejor se adapte a tu inmueble.", link: "/get-quote", icon: <TrendingUp size={24} /> },
-                                { title: "Certificadores Acreditados", desc: "Encuentra profesionales cualificados para realizar tu certificado energético.", link: "/get-quote", icon: <ShieldCheck size={24} /> },
-                                { title: "Proceso Rápido y Sencillo", desc: "Obtén tu certificado energético de forma rápida y sencilla.", link: "/energy-advisor", icon: <Clock size={24} /> },
-                                { title: "Reserva tu Inspección", desc: "Elige la fecha de tu inspección y facilita los datos de tu inmueble.", link: "/get-quote", icon: <ClipboardList size={24} /> },
-                                { title: "Profesionales de Toda España", desc: "Encuentra profesionales para realizar tu certificado energético en tu comunidad autónoma.", link: "/catalogue", icon: <MapPin size={24} /> },
-                                { title: "Elige tu Comunidad Autónoma", desc: "Consulta las opciones disponibles para Andalucía, Aragón, Asturias, Islas Baleares, Canarias, Cantabria, Castilla-La Mancha, Castilla y León, Cataluña, Comunidad de Madrid, Navarra, Comunidad Valenciana, Extremadura, Galicia, La Rioja, País Vasco y Región de Murcia.", link: "/contact-us", icon: <Search size={24} /> },
+                                { title: c('why_choose', 'card1_title', 'Compara Presupuestos'), desc: c('why_choose', 'card1_desc', 'Recibe presupuestos de certificadores y elige la opción que mejor se adapte a tu inmueble.'), link: "/get-quote", icon: <TrendingUp size={24} /> },
+                                { title: c('why_choose', 'card2_title', 'Certificadores Acreditados'), desc: c('why_choose', 'card2_desc', 'Encuentra profesionales cualificados para realizar tu certificado energético.'), link: "/get-quote", icon: <ShieldCheck size={24} /> },
+                                { title: c('why_choose', 'card3_title', 'Proceso Rápido y Sencillo'), desc: c('why_choose', 'card3_desc', 'Obtén tu certificado energético de forma rápida y sencilla.'), link: "/energy-advisor", icon: <Clock size={24} /> },
+                                { title: c('why_choose', 'card4_title', 'Reserva tu Inspección'), desc: c('why_choose', 'card4_desc', 'Elige la fecha de tu inspección y facilita los datos de tu inmueble.'), link: "/get-quote", icon: <ClipboardList size={24} /> },
+                                { title: c('why_choose', 'card5_title', 'Profesionales de Toda España'), desc: c('why_choose', 'card5_desc', 'Encuentra profesionales para realizar tu certificado energético en tu comunidad autónoma.'), link: "/catalogue", icon: <MapPin size={24} /> },
+                                { title: c('why_choose', 'card6_title', 'Elige tu Comunidad Autónoma'), desc: c('why_choose', 'card6_desc', 'Consulta las opciones disponibles para Andalucía, Aragón, Asturias, Islas Baleares, Canarias, Cantabria, Castilla-La Mancha, Castilla y León, Cataluña, Comunidad de Madrid, Navarra, Comunidad Valenciana, Extremadura, Galicia, La Rioja, País Vasco y Región de Murcia.'), link: "/contact-us", icon: <Search size={24} /> },
                             ].map((item, i) => (
                                 <Link key={i} to={item.link} className="p-8 bg-white rounded-[2rem] border border-gray-100 hover:border-green-100 transition-all hover:shadow-lg group cursor-pointer block">
                                     <div className="w-12 h-12 rounded-2xl bg-green-50 text-[#007F00] flex items-center justify-center mb-6 group-hover:bg-[#007F00] group-hover:text-white transition-all">
@@ -638,17 +649,17 @@ const HomePage = () => {
                     <div className="container mx-auto px-6">
                         <div className="text-center mb-16">
                             <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
-                                Why Choose Certificado Energia?
+                                {c('why_choose', 'heading', 'Why Choose Certificado Energia?')}
                             </h2>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                             {[
-                                { title: 'Melhores Tarifas', link: '/pricing', icon: <TrendingUp size={24} /> },
-                                { title: 'Resultados Rápidos', link: '/get-quote', icon: <ZapIcon size={24} /> },
-                                { title: 'Especialistas Certificados', link: '/services', icon: <ShieldCheck size={24} /> },
-                                { title: 'Fluido e sem stress', link: '/catalogue', icon: <CheckCircle2 size={24} /> },
-                                { title: 'Satisfação garantida', link: '/contact-us', icon: <Shield size={24} /> },
-                                { title: 'Escolha o seu horário', link: '/get-quote', icon: <Clock size={24} /> },
+                                { title: c('why_choose', 'card1_title', 'Melhores Tarifas'), link: '/pricing', icon: <TrendingUp size={24} /> },
+                                { title: c('why_choose', 'card2_title', 'Resultados Rápidos'), link: '/get-quote', icon: <ZapIcon size={24} /> },
+                                { title: c('why_choose', 'card3_title', 'Especialistas Certificados'), link: '/services', icon: <ShieldCheck size={24} /> },
+                                { title: c('why_choose', 'card4_title', 'Fluido e sem stress'), link: '/catalogue', icon: <CheckCircle2 size={24} /> },
+                                { title: c('why_choose', 'card5_title', 'Satisfação garantida'), link: '/contact-us', icon: <Shield size={24} /> },
+                                { title: c('why_choose', 'card6_title', 'Escolha o seu horário'), link: '/get-quote', icon: <Clock size={24} /> },
                             ].map((item, i) => (
                                 <Link key={i} to={item.link} className="p-8 bg-white rounded-[2rem] border border-gray-100 hover:border-green-100 transition-all hover:shadow-lg group cursor-pointer block">
                                     <div className="w-12 h-12 rounded-2xl bg-green-50 text-[#007F00] flex items-center justify-center mb-6 group-hover:bg-[#007F00] group-hover:text-white transition-all">
@@ -661,7 +672,7 @@ const HomePage = () => {
                         <div className="text-center mt-12">
                             <Link to="/contact-us">
                                 <button className="px-12 py-5 bg-[#007F00] text-white font-black text-sm uppercase tracking-widest rounded-2xl hover:bg-[#006400] transition-all shadow-xl flex items-center gap-3 mx-auto cursor-pointer">
-                                    Entre em contacto agora <ArrowRight size={18} />
+                                    {c('why_choose', 'cta_button', 'Entre em contacto agora')} <ArrowRight size={18} />
                                 </button>
                             </Link>
                         </div>
@@ -675,10 +686,10 @@ const HomePage = () => {
                     {tenant === 'portugal' ? (
                         <>
                             <h2 className="text-3xl md:text-4xl font-black text-center text-[#007F00] mb-4">
-                                Serviços de <Link to="/services" className="hover:underline">Certificados Energéticos</Link> em Todo o Portugal
+                                <Link to="/services" className="hover:underline">{c('coverage', 'heading', 'Serviços de Certificados Energéticos em Todo o Portugal')}</Link>
                             </h2>
                             <p className="text-center text-gray-600 font-medium mb-12 max-w-2xl mx-auto">
-                                Ajudamos proprietários em todo o país a ligar-se a peritos qualificados na sua zona.
+                                {c('coverage', 'description', 'Ajudamos proprietários em todo o país a ligar-se a peritos qualificados na sua zona.')}
                             </p>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
                                 {[
@@ -699,7 +710,7 @@ const HomePage = () => {
                                                 <h3 className="text-lg font-black text-gray-900 group-hover:text-[#007F00] transition-colors">{province.name}</h3>
                                                 <p className="text-sm font-bold text-[#007F00]">{province.count}</p>
                                                 <p className="text-sm text-gray-500 font-medium">{province.counties}</p>
-                                                <span className="text-sm text-[#007F00] font-bold mt-2 inline-block group-hover:underline">Ver Localizações →</span>
+                                                <span className="text-sm text-[#007F00] font-bold mt-2 inline-block group-hover:underline">{c('coverage', 'button_text', 'Ver Localizações →')}</span>
                                             </div>
                                         </div>
                                     </Link>
@@ -711,10 +722,10 @@ const HomePage = () => {
                             {tenant === 'france' ? (
                                 <>
                                     <h2 className="text-3xl md:text-4xl font-black text-center text-[#007F00] mb-4">
-                                        Services de DPE en France
+                                        {c('coverage', 'heading', 'Services de DPE en France')}
                                     </h2>
                                     <p className="text-center text-gray-600 font-medium mb-12 max-w-2xl mx-auto">
-                                        Accompagnement des propriétaires en France pour les diagnostics de performance énergétique (DPE) et études énergétiques.
+                                        {c('coverage', 'description', 'Accompagnement des propriétaires en France pour les diagnostics de performance énergétique (DPE) et études énergétiques.')}
                                     </p>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
                                         {[
@@ -730,7 +741,7 @@ const HomePage = () => {
                                                         <h3 className="text-lg font-black text-gray-900 group-hover:text-[#007F00] transition-colors">{province.name}</h3>
                                                         <p className="text-sm font-bold text-[#007F00]">{province.count}</p>
                                                         <p className="text-sm text-gray-500 font-medium">{province.counties}</p>
-                                                        <span className="text-sm text-[#007F00] font-bold mt-2 inline-block group-hover:underline">Voir les départements →</span>
+                                                        <span className="text-sm text-[#007F00] font-bold mt-2 inline-block group-hover:underline">{c('coverage', 'button_text', 'Voir les départements →')}</span>
                                                     </div>
                                                 </div>
                                             </Link>
@@ -740,10 +751,10 @@ const HomePage = () => {
                             ) : (
                                 <>
                                     <h2 className="text-3xl md:text-4xl font-black text-center text-[#007F00] mb-4">
-                                        BER Assessment Services Across Ireland
+                                        {c('coverage', 'heading', 'BER Assessment Services Across Ireland')}
                                     </h2>
                                     <p className="text-center text-gray-600 font-medium mb-12 max-w-2xl mx-auto">
-                                        Serving property owners across all 26 counties, The BER Man helps you connect with qualified BER assessors in your local area.
+                                        {c('coverage', 'description', 'Serving property owners across all 26 counties, The BER Man helps you connect with qualified BER assessors in your local area.')}
                                     </p>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
                                         {[
@@ -759,7 +770,7 @@ const HomePage = () => {
                                                         <h3 className="text-lg font-black text-gray-900 group-hover:text-[#007F00] transition-colors">{province.name}</h3>
                                                         <p className="text-sm font-bold text-[#007F00]">{province.count}</p>
                                                         <p className="text-sm text-gray-500 font-medium">{province.counties}</p>
-                                                        <span className="text-sm text-[#007F00] font-bold mt-2 inline-block group-hover:underline">View Counties →</span>
+                                                        <span className="text-sm text-[#007F00] font-bold mt-2 inline-block group-hover:underline">{c('coverage', 'button_text', 'View Counties →')}</span>
                                                     </div>
                                                 </div>
                                             </Link>
@@ -772,12 +783,12 @@ const HomePage = () => {
                         <>
                             {tenant === 'england' ? (
                                 <>
-                                    <h2 className="text-3xl md:text-4xl font-black text-center text-gray-900 mb-4"><Link to="/about-us" className="hover:underline">EPC Assessments Across England</Link></h2>
+                                    <h2 className="text-3xl md:text-4xl font-black text-center text-gray-900 mb-4"><Link to="/about-us" className="hover:underline">{c('coverage', 'heading', 'EPC Assessments Across England')}</Link></h2>
                                     <p className="text-center text-gray-600 font-medium mb-12 max-w-2xl mx-auto">
-                                        Compare quotes from accredited EPC assessors serving homeowners, landlords and businesses across England.
+                                        {c('coverage', 'description', 'Compare quotes from accredited EPC assessors serving homeowners, landlords and businesses across England.')}
                                     </p>
                                     <div className="max-w-5xl mx-auto">
-                                        <h3 className="text-xl font-black text-center text-gray-900 mb-8 uppercase tracking-widest">Popular Locations</h3>
+                                        <h3 className="text-xl font-black text-center text-gray-900 mb-8 uppercase tracking-widest">{c('coverage', 'list_label', 'Popular Locations')}</h3>
                                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-10">
                                             {[
                                                 { city: 'London', slug: 'epc-assessment-london' },
@@ -806,7 +817,7 @@ const HomePage = () => {
                                         <div className="text-center">
                                             <Link to="/locations/">
                                                 <button className="px-8 py-4 border-2 border-[#007F00] text-[#007F00] hover:bg-[#007F00] hover:text-white font-black text-xs uppercase tracking-widest rounded-2xl transition-all cursor-pointer flex items-center gap-2 mx-auto">
-                                                    View All Locations We Cover
+                                                    {c('coverage', 'button_text', 'View All Locations We Cover')}
                                                     <ArrowRight size={16} />
                                                 </button>
                                             </Link>
@@ -816,7 +827,7 @@ const HomePage = () => {
                             ) : (
                                 <>
                                     <h2 className="text-3xl md:text-4xl font-black text-center text-[#007F00] mb-12">
-                                        {isSpanish ? 'Selecciona tu Comunidad Autónoma' : 'We Cover All Counties'}
+                                        {c('coverage', 'heading', isSpanish ? 'Selecciona tu Comunidad Autónoma' : 'We Cover All Counties')}
                                     </h2>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-16 gap-y-3 max-w-4xl mx-auto">
                                         {(isSpanish ? [
