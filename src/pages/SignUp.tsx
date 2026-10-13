@@ -67,6 +67,7 @@ const SignUp = () => {
     const [isRoleFixed, setIsRoleFixed] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [termsChecked, setTermsChecked] = useState(false);
 
     // Redirect if already authenticated
     useEffect(() => {
@@ -398,9 +399,27 @@ const SignUp = () => {
                             </div>
                         </div>
 
+                        {IS_FRENCH_TENANT && (
+                            <label className="flex items-start gap-3 cursor-pointer text-left mt-2">
+                                <input
+                                    type="checkbox"
+                                    checked={termsChecked}
+                                    onChange={(e) => setTermsChecked(e.target.checked)}
+                                    className="mt-1 w-4 h-4 accent-[#007F00] shrink-0"
+                                />
+                                <span className="text-xs text-gray-600 font-medium leading-relaxed">
+                                    J'ai lu et j'accepte les{' '}
+                                    <Link to="/terms" className="text-[#007F00] font-bold hover:underline">Conditions générales de DPECERT</Link>
+                                    {' '}et la{' '}
+                                    <Link to="/privacy" className="text-[#007F00] font-bold hover:underline">Politique de confidentialité</Link>.{' '}
+                                    <Link to="/terms-english" className="text-gray-400 underline">English version</Link>
+                                </span>
+                            </label>
+                        )}
+
                         <button
                             type="submit"
-                            disabled={isSubmitting}
+                            disabled={isSubmitting || (IS_FRENCH_TENANT && !termsChecked)}
                             className="w-full bg-[#007F00] text-white font-black py-4 rounded-xl hover:bg-green-800 transition-all shadow-lg hover:shadow-green-900/20 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-6 cursor-pointer"
                         >
                             {isSubmitting ? (

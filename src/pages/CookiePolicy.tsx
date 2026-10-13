@@ -2,6 +2,7 @@ import { HelpCircle, List, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEOHead from '../components/SEOHead';
 import { getTenantFromDomain } from '../lib/tenant';
+import FranceCookies from './france/FranceCookies';
 
 const CookiePolicy = () => {
     const tenant = getTenantFromDomain();
@@ -9,6 +10,9 @@ const CookiePolicy = () => {
     const isEngland = tenant === 'england';
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
+
+    // France: full Cookie and Tracking Technology Policy (legal requirement)
+    if (isFrance) return <FranceCookies />;
 
     const tr = isSpanish ? {
         seoTitle: 'Política de Cookies',

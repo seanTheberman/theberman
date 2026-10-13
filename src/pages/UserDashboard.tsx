@@ -370,7 +370,7 @@ const UserDashboard = () => {
         }
     };
 
-    const handlePaymentSuccess = async (paymentIntentId: string) => {
+    const handlePaymentSuccess = async (paymentIntentId: string, terms?: { termsAcceptedAt: string | null; expressExecutionRequested: boolean }) => {
         if (!paymentQuote) return;
 
         try {
@@ -401,7 +401,13 @@ const UserDashboard = () => {
 
             const { error: quoteError } = await supabase
                 .from('quotes')
-                .update({ status: 'accepted' })
+                .update({
+                    status: 'accepted',
+                    ...(terms ? {
+                        terms_accepted_at: terms.termsAcceptedAt,
+                        express_execution_requested: terms.expressExecutionRequested,
+                    } : {}),
+                })
                 .eq('id', paymentQuote.quoteId);
 
             if (quoteError) throw quoteError;

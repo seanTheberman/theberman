@@ -721,6 +721,8 @@ const Layout = () => {
                                 <li><Link to="/privacy" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{isSpanish ? 'Política de Privacidad' : tenant === 'portugal' ? 'Política de Privacidade' : tenant === 'france' ? 'Politique de Confidentialité' : 'Privacy Policy'}</Link></li>
                                 <li><Link to="/terms" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{isSpanish ? 'Términos y Condiciones' : tenant === 'portugal' ? 'Termos e Condições' : tenant === 'france' ? "Conditions Générales d'Utilisation" : 'Terms & Conditions'}</Link></li>
                                 <li><Link to="/cookie-policy" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">{isSpanish ? 'Política de Cookies' : tenant === 'portugal' ? 'Política de Cookies' : tenant === 'france' ? 'Politique de Cookies' : 'Cookie Policy'}</Link></li>
+                                {tenant === 'france' && <li><Link to="/refund-policy" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">Politique de Paiement et Remboursement</Link></li>}
+                                {tenant === 'france' && <li><Link to="/terms-english" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">Terms &amp; Conditions (English)</Link></li>}
                                 {isSpanish && (
                                     <>
                                         <li><a href="https://www.boe.es/buscar/act.php?id=BOE-A-2013-4394" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition text-sm flex items-center gap-2">RD 235/2013 (CEE)</a></li>

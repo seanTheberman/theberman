@@ -35,6 +35,8 @@ import QuickQuotePage from './pages/QuickQuotePage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import CookiePolicy from './pages/CookiePolicy';
+import FranceTermsEnglish from './pages/france/FranceTermsEnglish';
+import FranceRefundPolicy from './pages/france/FranceRefundPolicy';
 import FAQ from './pages/FAQ';
 import PublicAssessorProfile from './pages/PublicAssessorProfile';
 import AssessorTerms from './pages/AssessorTerms';
@@ -202,6 +204,8 @@ function App() {
                         <Route path="privacy" element={<PrivacyPolicy />} />
                         <Route path="terms" element={<TermsOfService />} />
                         <Route path="cookie-policy" element={<CookiePolicy />} />
+                        <Route path="terms-english" element={<FranceTermsEnglish />} />
+                        <Route path="refund-policy" element={<FranceRefundPolicy />} />
                         <Route path="assessor-terms" element={<AssessorTerms />} />
                         <Route path="login" element={<Login />} />
                         <Route path="secure-admin-login" element={<AdminLogin />} />

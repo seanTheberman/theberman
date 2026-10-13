@@ -14,17 +14,20 @@ interface PaymentModalProps {
     onClose: () => void;
     amount: number; // In standard units (e.g. 150.00)
     currency?: string;
-    onSuccess: (paymentIntentId: string) => void;
+    onSuccess: (paymentIntentId: string, terms?: { termsAcceptedAt: string | null; expressExecutionRequested: boolean }) => void;
     metadata?: any;
     title?: string;
     description?: string;
 }
 
-const CheckoutForm = ({ onSuccess, amount, isSpanish, currency }: { onSuccess: (id: string) => void, amount: number, isSpanish: boolean, currency: string }) => {
+const CheckoutForm = ({ onSuccess, amount, isSpanish, isFrance, currency }: { onSuccess: (id: string, terms?: { termsAcceptedAt: string | null; expressExecutionRequested: boolean }) => void, amount: number, isSpanish: boolean, isFrance: boolean, currency: string }) => {
     const stripe = useStripe();
     const elements = useElements();
     const [message, setMessage] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    // France: mandatory CGU acceptance + optional express execution request (CGU Annexe 2)
+    const [termsChecked, setTermsChecked] = useState(false);
+    const [expressRequest, setExpressRequest] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -52,7 +55,9 @@ const CheckoutForm = ({ onSuccess, amount, isSpanish, currency }: { onSuccess: (
             }
             setIsLoading(false);
         } else if (paymentIntent && paymentIntent.status === "succeeded") {
-            onSuccess(paymentIntent.id);
+            onSuccess(paymentIntent.id, isFrance
+                ? { termsAcceptedAt: termsChecked ? new Date().toISOString() : null, expressExecutionRequested: expressRequest }
+                : undefined);
         } else {
             setMessage((isSpanish ? 'Estado del pago: ' : 'Payment status: ') + (paymentIntent?.status || (isSpanish ? 'desconocido' : 'unknown')));
             setIsLoading(false);
@@ -70,8 +75,39 @@ const CheckoutForm = ({ onSuccess, amount, isSpanish, currency }: { onSuccess: (
                 </div>
             )}
 
+            {isFrance && (
+                <div className="space-y-3 text-left bg-gray-50 border border-gray-100 rounded-2xl p-4">
+                    <label className="flex items-start gap-3 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={termsChecked}
+                            onChange={(e) => setTermsChecked(e.target.checked)}
+                            className="mt-1 w-4 h-4 accent-[#007F00] shrink-0"
+                            required
+                        />
+                        <span className="text-xs text-gray-700 font-medium leading-relaxed">
+                            J'ai lu et j'accepte les{' '}
+                            <a href="/terms" target="_blank" rel="noreferrer" className="text-[#007F00] font-bold hover:underline">Conditions générales de DPECERT</a>
+                            {' '}et les conditions du Diagnostiqueur sélectionné.{' '}
+                            <a href="/terms-english" target="_blank" rel="noreferrer" className="text-gray-400 underline">English version</a>
+                        </span>
+                    </label>
+                    <label className="flex items-start gap-3 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={expressRequest}
+                            onChange={(e) => setExpressRequest(e.target.checked)}
+                            className="mt-1 w-4 h-4 accent-[#007F00] shrink-0"
+                        />
+                        <span className="text-xs text-gray-500 font-medium leading-relaxed">
+                            Je demande expressément que le Diagnostic et le service de DPECERT soient exécutés avant la fin du délai de rétractation de 14 jours. Je reconnais perdre mon droit de rétractation une fois le Diagnostic entièrement réalisé.
+                        </span>
+                    </label>
+                </div>
+            )}
+
             <button
-                disabled={isLoading || !stripe || !elements}
+                disabled={isLoading || !stripe || !elements || (isFrance && !termsChecked)}
                 className="w-full bg-[#007F00] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#006600] transition-all shadow-lg shadow-green-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
                 {isLoading ? (
@@ -82,7 +118,9 @@ const CheckoutForm = ({ onSuccess, amount, isSpanish, currency }: { onSuccess: (
                 ) : (
                     <>
                         <Lock size={18} />
-                        {isSpanish ? `Pagar Depósito de Reserva: ${currency === 'gbp' ? '£' : '€'}${amount.toFixed(2)}` : `Pay Booking Deposit: ${currency === 'gbp' ? '£' : '€'}${amount.toFixed(2)}`}
+                        {isFrance
+                            ? `Commande avec obligation de paiement — €${amount.toFixed(2)}`
+                            : isSpanish ? `Pagar Depósito de Reserva: ${currency === 'gbp' ? '£' : '€'}${amount.toFixed(2)}` : `Pay Booking Deposit: ${currency === 'gbp' ? '£' : '€'}${amount.toFixed(2)}`}
                     </>
                 )}
             </button>
@@ -163,6 +201,7 @@ const PaymentModal = ({ isOpen, onClose, amount, currency = 'eur', onSuccess, me
                                 onSuccess={onSuccess}
                                 amount={amount}
                                 isSpanish={isSpanish}
+                                isFrance={tenant === 'france'}
                                 currency={currency}
                             />
                         </Elements>

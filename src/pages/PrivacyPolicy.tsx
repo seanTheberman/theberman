@@ -1,6 +1,7 @@
 import { Shield, Lock, Eye, FileText, Scale } from 'lucide-react';
 import SEOHead from '../components/SEOHead';
 import { getTenantFromDomain, getTenantEmail, getTenantDomain } from '../lib/tenant';
+import FrancePrivacy from './france/FrancePrivacy';
 
 const PrivacyPolicy = () => {
     const tenant = getTenantFromDomain();
@@ -8,6 +9,9 @@ const PrivacyPolicy = () => {
     const isEngland = tenant === 'england';
     const isFrance = tenant === 'france';
     const isPortugal = tenant === 'portugal';
+
+    // France: full Privacy and Data Protection Policy (legal requirement)
+    if (isFrance) return <FrancePrivacy />;
     const tenantEmail = getTenantEmail(tenant);
     const tenantDomain = getTenantDomain(tenant);
     const brand = isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Cert' : isFrance ? 'DPE France' : isPortugal ? 'Certificado Energia' : 'The Berman';
