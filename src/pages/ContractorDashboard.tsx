@@ -68,6 +68,14 @@ interface Quote {
         user_id: string;
         status: 'live' | 'submitted' | 'pending_quote' | 'quote_accepted' | 'scheduled' | 'completed' | 'expired';
         eircode?: string;
+        job_type?: string;
+        building_type?: string;
+        floor_area?: string;
+        building_complexity?: string;
+        assessment_purpose?: string;
+        heating_cooling_systems?: string[];
+        existing_docs?: string[];
+        notes?: string;
     };
     is_loyalty_payout?: boolean;
 }
@@ -536,6 +544,15 @@ const ContractorDashboard = () => {
             scheduled_date: quote.assessment.scheduled_date,
             completed_at: quote.assessment.completed_at,
             user_id: quote.assessment.user_id,
+            eircode: quote.assessment.eircode,
+            job_type: quote.assessment.job_type,
+            building_type: quote.assessment.building_type,
+            floor_area: quote.assessment.floor_area,
+            building_complexity: quote.assessment.building_complexity,
+            assessment_purpose: quote.assessment.assessment_purpose,
+            heating_cooling_systems: quote.assessment.heating_cooling_systems,
+            existing_docs: quote.assessment.existing_docs,
+            notes: quote.assessment.notes,
         };
 
         setSelectedJob(jobData);
