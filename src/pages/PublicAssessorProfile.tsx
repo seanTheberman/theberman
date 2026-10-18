@@ -25,7 +25,7 @@ const isSpanish = tenant === 'spain';
 const isPortuguese = tenant === 'portugal';
 const isFrench = tenant === 'france';
 const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : isPortuguese ? 'Certificado Energia' : isFrench ? 'DPE Cert France' : 'The Berman';
-const regNumberLabel = isEngland ? 'Assessor ID' : isSpanish ? 'CEE CAT #' : isPortuguese ? 'N.º ADENE' : isFrench ? 'N° DPE' : 'SEAI #';
+const regNumberLabel = isEngland ? 'Assessor ID' : isSpanish ? 'CEE CAT #' : isPortuguese ? 'N.º SCE' : isFrench ? 'N° DPE' : 'SEAI #';
 
 const PublicAssessorProfile = () => {
     const { id } = useParams();
@@ -254,7 +254,7 @@ const PublicAssessorProfile = () => {
                                     </div>
                                     <div className="flex items-center gap-3 text-sm font-bold text-gray-600">
                                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                        {isSpanish ? 'Socio Registrado CEE CAT' : isPortuguese ? 'Parceiro Registado ADENE' : isFrench ? 'Partenaire Enregistré DPE' : isEngland ? 'Accredited Partner' : 'SEAI Registered Partner'}
+                                        {isSpanish ? 'Socio Registrado CEE CAT' : isPortuguese ? 'Perito Registado SCE' : isFrench ? 'Partenaire Enregistré DPE' : isEngland ? 'Accredited Partner' : 'SEAI Registered Partner'}
                                     </div>
                                     <div className="flex items-center gap-3 text-sm font-bold text-gray-600">
                                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -482,10 +482,10 @@ const PublicAssessorProfile = () => {
                 <div className="max-w-7xl mx-auto px-6 text-center">
                     <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">{isPortuguese ? `${brandName} Rede de Profissionais Licenciados` : isFrench ? `${brandName} Réseau de Professionnels Agréés` : `${brandName} Licensed Professional Network`}</p>
                     <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-30 grayscale">
-                        <span className="font-black text-lg italic tracking-tight">{isSpanish ? 'CEE CAT REGISTRADO' : isPortuguese ? 'ADENE REGISTADO' : isFrench ? 'DPE AGRÉÉ' : isEngland ? 'ACCREDITED' : 'SEAI REGISTERED'}</span>
+                        <span className="font-black text-lg italic tracking-tight">{isSpanish ? 'CEE CAT REGISTRADO' : isPortuguese ? 'SCE REGISTADO' : isFrench ? 'DPE AGRÉÉ' : isEngland ? 'ACCREDITED' : 'SEAI REGISTERED'}</span>
                         <span className="font-black text-lg italic tracking-tight">{isSpanish ? 'CERTIFICADO' : isPortuguese ? 'CERTIFICADO' : isFrench ? 'CERTIFIÉ' : isEngland ? 'CERTIFIED' : 'NSAI CERTIFIED'}</span>
                         <span className="font-black text-lg italic tracking-tight">{isSpanish ? 'MIEMBRO' : isPortuguese ? 'MEMBRO' : isFrench ? 'MEMBRE' : isEngland ? 'MEMBER' : 'BIA MEMBER'}</span>
-                        <span className="font-black text-lg italic tracking-tight">{isSpanish ? 'SOCIO IEA' : isPortuguese ? 'PARCEIRO ADENE' : isFrench ? 'PARTENAIRE DPE' : 'IEA PARTNER'}</span>
+                        <span className="font-black text-lg italic tracking-tight">{isSpanish ? 'SOCIO IEA' : isPortuguese ? 'PARCEIRO SCE' : isFrench ? 'PARTENAIRE DPE' : 'IEA PARTNER'}</span>
                     </div>
                 </div>
             </footer>

@@ -38,7 +38,7 @@ export const AddUserModal = ({ newUserRole, newUserFormData, setNewUserFormData,
         spain: { label: 'CEE CAT Registration #', placeholder: 'e.g. CAT12345', validationError: 'Número de registro CEE CAT es obligatorio' },
         england: { label: 'Assessor ID', placeholder: 'e.g. DEA12345', validationError: 'Assessor ID is required' },
         france: { label: 'DPE Diagnostiqueur #', placeholder: 'e.g. 12345', validationError: 'DPE number is required' },
-        portugal: { label: 'ADENE Registration #', placeholder: 'e.g. 12345', validationError: 'ADENE registration number is required' },
+        portugal: { label: 'SCE Registration #', placeholder: 'e.g. 12345', validationError: 'SCE registration number is required' },
     };
     const registrationLabel = regLabels[tenant]?.label || regLabels.ireland.label;
     const registrationPlaceholder = regLabels[tenant]?.placeholder || regLabels.ireland.placeholder;

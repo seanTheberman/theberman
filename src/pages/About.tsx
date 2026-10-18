@@ -12,7 +12,7 @@ const About = () => {
     const isPortugal = tenant === 'portugal';
     const isEngland = tenant === 'england';
     const brand = isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Cert' : isFrance ? 'DPE Cert France' : isPortugal ? 'Certificado Energia' : 'The Berman';
-    const regAuthority = isSpanish ? 'CEE CAT' : isEngland ? 'accredited' : isFrance ? 'DPE' : isPortugal ? 'ADENE' : 'SEAI';
+    const regAuthority = isSpanish ? 'CEE CAT' : isEngland ? 'accredited' : isFrance ? 'DPE' : isPortugal ? 'SCE' : 'SEAI';
 
     const { content: cms, loading: cmsLoading } = usePageContent('about');
     const c = (section: string, key: string, fallback: string) => cmsValue(cms, section, key, fallback);
@@ -34,7 +34,7 @@ const About = () => {
         stats: [
             { n: '1k+', l1: 'Avaliações Energéticas', l2: 'Concluídas' },
             { n: '100+', l1: 'Peritos Qualificados', l2: 'em Todo o País' },
-            { n: 'ADENE', l1: 'Peritos', l2: 'Certificados' },
+            { n: 'SCE', l1: 'Peritos', l2: 'Certificados' },
         ],
         howH: 'Como Trabalhamos',
         howSub: `Princípios da ${brand}`,

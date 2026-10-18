@@ -12,7 +12,7 @@ const isFrench = tenant === 'france';
 const SHOW_LOYALTY_PROGRAM = false; // Hidden until further notice
 const assessmentLabel = isEngland ? 'EPC' : isSpanish ? 'Certificado Energético' : isPortuguese ? 'Certificado Energético' : isFrench ? 'DPE' : 'BER';
 const assessorLabel = isEngland ? 'Domestic Energy Assessor' : isSpanish ? 'Certificador Energético' : isPortuguese ? 'Perito Certificado' : isFrench ? 'Diagnostiqueur DPE' : 'BER Assessor';
-const regAuthority = isSpanish ? 'CEE CAT' : isEngland ? 'accredited' : isPortuguese ? 'ADENE' : isFrench ? 'DPE' : 'SEAI';
+const regAuthority = isSpanish ? 'CEE CAT' : isEngland ? 'accredited' : isPortuguese ? 'SCE' : isFrench ? 'DPE' : 'SEAI';
 const brandName = isEngland ? 'EPC Cert' : isSpanish ? 'Certificado Energético' : isPortuguese ? 'Certificado Energia' : isFrench ? 'DPE Cert France' : 'The Berman';
 const logoUrl = isPortuguese ? '/certificado-energia-logo.png' : tenant === 'france' ? '/dpecert-logo.png' : '/logo.svg';
 import { LogOut, HardHat, ClipboardList, Clock, X, TrendingUp, Briefcase, Calendar, MapPin, ArrowRight, ArrowLeft, AlertTriangle, AlertCircle, Settings, MessageCircle, User, Menu, Plus, Search, ChevronDown, ChevronRight } from 'lucide-react';

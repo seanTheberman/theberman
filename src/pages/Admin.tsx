@@ -100,7 +100,7 @@ const adminUserToastMessages: Record<string, {
         requestTimedOut: 'O pedido expirou. O utilizador pode ter sido criado; atualize e verifique a lista.',
         userCreatedEmailSent: (role) => `${role === 'contractor' ? 'Perito' : 'Empresa'} criado e link de acesso enviado por email.`,
         userCreatedEmailFailed: 'Utilizador criado, mas o email falhou. Partilhe o link de acesso manualmente.',
-        registrationRequired: 'O número de registo ADENE é obrigatório',
+        registrationRequired: 'O número de registo SCE é obrigatório',
     },
 };
 

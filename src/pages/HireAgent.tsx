@@ -21,7 +21,7 @@ const isSpanish = tenant === 'spain';
 const isEngland = tenant === 'england';
 const isPortuguese = tenant === 'portugal';
 const isFrench = tenant === 'france';
-const regAuthority = isSpanish ? 'CEE CAT' : isEngland ? 'accredited' : isPortuguese ? 'ADENE' : isFrench ? 'DPE' : 'SEAI';
+const regAuthority = isSpanish ? 'CEE CAT' : isEngland ? 'accredited' : isPortuguese ? 'SCE' : isFrench ? 'DPE' : 'SEAI';
 
 const getValidationMessages = () => {
     if (isSpanish) return {

@@ -3,7 +3,7 @@ import type { Profile } from '../../../types/admin';
 import { getTenantFromDomain } from '../../../lib/tenant';
 
 const tenant = getTenantFromDomain();
-const regNumberLabel = tenant === 'spain' ? 'CEE CAT Number' : tenant === 'england' ? 'Assessor ID' : 'SEAI Number';
+const regNumberLabel = tenant === 'spain' ? 'CEE CAT Number' : tenant === 'england' ? 'Assessor ID' : tenant === 'portugal' ? 'SCE Number' : 'SEAI Number';
 
 interface Props {
     user: Profile;

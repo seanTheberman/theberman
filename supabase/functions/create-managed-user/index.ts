@@ -47,7 +47,7 @@ const contractorValidationMessages: Record<string, {
     },
     portugal: {
         serviceAreaRequired: 'Selecione pelo menos uma região ou localidade para o perito',
-        registrationRequired: 'O número de registo ADENE é obrigatório',
+        registrationRequired: 'O número de registo SCE é obrigatório',
         assessorTypeRequired: 'O tipo de perito é obrigatório',
     },
 };

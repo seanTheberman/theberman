@@ -325,7 +325,7 @@ serve(async (req: Request) => {
                         <p><strong>Nome:</strong> ${user_full_name}</p>
                         <p><strong>Email:</strong> ${user_email}</p>
                         <p><strong>Telefone:</strong> ${phone}</p>
-                        <p><strong>Número SEAI:</strong> ${seaiNumber}</p>
+                        <p><strong>Número SCE:</strong> ${seaiNumber}</p>
                         <p><strong>Tipos:</strong> ${assessorTypes.join(', ')}</p>
                     </div>
 

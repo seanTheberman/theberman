@@ -16,7 +16,7 @@ interface Props {
 }
 
 const getRegNumberLabel = (tenant: string) =>
-    tenant === 'spain' ? 'CEE CAT' : tenant === 'england' ? 'Assessor ID' : 'SEAI';
+    tenant === 'spain' ? 'CEE CAT' : tenant === 'england' ? 'Assessor ID' : tenant === 'portugal' ? 'SCE' : 'SEAI';
 
 export const AssessmentDetailModal = ({
     assessment, onClose, onGenerateQuote, onResendNotifications, onAssignAssessor, onSchedule, onComplete, onMessage, onEdit, onResendQuotes,

@@ -30,10 +30,10 @@ const REGISTRATION_NUMBER_LABELS: Record<string, { label: string; placeholder: s
         validationError: 'Assessor ID is required'
     },
     portugal: {
-        label: 'N.º de Registo ADENE',
+        label: 'N.º de Registo SCE',
         placeholder: 'ex. 12345',
         sinceLabel: 'Perito desde',
-        validationError: 'O número de registo ADENE é obrigatório'
+        validationError: 'O número de registo SCE é obrigatório'
     },
     france: {
         label: 'N° de Certification DPE',

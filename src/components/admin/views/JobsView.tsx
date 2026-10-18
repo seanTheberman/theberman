@@ -6,7 +6,7 @@ import { getTenantFromDomain } from '../../../lib/tenant';
 import type { Assessment } from '../../../types/admin';
 
 const tenant = getTenantFromDomain();
-const regNumberLabel = tenant === 'spain' ? 'CEE CAT #' : tenant === 'england' ? 'Assessor ID' : 'SEAI #';
+const regNumberLabel = tenant === 'spain' ? 'CEE CAT #' : tenant === 'england' ? 'Assessor ID' : tenant === 'portugal' ? 'SCE #' : 'SEAI #';
 
 interface Props {
     assessments: Assessment[];

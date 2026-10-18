@@ -18,7 +18,7 @@ const REGISTRATION_NUMBER_LABELS: Record<string, { label: string; placeholder: s
     spain: { label: 'CEE CAT Registration #', placeholder: 'ej. 123456', validationError: 'Número de registro CEE CAT es obligatorio' },
     england: { label: 'Assessor ID', placeholder: 'e.g. ELH123456', validationError: 'Assessor ID is required' },
     france: { label: 'DPE Diagnostiqueur #', placeholder: 'e.g. 12345', validationError: 'DPE number is required' },
-    portugal: { label: 'N.º de Registo ADENE', placeholder: 'ex. 12345', validationError: 'O número de registo ADENE é obrigatório' }
+    portugal: { label: 'N.º de Registo SCE', placeholder: 'ex. 12345', validationError: 'O número de registo SCE é obrigatório' }
 };
 
 const tenant = getTenantFromDomain();

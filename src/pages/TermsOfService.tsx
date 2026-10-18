@@ -15,7 +15,7 @@ const TermsOfService = () => {
     const tenantDomain = getTenantDomain(tenant);
     const brand = isSpanish ? 'Certificado Energético' : isEngland ? 'EPC Cert' : isFrance ? 'DPE France' : isPortugal ? 'Certificado Energia' : 'The Berman';
     const lastUpdated = isSpanish ? '2 de febrero de 2026' : isFrance ? '2 février 2026' : isPortugal ? '2 de fevereiro de 2026' : 'February 2, 2026';
-    const regAuthority = isSpanish ? 'CEE CAT' : isEngland ? 'accredited' : isFrance ? 'DPE' : isPortugal ? 'ADENE' : 'SEAI';
+    const regAuthority = isSpanish ? 'CEE CAT' : isEngland ? 'accredited' : isFrance ? 'DPE' : isPortugal ? 'SCE' : 'SEAI';
 
     const tr = isSpanish ? {
         seoTitle: 'Aviso Legal y Términos de Uso',
@@ -91,8 +91,8 @@ const TermsOfService = () => {
         agreementH: 'O Acordo',
         agreementP: `Ao aceder ou utilizar o website ${tenantDomain}, concorda em ficar vinculado por estes Termos de Utilização e por todas as leis e regulamentos aplicáveis em Portugal. Se não concordar com algum destes termos, está proibido de utilizar ou aceder a este site.`,
         servicesH: 'Os Nossos Serviços',
-        servicesP1: `${brand} atua como uma plataforma que liga proprietários e gestores de imóveis a avaliadores registados na ADENE. Facilitamos a comparação de orçamentos e a gestão de marcações para avaliações de certificação energética.`,
-        servicesP2: `Nota: Embora verifiquemos todos os avaliadores relativamente ao seu registo na ADENE, o contrato de avaliação real é entre o utilizador e o avaliador escolhido.`,
+        servicesP1: `${brand} atua como uma plataforma que liga proprietários e gestores de imóveis a avaliadores registados no SCE. Facilitamos a comparação de orçamentos e a gestão de marcações para avaliações de certificação energética.`,
+        servicesP2: `Nota: Embora verifiquemos todos os avaliadores relativamente ao seu registo no SCE, o contrato de avaliação real é entre o utilizador e o avaliador escolhido.`,
         bookingH: 'Marcações',
         bookingItems: [
             'Os orçamentos fornecidos na plataforma baseiam-se nas informações fornecidas pelo utilizador.',
@@ -100,7 +100,7 @@ const TermsOfService = () => {
             'Os cancelamentos devem ser efetuados com, pelo menos, 24 horas de antecedência relativamente à hora de avaliação agendada.',
         ],
         liabilityH: 'Responsabilidade',
-        liabilityP: `${brand} não é responsável pela exatidão dos certificados energéticos individuais. Os certificados energéticos são emitidos ao abrigo do registo do avaliador na ADENE. Não seremos responsáveis por qualquer perda direta, indireta ou consequencial resultante da utilização da nossa plataforma ou serviços.`,
+        liabilityP: `${brand} não é responsável pela exatidão dos certificados energéticos individuais. Os certificados energéticos são emitidos ao abrigo do registo do avaliador no SCE. Não seremos responsáveis por qualquer perda direta, indireta ou consequencial resultante da utilização da nossa plataforma ou serviços.`,
         lawH: 'Lei Aplicável',
         lawP: 'Estes termos e condições são regidos e interpretados de acordo com as leis de Portugal. O utilizador submete-se irrevogavelmente à jurisdição exclusiva dos tribunais portugueses para qualquer litígio relacionado com estes termos.',
     } : {

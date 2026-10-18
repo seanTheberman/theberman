@@ -47,7 +47,7 @@ const HomePage = () => {
                 : tenant === 'portugal'
                     ? 'Certificado Energia ajuda os proprietários a encontrar e comparar peritos qualificados. Envie os seus dados e receba orçamentos de profissionais qualificados, para escolher o perito ideal e marcar a sua avaliação online em minutos.'
                     : 'The BER Man helps property owners find and compare trusted BER assessors. Once you submit your details, you\'ll receive quotes from qualified professionals, so you can choose the right assessor and book your assessment online in minutes.');
-    const regAuthority = isSpanish ? 'CEE CAT' : tenant === 'england' ? 'accredited' : tenant === 'france' ? 'DPE' : tenant === 'portugal' ? 'ADENE' : 'SEAI';
+    const regAuthority = isSpanish ? 'CEE CAT' : tenant === 'england' ? 'accredited' : tenant === 'france' ? 'DPE' : tenant === 'portugal' ? 'SCE' : 'SEAI';
     const homeSeo = HOME_SEO[tenant] || HOME_SEO.ireland;
 
     useEffect(() => {
