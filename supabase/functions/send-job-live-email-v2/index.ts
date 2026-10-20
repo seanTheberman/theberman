@@ -94,12 +94,12 @@ Deno.serve(async (req: Request) => {
         const isFrench = tenant === 'france';
         if (smsPhone) {
             const customerSms = isSpanish
-                ? `Hola ${customerName}, tu solicitud de certificado energético en ${town || county} ya está activa en ${websiteUrl.replace('https://', '')}.`
+                ? `Hola ${customerName}, tu solicitud de certificado energético en ${town || county} ya está activa.`
                 : isPortuguese
-                    ? `Olá ${customerName}, o seu pedido de certificado energético em ${town || county} está agora ativo em ${websiteUrl.replace('https://', '')}.`
+                    ? `Olá ${customerName}, o seu pedido de certificado energético em ${town || county} está agora ativo.`
                     : isFrench
-                        ? `Bonjour ${customerName}, votre demande de DPE à ${town || county} est maintenant active sur ${websiteUrl.replace('https://', '')}.`
-                        : `Hi ${customerName}, your ${tenant === 'england' ? 'EPC' : 'BER'} assessment request in ${town || county} is now live on ${websiteUrl.replace('https://', '')}!`;
+                        ? `Bonjour ${customerName}, votre demande de DPE à ${town || county} est maintenant active.`
+                        : `Hi ${customerName}, your ${tenant === 'england' ? 'EPC' : 'BER'} assessment request in ${town || county} is now live!`;
             smsSent = await trySendSms(smsPhone, customerSms, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
         }
 

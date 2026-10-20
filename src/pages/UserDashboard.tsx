@@ -571,27 +571,6 @@ const UserDashboard = () => {
                 ) : (
                     /* Populated Dashboard */
                     <div className="w-full mx-auto">
-                        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden mb-8">
-                            <div className="px-8 py-10 border-b border-gray-100 bg-gray-50/30">
-                                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                                    <div className="flex-1">
-                                        <h2 className="text-3xl font-black text-gray-900 mb-2">
-                                            {view === 'assessments' ? (isSpanish ? 'Mis Certificaciones Energéticas' : isPortuguese ? 'Os Meus Certificados Energéticos' : isFrench ? `Mes Diagnostics ${assessmentLabel}` : `My ${assessmentLabel} Assessments`) : (isSpanish ? 'Tus Presupuestos' : isPortuguese ? 'Os Seus Orçamentos' : isFrench ? `Vos Devis ${assessmentLabel}` : `Your ${assessmentLabel} Quotes`)}
-                                        </h2>
-                                        <p className="text-gray-500 font-medium max-w-2xl">
-                                            {view === 'assessments' ? (isSpanish ? 'Sigue el progreso de tu certificación energética y consulta las evaluaciones programadas.' : isPortuguese ? 'Acompanhe o progresso da sua certificação energética e veja as avaliações agendadas.' : isFrench ? `Suivez le progrès de votre diagnostic et consultez les évaluations planifiées.` : `Track the progress of your property certification and view scheduled ${assessmentLabel.toLowerCase()} assessments.`) : (isSpanish ? 'Revisa y gestiona presupuestos de nuestros certificadores energéticos verificados.' : isPortuguese ? 'Revise e gerencie orçamentos dos nossos peritos qualificados verificados.' : isFrench ? `Examinez et gérez les devis de nos diagnostiqueurs certifiés.` : `Review and manage quotes from our verified professional ${assessmentLabel} Assessors.`)}
-                                        </p>
-                                    </div>
-                                    <button
-                                        onClick={() => navigate('/get-quote')}
-                                        className="bg-[#007F00] text-white px-8 py-4 rounded-full font-bold hover:bg-[#006600] transition-all shadow-lg shadow-green-100 hover:shadow-green-200 hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
-                                    >
-                                        <Home size={20} />
-                                        {isSpanish ? 'Nueva Certificación' : isPortuguese ? 'Novo Certificado' : isFrench ? `Nouveau ${assessmentLabel}` : `New ${assessmentLabel}`}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
 
                         {view === 'assessments' ? (
                             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">

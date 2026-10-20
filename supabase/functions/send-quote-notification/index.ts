@@ -121,14 +121,14 @@ Deno.serve(async (req: Request) => {
             // SMS to homeowner — link directly to their quotes dashboard
             const dashboardLink = `${websiteUrl}/dashboard/user`;
             await trySendSms(assessment.contact_phone, isSpanish
-                ? `Hola ${assessment.contact_name}, ¡buenas noticias! Has recibido un nuevo presupuesto en ${websiteUrl.replace('https://', '')}. Inicia sesión para revisarlo y comparar precios: ${dashboardLink}`
+                ? `Hola ${assessment.contact_name}, ¡buenas noticias! Has recibido un nuevo presupuesto. Inicia sesión para revisarlo y comparar precios: ${dashboardLink}`
                 : isPortuguese
-                    ? `Olá ${assessment.contact_name}, boas notícias! Recebeu um novo orçamento em ${websiteUrl.replace('https://', '')}. Inicie sessão para rever e comparar preços: ${dashboardLink}`
+                    ? `Olá ${assessment.contact_name}, boas notícias! Recebeu um novo orçamento. Inicie sessão para rever e comparar preços: ${dashboardLink}`
                     : isFrench
-                        ? `Bonjour ${assessment.contact_name}, bonnes nouvelles ! Vous avez reçu un nouveau devis sur ${websiteUrl.replace('https://', '')}. Connectez-vous pour le consulter et comparer les prix : ${dashboardLink}`
+                        ? `Bonjour ${assessment.contact_name}, bonnes nouvelles ! Vous avez reçu un nouveau devis. Connectez-vous pour le consulter et comparer les prix : ${dashboardLink}`
                         : tenant === 'england'
-                            ? `Hi ${assessment.contact_name}, great news! You've received a new EPC quote on ${websiteUrl.replace('https://', '')}. Log in to review and compare prices: ${dashboardLink}`
-                            : `Hi ${assessment.contact_name}, great news! You've received a new BER quote on ${websiteUrl.replace('https://', '')}. Log in to review and compare prices: ${dashboardLink}`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
+                            ? `Hi ${assessment.contact_name}, great news! You've received a new EPC quote. Log in to review and compare prices: ${dashboardLink}`
+                            : `Hi ${assessment.contact_name}, great news! You've received a new BER quote. Log in to review and compare prices: ${dashboardLink}`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
 
             await client.close();
 

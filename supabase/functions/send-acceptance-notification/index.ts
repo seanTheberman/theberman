@@ -115,21 +115,21 @@ Deno.serve(async (req: Request) => {
 
             // SMS to homeowner
             await trySendSms(assessment.contact_phone, isSpanish
-                ? `Hola ${assessment.contact_name}, tu reserva de certificado energético con ${contractor.full_name} está confirmada. Importe: EUR ${quote.price}. Ver detalles en ${websiteUrl}`
+                ? `Hola ${assessment.contact_name}, tu reserva de certificado energético con ${contractor.full_name} está confirmada. Importe: EUR ${quote.price}. Ver detalles: ${websiteUrl}/dashboard/user`
                 : isPortuguese
-                    ? `Olá ${assessment.contact_name}, a sua reserva de certificado energético com ${contractor.full_name} está confirmada. Valor: EUR ${quote.price}. Ver detalhes em ${websiteUrl}`
+                    ? `Olá ${assessment.contact_name}, a sua reserva de certificado energético com ${contractor.full_name} está confirmada. Valor: EUR ${quote.price}. Ver detalhes: ${websiteUrl}/dashboard/user`
                     : isFrench
-                        ? `Bonjour ${assessment.contact_name}, votre réservation de DPE avec ${contractor.full_name} est confirmée. Montant : EUR ${quote.price}. Voir les détails sur ${websiteUrl}`
-                        : `Hi ${assessment.contact_name}, your ${certificateName} booking with ${contractor.full_name} is confirmed! Amount: EUR ${quote.price}. View details at ${websiteUrl}`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
+                        ? `Bonjour ${assessment.contact_name}, votre réservation de DPE avec ${contractor.full_name} est confirmée. Montant : EUR ${quote.price}. Voir les détails : ${websiteUrl}/dashboard/user`
+                        : `Hi ${assessment.contact_name}, your ${certificateName} booking with ${contractor.full_name} is confirmed! Amount: EUR ${quote.price}. View details: ${websiteUrl}/dashboard/user`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
 
             // SMS to contractor
             await trySendSms(contractor.phone, isSpanish
-                ? `Hola ${contractor.full_name}, ¡nueva reserva confirmada! Cliente: ${assessment.contact_name}, Dirección: ${assessment.property_address}. Inicia sesión en ${websiteUrl.replace('https://', '')} para más detalles.`
+                ? `Hola ${contractor.full_name}, ¡nueva reserva confirmada! Cliente: ${assessment.contact_name}, Dirección: ${assessment.property_address}. Ver detalles: ${websiteUrl}/dashboard/ber-assessor`
                 : isPortuguese
-                    ? `Olá ${contractor.full_name}, nova reserva confirmada! Cliente: ${assessment.contact_name}, Morada: ${assessment.property_address}. Inicie sessão em ${websiteUrl.replace('https://', '')} para mais detalhes.`
+                    ? `Olá ${contractor.full_name}, nova reserva confirmada! Cliente: ${assessment.contact_name}, Morada: ${assessment.property_address}. Ver detalhes: ${websiteUrl}/dashboard/ber-assessor`
                     : isFrench
-                        ? `Bonjour ${contractor.full_name}, nouvelle réservation confirmée ! Client : ${assessment.contact_name}, Adresse : ${assessment.property_address}. Connectez-vous sur ${websiteUrl.replace('https://', '')} pour plus de détails.`
-                        : `Hi ${contractor.full_name}, new booking confirmed! Customer: ${assessment.contact_name}, Address: ${assessment.property_address}. Log in to ${websiteUrl.replace('https://', '')} for details.`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
+                        ? `Bonjour ${contractor.full_name}, nouvelle réservation confirmée ! Client : ${assessment.contact_name}, Adresse : ${assessment.property_address}. Voir les détails : ${websiteUrl}/dashboard/ber-assessor`
+                        : `Hi ${contractor.full_name}, new booking confirmed! Customer: ${assessment.contact_name}, Address: ${assessment.property_address}. View details: ${websiteUrl}/dashboard/ber-assessor`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
 
             await client.close();
             return new Response(JSON.stringify({ success: true, message: 'Acceptance notifications sent (email + SMS)', tenant }), { headers: responseHeaders });

@@ -483,12 +483,12 @@ Deno.serve(async (req: Request) => {
             .eq('tenant', tenant)
             .single()).data?.contact_phone : null);
         const smsResult = await trySendSms(smsPhone, isSpanish
-            ? `Hola ${customerName}, tu solicitud de ${config.display_name} en ${town || county} ya está activa en ${websiteUrl.replace('https://', '')}. Los certificadores de tu zona están siendo notificados. Te avisaremos cuando lleguen presupuestos.`
+            ? `Hola ${customerName}, tu solicitud de ${config.display_name} en ${town || county} ya está activa. Los certificadores de tu zona están siendo notificados. Te avisaremos cuando lleguen presupuestos.`
             : isPortuguese
-                ? `Olá ${customerName}, o seu pedido de ${config.display_name} em ${town || county} está agora ativo em ${websiteUrl.replace('https://', '')}. Os peritos da sua zona estão a ser notificados. Aviá-lo-emos quando chegarem orçamentos.`
+                ? `Olá ${customerName}, o seu pedido de ${config.display_name} em ${town || county} está agora ativo. Os peritos da sua zona estão a ser notificados. Aviá-lo-emos quando chegarem orçamentos.`
                 : isFrench
-                    ? `Bonjour ${customerName}, votre demande de ${config.display_name} à ${town || county} est maintenant active sur ${websiteUrl.replace('https://', '')}. Les diagnostiqueurs de votre zone sont en cours de notification. Nous vous informerons quand les devis arriveront.`
-                    : `Hi ${customerName}, your ${config.display_name} assessment request in ${town || county} is now live on ${websiteUrl.replace('https://', '')}! Assessors in your area are being notified. We'll let you know when quotes arrive.`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
+                    ? `Bonjour ${customerName}, votre demande de ${config.display_name} à ${town || county} est maintenant active. Les diagnostiqueurs de votre zone sont en cours de notification. Nous vous informerons quand les devis arriveront.`
+                    : `Hi ${customerName}, your ${config.display_name} assessment request in ${town || county} is now live! Assessors in your area are being notified. We'll let you know when quotes arrive.`, config.phone_country_code, config.twilio_account_sid, config.twilio_auth_token, config.twilio_messaging_service_sid);
         smsSent = smsResult === true;
         console.log(`[send-job-live-email] Customer SMS to ${smsPhone}: ${smsSent ? 'sent' : 'failed'} (tenant: ${tenant})`);
 
