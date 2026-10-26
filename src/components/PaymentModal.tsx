@@ -165,8 +165,8 @@ const PaymentModal = ({ isOpen, onClose, amount, currency = 'eur', onSuccess, me
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100">
-                <div className="bg-white border-b border-gray-100 p-5 flex justify-between items-center">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100 max-h-[92dvh] flex flex-col">
+                <div className="bg-white border-b border-gray-100 p-5 flex justify-between items-center shrink-0">
                     <div>
                         <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                             {title || (isSpanish ? 'Pago Seguro' : 'Secure Payment')}
@@ -181,7 +181,7 @@ const PaymentModal = ({ isOpen, onClose, amount, currency = 'eur', onSuccess, me
                     </button>
                 </div>
 
-                <div className="p-6">
+                <div className="p-6 overflow-y-auto flex-1 min-h-0">
                     {!import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ? (
                         <div className="bg-amber-50 text-amber-800 p-4 rounded-xl border border-amber-200">
                             <strong>{isSpanish ? 'Configuración Faltante:' : 'Configuration Missing:'}</strong> {isSpanish ? 'La clave publicable de Stripe no está configurada en las variables de entorno.' : 'Stripe Publishable Key is not set in environment variables.'}
@@ -213,7 +213,7 @@ const PaymentModal = ({ isOpen, onClose, amount, currency = 'eur', onSuccess, me
                     )}
                 </div>
 
-                <div className="bg-gray-50 p-4 text-center border-t border-gray-100">
+                <div className="bg-gray-50 p-4 text-center border-t border-gray-100 shrink-0">
                     <p className="text-[10px] text-gray-400 flex items-center justify-center gap-1">
                         <Lock size={10} />
                         {isSpanish ? 'Pagos procesados de forma segura por Stripe. No almacenamos los datos de tu tarjeta.' : 'Payments processed securely by Stripe. We do not store your card details.'}

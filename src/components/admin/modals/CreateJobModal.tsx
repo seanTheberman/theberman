@@ -231,8 +231,20 @@ export const CreateJobModal = ({ onClose, onJobCreated, selectedTenant = 'irelan
 
     const handleSubmit = async () => {
         if (isSubmitting) return; // Prevent double submission
-        if (!contactName || !contactEmail || !contactPhone || !county || !town) {
-            toast.error('Please fill in all required fields');
+        if (!contactName || !contactEmail || !contactPhone || !county || !town || !eircode) {
+            toast.error('Please fill in all required fields (including Eircode/Postcode)');
+            return;
+        }
+        if (jobType === 'commercial' && (!buildingType || !floorArea)) {
+            toast.error('Building type and floor area are required for commercial jobs');
+            return;
+        }
+        if (jobType === 'technical' && (!technicalPropertyType || !propertySize)) {
+            toast.error('Property type and property size are required');
+            return;
+        }
+        if (jobType !== 'commercial' && jobType !== 'technical' && (!propertyType || !propertySize)) {
+            toast.error('Property type and property size are required');
             return;
         }
         if (!homeownerUserId) {
