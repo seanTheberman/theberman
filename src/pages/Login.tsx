@@ -35,6 +35,13 @@ const Login = () => {
     const location = useLocation();
     const [activeTab, setActiveTab] = useState<'homeowner' | 'assessor' | 'business'>(isSpanish ? 'assessor' : 'homeowner');
     const [showPassword, setShowPassword] = useState(false);
+    // Passwordless (OTP) login for homeowners — opened directly via /login?otp=1 from quote SMS links
+    const [otpMode, setOtpMode] = useState(() => new URLSearchParams(location.search).get('otp') === '1');
+    const [otpIdentifier, setOtpIdentifier] = useState('');
+    const [otpCode, setOtpCode] = useState('');
+    const [otpStep, setOtpStep] = useState<'identify' | 'code'>('identify');
+    const [otpBusy, setOtpBusy] = useState(false);
+    const [otpHint, setOtpHint] = useState<string | null>(null);
     const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null);
     const [resending, setResending] = useState(false);
     // Prevents useEffect from redirecting mid-submission while role check is running
@@ -220,6 +227,66 @@ const Login = () => {
         }
     };
 
+    const otpT = (en: string, es: string, pt: string, fr: string) => isSpanish ? es : isPortuguese ? pt : isFrench ? fr : en;
+
+    const handleOtpSend = async (e?: React.FormEvent) => {
+        e?.preventDefault();
+        const identifier = otpIdentifier.trim();
+        if (!identifier) return;
+        setOtpBusy(true);
+        try {
+            const { data, error } = await supabase.functions.invoke('otp-login', {
+                body: { action: 'send', identifier, tenant },
+            });
+            if (error) throw error;
+            if (!data?.success) {
+                if (data?.error === 'too_many_requests') throw new Error(otpT('Too many codes requested. Please wait 15 minutes.', 'Demasiados códigos solicitados. Espera 15 minutos.', 'Demasiados códigos pedidos. Aguarde 15 minutos.', 'Trop de codes demandés. Veuillez patienter 15 minutes.'));
+                throw new Error(data?.error || 'Failed to send code');
+            }
+            // Always advance (no account enumeration); show where it went when we know
+            setOtpHint(data.channel === 'sms' && data.phoneHint
+                ? otpT(`Code sent by SMS to ···${data.phoneHint}`, `Código enviado por SMS a ···${data.phoneHint}`, `Código enviado por SMS para ···${data.phoneHint}`, `Code envoyé par SMS au ···${data.phoneHint}`)
+                : data.channel === 'email' && data.emailHint
+                    ? otpT(`Code sent by email to ${data.emailHint}`, `Código enviado por email a ${data.emailHint}`, `Código enviado por email para ${data.emailHint}`, `Code envoyé par e-mail à ${data.emailHint}`)
+                    : otpT('If an account matches, a code has been sent.', 'Si existe una cuenta, se ha enviado un código.', 'Se existir uma conta, foi enviado um código.', 'Si un compte correspond, un code a été envoyé.'));
+            setOtpStep('code');
+        } catch (err: any) {
+            toast.error(err.message || otpT('Could not send code', 'No se pudo enviar el código', 'Não foi possível enviar o código', 'Impossible d\'envoyer le code'));
+        } finally {
+            setOtpBusy(false);
+        }
+    };
+
+    const handleOtpVerify = async (e?: React.FormEvent) => {
+        e?.preventDefault();
+        const code = otpCode.trim();
+        if (code.length !== 6) return;
+        setOtpBusy(true);
+        signingIn.current = true;
+        try {
+            const { data, error } = await supabase.functions.invoke('otp-login', {
+                body: { action: 'verify', identifier: otpIdentifier.trim(), code, tenant },
+            });
+            if (error) throw error;
+            if (!data?.success || !data.token_hash) {
+                const msg = data?.error === 'code_expired'
+                    ? otpT('Code expired. Please request a new one.', 'El código ha caducado. Solicita uno nuevo.', 'O código expirou. Peça um novo.', 'Code expiré. Veuillez en demander un nouveau.')
+                    : otpT('Incorrect code. Please try again.', 'Código incorrecto. Inténtalo de nuevo.', 'Código incorreto. Tente novamente.', 'Code incorrect. Veuillez réessayer.');
+                throw new Error(msg);
+            }
+            const { error: sessionError } = await supabase.auth.verifyOtp({ token_hash: data.token_hash, type: 'magiclink' });
+            if (sessionError) throw sessionError;
+            recordSuccessfulLogin(data.email || otpIdentifier);
+            toast.success(otpT('Signed in!', '¡Sesión iniciada!', 'Sessão iniciada!', 'Connecté !'));
+            // The auth effect above handles the role-based redirect once the session lands
+        } catch (err: any) {
+            toast.error(err.message || otpT('Login failed', 'Error al iniciar sesión', 'Falha no início de sessão', 'Échec de la connexion'));
+        } finally {
+            setOtpBusy(false);
+            signingIn.current = false;
+        }
+    };
+
     const handleResendConfirmation = async () => {
         if (!unconfirmedEmail) return;
         setResending(true);
@@ -300,7 +367,76 @@ const Login = () => {
                     </button>
                 </div>
 
-                {/* Form */}
+                {/* Passwordless OTP login (homeowners only) */}
+                {activeTab === 'homeowner' && otpMode ? (
+                    <form onSubmit={otpStep === 'identify' ? handleOtpSend : handleOtpVerify} className="space-y-5">
+                        <div className="bg-green-50 border border-green-100 rounded-xl p-4 text-sm text-green-800">
+                            {otpT('Sign in without a password — enter the email or mobile number you used when requesting your quote and we\'ll text you a 6-digit code.',
+                                'Inicia sesión sin contraseña: introduce el email o móvil que usaste al pedir tu presupuesto y te enviaremos un código de 6 dígitos por SMS.',
+                                'Inicie sessão sem palavra-passe — introduza o email ou telemóvel que usou ao pedir o orçamento e enviamos-lhe um código de 6 dígitos por SMS.',
+                                'Connectez-vous sans mot de passe : saisissez l\'e-mail ou le mobile utilisé pour votre demande de devis et nous vous enverrons un code à 6 chiffres par SMS.')}
+                        </div>
+
+                        {otpStep === 'identify' ? (
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-2">
+                                    {otpT('Email or mobile number', 'Email o número de móvil', 'Email ou telemóvel', 'E-mail ou numéro de mobile')}
+                                </label>
+                                <input
+                                    value={otpIdentifier}
+                                    onChange={(e) => setOtpIdentifier(e.target.value)}
+                                    type="text"
+                                    inputMode="email"
+                                    autoComplete="username"
+                                    placeholder={otpT('name@email.com or 087 123 4567', 'nombre@email.com o 612 345 678', 'nome@email.com ou 912 345 678', 'nom@email.com ou 06 12 34 56 78')}
+                                    className="w-full px-4 py-3 bg-[#e8f0fe] border-none rounded-lg focus:ring-2 focus:ring-[#007F00]/30 outline-none"
+                                    autoFocus
+                                />
+                            </div>
+                        ) : (
+                            <div>
+                                {otpHint && <p className="text-sm text-gray-600 mb-3">{otpHint}</p>}
+                                <label className="block text-sm font-bold text-gray-700 mb-2">
+                                    {otpT('6-digit code', 'Código de 6 dígitos', 'Código de 6 dígitos', 'Code à 6 chiffres')}
+                                </label>
+                                <input
+                                    value={otpCode}
+                                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                    type="text"
+                                    inputMode="numeric"
+                                    autoComplete="one-time-code"
+                                    placeholder="123456"
+                                    className="w-full px-4 py-3 bg-[#e8f0fe] border-none rounded-lg focus:ring-2 focus:ring-[#007F00]/30 outline-none text-center text-2xl tracking-[0.5em] font-bold"
+                                    autoFocus
+                                />
+                                <div className="flex justify-between mt-2 text-sm">
+                                    <button type="button" onClick={() => { setOtpStep('identify'); setOtpCode(''); }} className="text-gray-500 hover:underline">
+                                        {otpT('Change email/number', 'Cambiar email/número', 'Alterar email/número', 'Changer e-mail/numéro')}
+                                    </button>
+                                    <button type="button" onClick={() => handleOtpSend()} disabled={otpBusy} className="text-[#007F00] font-bold hover:underline">
+                                        {otpT('Resend code', 'Reenviar código', 'Reenviar código', 'Renvoyer le code')}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        <button
+                            type="submit"
+                            disabled={otpBusy || (otpStep === 'identify' ? !otpIdentifier.trim() : otpCode.length !== 6)}
+                            className="w-full py-4 bg-[#007F00] text-white rounded-full font-bold text-lg hover:bg-green-800 transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
+                        >
+                            {otpBusy ? <Loader2 className="animate-spin" size={20} /> : otpStep === 'identify'
+                                ? otpT('Send me a code', 'Enviarme un código', 'Enviar-me um código', 'M\'envoyer un code')
+                                : t('sign_in')}
+                        </button>
+
+                        <p className="text-center text-sm text-gray-500">
+                            <button type="button" onClick={() => setOtpMode(false)} className="text-[#007F00] font-bold hover:underline">
+                                {otpT('Sign in with password instead', 'Iniciar sesión con contraseña', 'Iniciar sessão com palavra-passe', 'Se connecter avec un mot de passe')}
+                            </button>
+                        </p>
+                    </form>
+                ) : (
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                     <div>
                         <label className="block text-sm font-bold text-gray-700 mb-2">{t('email_address')}</label>
@@ -362,6 +498,14 @@ const Login = () => {
                         {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : t('sign_in')}
                     </button>
 
+                    {activeTab === 'homeowner' && (
+                        <p className="text-center text-sm">
+                            <button type="button" onClick={() => setOtpMode(true)} className="text-[#007F00] font-bold hover:underline">
+                                {otpT('Forgot your password? Sign in with a one-time code', '¿Sin contraseña? Entra con un código de un solo uso', 'Sem palavra-passe? Entre com um código único', 'Sans mot de passe ? Connectez-vous avec un code unique')}
+                            </button>
+                        </p>
+                    )}
+
                     <p className="text-center text-gray-500 mt-6">
                         {isSpanish ? '¿No tienes una cuenta?' : isPortuguese ? 'Ainda não tem conta?' : isFrench ? 'Pas encore de compte ?' : "Don't have an account?"}{' '}
                         <Link to="/signup" className="text-[#007F00] font-bold hover:underline">
@@ -369,6 +513,7 @@ const Login = () => {
                         </Link>
                     </p>
                 </form>
+                )}
             </div>
         </div>
     );

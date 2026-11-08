@@ -119,7 +119,7 @@ Deno.serve(async (req: Request) => {
             }
 
             // SMS to homeowner — link directly to their quotes dashboard
-            const dashboardLink = `${websiteUrl}/dashboard/user`;
+            const dashboardLink = `${websiteUrl}/login?otp=1`;
             await trySendSms(assessment.contact_phone, isSpanish
                 ? `Hola ${assessment.contact_name}, ¡buenas noticias! Has recibido un nuevo presupuesto. Inicia sesión para revisarlo y comparar precios: ${dashboardLink}`
                 : isPortuguese
