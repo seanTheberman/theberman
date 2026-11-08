@@ -197,6 +197,12 @@ const QuickQuotePage = () => {
             }
 
             const row = Array.isArray(data) ? data[0] : data;
+
+            // Notify homeowner about the new quote (same as the dashboard quote path)
+            supabase.functions.invoke('send-quote-notification', {
+                body: { assessmentId: id, tenant }
+            }).catch(err => console.error('Failed to trigger homeowner notification:', err));
+
             setSearchResult({
                 found: true,
                 contractor: row ? { id: row.contractor_id, full_name: row.contractor_name } : undefined,
