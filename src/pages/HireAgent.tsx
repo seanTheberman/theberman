@@ -33,10 +33,7 @@ const EIRCODE_ROUTING_KEYS: Record<string, string> = {
     'Wicklow': 'A63'
 };
 
-const IE_PROPERTY_SIZES = [
-    'Under 70 m²', '70 - 90 m²', '90 - 110 m²', '110 - 140 m²', '140 - 160 m²',
-    '160 - 185 m²', '185 - 230 m²', '230 - 280 m²', '280 - 370 m²', 'Over 370 m²'
-];
+const IE_PROPERTY_SIZES_PLACEHOLDER = isSpanish ? 'ej. 120 m²' : isPortuguese ? 'ex. 120 m²' : isFrench ? 'ex. 120 m²' : 'e.g. 120 sqm';
 
 const getValidationMessages = () => {
     if (isSpanish) return {
@@ -92,13 +89,17 @@ const hireAgentSchema = z.object({
     property_type: z.string().min(1, vMsgs.propertyTypeRequired),
     purpose: z.string().min(1, vMsgs.purposeRequired),
     message: z.string().min(10, vMsgs.messageMin),
+    preferred_date: z.string().optional(),
+    preferred_time: z.string().optional(),
     property_size: z.string().optional(),
+    bedrooms: z.string().optional(),
+    heat_pump: z.string().optional(),
     eircode: z.string().optional(),
     bot_check: z.string().optional(), // Honeypot field
 }).superRefine((data, ctx) => {
     if (!isIreland) return;
     if (!data.property_size) {
-        ctx.addIssue({ code: 'custom', path: ['property_size'], message: 'Please select a property size' });
+        ctx.addIssue({ code: 'custom', path: ['property_size'], message: 'Please enter the property size' });
     }
     const clean = (data.eircode || '').replace(/\s/g, '').toUpperCase();
     const key = EIRCODE_ROUTING_KEYS[data.county];
@@ -189,6 +190,17 @@ const HireAgent = () => {
         messagePh: 'Cuéntanos tus objetivos de eficiencia energética...',
         eircodeLabel: 'Código Postal',
         eircodePh: '28001',
+        preferredDate: 'Fecha Preferida',
+        preferredTime: 'Hora Preferida',
+        propertySize: 'Tamaño de la Propiedad',
+        bedrooms: 'Número de Dormitorios',
+        heatPump: 'Bomba de Calor Instalada',
+        selectOption: 'Seleccionar',
+        morning: 'Mañana',
+        afternoon: 'Tarde',
+        evening: 'Noche',
+        yes: 'Sí',
+        no: 'No',
         sending: 'Enviando...',
         hireBtn: 'Contratar Asesor Energético',
         toastSuccess: '¡Tu consulta ha sido enviada! Un Asesor Energético se pondrá en contacto contigo en breve.',
@@ -250,6 +262,17 @@ const HireAgent = () => {
         messagePh: 'Diga-nos quais são os seus objetivos de eficiência energética...',
         eircodeLabel: 'Código Postal',
         eircodePh: '1000-001',
+        preferredDate: 'Data Preferida',
+        preferredTime: 'Hora Preferida',
+        propertySize: 'Tamanho do Imóvel',
+        bedrooms: 'N.º de Quartos',
+        heatPump: 'Bomba de Calor Instalada',
+        selectOption: 'Selecionar',
+        morning: 'Manhã',
+        afternoon: 'Tarde',
+        evening: 'Fim de Tarde',
+        yes: 'Sim',
+        no: 'Não',
         sending: 'A enviar...',
         hireBtn: 'Contratar Consultor Energético',
         toastSuccess: 'A sua consulta foi enviada! Um Consultor Energético entrará em contacto consigo em breve.',
@@ -311,6 +334,17 @@ const HireAgent = () => {
         messagePh: 'Parlez-nous de vos objectifs énergétiques...',
         eircodeLabel: 'Code Postal',
         eircodePh: '75001',
+        preferredDate: 'Date Souhaitée',
+        preferredTime: 'Heure Souhaitée',
+        propertySize: 'Surface du Bien',
+        bedrooms: 'Nombre de Chambres',
+        heatPump: 'Pompe à Chaleur Installée',
+        selectOption: 'Sélectionner...',
+        morning: 'Matin',
+        afternoon: 'Après-midi',
+        evening: 'Soir',
+        yes: 'Oui',
+        no: 'Non',
         sending: 'Envoi...',
         hireBtn: 'Demander un Conseiller',
         toastSuccess: 'Votre demande a été envoyée ! Un conseiller énergétique vous contactera prochainement.',
@@ -372,6 +406,17 @@ const HireAgent = () => {
         messagePh: 'Tell us about your home energy goals...',
         eircodeLabel: 'Postcode',
         eircodePh: 'SW1A 1AA',
+        preferredDate: 'Preferred Date',
+        preferredTime: 'Preferred Time',
+        propertySize: 'Property Size',
+        bedrooms: 'Number of Bedrooms',
+        heatPump: 'Heat Pump Installed',
+        selectOption: 'Select...',
+        morning: 'Morning',
+        afternoon: 'Afternoon',
+        evening: 'Evening',
+        yes: 'Yes',
+        no: 'No',
         sending: 'Sending...',
         hireBtn: 'Get Started',
         toastSuccess: 'Your inquiry has been sent! An Energy Advisor will contact you shortly.',
@@ -437,6 +482,17 @@ const HireAgent = () => {
         messagePh: 'Tell us about your home energy goals...',
         eircodeLabel: 'Eircode',
         eircodePh: 'A65 F123',
+        preferredDate: 'Preferred Date',
+        preferredTime: 'Preferred Time',
+        propertySize: 'Property Size',
+        bedrooms: 'Number of Bedrooms',
+        heatPump: 'Heat Pump Installed',
+        selectOption: 'Select...',
+        morning: 'Morning',
+        afternoon: 'Afternoon',
+        evening: 'Evening',
+        yes: 'Yes',
+        no: 'No',
         sending: 'Sending...',
         hireBtn: 'Hire Energy Agent',
         toastSuccess: 'Your inquiry has been sent! An Energy Advisor will contact you shortly.',
@@ -463,6 +519,10 @@ const HireAgent = () => {
                     property_type: data.property_type,
                     property_size: data.property_size || null,
                     purpose: data.purpose,
+                    preferred_date: data.preferred_date || null,
+                    preferred_time: data.preferred_time || null,
+                    bedrooms: data.bedrooms ? parseInt(data.bedrooms) : null,
+                    heat_pump: data.heat_pump || null,
                     eircode: data.eircode || null,
                     message: `[HIRE AGENT INQUIRY]: ${data.message}`,
                 }]);
@@ -718,37 +778,79 @@ const HireAgent = () => {
                                     </div>
                                 </div>
 
-                                {isIreland && (
+                                <div className="space-y-1">
+                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">{tr.purposeLabel}</label>
+                                    <select
+                                        {...register('purpose')}
+                                        className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer ${errors.purpose ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'}`}
+                                    >
+                                        <option value="">{tr.selectPurpose}</option>
+                                        <option value="Mortgage/Bank">{tr.mortgage}</option>
+                                        <option value="Selling">{tr.selling}</option>
+                                        <option value="Renting">{tr.renting}</option>
+                                        <option value="Govt Grant">{tr.grant}</option>
+                                        <option value="Other">{tr.other}</option>
+                                    </select>
+                                    {errors.purpose && <p className="text-red-500 text-xs font-bold mt-1 ml-1">{errors.purpose.message}</p>}
+                                </div>
+
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <FormInput
+                                        label={tr.preferredDate}
+                                        type="date"
+                                        register={register('preferred_date')}
+                                        error={errors.preferred_date}
+                                        placeholder=""
+                                    />
                                     <div className="space-y-1">
-                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Property Size</label>
+                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">{tr.preferredTime}</label>
                                         <select
-                                            {...register('property_size')}
-                                            className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer ${errors.property_size ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'}`}
+                                            {...register('preferred_time')}
+                                            className="w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer border-gray-100 focus:border-[#007F00]"
                                         >
-                                            <option value="">Select Size</option>
-                                            {IE_PROPERTY_SIZES.map((size) => (
-                                                <option key={size} value={size}>{size}</option>
-                                            ))}
+                                            <option value="">{tr.selectOption}</option>
+                                            <option value="Morning">{tr.morning}</option>
+                                            <option value="Afternoon">{tr.afternoon}</option>
+                                            <option value="Evening">{tr.evening}</option>
                                         </select>
-                                        {errors.property_size && <p className="text-red-500 text-xs font-bold mt-1 ml-1">{errors.property_size.message}</p>}
                                     </div>
-                                )}
+                                </div>
+
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <FormInput
+                                        label={tr.propertySize}
+                                        register={register('property_size')}
+                                        error={errors.property_size}
+                                        placeholder={IE_PROPERTY_SIZES_PLACEHOLDER}
+                                    />
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">{tr.bedrooms}</label>
+                                        <select
+                                            {...register('bedrooms')}
+                                            className="w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer border-gray-100 focus:border-[#007F00]"
+                                        >
+                                            <option value="">{tr.selectOption}</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                            <option value="6">6+</option>
+                                        </select>
+                                    </div>
+                                </div>
 
                                 <div className="grid md:grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">{tr.purposeLabel}</label>
+                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">{tr.heatPump}</label>
                                         <select
-                                            {...register('purpose')}
-                                            className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer ${errors.purpose ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'}`}
+                                            {...register('heat_pump')}
+                                            className="w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer border-gray-100 focus:border-[#007F00]"
                                         >
-                                            <option value="">{tr.selectPurpose}</option>
-                                            <option value="Mortgage/Bank">{tr.mortgage}</option>
-                                            <option value="Selling">{tr.selling}</option>
-                                            <option value="Renting">{tr.renting}</option>
-                                            <option value="Govt Grant">{tr.grant}</option>
-                                            <option value="Other">{tr.other}</option>
+                                            <option value="">{tr.selectOption}</option>
+                                            <option value="Yes">{tr.yes}</option>
+                                            <option value="No">{tr.no}</option>
                                         </select>
-                                        {errors.purpose && <p className="text-red-500 text-xs font-bold mt-1 ml-1">{errors.purpose.message}</p>}
                                     </div>
                                     <FormInput
                                         label={tr.eircodeLabel}
