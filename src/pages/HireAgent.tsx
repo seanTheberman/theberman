@@ -21,7 +21,22 @@ const isSpanish = tenant === 'spain';
 const isEngland = tenant === 'england';
 const isPortuguese = tenant === 'portugal';
 const isFrench = tenant === 'france';
+const isIreland = tenant === 'ireland';
 const regAuthority = isSpanish ? 'CEE CAT' : isEngland ? 'accredited' : isPortuguese ? 'SCE' : isFrench ? 'DPE' : 'SEAI';
+
+const EIRCODE_ROUTING_KEYS: Record<string, string> = {
+    'Carlow': 'R93', 'Cavan': 'H12', 'Clare': 'V95', 'Cork': 'T12', 'Donegal': 'F92',
+    'Dublin': 'D', 'Galway': 'H91', 'Kerry': 'V92', 'Kildare': 'W91', 'Kilkenny': 'R95',
+    'Laois': 'R32', 'Leitrim': 'N41', 'Limerick': 'V94', 'Longford': 'N39', 'Louth': 'A91',
+    'Mayo': 'F23', 'Meath': 'C15', 'Monaghan': 'H18', 'Offaly': 'R35', 'Roscommon': 'F42',
+    'Sligo': 'F91', 'Tipperary': 'E21', 'Waterford': 'X91', 'Westmeath': 'N37', 'Wexford': 'Y35',
+    'Wicklow': 'A63'
+};
+
+const IE_PROPERTY_SIZES = [
+    'Under 70 m²', '70 - 90 m²', '90 - 110 m²', '110 - 140 m²', '140 - 160 m²',
+    '160 - 185 m²', '185 - 230 m²', '230 - 280 m²', '280 - 370 m²', 'Over 370 m²'
+];
 
 const getValidationMessages = () => {
     if (isSpanish) return {
@@ -77,8 +92,21 @@ const hireAgentSchema = z.object({
     property_type: z.string().min(1, vMsgs.propertyTypeRequired),
     purpose: z.string().min(1, vMsgs.purposeRequired),
     message: z.string().min(10, vMsgs.messageMin),
+    property_size: z.string().optional(),
     eircode: z.string().optional(),
     bot_check: z.string().optional(), // Honeypot field
+}).superRefine((data, ctx) => {
+    if (!isIreland) return;
+    if (!data.property_size) {
+        ctx.addIssue({ code: 'custom', path: ['property_size'], message: 'Please select a property size' });
+    }
+    const clean = (data.eircode || '').replace(/\s/g, '').toUpperCase();
+    const key = EIRCODE_ROUTING_KEYS[data.county];
+    if (clean.length < 7) {
+        ctx.addIssue({ code: 'custom', path: ['eircode'], message: 'Eircode is required (e.g. A65 F123)' });
+    } else if (key && !clean.startsWith(key)) {
+        ctx.addIssue({ code: 'custom', path: ['eircode'], message: 'Eircode does not match the selected county' });
+    }
 });
 
 type HireAgentFormData = z.infer<typeof hireAgentSchema>;
@@ -433,6 +461,7 @@ const HireAgent = () => {
                     county: data.county,
                     town: data.town,
                     property_type: data.property_type,
+                    property_size: data.property_size || null,
                     purpose: data.purpose,
                     eircode: data.eircode || null,
                     message: `[HIRE AGENT INQUIRY]: ${data.message}`,
@@ -688,6 +717,22 @@ const HireAgent = () => {
                                         {errors.property_type && <p className="text-red-500 text-xs font-bold mt-1 ml-1">{errors.property_type.message}</p>}
                                     </div>
                                 </div>
+
+                                {isIreland && (
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Property Size</label>
+                                        <select
+                                            {...register('property_size')}
+                                            className={`w-full bg-white border-2 rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer ${errors.property_size ? 'border-red-500' : 'border-gray-100 focus:border-[#007F00]'}`}
+                                        >
+                                            <option value="">Select Size</option>
+                                            {IE_PROPERTY_SIZES.map((size) => (
+                                                <option key={size} value={size}>{size}</option>
+                                            ))}
+                                        </select>
+                                        {errors.property_size && <p className="text-red-500 text-xs font-bold mt-1 ml-1">{errors.property_size.message}</p>}
+                                    </div>
+                                )}
 
                                 <div className="grid md:grid-cols-2 gap-4">
                                     <div className="space-y-1">
