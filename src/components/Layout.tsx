@@ -579,10 +579,7 @@ const Layout = () => {
                                 ) : tenant === 'france' ? (
                                     <img src={logoUrl} alt={logoAlt} className="h-16" />
                                 ) : (
-                                    <>
-                                        <img src={logoUrl} alt={logoAlt} className="h-16" />
-                                        <span className="text-xl font-serif font-bold">{tenantDisplayName}</span>
-                                    </>
+                                    <img src={logoUrl} alt={logoAlt} className="h-16" />
                                 )}
                             </div>
                             <p className="text-gray-400 text-sm leading-relaxed mb-6">
