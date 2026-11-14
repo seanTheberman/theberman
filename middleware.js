@@ -4,6 +4,7 @@
 
 import { HOME_SEO, PAGE_SEO } from './seo-metadata.js';
 import { SITEMAP_BY_TENANT } from './sitemap-data.js';
+import { LOCATION_SLUGS } from './location-slugs.js';
 
 export const config = { matcher: '/((?!_next|assets|favicon|logo).*)' };
 
@@ -40,6 +41,8 @@ const TENANT_SPECIFIC_ROUTES = {
 const TENANT_PREFIX_ROUTES = {
   '/directorio':            { tenants: ['spain'],    redirect: '/catalogue' },
   '/preguntas-frecuentes':  { tenants: ['spain'],    redirect: '/faq' },
+  '/epc-faq':               { tenants: ['england'],  redirect: '/faq' },
+  '/faqs':                  { tenants: ['portugal'], redirect: '/faq' },
 };
 
 // Location page prefixes — only valid on their own tenant
@@ -49,7 +52,7 @@ const LOCATION_PREFIXES = {
 };
 
 // Dynamic route prefixes valid on all tenants (e.g. /blog/some-post)
-const DYNAMIC_PREFIXES = new Set(['blog', 'news', 'catalogue', 'profiles', 'quote']);
+const DYNAMIC_PREFIXES = new Set(['blog', 'news', 'catalogue', 'profiles', 'quote', 'secure-admin-portal']);
 
 // Shared static routes valid on all tenants
 const SHARED_ROUTES = new Set([
@@ -58,6 +61,7 @@ const SHARED_ROUTES = new Set([
   '/catalogue/epc-assessors', '/catalogue/epc-businesses',
   '/locations', '/blog', '/news', '/faq', '/ber-faqs', '/ber-faqs/',
   '/energy-advisor', '/hire-agent', '/privacy', '/terms', '/cookie-policy',
+  '/terms-english', '/refund-policy', '/region',
   '/assessor-terms', '/login', '/secure-admin-login', '/signup', '/subscribe',
   '/get-quote', '/forgot-password', '/update-password', '/auth/error',
   '/admin', '/secure-admin-portal', '/membership-payment', '/thank-you',
@@ -91,7 +95,7 @@ function getTenantRedirect(path, tenant) {
   return null;
 }
 
-function isValidPath(path, tenant, sitemapUrls) {
+function isValidPath(path, tenant, sitemapUrls, locationSlugs) {
   // Shared routes are always valid
   if (SHARED_ROUTES.has(path)) return true;
 
@@ -106,25 +110,19 @@ function isValidPath(path, tenant, sitemapUrls) {
     }
   }
 
-  // Location prefixes — only valid on their tenant
-  for (const [t, prefix] of Object.entries(LOCATION_PREFIXES)) {
-    if (path.startsWith(prefix)) return tenant === t;
-  }
-
-  // Check sitemap for this tenant
-  if (sitemapUrls && sitemapUrls.includes(path)) return true;
-
-  // Dynamic routes (blog/:slug, news/:id, catalogue/:slug, etc.)
+  // Dynamic routes whose slugs live in the DB (blog/:slug, news/:id,
+  // catalogue/:slug, profiles/:id, quote/:id, admin sub-pages) — these
+  // can't be verified against a static list.
   const parts = path.replace(/^\//, '').split('/');
   if (parts.length >= 2 && DYNAMIC_PREFIXES.has(parts[0])) return true;
 
-  // Check if first segment is a known location in the sitemap
-  if (parts.length >= 1 && parts[0]) {
-    if (sitemapUrls && sitemapUrls.includes(`/${parts[0]}`)) return true;
-    if (parts.length >= 2 && sitemapUrls && sitemapUrls.includes(`/${parts[0]}/${parts[1]}`)) return true;
-  }
-
-  return false;
+  // Everything else — county pages, county/town pages, prefixed location
+  // pages (/epc-assessment-*, /certificado-energetico-*), and static pages —
+  // must be an exact URL in this tenant's sitemap, or a real custom
+  // location page stored in location_pages. Anything invented after the
+  // slash (fake towns, fake regions, random paths) is invalid.
+  return (!!sitemapUrls && sitemapUrls.includes(path)) ||
+         (!!locationSlugs && locationSlugs.has(path));
 }
 
 // Exact domain -> tenant map (matches src/lib/tenant.ts)
@@ -1049,6 +1047,20 @@ p{font-size:1.1rem;color:#94a3b8;line-height:1.6;margin-bottom:0.5rem}
     return Response.redirect(`${url.protocol}//${hostname}${tenantRedirect}`, 301);
   }
 
+  // Common wrong sitemap URLs → the real one (these used to return the
+  // HTML app shell, which is what made Search Console report
+  // "sitemap appears to be an HTML page").
+  if (path === '/sitemap' || path === '/sitemaps.xml' ||
+      path === '/sitemap_index.xml' || path === '/sitemap-index.xml') {
+    return Response.redirect(`${url.protocol}//${hostname}/sitemap.xml`, 301);
+  }
+
+  // Normalize trailing slashes so /dublin/ and /sitemap.xml/ resolve to
+  // the canonical URL instead of falling through to the SPA shell.
+  if (path.length > 1 && path.endsWith('/')) {
+    return Response.redirect(`${url.protocol}//${hostname}${path.slice(0, -1)}${url.search}`, 301);
+  }
+
   // Dynamic robots.txt per tenant
   if (path === '/robots.txt') {
     const requestHost = req.headers.get('host') || url.host;
@@ -1118,7 +1130,8 @@ p{font-size:1.1rem;color:#94a3b8;line-height:1.6;margin-bottom:0.5rem}
 
   // Check if this path is valid for the current tenant
   const sitemapUrls = SITEMAP_BY_TENANT[tenant] || [];
-  const pathValid = isValidPath(path, tenant, sitemapUrls);
+  const locationSlugs = new Set(LOCATION_SLUGS[tenant] || []);
+  const pathValid = isValidPath(path, tenant, sitemapUrls, locationSlugs);
 
   const existingTitleMatch = html.match(/<title>([^<]*)<\/title>/);
   const existingTitle = existingTitleMatch ? existingTitleMatch[1] : '';
@@ -1307,9 +1320,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   const safeTwitterTitle = escapeHtml(pageMeta.twitterTitle || pageMeta.ogTitle || title);
   const safeTwitterDesc = escapeHtml(pageMeta.twitterDescription || pageMeta.ogDescription || desc);
 
-  // If the path is not valid for this tenant, inject noindex to prevent
-  // Google from indexing cross-tenant pages (e.g. Ireland location pages
-  // showing up in epccert.com search results).
+  // If the path is not valid for this tenant, return a real 404 status
+  // (with the app shell + noindex so the SPA still renders its NotFound
+  // page). This stops crawlers and status checkers from seeing invented
+  // URLs — fake towns, wrong regions, random paths — as live 200 pages.
   if (!pathValid) {
     const noindexBlock = `  <!-- tenant-seo:start (${tenant}) noindex -->
   <title>${safeTitle}</title>
@@ -1323,7 +1337,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
     const finalNoindex = noindexHtml.replace(tenantSeoSlot, noindexBlock);
     return new Response(finalNoindex, {
-      status: res.status,
+      status: 404,
       headers: {
         ...Object.fromEntries(res.headers),
         'content-type': 'text/html; charset=utf-8',
