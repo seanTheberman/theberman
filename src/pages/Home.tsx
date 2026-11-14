@@ -1,12 +1,11 @@
 import {
     ArrowRight, CheckCircle2, Star, Clock,
     Zap as ZapIcon, ShieldCheck, TrendingUp,
-    Users, Shield, ClipboardList, X, Search, MapPin
+    Shield, ClipboardList, X, Search, MapPin
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Link, useNavigate } from 'react-router-dom';
-import { getCountiesForTenant } from '../lib/tenantData';
+import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useTranslation } from '../hooks/useTranslation';
 import { usePageContent, cmsValue } from '../hooks/usePageContent';
@@ -30,28 +29,8 @@ const HomePage = () => {
     const [promo, setPromo] = useState<PromoSettings | null>(null);
     const [isDismissed, setIsDismissed] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const navigate = useNavigate();
-    const [heroCounty, setHeroCounty] = useState('');
-    const [heroPropType, setHeroPropType] = useState('');
-    const heroCounties = getCountiesForTenant(tenant);
-    const heroPropTypes = [
-        { value: 'Apartment', label: isSpanish || isPortuguese ? 'Apartamento' : tenant === 'france' ? 'Appartement' : 'Apartment' },
-        { value: 'Mid-Terrace', label: isSpanish ? 'Casa Adosada (Interior)' : isPortuguese ? 'Moradia em Banda (Meio)' : tenant === 'france' ? 'Maison Mitoyenne (Centre)' : 'Mid-Terrace' },
-        { value: 'End-Terrace', label: isSpanish ? 'Casa Adosada (Esquina)' : isPortuguese ? 'Moradia em Banda (Extremo)' : tenant === 'france' ? 'Maison Mitoyenne (Extrémité)' : 'End-Terrace' },
-        { value: 'Semi-Detached', label: isSpanish ? 'Casa Pareada' : isPortuguese ? 'Moradia Geminada' : tenant === 'france' ? 'Maison Jumelée' : 'Semi-Detached' },
-        { value: 'Detached', label: isSpanish ? 'Casa Independiente' : isPortuguese ? 'Moradia Isolada' : tenant === 'france' ? 'Maison Individuelle' : 'Detached' },
-        { value: 'Bungalow', label: isSpanish ? 'Chalet' : 'Bungalow' },
-        { value: 'Other', label: isSpanish ? 'Otro' : isPortuguese ? 'Outro' : tenant === 'france' ? 'Autre' : 'Other' },
-    ];
 
     const brandName = isSpanish ? 'Certificado Energético' : tenant === 'england' ? 'EPC Cert' : tenant === 'france' ? 'DPE Cert France' : tenant === 'portugal' ? 'Certificado Energia' : 'The Berman';
-    const heroIntro = c('hero', 'intro_paragraph', isSpanish
-        ? 'Conectamos a propietarios con técnicos certificados en toda España para obtener su certificado energético de forma rápida y sencilla.'
-        : isPortuguese
-            ? 'Receba propostas de Peritos Qualificados disponíveis na sua região.'
-            : tenant === 'ireland'
-                ? "The Berman is Ireland's largest BER website, built to make finding a BER certificate simple, fast and affordable. Whether you need an energy certificate for a house sale, a rental property, a new build, or an SEAI grant application, we connect you directly with qualified, SEAI registered assessors across every county in the country."
-                : '');
     const hiwDesc = c('how_it_works', 'description', isSpanish
         ? 'Obtén tu Certificado Energético de forma rápida y sencilla. Elige la fecha de tu inspección, proporciona los datos de tu inmueble, recibe presupuestos de profesionales y reserva la opción que mejor se adapte a tus necesidades.'
         : tenant === 'england'
@@ -131,131 +110,75 @@ const HomePage = () => {
             ) : (
             <>
             {/* 1. HERO SECTION - BERcert Conversion Style */}
-            <section className="relative pt-24 pb-12 lg:pt-32 lg:pb-16 bg-white overflow-hidden">
+            <section className="relative pt-24 pb-14 lg:pt-32 lg:pb-20 bg-white overflow-hidden">
                 {/* Subtle background accents */}
                 <div className="absolute inset-0 pointer-events-none">
                     <div className="absolute top-20 left-10 w-72 h-72 bg-green-50 rounded-full blur-3xl opacity-60"></div>
                     <div className="absolute bottom-10 right-10 w-96 h-96 bg-blue-50 rounded-full blur-3xl opacity-40"></div>
                 </div>
                 <div className="container mx-auto px-6 relative z-10">
-                    <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center max-w-6xl mx-auto">
-                        {/* Left: headline + trust */}
-                        <div className="text-center lg:text-left">
-                            {tenant !== 'england' && (
-                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-100 rounded-full mb-6 animate-fade-in">
-                                    <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-                                    <p className="text-sm font-bold text-green-700">{c('hero', 'badge_text', isSpanish ? 'La Mayor Plataforma de Certificados Energéticos' : tenant === 'france' ? 'La Plus Grande Plateforme de DPE en France' : tenant === 'portugal' ? 'A Plataforma Líder de Certificação Energética em Portugal' : "Ireland's Largest BER Marketplace")}</p>
+                    <div className="max-w-3xl mx-auto text-center">
+                        <h1 className="font-black mb-8 leading-[1.1] tracking-tight text-4xl md:text-5xl" style={{ color: c('hero', 'heading_color', '#111827') }}>
+                            {isSpanish ? <Link to="/services" className="hover:underline">{c('hero', 'heading', 'Certificado Energético en España')}</Link> : (tenant === 'england' ? <Link to="/services" className="hover:underline">{c('hero', 'heading', 'Need an')}</Link> : (tenant === 'portugal' ? c('hero', 'heading', 'Precisa de um ') : c('hero', 'heading', (tenant === 'france' ? 'Besoin d\'un' : 'BER Cert Ireland – Get Quotes from'))))}{' '}
+                            <span style={{ color: c('hero', 'highlight_color', '#007F00') }}>{isSpanish ? <Link to="/services" className="hover:underline">{c('hero', 'heading_highlight', 'Técnicos Acreditados')}</Link> : (tenant === 'ireland' ? <Link to="/services" className="hover:underline">{c('hero', 'heading_highlight', 'Registered Assessors')}</Link> : (tenant === 'portugal' ? <Link to="/services" className="hover:underline">{c('hero', 'heading_highlight', 'Certificado Energético?')}</Link> : c('hero', 'heading_highlight', (tenant === 'england' ? 'EPC Cert?' : tenant === 'france' ? 'DPE ?' : 'Registered Assessors'))))}</span>
+                        </h1>
+
+                        {/* Green checklist - bercert style */}
+                        <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 mb-8">
+                            {[
+                                tenant !== 'england' ? c('hero', 'badge_text', isSpanish ? 'La Mayor Plataforma de Certificados Energéticos' : tenant === 'france' ? 'La Plus Grande Plateforme de DPE en France' : tenant === 'portugal' ? 'A Plataforma Líder de Certificação Energética em Portugal' : "Ireland's Largest BER Marketplace") : null,
+                                c('hero', 'check_fast', isSpanish ? 'Rápido, Fiable y Sin Complicaciones' : tenant === 'france' ? 'Rapide, Fiable et Sans Tracas' : isPortuguese ? 'Rápido, Fiável e Sem Complicações' : 'Fast, Reliable & Hassle-Free'),
+                                ...(tenant === 'ireland'
+                                    ? [c('hero', 'trust_1', '100+ SEAI Assessors'), c('hero', 'trust_2', 'Compare Quotes Instantly'), c('hero', 'trust_3', 'Book Online in Minutes'), c('hero', 'benefit_1', '100+ Assessors Nationwide')]
+                                    : [
+                                        c('hero', 'benefit_1', isSpanish ? '1000+ Certificadores en Toda España' : (tenant === 'england' ? '100+ Accredited EPC Assessors' : tenant === 'france' ? '100+ Diagnostiqueurs en France' : tenant === 'portugal' ? '100+ Peritos em Todo o País' : '100+ Assessors Nationwide')),
+                                        c('hero', 'benefit_2', isSpanish ? 'SOLO CERTIFICADORES ACREDITADOS' : (tenant === 'england' ? 'ACCREDITED EPC ASSESSORS ONLY' : tenant === 'france' ? 'DIAGNOSTIQUEURS CERTIFIÉS UNIQUEMENT' : tenant === 'portugal' ? 'SÓ PERITOS QUALIFICADOS' : 'SEAI REGISTERED ASSESSORS ONLY')),
+                                        c('hero', 'benefit_3', isSpanish ? 'Elige tu Fecha y Hora' : (tenant === 'england' ? 'Choose Your Appointment Time' : tenant === 'france' ? 'Choisissez votre Date et Heure' : tenant === 'portugal' ? 'Escolha a Data e Hora' : 'Choose Your Date & Time'))
+                                    ]),
+                            ].filter(Boolean).map((text, i) => (
+                                <div key={i} className="flex items-center gap-2 text-sm md:text-base font-bold text-gray-700">
+                                    <CheckCircle2 size={18} className="text-[#007F00] flex-shrink-0" />
+                                    {text}
                                 </div>
-                            )}
-
-                            <h1 className="font-black mb-5 leading-[1.08] tracking-tight text-4xl md:text-5xl" style={{ color: c('hero', 'heading_color', '#111827') }}>
-                                {isSpanish ? <Link to="/services" className="hover:underline">{c('hero', 'heading', 'Certificado Energético en España')}</Link> : (tenant === 'england' ? <Link to="/services" className="hover:underline">{c('hero', 'heading', 'Need an')}</Link> : (tenant === 'portugal' ? c('hero', 'heading', 'Precisa de um ') : c('hero', 'heading', (tenant === 'france' ? 'Besoin d\'un' : 'BER Cert Ireland – Get Quotes from'))))}{' '}
-                                <span style={{ color: c('hero', 'highlight_color', '#007F00') }}>{isSpanish ? <Link to="/services" className="hover:underline">{c('hero', 'heading_highlight', 'Técnicos Acreditados')}</Link> : (tenant === 'ireland' ? <Link to="/services" className="hover:underline">{c('hero', 'heading_highlight', 'Registered Assessors')}</Link> : (tenant === 'portugal' ? <Link to="/services" className="hover:underline">{c('hero', 'heading_highlight', 'Certificado Energético?')}</Link> : c('hero', 'heading_highlight', (tenant === 'england' ? 'EPC Cert?' : tenant === 'france' ? 'DPE ?' : 'Registered Assessors'))))}</span>
-                            </h1>
-
-                            <p className="text-gray-600 leading-relaxed font-medium text-lg md:text-xl mb-6">
-                                {isSpanish ? (
-                                    <>{c('hero', 'subheading', 'La forma más rápida y fiable de obtener tu Certificado Energético. Los mejores precios garantizados de más de 1000 certificadores en toda España. Reserva online al instante.')}</>
-                                ) : (tenant === 'england' ? (
-                                    <>{c('hero', 'subheading', "England's largest EPC website | Fast, Reliable & Hassle-Free")}</>
-                                ) : (tenant === 'portugal' ? <>{c('hero', 'subheading', 'Encontre, de forma simples e segura, um Perito Qualificado na sua região.')}</> : c('hero', 'subheading', (tenant === 'france'
-                                    ? 'Le moyen le plus rapide et le plus fiable d\'obtenir votre DPE. Comparez les devis compétitifs de diagnostiqueurs certifiés près de chez vous.'
-                                    : "Ireland's largest BER marketplace. Instantly compare quotes from trusted SEAI-registered assessors near you and book your BER assessment in minutes."))))}
-                            </p>
-
-                            {heroIntro !== '' && (
-                                <p className="hidden lg:block text-gray-500 leading-relaxed text-sm mb-6">
-                                    {heroIntro}
-                                </p>
-                            )}
-                            {tenant === 'england' && (
-                                <p className="text-gray-600 leading-relaxed font-medium text-base md:text-lg mb-6">
-                                    {c('hero', 'benefit_1', 'Lowest Prices Guaranteed')} | {c('hero', 'benefit_2', '100+ Accredited Assessors Nationwide')} | {c('hero', 'benefit_3', 'Choose your Date & Time')}
-                                </p>
-                            )}
-
-                            {/* Trust indicators - Ireland only */}
-                            {tenant === 'ireland' && (
-                                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 mb-6">
-                                    {[c('hero', 'trust_1', '100+ SEAI Assessors'), c('hero', 'trust_2', 'Compare Quotes Instantly'), c('hero', 'trust_3', 'Book Online in Minutes')].filter(Boolean).map((text, i) => (
-                                        <div key={i} className="flex items-center gap-2 text-sm font-bold text-gray-700">
-                                            <CheckCircle2 size={18} className="text-[#007F00]" />
-                                            {text}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                            ))}
                         </div>
 
-                        {/* Right: quick quote card */}
-                        <div className="w-full max-w-md mx-auto lg:mx-0 lg:justify-self-end">
-                            <div className="bg-white border border-gray-100 rounded-[2rem] shadow-2xl shadow-green-100/60 p-6 md:p-8">
-                                <h2 className="text-2xl font-black text-gray-900 mb-2">{c('hero', 'card_title', isSpanish ? 'Solicita tu Presupuesto Gratis' : tenant === 'england' ? 'Get EPC Quotes' : tenant === 'france' ? 'Obtenez votre Devis Gratuit' : isPortuguese ? 'Peça o Seu Orçamento Grátis' : 'Get a Free Quote')}</h2>
-                                <p className="text-sm text-gray-500 font-medium mb-6">
-                                    {isPortuguese
-                                        ? c('hero', 'cta_line', 'Receba propostas de Peritos Qualificados disponíveis na sua região.')
-                                        : c('hero', 'cta_line', isSpanish
-                                            ? 'Obtén los mejores presupuestos de certificadores locales hoy mismo.'
-                                            : (tenant === 'england'
-                                                ? 'Get the Best Quotes from local EPC Assessors today.'
-                                                : tenant === 'france'
-                                                    ? 'Obtenez les meilleurs devis de diagnostiqueurs locaux dès aujourd\'hui'
-                                                    : 'Get competitive quotes from SEAI-registered local BER Assessors Today'))}
-                                </p>
-                                <div className="space-y-3 mb-5">
-                                    <select
-                                        value={heroCounty}
-                                        onChange={(e) => setHeroCounty(e.target.value)}
-                                        className="w-full bg-white border-2 border-gray-100 focus:border-[#007F00] rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer font-medium text-gray-700"
-                                    >
-                                        <option value="">{isSpanish ? 'Comunidad Autónoma' : tenant === 'france' ? 'Région' : isPortuguese ? 'Selecionar Distrito' : tenant === 'england' ? 'Select Region' : 'Select County'}</option>
-                                        {heroCounties.map((county) => (
-                                            <option key={county} value={county}>{county}</option>
-                                        ))}
-                                    </select>
-                                    <select
-                                        value={heroPropType}
-                                        onChange={(e) => setHeroPropType(e.target.value)}
-                                        className="w-full bg-white border-2 border-gray-100 focus:border-[#007F00] rounded-2xl px-5 py-3 outline-none transition-all appearance-none cursor-pointer font-medium text-gray-700"
-                                    >
-                                        <option value="">{isSpanish ? 'Tipo de Propiedad' : tenant === 'france' ? 'Type de Bien' : isPortuguese ? 'Tipo de Imóvel' : 'Property Type'}</option>
-                                        {heroPropTypes.map((pt) => (
-                                            <option key={pt.value} value={pt.value}>{pt.label}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <button
-                                    onClick={() => navigate('/get-quote', { state: { county: heroCounty, propertyType: heroPropType } })}
-                                    className="w-full bg-[#007F00] hover:bg-[#006400] text-white text-xl font-black rounded-2xl py-4 shadow-xl shadow-green-100 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3 cursor-pointer"
-                                >
-                                    {c('hero', 'cta_button_text', isSpanish ? 'Solicitar Presupuesto Gratis' : tenant === 'england' ? 'Get EPC Quotes' : tenant === 'france' ? 'Devis Gratuit' : isPortuguese ? 'Pedir Orçamento Grátis' : t('get_quote'))}
-                                    <ArrowRight size={22} strokeWidth={3} />
-                                </button>
-                                <p className="text-xs text-gray-400 text-center mt-4 font-medium">
-                                    {isSpanish ? 'Solo 1 minuto • Gratis • Sin llamadas' : tenant === 'france' ? 'Environ 1 minute • Gratuit • Sans appel' : isPortuguese ? 'Apenas 1 minuto • Grátis • Sem chamadas' : 'Takes about a minute • Free • No phone calls needed'}
-                                </p>
-                            </div>
+                        {/* Tagline */}
+                        <p className="text-lg font-medium text-gray-700 mb-8">
+                            {isPortuguese
+                                ? c('hero', 'cta_line', 'Receba propostas de Peritos Qualificados disponíveis na sua região.')
+                                : c('hero', 'cta_line', isSpanish
+                                    ? 'Obtén los mejores presupuestos de certificadores locales hoy mismo.'
+                                    : (tenant === 'england'
+                                        ? 'Get the Best Quotes from local EPC Assessors today.'
+                                        : tenant === 'france'
+                                            ? 'Obtenez les meilleurs devis de diagnostiqueurs locaux dès aujourd\'hui'
+                                            : 'Get the Best Quotes from local BER Assessors today.'))}
+                        </p>
 
-                            {/* Fast Benefits under card */}
-                            {tenant !== 'england' && (
-                            <div className="flex flex-wrap justify-center lg:justify-start gap-x-8 gap-y-3 mt-6">
-                                {[
-                                    { icon: <Users size={18} />, text: c('hero', 'benefit_1', isSpanish ? '1000+ Certificadores en Toda España' : (tenant === 'england' ? '100+ Accredited EPC Assessors' : tenant === 'france' ? '100+ Diagnostiqueurs en France' : tenant === 'portugal' ? '100+ Peritos em Todo o País' : '100+ Assessors Nationwide')) },
-                                    { icon: <ShieldCheck size={18} />, text: c('hero', 'benefit_2', isSpanish ? 'SOLO CERTIFICADORES ACREDITADOS' : (tenant === 'england' ? 'ACCREDITED EPC ASSESSORS ONLY' : tenant === 'france' ? 'DIAGNOSTIQUEURS CERTIFIÉS UNIQUEMENT' : tenant === 'portugal' ? 'SÓ PERITOS QUALIFICADOS' : 'SEAI REGISTERED ASSESSORS ONLY')) },
-                                    { icon: <Clock size={18} />, text: c('hero', 'benefit_3', isSpanish ? 'Elige tu Fecha y Hora' : (tenant === 'england' ? 'Choose Your Appointment Time' : tenant === 'france' ? 'Choisissez votre Date et Heure' : tenant === 'portugal' ? 'Escolha a Data e Hora' : 'Choose Your Date & Time')) }
-                                ].map((item, i) => (
-                                    <div key={i} className="flex items-center gap-2 text-gray-500 font-bold text-xs tracking-wide uppercase">
-                                        <span className="text-[#007F00] flex-shrink-0 w-5 h-5 inline-flex items-center justify-center">{item.icon}</span>
-                                        {item.text}
-                                    </div>
-                                ))}
-                            </div>
-                            )}
+                        {/* Primary CTA */}
+                        <Link to="/get-quote" className="inline-block">
+                            <button className="px-12 py-4 bg-[#007F00] hover:bg-[#006400] text-white text-xl font-bold rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer">
+                                {c('hero', 'cta_button_text', isSpanish ? 'Solicitar Presupuesto Gratis' : tenant === 'england' ? 'Get EPC Quotes' : tenant === 'france' ? 'Devis Gratuit' : isPortuguese ? 'Pedir Orçamento Grátis' : t('get_quote'))}
+                            </button>
+                        </Link>
+
+                        {/* Rating row */}
+                        <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+                            <span className="text-xs font-black tracking-widest uppercase text-gray-900">{isSpanish ? 'Excelente' : isPortuguese ? 'Excelente' : tenant === 'france' ? 'Excellent' : 'Excellent'}</span>
+                            <span className="flex items-center gap-0.5">
+                                {[...Array(5)].map((_, i) => <Star key={i} size={16} className="text-amber-400 fill-amber-400" />)}
+                            </span>
+                            <span className="text-sm font-bold text-gray-700">{c('hero', 'reviews_text', '4.9/5 Average Rating')}</span>
+                        </div>
+
+                        {/* Savings banner */}
+                        <div className="mt-8 inline-block bg-green-50 border border-green-100 rounded-2xl px-8 py-4 max-w-full">
+                            <p className="text-sm font-bold text-green-800">{c('hero', 'banner_text', isSpanish ? 'Miles de propietarios en España ya han comparado presupuestos de certificados energéticos.' : tenant === 'france' ? 'Des milliers de propriétaires ont déjà comparé des devis DPE sur notre plateforme.' : tenant === 'england' ? 'Thousands of property owners in England have compared EPC quotes on EPC Cert.' : isPortuguese ? 'Milhares de proprietários já compararam orçamentos na nossa plataforma.' : 'Over 1,000 Irish homeowners have compared BER quotes on The Berman.')}</p>
                         </div>
                     </div>
                 </div>
             </section>
-
             {/* 2. HOW IT WORKS - 4 Step Linear Flow */}
             <section className="py-24 bg-gray-50 border-y border-gray-100">
                 <div className="container mx-auto px-6">
