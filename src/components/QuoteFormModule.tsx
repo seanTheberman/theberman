@@ -905,12 +905,12 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
             <div className="max-w-lg mx-auto space-y-4">
                 <input type="text" value={formData.fullName} onChange={(e) => updateField('fullName', e.target.value)} placeholder={`${t('full_name')}*`} className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-green-500" />
                 <input type="email" value={formData.email} onChange={(e) => updateField('email', e.target.value)} placeholder={`${t('email_address')}*`} className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-green-500" />
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="flex">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex min-w-0">
                         <span className="flex items-center px-3 border-2 border-r-0 border-gray-200 rounded-l-xl text-sm font-bold text-gray-500 bg-gray-50 whitespace-nowrap">
                             {isSpanish ? '+34' : (tenant === 'england' ? '+44' : tenant === 'portugal' ? '+351' : tenant === 'france' ? '+33' : '+353')}
                         </span>
-                        <input type="tel" value={formData.phone} onChange={(e) => updateField('phone', e.target.value)} placeholder={`${t('phone_number')}*`} className="flex-1 p-4 border-2 border-l-0 border-gray-200 rounded-r-xl focus:border-green-500 focus:outline-none" />
+                        <input type="tel" value={formData.phone} onChange={(e) => updateField('phone', e.target.value)} placeholder={`${t('phone_number')}*`} className="flex-1 min-w-0 p-4 border-2 border-l-0 border-gray-200 rounded-r-xl focus:border-green-500 focus:outline-none" />
                     </div>
                     <div className="space-y-1">
                         <input type="text" value={formData.eircode} onChange={(e) => updateField('eircode', e.target.value.toUpperCase())} placeholder={`${postcodeLabel}*`} className={`w-full p-4 border-2 rounded-xl focus:border-green-500 ${tenant === 'ireland' && formData.eircode && formData.eircode.replace(/\s/g, '').length >= 7 && ROUTING_KEYS[formData.county] && !formData.eircode.replace(/\s/g, '').startsWith(ROUTING_KEYS[formData.county]) ? 'border-red-300 bg-red-50' : 'border-gray-200'}`} />
