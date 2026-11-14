@@ -82,6 +82,7 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
                     data = byName.data;
                 }
 
+                const tpl = data?.template_content || {};
                 const map: PageSectionMap = {};
                 for (const section of selectedPage.sections) {
                     const defaults = getDefaultsForTenant(selectedPage.id, section.id, selectedTenant);
@@ -90,6 +91,7 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
                             ...defaults,
                             hero_title: data?.hero_title || defaults.hero_title,
                             hero_subtitle: data?.hero_subtitle || defaults.hero_subtitle,
+                            ...tpl,
                         };
                     } else if (section.id === 'content') {
                         map[section.id] = {
@@ -98,6 +100,7 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
                             body_text: data?.body_text || defaults.body_text,
                             cta_heading: data?.cta_heading || defaults.cta_heading,
                             cta_subtitle: data?.cta_subtitle || defaults.cta_subtitle,
+                            ...tpl,
                         };
                     } else if (section.id === 'seo') {
                         map[section.id] = {
@@ -183,6 +186,15 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
                 const content = sectionData['content'] || {};
                 const seo = sectionData['seo'] || {};
 
+                const TEMPLATE_KEYS = ['badge_text','hero_heading','hero_para1','hero_para2','primary_cta_text','primary_cta_url','secondary_cta_text','secondary_cta_url','trust_1','trust_2','trust_3','cta_paragraph','cta_button_text','cta_button_url'];
+                const template_content: Record<string, string> = {};
+                for (const sec of selectedPage.sections) {
+                    const data = sectionData[sec.id] || {};
+                    for (const k of TEMPLATE_KEYS) {
+                        if (data[k] !== undefined) template_content[k] = data[k];
+                    }
+                }
+
                 const payload = {
                     hero_title: hero.hero_title || '',
                     hero_subtitle: hero.hero_subtitle || '',
@@ -190,6 +202,7 @@ export const VisualEditorView = ({ selectedTenant }: Props) => {
                     body_text: content.body_text || '',
                     cta_heading: content.cta_heading || '',
                     cta_subtitle: content.cta_subtitle || '',
+                    template_content,
                     seo_title: seo.seo_title || '',
                     seo_description: seo.seo_description || '',
                     meta_keywords: seo.meta_keywords || '',

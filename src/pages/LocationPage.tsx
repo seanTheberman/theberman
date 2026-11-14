@@ -5,6 +5,7 @@ import { getTenantFromDomain } from '../lib/tenant';
 import { getTownsForTenant } from '../lib/tenantData';
 import { supabase } from '../lib/supabase';
 import NotFound from './NotFound';
+import IrelandLocationTemplate from '../components/location/IrelandLocationTemplate';
 
 interface LocationPageData {
     hero_title: string;
@@ -185,6 +186,19 @@ const LocationPage = () => {
     // Admin-disabled custom page → hidden
     if (customData && customData.is_active === false) {
         return <NotFound />;
+    }
+
+    if (tenant === 'ireland') {
+        return (
+            <IrelandLocationTemplate
+                city={townName || displayName}
+                countyName={countyName}
+                countySlug={county || ''}
+                towns={townsInCounty}
+                isTown={!!townName}
+                custom={customData}
+            />
+        );
     }
 
     const heroTitle = customData?.hero_title || `${labels.assessor} ${labels.in} ${townName || displayName}`;

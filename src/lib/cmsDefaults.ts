@@ -841,6 +841,17 @@ export const CMS_PAGES: PageDefinition[] = [
                 fields: [
                     { key: 'hero_title', label: 'Hero Title', type: 'text', group: 'Content' },
                     { key: 'hero_subtitle', label: 'Hero Subtitle', type: 'text', group: 'Content' },
+                    { key: 'badge_text', label: 'Eyebrow Badge Text ({{CITY}} allowed)', type: 'text', group: 'Ireland Template' },
+                    { key: 'hero_heading', label: 'Hero Heading ({{CITY}} allowed)', type: 'text', group: 'Ireland Template' },
+                    { key: 'hero_para1', label: 'Hero Paragraph 1 (HTML links allowed)', type: 'textarea', group: 'Ireland Template' },
+                    { key: 'hero_para2', label: 'Hero Paragraph 2 (HTML links allowed)', type: 'textarea', group: 'Ireland Template' },
+                    { key: 'primary_cta_text', label: 'Primary Button Text', type: 'text', group: 'Ireland Template' },
+                    { key: 'primary_cta_url', label: 'Primary Button URL', type: 'text', group: 'Ireland Template' },
+                    { key: 'secondary_cta_text', label: 'Secondary Button Text', type: 'text', group: 'Ireland Template' },
+                    { key: 'secondary_cta_url', label: 'Secondary Button URL', type: 'text', group: 'Ireland Template' },
+                    { key: 'trust_1', label: 'Trust Badge 1', type: 'text', group: 'Ireland Template' },
+                    { key: 'trust_2', label: 'Trust Badge 2', type: 'text', group: 'Ireland Template' },
+                    { key: 'trust_3', label: 'Trust Badge 3', type: 'text', group: 'Ireland Template' },
                 ],
                 defaults: {
                     ireland: { hero_title: 'BER Assessors in Dublin', hero_subtitle: 'Find certified assessors in Dublin. Compare quotes and book online.' },
@@ -862,6 +873,9 @@ export const CMS_PAGES: PageDefinition[] = [
                     { key: 'body_text', label: 'Second Paragraph', type: 'textarea', group: 'Content' },
                     { key: 'cta_heading', label: 'CTA Heading', type: 'text', group: 'CTA Section' },
                     { key: 'cta_subtitle', label: 'CTA Subtitle', type: 'text', group: 'CTA Section' },
+                    { key: 'cta_paragraph', label: 'CTA Paragraph (HTML links allowed)', type: 'textarea', group: 'CTA Section' },
+                    { key: 'cta_button_text', label: 'CTA Button Text', type: 'text', group: 'CTA Section' },
+                    { key: 'cta_button_url', label: 'CTA Button URL', type: 'text', group: 'CTA Section' },
                 ],
                 defaults: {
                     ireland: { intro_text: 'The Berman connects homeowners with BER assessors in Dublin. Our expert assessors are ready to provide high-quality Building Energy Ratings.', body_text: '', cta_heading: '', cta_subtitle: '' },
