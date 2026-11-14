@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { ChevronRight, Check, Eye, EyeOff, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabase';
@@ -165,6 +166,8 @@ interface QuoteFormModuleProps {
 const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
     const { user } = useAuth();
     const { t, o, isSpanish, tenant } = useTranslation();
+    const location = useLocation();
+    const prefill = (location.state as { county?: string; propertyType?: string } | null) || {};
     const certName = isSpanish ? 'CEE' : (tenant === 'england' ? 'EPC' : tenant === 'france' ? 'DPE' : tenant === 'portugal' ? 'CE' : 'BER');
     const [currentStep, setCurrentStep] = useState(0); // Start at step 0 (Job Type)
     const [sizeUnit, setSizeUnit] = useState<'ft' | 'm'>('m'); // Default to m²
@@ -203,7 +206,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
         jobType: '',
         preferredDate: '',
         preferredTime: '',
-        county: '',
+        county: prefill.county || '',
         town: '',
         fullName: user?.user_metadata?.full_name || '',
         email: user?.email || '',
@@ -211,7 +214,7 @@ const QuoteFormModule = ({ onClose }: QuoteFormModuleProps) => {
         eircode: '',
         notes: '',
         // Domestic
-        propertyType: '',
+        propertyType: prefill.propertyType || '',
         propertySize: '',
         bedrooms: '',
         additionalFeatures: [],
