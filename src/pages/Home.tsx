@@ -110,7 +110,7 @@ const HomePage = () => {
             ) : (
             <>
             {/* 1. HERO SECTION - BERcert Conversion Style */}
-            <section className="relative pt-24 pb-14 lg:pt-32 lg:pb-20 bg-white overflow-hidden">
+            <section className="relative pt-28 pb-16 lg:pt-40 lg:pb-24 bg-white overflow-hidden">
                 {/* Subtle background accents */}
                 <div className="absolute inset-0 pointer-events-none">
                     <div className="absolute top-20 left-10 w-72 h-72 bg-green-50 rounded-full blur-3xl opacity-60"></div>
@@ -118,13 +118,13 @@ const HomePage = () => {
                 </div>
                 <div className="container mx-auto px-6 relative z-10">
                     <div className="max-w-3xl mx-auto text-center">
-                        <h1 className="font-black mb-8 leading-[1.1] tracking-tight text-4xl md:text-5xl" style={{ color: c('hero', 'heading_color', '#111827') }}>
+                        <h1 className="font-black mb-10 leading-[1.08] tracking-tight text-4xl md:text-6xl" style={{ color: c('hero', 'heading_color', '#111827') }}>
                             {isSpanish ? <Link to="/services" className="hover:underline">{c('hero', 'heading', 'Certificado Energético en España')}</Link> : (tenant === 'england' ? <Link to="/services" className="hover:underline">{c('hero', 'heading', 'Need an')}</Link> : (tenant === 'portugal' ? c('hero', 'heading', 'Precisa de um ') : c('hero', 'heading', (tenant === 'france' ? 'Besoin d\'un' : 'BER Cert Ireland – Get Quotes from'))))}{' '}
                             <span style={{ color: c('hero', 'highlight_color', '#007F00') }}>{isSpanish ? <Link to="/services" className="hover:underline">{c('hero', 'heading_highlight', 'Técnicos Acreditados')}</Link> : (tenant === 'ireland' ? <Link to="/services" className="hover:underline">{c('hero', 'heading_highlight', 'Registered Assessors')}</Link> : (tenant === 'portugal' ? <Link to="/services" className="hover:underline">{c('hero', 'heading_highlight', 'Certificado Energético?')}</Link> : c('hero', 'heading_highlight', (tenant === 'england' ? 'EPC Cert?' : tenant === 'france' ? 'DPE ?' : 'Registered Assessors'))))}</span>
                         </h1>
 
                         {/* Green checklist - bercert style */}
-                        <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 mb-8">
+                        <div className="flex flex-wrap justify-center gap-x-10 gap-y-4 mb-10">
                             {[
                                 tenant !== 'england' ? c('hero', 'badge_text', isSpanish ? 'La Mayor Plataforma de Certificados Energéticos' : tenant === 'france' ? 'La Plus Grande Plateforme de DPE en France' : tenant === 'portugal' ? 'A Plataforma Líder de Certificação Energética em Portugal' : "Ireland's Largest BER Marketplace") : null,
                                 c('hero', 'check_fast', isSpanish ? 'Rápido, Fiable y Sin Complicaciones' : tenant === 'france' ? 'Rapide, Fiable et Sans Tracas' : isPortuguese ? 'Rápido, Fiável e Sem Complicações' : 'Fast, Reliable & Hassle-Free'),
@@ -136,15 +136,15 @@ const HomePage = () => {
                                         c('hero', 'benefit_3', isSpanish ? 'Elige tu Fecha y Hora' : (tenant === 'england' ? 'Choose Your Appointment Time' : tenant === 'france' ? 'Choisissez votre Date et Heure' : tenant === 'portugal' ? 'Escolha a Data e Hora' : 'Choose Your Date & Time'))
                                     ]),
                             ].filter(Boolean).map((text, i) => (
-                                <div key={i} className="flex items-center gap-2 text-sm md:text-base font-bold text-gray-700">
-                                    <CheckCircle2 size={18} className="text-[#007F00] flex-shrink-0" />
+                                <div key={i} className="flex items-center gap-2 text-base md:text-lg font-bold text-gray-700">
+                                    <CheckCircle2 size={20} className="text-[#007F00] flex-shrink-0" />
                                     {text}
                                 </div>
                             ))}
                         </div>
 
                         {/* Tagline */}
-                        <p className="text-lg font-medium text-gray-700 mb-8">
+                        <p className="text-xl md:text-2xl font-medium text-gray-700 mb-10">
                             {isPortuguese
                                 ? c('hero', 'cta_line', 'Receba propostas de Peritos Qualificados disponíveis na sua região.')
                                 : c('hero', 'cta_line', isSpanish
@@ -158,23 +158,23 @@ const HomePage = () => {
 
                         {/* Primary CTA */}
                         <Link to="/get-quote" className="inline-block">
-                            <button className="px-12 py-4 bg-[#007F00] hover:bg-[#006400] text-white text-xl font-bold rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer">
+                            <button className="px-16 py-5 bg-[#007F00] hover:bg-[#006400] text-white text-2xl font-bold rounded-2xl shadow-xl transition-all transform hover:-translate-y-0.5 cursor-pointer">
                                 {c('hero', 'cta_button_text', isSpanish ? 'Solicitar Presupuesto Gratis' : tenant === 'england' ? 'Get EPC Quotes' : tenant === 'france' ? 'Devis Gratuit' : isPortuguese ? 'Pedir Orçamento Grátis' : t('get_quote'))}
                             </button>
                         </Link>
 
                         {/* Rating row */}
-                        <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
-                            <span className="text-xs font-black tracking-widest uppercase text-gray-900">{isSpanish ? 'Excelente' : isPortuguese ? 'Excelente' : tenant === 'france' ? 'Excellent' : 'Excellent'}</span>
+                        <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
+                            <span className="text-sm font-black tracking-widest uppercase text-gray-900">{isSpanish ? 'Excelente' : isPortuguese ? 'Excelente' : tenant === 'france' ? 'Excellent' : 'Excellent'}</span>
                             <span className="flex items-center gap-0.5">
-                                {[...Array(5)].map((_, i) => <Star key={i} size={16} className="text-amber-400 fill-amber-400" />)}
+                                {[...Array(5)].map((_, i) => <Star key={i} size={20} className="text-amber-400 fill-amber-400" />)}
                             </span>
-                            <span className="text-sm font-bold text-gray-700">{c('hero', 'reviews_text', '4.9/5 Average Rating')}</span>
+                            <span className="text-base font-bold text-gray-700">{c('hero', 'reviews_text', '4.9/5 Average Rating')}</span>
                         </div>
 
                         {/* Savings banner */}
-                        <div className="mt-8 inline-block bg-green-50 border border-green-100 rounded-2xl px-8 py-4 max-w-full">
-                            <p className="text-sm font-bold text-green-800">{c('hero', 'banner_text', isSpanish ? 'Miles de propietarios en España ya han comparado presupuestos de certificados energéticos.' : tenant === 'france' ? 'Des milliers de propriétaires ont déjà comparé des devis DPE sur notre plateforme.' : tenant === 'england' ? 'Thousands of property owners in England have compared EPC quotes on EPC Cert.' : isPortuguese ? 'Milhares de proprietários já compararam orçamentos na nossa plataforma.' : 'Over 1,000 Irish homeowners have compared BER quotes on The Berman.')}</p>
+                        <div className="mt-10 inline-block bg-green-50 border border-green-100 rounded-2xl px-10 py-5 max-w-full">
+                            <p className="text-base font-bold text-green-800">{c('hero', 'banner_text', isSpanish ? 'Miles de propietarios en España ya han comparado presupuestos de certificados energéticos.' : tenant === 'france' ? 'Des milliers de propriétaires ont déjà comparé des devis DPE sur notre plateforme.' : tenant === 'england' ? 'Thousands of property owners in England have compared EPC quotes on EPC Cert.' : isPortuguese ? 'Milhares de proprietários já compararam orçamentos na nossa plataforma.' : 'Over 1,000 Irish homeowners have compared BER quotes on The Berman.')}</p>
                         </div>
                     </div>
                 </div>
