@@ -317,7 +317,7 @@ const FAQ = () => {
                     </div>
 
                     {/* Sidebar (Right) */}
-                    <div className="lg:col-span-4 order-1 lg:order-2 sticky top-32">
+                    <div className="lg:col-span-4 order-1 lg:order-2 lg:sticky lg:top-32">
                         <div className="border-l border-gray-100 pl-8">
                             <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-8">{tr.sidebarLabel}</h3>
                             <nav className="flex flex-col gap-5 max-h-[70vh] overflow-y-auto pr-4 custom-scrollbar">
